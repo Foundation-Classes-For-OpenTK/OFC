@@ -1,6 +1,8 @@
 # OFC
 Open Foundation Classes for OpenTK
 
+This site is not associated with OpenTK project. 
+
 This repository holds a set of c# class wrappers which wrap the OpenTK GL API interface (which is a thin shim on top of OpenGL) into more useable c# classes.  
 
 These make drawing objects to GL much easier to perform.
