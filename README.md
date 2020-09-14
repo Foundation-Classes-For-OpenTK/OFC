@@ -1,5 +1,5 @@
 # OFC
-Open Foundation Classes for OpenTK
+Open Foundation Classes for OpenTK/OpenGL.
 
 This site is not associated with OpenTK project. 
 
@@ -7,7 +7,7 @@ This repository holds a set of c# class wrappers which wrap the OpenTK GL API in
 
 These make drawing objects to GL much easier to perform.
 
-The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms.
+The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc.
 
 It has a render list which allows the rendering of all objects to be executed in one call.
 
