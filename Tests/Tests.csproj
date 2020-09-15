@@ -1,0 +1,510 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EADEB2D3-A35D-48B3-B791-B3EC9A847B85}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>TestOpenTk</RootNamespace>
+    <AssemblyName>TestOpenTk</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.3.0.1\lib\net20\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes.cs" />
+    <Compile Include="Compute\ShaderTestVertexCompute.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Compute\ShaderTestVertexCompute.Designer.cs">
+      <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TestControls.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControls.designer.cs">
+      <DependentUpon>TestControls.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Galaxy\GalMapRegions.cs" />
+    <Compile Include="Galaxy\GalMap\GalacticMapObject.cs" />
+    <Compile Include="Galaxy\GalMap\GalacticMapping.cs" />
+    <Compile Include="Galaxy\GalMap\GalMapType.cs" />
+    <Compile Include="Galaxy\GalMap\Jsonext.cs" />
+    <Compile Include="Galaxy\Map.cs" />
+    <Compile Include="Galaxy\MapMenu.cs" />
+    <Compile Include="Galaxy\GalMapObjects.cs" />
+    <Compile Include="Galaxy\TravelPath.cs" />
+    <Compile Include="Galaxy\ShaderStarDots.cs" />
+    <Compile Include="GalaxyDemo\TestDynamicGrid.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestDynamicGrid.designer.cs">
+      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Galaxy\TestGalaxy.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Galaxy\TestGalaxy.designer.cs">
+      <DependentUpon>TestGalaxy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo2.designer.cs">
+      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo1.designer.cs">
+      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Galaxy\ShaderGalaxy.cs" />
+    <Compile Include="Galaxy\ShaderGrid.cs" />
+    <Compile Include="Geometry\ShaderTestGeoFind.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Geometry\ShaderTestGeoFind.Designer.cs">
+      <DependentUpon>ShaderTestGeoFind.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Geometry\ShaderTestGeoTest1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Geometry\ShaderTestGeoTest1.Designer.cs">
+      <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestMain2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TestMain2.designer.cs">
+      <DependentUpon>TestMain2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TestMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TestMain.designer.cs">
+      <DependentUpon>TestMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Sprites\ShaderTestPointSprites.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sprites\ShaderTestPointSprites.designer.cs">
+      <DependentUpon>ShaderTestPointSprites.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarDiscs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarDiscs.Designer.cs">
+      <DependentUpon>ShaderTestStarDiscs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarPoints.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarPoints.Designer.cs">
+      <DependentUpon>ShaderTestStarPoints.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarPointsDiscs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Stars\ShaderTestStarPointsDiscs.Designer.cs">
+      <DependentUpon>ShaderTestStarPointsDiscs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\ShaderTestBlendedShaderMultImages.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Textures\ShaderTestBlendedShaderMultImages.Designer.cs">
+      <DependentUpon>ShaderTestBlendedShaderMultImages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Textures\ShaderTestGalaxyTexture.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Textures\ShaderTestGalaxyTexture.designer.cs">
+      <DependentUpon>ShaderTestGalaxyTexture.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Uniformblocks\ShaderTestUniforms.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Uniformblocks\ShaderTestUniforms.Designer.cs">
+      <DependentUpon>ShaderTestUniforms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric.designer.cs">
+      <DependentUpon>ShaderTestVolumetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric2.designer.cs">
+      <DependentUpon>ShaderTestVolumetric2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric3.designer.cs">
+      <DependentUpon>ShaderTestVolumetric3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric3a.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric3a.designer.cs">
+      <DependentUpon>ShaderTestVolumetric3a.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric4.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric4.designer.cs">
+      <DependentUpon>ShaderTestVolumetric4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric5.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric5.designer.cs">
+      <DependentUpon>ShaderTestVolumetric5.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric6.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric6.designer.cs">
+      <DependentUpon>ShaderTestVolumetric6.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric7.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetric7.designer.cs">
+      <DependentUpon>ShaderTestVolumetric7.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetricNoise.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
+      <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Compute\ShaderTestVertexCompute.resx">
+      <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TestControls.resx">
+      <DependentUpon>TestControls.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestDynamicGrid.resx">
+      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Galaxy\TestGalaxy.resx">
+      <DependentUpon>TestGalaxy.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo2.resx">
+      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo1.resx">
+      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Geometry\ShaderTestGeoFind.resx">
+      <DependentUpon>ShaderTestGeoFind.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Geometry\ShaderTestGeoTest1.resx">
+      <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="TestMain2.resx">
+      <DependentUpon>TestMain2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestMain.resx">
+      <DependentUpon>TestMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="OpenTK.dll.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Sprites\ShaderTestPointSprites.resx">
+      <DependentUpon>ShaderTestPointSprites.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stars\ShaderTestStarDiscs.resx">
+      <DependentUpon>ShaderTestStarDiscs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stars\ShaderTestStarPoints.resx">
+      <DependentUpon>ShaderTestStarPoints.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Stars\ShaderTestStarPointsDiscs.resx">
+      <DependentUpon>ShaderTestStarPointsDiscs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Textures\ShaderTestBlendedShaderMultImages.resx">
+      <DependentUpon>ShaderTestBlendedShaderMultImages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Textures\ShaderTestGalaxyTexture.resx">
+      <DependentUpon>ShaderTestGalaxyTexture.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Uniformblocks\ShaderTestUniforms.resx">
+      <DependentUpon>ShaderTestUniforms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric.resx">
+      <DependentUpon>ShaderTestVolumetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric2.resx">
+      <DependentUpon>ShaderTestVolumetric2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric3.resx">
+      <DependentUpon>ShaderTestVolumetric3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric3a.resx">
+      <DependentUpon>ShaderTestVolumetric3a.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric4.resx">
+      <DependentUpon>ShaderTestVolumetric4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric5.resx">
+      <DependentUpon>ShaderTestVolumetric5.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric6.resx">
+      <DependentUpon>ShaderTestVolumetric6.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric7.resx">
+      <DependentUpon>ShaderTestVolumetric7.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\ShaderTestVolumetricNoise.resx">
+      <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Volumetrics\volumetricgeo2.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeo3.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeo4.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeo5.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeo3a.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeo6.glsl" />
+    <EmbeddedResource Include="Volumetrics\volumetricgeoNoise.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OFC\OFC.csproj">
+      <Project>{4cfa37d5-4182-4cae-afc3-7563a13b44ee}</Project>
+      <Name>OpenTKUtils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cubeobj.wobj" />
+    <None Include="Resources\cubeobj1.wobj" />
+    <None Include="Resources\dotted.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\dotted2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\EliteGalacticRegions.json" />
+    <None Include="Resources\galacticmapping.json" />
+    <None Include="Resources\golden.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Koltuk.wobj" />
+    <None Include="Resources\Logo8bpp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\moonmap1k.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\shoppinglist.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\smile5300-256x256x8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\textobj1.wobj" />
+    <None Include="Resources\wooden.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asteroid 2 texture one side mipmap levels 0 to 8.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asteroid 3 texture one side mipmap levels 0 to 8.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asteroid 4 texture one side mipmap levels 0 to 8 - Copy.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\asteroid texture one side mipmap levels 0 to 8.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lensflare_white2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lensflare0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\star_grey2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lensflare_white40.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lensflare_white64.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\star_grey64.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\heightmap7.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Galaxy_L.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Galaxy_L180.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Galaxy_L180-2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImportSphere.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StarFlare2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hamburgermenu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\2d.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\3d.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\chevron.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\minorPOI.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\mysteryPOI.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\nebula.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\planetaryNebula.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\planetFeatures.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\pulsar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\restrictedSectors.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\starCluster.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\stellarRemnant.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\surfacePOI.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\beacon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\blackHole.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\cometaryBody.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\deepSpaceOutpost.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\EDSMUnknown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\historicalLocation.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jumponiumRichSystem.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GoForward.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GoBackward.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GoToHomeSystem.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Perspective.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ShowGalaxy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\StarDots.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DrawLines.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\EliteMovement.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
