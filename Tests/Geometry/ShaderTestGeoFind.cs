@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC.GL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -75,7 +75,7 @@ namespace TestOpenTk
             {
                 GLRenderControl lines = GLRenderControl.Lines(1);
 
-                items.Add(new GLColourShaderWithWorldCoord(),"COSW" );
+                items.Add(new GLColorShaderWithWorldCoord(),"COSW" );
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines,
@@ -91,7 +91,7 @@ namespace TestOpenTk
             }
 
             var vert = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
-            var frag = new GLPLFragmentShaderFixedColour(Color.Yellow);
+            var frag = new GLPLFragmentShaderFixedColor(Color.Yellow);
             var shader = new GLShaderPipeline(vert, frag);
             items.Add(shader,"TRI");
 
@@ -121,7 +121,7 @@ namespace TestOpenTk
             geo.SetScreenCoords(e.Location, glwfc.Size);
 
             System.Diagnostics.Debug.WriteLine("Run find");
-            findrender.Execute(findshader, glwfc.RenderState, null, true);
+            findrender.Execute(findshader, glwfc.RenderState, discard:true);
             System.Diagnostics.Debug.WriteLine("Finish find");
 
             var res = geo.GetResult();
@@ -160,7 +160,7 @@ namespace TestOpenTk
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
     }

@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -39,7 +39,7 @@ namespace TestOpenTk
         {
             public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -87,7 +87,7 @@ namespace TestOpenTk
             gl3dcontroller.Start(glwfc,new Vector3(0, 0, -35000), new Vector3(135f, 0, 0), 0.31622F);
 
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl1 = GLRenderControl.Lines(1);
 
             float h = -1;
@@ -377,9 +377,9 @@ void main(void)
 
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int times = 1000;
                 System.Diagnostics.Debug.WriteLine("Start test");

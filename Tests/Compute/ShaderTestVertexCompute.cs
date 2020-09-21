@@ -1,7 +1,7 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -104,7 +104,7 @@ void main(void)
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.ZoomDistance = 100F;
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 0.1f;
-            glwfc.BackColour = Color.FromArgb(0, 0, 20);
+            glwfc.BackColor = Color.FromArgb(0, 0, 20);
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(120f, 0, 0f), 1F);
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
@@ -113,7 +113,7 @@ void main(void)
 
             // this bit is eye candy just to show its working
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl = GLRenderControl.Lines(1);
 
             rObjects.Add(items.Shader("COSW"),
@@ -214,7 +214,7 @@ void main(void)
             //gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
     }

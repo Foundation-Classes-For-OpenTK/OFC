@@ -23,23 +23,26 @@ namespace OFC
         [System.Flags]
         public enum MouseButtons { None = 0, Left = 1, Middle = 2, Right = 4, };
 
-        public GLMouseEventArgs(Point l) { Button = MouseButtons.None; Location = l; Clicks = 0; Delta = 0; Handled = false; Area = AreaType.Client; Alt = Control = Shift = false; }
-        public GLMouseEventArgs(MouseButtons b, Point l, int c, int delta, bool alt, bool ctrl, bool sh) { Button = MouseButtons.None; Location = l; Clicks = c; Delta = delta; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
-        public GLMouseEventArgs(MouseButtons b, Point l, int c, bool alt, bool ctrl, bool sh) { Button = b; Location = l; Clicks = c;Delta = 0; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
+        public GLMouseEventArgs(Point l) { Button = MouseButtons.None; WindowLocation = l; Clicks = 0; Delta = 0; Handled = false; Area = AreaType.Client; Alt = Control = Shift = false; }
+        public GLMouseEventArgs(MouseButtons b, Point l, int c, int delta, bool alt, bool ctrl, bool sh) { Button = MouseButtons.None; WindowLocation = l; Clicks = c; Delta = delta; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
+        public GLMouseEventArgs(MouseButtons b, Point l, int c, bool alt, bool ctrl, bool sh) { Button = b; WindowLocation = l; Clicks = c;Delta = 0; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
 
-        public MouseButtons Button { get; set; }
-        public Point Location { get; set; }
-        public Point ControlLocation { get; set; }
-        public int X { get { return Location.X; } }
-        public int Y { get { return Location.Y; } }
-        public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
-        public AreaType Area { get; set; }
+        public MouseButtons Button { get; set; }        
+        public Point WindowLocation { get; set; }       // Window position - set by GLWinForm etc across all of GL window
         public int Clicks { get; set; }
         public int Delta { get; set; }
         public bool Handled { get; set; }
         public bool Alt { get; private set; }
-        public bool Control { get; private set; }
         public bool Shift { get; private set; }
+
+        // FOR controls only
+        public Point ScreenCoord { get; set; }          // moved to screen coord space (takes into account viewport and screen coord scaling). Available via GlobalMouseMove
+
+        public Point ControlLocation { get; set; }      // the control location in screen coords.  Available to OnXXXevents etc
+        public Point Location { get; set; }             // Location within control
+        public bool Control { get; private set; }       // the control its within
+        public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
+        public AreaType Area { get; set; }
     }
 
     public class GLKeyEventArgs     // class so passed by ref

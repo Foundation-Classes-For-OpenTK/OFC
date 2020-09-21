@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC.GL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -107,7 +107,7 @@ void main(void)
         {
             public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -115,7 +115,7 @@ void main(void)
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -145,7 +145,7 @@ void main(void)
             };
 
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl1 = GLRenderControl.Lines(1);
 
             {

@@ -89,7 +89,8 @@ namespace OFC.GL4.Controls
         private void MouseMoved(GLMouseEventArgs e)
         {
             GLControlDisplay disp = FindDisplay();
-            GLBaseControl ctrl = disp.FindControlOver(e.Location);
+
+            GLBaseControl ctrl = disp.FindControlOver(e.ScreenCoord);
 
             if (mouseover != ctrl)        // moved into new control or out of it
             {
@@ -103,13 +104,13 @@ namespace OFC.GL4.Controls
                 {
                     if (ctrl.ToolTipText.HasChars())
                     {
-                        System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.Location);
+                        System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Start(AutomaticDelay);     // start timer
-                        showloc = entryloc = e.Location;
+                        showloc = entryloc = e.ScreenCoord;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("No Tooltip Found " + ctrl.Name + " " + e.Location);
+                        System.Diagnostics.Debug.WriteLine("No Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Stop();
                     }
                 }
@@ -120,16 +121,16 @@ namespace OFC.GL4.Controls
             {       // in same control
                 if (timer.Running)
                 {
-                    int delta2 = (e.Location.X - entryloc.X) * (e.Location.X - entryloc.X) + (e.Location.Y + entryloc.Y) * (e.Location.Y + entryloc.Y);
+                    int delta2 = (e.ScreenCoord.X - entryloc.X) * (e.ScreenCoord.X - entryloc.X) + (e.ScreenCoord.Y + entryloc.Y) * (e.ScreenCoord.Y + entryloc.Y);
 
                     if (delta2 > 16)
                     {
-                        entryloc = e.Location;
+                        entryloc = e.ScreenCoord;
                         timer.Start(AutomaticDelay);        // moved within control, restart
                         System.Diagnostics.Debug.WriteLine("Restart " + mouseover.Name);
                     }
 
-                    showloc = e.Location;
+                    showloc = e.ScreenCoord;
                 }
             }
         }

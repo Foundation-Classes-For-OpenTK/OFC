@@ -119,8 +119,8 @@ namespace TestOpenTk
             
             // regions
 
-            var vertregion = new GLPLVertexShaderFixedColourPalletWorldCoords(array.ToVector4(0.1f));
-            var fragregion = new GLPLFragmentShaderVSColour();
+            var vertregion = new GLPLVertexShaderFixedColorPalletWorldCoords(array.ToVector4(0.1f));
+            var fragregion = new GLPLFragmentShaderVSColor();
 
             regionshader = new GLShaderPipeline(vertregion, fragregion, null, null);
 
@@ -132,7 +132,7 @@ namespace TestOpenTk
             // outlines
 
             var vertoutline = new GLPLVertexShaderWorldCoord();
-            var fragoutline = new GLPLFragmentShaderFixedColour(Color.Cyan);
+            var fragoutline = new GLPLFragmentShaderFixedColor(Color.Cyan);
 
             outlineshader = new GLShaderPipeline(vertoutline, fragoutline, null, null);
             GLRenderControl ro = GLRenderControl.LineStrip();

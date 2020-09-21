@@ -15,7 +15,6 @@
 
 using System;
 using OpenTK.Graphics.OpenGL4;
-using OFC.Common;
 
 namespace OFC.GL4
 {

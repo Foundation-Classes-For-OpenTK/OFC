@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -93,7 +93,7 @@ void main(void)
         {
             public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -101,7 +101,7 @@ void main(void)
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -131,7 +131,7 @@ void main(void)
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl1 = GLRenderControl.Lines(1);
 
             {
@@ -266,9 +266,9 @@ void main(void)
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int times = 1000;
                 System.Diagnostics.Debug.WriteLine("Start test");

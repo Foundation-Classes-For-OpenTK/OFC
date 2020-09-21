@@ -93,6 +93,14 @@ namespace OFC.GL4
             new Vector2(0, 0),
         };
 
+        static public Vector2[] TexQuadInv = new Vector2[]
+        {
+            new Vector2(0, 0),
+            new Vector2(1.0f, 0),
+            new Vector2(1.0f, 1.0f),
+            new Vector2(0, 1.0f),
+        };
+
         public static Vector4[] CreateQuad2(float width, float height, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f)
         {
             width = width / 2.0f * scale;

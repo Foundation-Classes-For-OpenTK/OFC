@@ -20,48 +20,6 @@ namespace OFC
 {
     public static class BitMapHelpers
     {
-        public static Bitmap ReplaceColourInBitmap(Bitmap source, System.Drawing.Imaging.ColorMap[] remap)
-        {
-            Bitmap newmap = new Bitmap(source.Width, source.Height);
-
-            System.Drawing.Imaging.ImageAttributes ia = new System.Drawing.Imaging.ImageAttributes();
-            ia.SetRemapTable(remap, System.Drawing.Imaging.ColorAdjustType.Bitmap);
-
-            using (Graphics gr = Graphics.FromImage(newmap))
-                gr.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, ia);
-
-            return newmap;
-        }
-
-        public static Bitmap ScaleColourInBitmap(Bitmap source, System.Drawing.Imaging.ColorMatrix cm)
-        {
-            Bitmap newmap = new Bitmap(source.Width, source.Height);
-
-            System.Drawing.Imaging.ImageAttributes ia = new System.Drawing.Imaging.ImageAttributes();
-            ia.SetColorMatrix(cm);
-
-            using (Graphics gr = Graphics.FromImage(newmap))
-                gr.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, ia);
-
-            return newmap;
-        }
-
-        public static Bitmap ScaleColourInBitmapSideBySide(Bitmap source, Bitmap source2, System.Drawing.Imaging.ColorMatrix cm)
-        {
-            Bitmap newmap = new Bitmap(source.Width + source2.Width, Math.Max(source.Height, source2.Height));
-
-            System.Drawing.Imaging.ImageAttributes ia = new System.Drawing.Imaging.ImageAttributes();
-            ia.SetColorMatrix(cm);
-
-            using (Graphics gr = Graphics.FromImage(newmap))
-            {
-                gr.DrawImage(source, new Rectangle(0, 0, source.Width, source.Height), 0, 0, source.Width, source.Height, GraphicsUnit.Pixel, ia);
-                gr.DrawImage(source2, new Rectangle(source.Width, 0, source2.Width, source2.Height), 0, 0, source2.Width, source2.Height, GraphicsUnit.Pixel, ia);
-            }
-
-            return newmap;
-        }
-
         public static void DrawTextCentreIntoBitmap(ref Bitmap img, string text, Font dp, Color c, Color? b = null)
         {
             using (Graphics bgr = Graphics.FromImage(img))
@@ -284,7 +242,7 @@ namespace OFC
                     else
                         res = Color.FromArgb(255, (int)(red / points), (int)(blue / points), (int)(green / points));
 
-                    newbmp.SetPixel(flipx ? (newbmp.Width-1-gx) : gx, flipy ? (newbmp.Height-1- gy) : gy, res);
+                    newbmp.SetPixel(flipx ? (newbmp.Width - 1 - gx) : gx, flipy ? (newbmp.Height - 1 - gy) : gy, res);
                 }
 
             }
@@ -305,6 +263,59 @@ namespace OFC
                         return g.MeasureString(text, f, new Size(10000, 10000));
                 }
             }
+        }
+
+        public static byte[] GetARGBBytes(this Bitmap bmp)
+        {
+            System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                            System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);     // 32 bit words, ARGB format
+
+            int bytecount = bmp.Width * bmp.Height * 4;
+            byte[] destbytes = new byte[bytecount];
+            System.Runtime.InteropServices.Marshal.Copy(bmpdata.Scan0, destbytes, 0, bytecount);      // stored blue,green,red,alpha
+
+            bmp.UnlockBits(bmpdata);
+            return destbytes;
+        }
+
+        public static Bitmap CreateBitmapFromARGBBytes(int width , int height, byte[] argb)
+        {
+            Bitmap b = new Bitmap(width,height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            System.Drawing.Imaging.BitmapData bmpdata = b.LockBits(new Rectangle(0,0,width,height), System.Drawing.Imaging.ImageLockMode.ReadWrite,
+                                                        b.PixelFormat);
+
+            IntPtr baseptr = bmpdata.Scan0;     // its a byte ptr
+            int bytes = width * height * 4;
+            System.Runtime.InteropServices.Marshal.Copy(argb, 0, baseptr, bytes);
+
+            b.UnlockBits(bmpdata);
+            return b;
+        }
+
+        public static void DumpBitmap(this Bitmap bmp, int maxy = int.MaxValue)
+        {
+            System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
+                            System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);     // 32 bit words, ARGB format
+
+            IntPtr baseptr = bmpdata.Scan0;     // its a byte ptr
+
+            for (int y = 0; y < Math.Min(bmp.Height,maxy); y++)
+            {
+                for (int x = 0; x < bmp.Width; x++)
+                {
+                    int v = System.Runtime.InteropServices.Marshal.ReadInt32(baseptr);  // ARBG
+                    baseptr += 4;
+
+                    uint alpha = (uint)((v >> 24) & 0xff);
+                    uint red = (uint)((v >> 16) & 0xff);
+                    uint blue = (uint)((v >> 8) & 0xff);
+                    uint green = (uint)((v >> 0) & 0xff);
+                    System.Diagnostics.Debug.WriteLine("{0} {1} : a{2} r{3} g{4} b{5}", x, y, alpha, red, blue, green);
+                }
+            }
+
+            bmp.UnlockBits(bmpdata);
         }
     }
 }

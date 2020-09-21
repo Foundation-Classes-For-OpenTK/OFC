@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -50,8 +50,23 @@ namespace TestOpenTk
         {
             public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
+        }
+
+        class MatrixCalcSpecial : GLMatrixCalc
+        {
+            public override void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
+            {
+                if (!(sender is Controller3D))         // ignore from 3dcontroller as it also sends it, but it will be reporting the size of the display window
+                {
+                    int margin = 10;
+                    ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
+                    SetViewPort();
+                }
+            }
+
+
         }
 
         protected override void OnLoad(EventArgs e)
@@ -104,7 +119,7 @@ namespace TestOpenTk
             float h = 0;
             if ( h != -1)
             {
-                items.Add(new GLColourShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
 
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
@@ -137,8 +152,8 @@ namespace TestOpenTk
             }
 
             {
-                items.Add(new GLFixedColourShaderWithWorldCoord(Color.FromArgb(150, Color.Green)), "FCS1");
-                items.Add(new GLFixedColourShaderWithWorldCoord(Color.FromArgb(80, Color.Red)), "FCS2");
+                items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(150, Color.Green)), "FCS1");
+                items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(80, Color.Red)), "FCS2");
 
                 GLRenderControl rq = GLRenderControl.Quads();
 
@@ -149,6 +164,10 @@ namespace TestOpenTk
                     GLRenderableItem.CreateVector4(items, rq,
                                                 GLShapeObjectFactory.CreateQuad(1000, pos: new Vector3(4000, 1000, 0))));
             }
+
+            MatrixCalcSpecial mc = new MatrixCalcSpecial();
+            mc.PerspectiveNearZDistance = 1f;
+            mc.PerspectiveFarZDistance = 500000f;
 
             if (true)
             {
@@ -173,12 +192,16 @@ namespace TestOpenTk
 
                 //GLBaseControl.DefaultControlBackColor = Color.Orange;
 
-                displaycontrol = new GLControlDisplay(items, glwfc);       // hook form to the window - its the master
+                //mc.ScreenCoordMax = glwfc.Size;
+                mc.ScreenCoordMax = new Size(2048, 1024);
+                mc.ResizeViewPort(this,glwfc.Size);          // must establish size before starting
+                mc.ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
+                mc.ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
+
+                displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
                 displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
                 displaycontrol.Name = "displaycontrol";
                 displaycontrol.SuspendLayout();
-
-
 
                 if (testform1)
                 {
@@ -348,6 +371,7 @@ namespace TestOpenTk
                         b2.ImageAlign = ContentAlignment.MiddleLeft;
                         b2.TextAlign = ContentAlignment.MiddleRight;
                         b2.Click += (c, ev) => { MsgDialog(); };
+                        b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
                         p2.Add(b2);
 
                         GLCheckBox cb1 = new GLCheckBox("CB1", new Rectangle(5, 100, 100, 20), "Check Box 1");
@@ -387,7 +411,7 @@ namespace TestOpenTk
 
                 if (testform2)
                 {
-                    GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(500, 0, 1000, 800));
+                    GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 900, 800));
                     pform2.BackColor = Color.FromArgb(200, Color.Red);
                     pform2.Font = new Font("Ms sans serif", 12);
                     pform2.SuspendLayout();
@@ -449,11 +473,7 @@ namespace TestOpenTk
 
             }
 
-
-            gl3dcontroller = new Controller3D();    
-
-            gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
-            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance = 500000f;
+            gl3dcontroller = new Controller3D();
             gl3dcontroller.ZoomDistance = 5000F;
             gl3dcontroller.EliteMovement = true;
             gl3dcontroller.PaintObjects = Controller3dDraw;
@@ -467,7 +487,8 @@ namespace TestOpenTk
 
             if ( displaycontrol != null )
             {
-                gl3dcontroller.Start(displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
+                PositionCamera pc = new PositionCamera();
+                gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
                 displaycontrol.Paint += (o) =>        // subscribing after start means we paint over the scene, letting transparency work
                 {                                 

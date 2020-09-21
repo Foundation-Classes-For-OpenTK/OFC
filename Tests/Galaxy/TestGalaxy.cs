@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;

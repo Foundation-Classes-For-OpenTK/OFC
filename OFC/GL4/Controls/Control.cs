@@ -861,7 +861,7 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseLeave(GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
+            System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
             MouseLeave?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
@@ -870,7 +870,7 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseEnter(GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location);
+            System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location);
             MouseEnter?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)

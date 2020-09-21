@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OFC.GL4;
 using OpenTK.Graphics.OpenGL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -148,7 +148,7 @@ void main(void)
             {
                 GLRenderControl lines = GLRenderControl.Lines(1);
 
-                items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+                items.Add(new GLColorShaderWithWorldCoord(), "COSW");
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines,
@@ -164,7 +164,7 @@ void main(void)
             }
 
             var vert = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation2();
-            var frag = new GLPLFragmentShaderVSColour();
+            var frag = new GLPLFragmentShaderVSColor();
             var shader = new GLShaderPipeline(vert, frag);
             items.Add(shader, "TRI");
 
@@ -216,7 +216,7 @@ void main(void)
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
     }

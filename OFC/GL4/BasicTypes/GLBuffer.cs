@@ -11,10 +11,10 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
- 
-using System;
+
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
+using System;
 
 namespace OFC.GL4
 {
@@ -214,7 +214,7 @@ namespace OFC.GL4
         public void Fill(byte[] data)      
         {
             int datasize = data.Length;
-            int pos = AlignArray(sizeof(byte), datasize);        //tbd
+            int pos = AlignArray(sizeof(byte), datasize);     
             if (data.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)pos, datasize, data);

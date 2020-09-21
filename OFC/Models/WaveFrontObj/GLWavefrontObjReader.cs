@@ -1,12 +1,24 @@
-﻿using OpenTK;
+﻿/*
+ * Copyright 2019-2020 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OFC
+namespace OFC.WaveFront
 {
     public class GLWaveformObjReader
     {
@@ -132,7 +144,6 @@ namespace OFC
                             reader_current = Create(reader_current == null || (reader_current.Objecttype != GLWaveformObject.ObjectType.Polygon && reader_current.Objecttype != GLWaveformObject.ObjectType.Unassigned));
                             reader_current.Objecttype = GLWaveformObject.ObjectType.Polygon;
 
-                            // tbd neg
                             foreach (string w in words)
                             {
                                 string[] comps = w.Split('/');
@@ -145,9 +156,9 @@ namespace OFC
                                         throw new Exception("New texture index but previous was missing them");
 
                                     if (ti < 0)
-                                            ti = reader_vertices.TextureVertices.Count + ti;
-                                        else if (ti >= 1)
-                                            ti--;
+                                        ti = reader_vertices.TextureVertices.Count + ti;
+                                    else if (ti >= 1)
+                                        ti--;
 
                                     ti = Math.Min(Math.Max(ti, 0), reader_vertices.TextureVertices.Count - 1);
                                     reader_current.Indices.TextureIndices.Add((uint)ti);

@@ -64,6 +64,40 @@ namespace OFC.GL4
             }
         }
 
+        public void CreateOrUpdateTexturePixelFormat(int width, int height, PixelInternalFormat pi, PixelFormat pf, PixelType pt)   // make with a pixel format..
+        {
+            if (Id == -1 || Width != width || Height != height)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            {
+                if (Id != -1)
+                {
+                    Dispose();
+                }
+
+                InternalFormat = 0;         // PixelInternalFormat does not fit within this, so zero it
+                Width = width;
+                Height = height;
+
+                GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
+                Id = id;
+
+                GL.BindTexture(TextureTarget.Texture2D, Id);
+
+                GL.TexImage2D(TextureTarget.Texture2D, 0, pi, width, height, 0, pf, pt, (IntPtr)0);     // we don't actually load data in, so its a null ptr.
+
+                OFC.GLStatics.Check();
+            }
+        }
+
+        public void CreateDepthBuffer(int width, int height)
+        {
+            CreateOrUpdateTexturePixelFormat(width, height, OpenTK.Graphics.OpenGL4.PixelInternalFormat.DepthComponent32f, OpenTK.Graphics.OpenGL4.PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+        }
+
+        public void CreateDepthStencilBuffer(int width, int height)
+        {
+            CreateOrUpdateTexturePixelFormat(width, height, OpenTK.Graphics.OpenGL4.PixelInternalFormat.Depth32fStencil8, OpenTK.Graphics.OpenGL4.PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+        }
+
         // You can reload the bitmap, it will create a new Texture if required
 
         public void LoadBitmap(Bitmap bmp, int bitmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)

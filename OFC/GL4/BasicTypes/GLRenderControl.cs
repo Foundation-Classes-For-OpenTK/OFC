@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC
+namespace OFC.GL4
 {
     // Wraps the openGL main state variables in a class so they get selected correctly for each render.
 
@@ -84,6 +84,7 @@ namespace OFC
                 LineWidth = 1,
                 LineSmooth = true,
                 PrimitiveRestart = null,
+//                Scissors = null,                
             };
         }
 
@@ -98,10 +99,11 @@ namespace OFC
                 BlendEnable = null,
                 BlendSource = null,
                 BlendDest = null,
+  //              Scissors = null,
             };
         }
 
-        public void ApplyState( GLRenderControl newstate )      // apply deltas to GL
+        public void ApplyState( GLRenderControl newstate, GLMatrixCalc mc)      // apply deltas to GL
         {
             // general
 
@@ -237,6 +239,28 @@ namespace OFC
                 FrontFace = newstate.FrontFace;
                 GL.FrontFace(FrontFace.Value);
             }
+
+            //works but, its in screencoords, it needs to be adjusted if the screen scales..
+            //        if we got a matrixcalc, we would know the screen size.
+            //        and could scale.
+
+
+            //if (newstate.Scissors != null)              // if newstate cares to change scissors
+            //{
+            //    System.Diagnostics.Debug.WriteLine("Scissor len " + newstate.Scissors.Length);
+            //    if (newstate.Scissors.Length == 0)      // if an empty array, it wants them off
+            //    {
+            //        System.Diagnostics.Debug.WriteLine("Scissor off");
+            //        GL.Disable(EnableCap.ScissorTest);
+            //    }
+            //    else
+            //    {
+            //        System.Diagnostics.Debug.WriteLine("Scissor on");
+            //        GL.ScissorArray(0, newstate.Scissors.Length / 4, newstate.Scissors);
+            //        GL.Enable(EnableCap.ScissorTest);
+            //    }
+            //    Scissors = newstate.Scissors;
+            //}
         }
 
         private GLRenderControl(PrimitiveType p)
@@ -270,6 +294,15 @@ namespace OFC
         public bool? BlendEnable { get;  set; } = true;             
         public BlendingFactor? BlendSource { get;  set;} = BlendingFactor.SrcAlpha;     
         public BlendingFactor? BlendDest { get;  set;} = BlendingFactor.OneMinusSrcAlpha;
+
+        // blend equation..
+
+        //public int[] Scissors = null;
+
+        //// viewport page 362 - geo shader can specify a gl_ViewportIndex
+
+        //public float[] ViewPortCoords = null;
+        //public double[] ViewPortDepth = null;
     }
 
 }

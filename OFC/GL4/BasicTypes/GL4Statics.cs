@@ -13,10 +13,8 @@
  */
 
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Runtime.CompilerServices;
 
-namespace OFC
+namespace OFC.GL4
 {
     public static class GL4Statics
     {
@@ -38,6 +36,21 @@ namespace OFC
                 return 0xffff;
             else
                 return 0xffffffff;
+        }
+
+        public static int ElementsPerPixel(PixelFormat pxformatback)
+        {
+            if (pxformatback == PixelFormat.Rgba || pxformatback == PixelFormat.Bgra)
+                return 4;
+            else if (pxformatback == PixelFormat.Rg)
+                return 2;
+            else if (pxformatback == PixelFormat.Red || pxformatback == PixelFormat.Green || pxformatback == PixelFormat.Blue)
+                return 1;
+            else if (pxformatback == PixelFormat.Rgb || pxformatback == PixelFormat.Bgr)
+                return 3;
+            else
+                System.Diagnostics.Debug.Assert(false, "Not supported px format");
+            return 0;
         }
     }
 }

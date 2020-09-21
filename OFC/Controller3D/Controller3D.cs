@@ -15,13 +15,12 @@
  */
 
 using OpenTK;
-using OpenTK.Graphics.OpenGL;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace OFC.Common
+namespace OFC.Controller
 {
     // class brings together keyboard, mouse, posdir, zoom to provide a means to move thru the playfield and zoom.
     // handles keyboard actions and mouse actions to provide a nice method of controlling the 3d playfield
@@ -32,8 +31,6 @@ namespace OFC.Common
         public float ZoomDistance { get { return PosCamera.Zoom1Distance; } set { PosCamera.Zoom1Distance = value; } }
 
         private GLWindowControl glwin;
-      
-        public float ProjectionZNear { get; private set; }                      // out, near Z clip
 
         public Func<int, float, float> KeyboardTravelSpeed;                     // optional set to scale travel key commands given this time interval and camera distance
         public Func<int, float> KeyboardRotateSpeed;                            // optional set to scale camera key rotation commands given this time interval
@@ -47,8 +44,21 @@ namespace OFC.Common
 
         public int LastHandleInterval;                      // set after handlekeyboard, how long since previous one was handled in ms
 
-        public GLMatrixCalc MatrixCalc { get; private set; } = new GLMatrixCalc();
+        public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
         public PositionCamera PosCamera { get; private set; } = new PositionCamera();
+
+        public void Start(GLMatrixCalc mc, PositionCamera pc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
+        {
+            MatrixCalc = mc;
+            PosCamera = pc;
+            Start(win, lookat, cameradirdegrees, zoomn);
+        }
+
+        public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
+        {
+            MatrixCalc = mc;
+            Start(win, lookat, cameradirdegrees, zoomn);
+        }
 
         public void Start(GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
         {
@@ -63,11 +73,11 @@ namespace OFC.Common
             win.KeyDown += glControl_KeyDown;
             win.KeyUp += glControl_KeyUp;
 
-            PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
+            MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
 
-            MatrixCalc.ScreenSize = win.Size;
+            PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
             MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
-            SetModelProjectionMatrixViewPort();
+            MatrixCalc.CalculateProjectionMatrix();
 
             sysinterval.Start();
         }
@@ -92,7 +102,7 @@ namespace OFC.Common
         {
             MatrixCalc.InPerspectiveMode = on;
             MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
-            SetModelProjectionMatrixViewPort();
+            MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
         }
 
@@ -165,17 +175,13 @@ namespace OFC.Common
 
         #region Implementation
 
-        private void GlControl_Resize(object sender)          
+        private void GlControl_Resize(object sender)          // from the window, a resize event
         {
-            MatrixCalc.ScreenSize = glwin.Size;
-            SetModelProjectionMatrixViewPort();
+            System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
+            MatrixCalc.ResizeViewPort(this,glwin.Size);
+            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
+            MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
-        }
-
-        private void SetModelProjectionMatrixViewPort()
-        {
-            MatrixCalc.CalculateProjectionMatrix(out float zn);
-            ProjectionZNear = zn;
         }
 
         // Paint the scene - just pass the call down to the installed PaintObjects
@@ -189,27 +195,25 @@ namespace OFC.Common
         {
             KillSlews();
 
-            mouseDownPos.X = e.X;
-            mouseDownPos.Y = e.Y;
+            mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
             if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Left))
             {
-                mouseStartRotate.X = e.X;
-                mouseStartRotate.Y = e.Y;
+                mouseStartRotate = mouseDownPos;
             }
 
             if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Right))
             {
-                mouseStartTranslateXY.X = e.X;
-                mouseStartTranslateXY.Y = e.Y;
-                mouseStartTranslateXZ.X = e.X;
-                mouseStartTranslateXZ.Y = e.Y;
+                mouseStartTranslateXY = mouseDownPos;
+                mouseStartTranslateXZ = mouseDownPos;
             }
         }
 
         private void glControl_MouseUp(object sender, GLMouseEventArgs e)
         {
-            bool notmovedmouse = Math.Abs(e.X - mouseDownPos.X) + Math.Abs(e.Y - mouseDownPos.Y) < 4;
+            var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+
+            bool notmovedmouse = Math.Abs(mousepos.X - mouseDownPos.X) + Math.Abs(mousepos.Y - mouseDownPos.Y) < 4;
 
             if (!notmovedmouse)     // if we moved it, its not a stationary click, ignore
                 return;
@@ -223,16 +227,17 @@ namespace OFC.Common
 
         private void glControl_MouseMove(object sender, GLMouseEventArgs e)
         {
+            var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
                 if (MatrixCalc.InPerspectiveMode && mouseStartRotate.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
                     KillSlews();
-                    int dx = e.X - mouseStartRotate.X;
-                    int dy = e.Y - mouseStartRotate.Y;
+                    int dx = mousepos.X - mouseStartRotate.X;
+                    int dy = mousepos.Y - mouseStartRotate.Y;
 
-                    mouseStartRotate.X = mouseStartTranslateXZ.X = e.X;
-                    mouseStartRotate.Y = mouseStartTranslateXZ.Y = e.Y;
+                    mouseStartTranslateXZ = mouseStartRotate = mousepos;
 
                     PosCamera.RotateCamera(new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
                 }
@@ -243,11 +248,11 @@ namespace OFC.Common
                 {
                     KillSlews();
 
-                    int dx = e.X - mouseStartTranslateXY.X;
-                    int dy = e.Y - mouseStartTranslateXY.Y;
+                    int dx = mousepos.X - mouseStartTranslateXY.X;
+                    int dy = mousepos.Y - mouseStartTranslateXY.Y;
 
-                    mouseStartTranslateXY.X = mouseStartTranslateXZ.X = e.X;
-                    mouseStartTranslateXY.Y = mouseStartTranslateXZ.Y = e.Y;
+                    mouseStartTranslateXZ = mouseStartRotate = mousepos;
+
                     //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
 
                     PosCamera.Translate(new Vector3(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
@@ -259,11 +264,11 @@ namespace OFC.Common
                 {
                     KillSlews();
 
-                    int dx = e.X - mouseStartTranslateXZ.X;
-                    int dy = e.Y - mouseStartTranslateXZ.Y;
+                    int dx = mousepos.X - mouseStartTranslateXZ.X;
+                    int dy = mousepos.Y - mouseStartTranslateXZ.Y;
 
-                    mouseStartTranslateXZ.X = mouseStartRotate.X = mouseStartTranslateXY.X = e.X;
-                    mouseStartTranslateXZ.Y = mouseStartRotate.Y = mouseStartTranslateXY.Y = e.Y;
+                    mouseStartTranslateXZ = mouseStartRotate = mouseStartTranslateXY = mousepos;
+
                     Vector3 translation = new Vector3(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
 
                     if (MatrixCalc.InPerspectiveMode)
@@ -290,7 +295,7 @@ namespace OFC.Common
                 {
                     if (MatrixCalc.FovScale(e.Delta < 0))
                     {
-                        SetModelProjectionMatrixViewPort();
+                        MatrixCalc.CalculateProjectionMatrix();
                         glwin.Invalidate();
                     }
                 }

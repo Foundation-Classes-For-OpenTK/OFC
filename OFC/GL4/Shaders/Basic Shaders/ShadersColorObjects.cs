@@ -15,8 +15,6 @@
 
 
 using System;
-using OpenTK;
-using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
@@ -27,11 +25,11 @@ namespace OFC.GL4
     //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
     //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
 
-    public class GLColourShaderWithObjectTranslation : GLShaderPipeline
+    public class GLColorShaderWithObjectTranslation : GLShaderPipeline
     {
-        public GLColourShaderWithObjectTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLColorShaderWithObjectTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColourModelCoordWithObjectTranslation(), new GLPLFragmentShaderVSColour());
+            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderVSColor());
         }
     }
 
@@ -41,11 +39,11 @@ namespace OFC.GL4
     //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
     //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
 
-    public class GLFixedColourShaderWithObjectTranslation : GLShaderPipeline
+    public class GLFixedColorShaderWithObjectTranslation : GLShaderPipeline
     {
-        public GLFixedColourShaderWithObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLFixedColorShaderWithObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColourModelCoordWithObjectTranslation(), new GLPLFragmentShaderFixedColour(c));
+            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
         }
     }
 
@@ -56,11 +54,11 @@ namespace OFC.GL4
     //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
     //      uniform 25 colour of object
 
-    public class GLUniformColourShaderWithObjectTranslation : GLShaderPipeline
+    public class GLUniformColorShaderWithObjectTranslation : GLShaderPipeline
     {
-        public GLUniformColourShaderWithObjectTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLUniformColorShaderWithObjectTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColourModelCoordWithObjectTranslation(), new GLPLFragmentShaderUniformColour());
+            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderUniformColor());
         }
     }
 
@@ -70,11 +68,11 @@ namespace OFC.GL4
     //      location 1 vec4 colours of each vertex
     //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
 
-    public class GLColourShaderWithWorldCoord : GLShaderPipeline
+    public class GLColorShaderWithWorldCoord : GLShaderPipeline
     {
-        public GLColourShaderWithWorldCoord(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLColorShaderWithWorldCoord(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColourWorldCoord(), new GLPLFragmentShaderVSColour());
+            AddVertexFragment(new GLPLVertexShaderColorWorldCoord(), new GLPLFragmentShaderVSColor());
         }
     }
 
@@ -83,11 +81,11 @@ namespace OFC.GL4
     //      location 0 vec4 positions of world positions
     //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
 
-    public class GLFixedColourShaderWithWorldCoord : GLShaderPipeline
+    public class GLFixedColorShaderWithWorldCoord : GLShaderPipeline
     {
-        public GLFixedColourShaderWithWorldCoord(System.Drawing.Color c, Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLFixedColorShaderWithWorldCoord(System.Drawing.Color c, Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+            AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
         }
     }
 

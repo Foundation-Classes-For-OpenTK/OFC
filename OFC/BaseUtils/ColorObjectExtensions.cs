@@ -17,7 +17,7 @@
 using System;
 using System.Drawing;
 
-public static class ObjectExtensionsColours
+public static class ObjectExtensionsColors
 {
     /// <summary>
     /// Determine if two colors are both fully transparent or are otherwise equal in value, ignoring

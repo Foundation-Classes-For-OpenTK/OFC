@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -96,7 +96,7 @@ namespace TestOpenTk
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl1 = GLRenderControl.Lines(1);
 
             float h = -1;
@@ -138,7 +138,7 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
                 };
 
-                items.Add(new GLFixedColourShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
+                items.Add(new GLFixedColorShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
                 GLRenderableItem.CreateVector4(items, rl1, displaylines));
             }
@@ -265,7 +265,7 @@ namespace TestOpenTk
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
-                float[] gdata = gaussiantex.GetTextureImageAsFloats(OpenTK.Graphics.OpenGL4.PixelFormat.Red); // read back check
+                float[] gdata = gaussiantex.GetTextureImageAs<float>(OpenTK.Graphics.OpenGL4.PixelFormat.Red); // read back check
 
                 // load one upside down and horz flipped, because the volumetric co-ords are 0,0,0 bottom left, 1,1,1 top right
                 GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180);
@@ -365,9 +365,9 @@ void main(void)
 
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int times = 1000;
                 System.Diagnostics.Debug.WriteLine("Start test");

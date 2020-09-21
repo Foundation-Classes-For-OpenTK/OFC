@@ -34,18 +34,18 @@ namespace OFC.WinForm
                 return base.IsInputKey(keyData);
         }
     }
-    
+
     public class GLWinFormControl : GLWindowControl
     {
         public GLControlKeyOverride glControl { get; private set; }      // use only in extreams for back compat
 
-        public Color BackColour { get { return backcolor; } set { backcolor = value; GL.ClearColor(backcolor); } }
+        public Color BackColor { get { return backcolor; } set { backcolor = value; } }
         public int Width { get { return glControl.Width; } }
         public int Height { get { return glControl.Height; } }
         public Size Size { get { return glControl.Size; } }
         public bool Focused { get { return glControl.Focused; } }
-        public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)),glControl.ClientRectangle.Size); } }
-        public GLRenderControl RenderState { get; set; } = null;
+        public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
+        public GL4.GLRenderControl RenderState { get; set; } = null;
         public bool MakeCurrentOnPaint { get; set; } = false;           // set if using multiple opengl in one thread
 
         public Action<Object, GLMouseEventArgs> MouseDown { get; set; } = null;
@@ -102,6 +102,11 @@ namespace OFC.WinForm
                 glControl.Cursor = Cursors.Default;
         }
 
+        //public void RestoreViewPort()
+        //{
+        //    GL.Viewport(0, 0, glControl.Width, glControl.Height);                        // Use all of the glControl painting area
+        //}
+
         private GLControlKeyOverride CreateGLClass()
         {
             GLControlKeyOverride gl;
@@ -115,6 +120,7 @@ namespace OFC.WinForm
             
             return gl;
         }
+
 
         private void Gl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)    // all keys are for us
         {
@@ -217,7 +223,7 @@ namespace OFC.WinForm
 
         private void Gc_Resize(object sender, EventArgs e)
         {
-            GL.Viewport(0, 0, glControl.Width, glControl.Height);                        // Use all of the glControl painting area
+           // GL.Viewport(0, 0, glControl.Width, glControl.Height);                        // Use all of the glControl painting area
             Resize?.Invoke(this);
         }
 
@@ -228,13 +234,18 @@ namespace OFC.WinForm
             if ( MakeCurrentOnPaint )
                 glControl.MakeCurrent();    // only needed if running multiple GLs windows in same thread
 
+            GL.Disable(EnableCap.ScissorTest);      // clear takes account of scissors, so we must clear the state
+
+            GL.ClearColor(backcolor);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);  // note renderdiscard affects this..
 
             if ( RenderState == null )
             {
-                RenderState = GLRenderControl.AllNull();
-                RenderState.ApplyState(GLRenderControl.DefaultStartState());
+                RenderState = GL4.GLRenderControl.AllNull();
+                RenderState.ApplyState(GL4.GLRenderControl.DefaultStartState(),null);
             }
+
+            //RenderState.Scissors = new int[0];          // we are in scissors off.
 
             Paint?.Invoke(glControl);
 

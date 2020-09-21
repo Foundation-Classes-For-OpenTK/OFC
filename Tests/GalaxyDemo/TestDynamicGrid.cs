@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -122,7 +122,7 @@ namespace TestOpenTk
             };
 
             {
-                items.Add( new GLFixedColourShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
+                items.Add( new GLFixedColorShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
                 GLRenderControl rl = GLRenderControl.Lines(1);
                 rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, rl, displaylines));
             }
@@ -144,7 +144,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new DynamicGridVertexShader(Color.Cyan), "PLGRIDVertShader");
-                items.Add(new GLPLFragmentShaderVSColour(), "PLGRIDFragShader");
+                items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
                 GLRenderControl rl = GLRenderControl.Lines(1);
                 rl.DepthTest = false;
@@ -181,9 +181,9 @@ namespace TestOpenTk
             //    gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int times = 1000;
                 System.Diagnostics.Debug.WriteLine("Start test");

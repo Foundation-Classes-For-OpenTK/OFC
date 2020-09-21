@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC.GL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -99,7 +99,7 @@ void main(void)
             };
 
 
-            items.Add( new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add( new GLColorShaderWithWorldCoord(), "COSW");
             GLRenderControl rl1 = GLRenderControl.Lines(1);
 
             {
@@ -155,24 +155,24 @@ void main(void)
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(0, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F2, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(4, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F3, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(10, 0, -10), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(50, 0, 50), 1, 2);
             }

@@ -78,7 +78,7 @@ namespace TestOpenTk
             geo.SetScreenCoords(l, screensize);
 
             GLStatics.Check();
-            rifind.Execute(findshader, state, null, true); // execute, discard
+            rifind.Execute(findshader, state, discard:true); // execute, discard
 
             var res = geo.GetResult();
             if (res != null)

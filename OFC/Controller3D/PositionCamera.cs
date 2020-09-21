@@ -19,7 +19,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace OFC.Common
+namespace OFC.Controller
 {
     public class PositionCamera       // holds lookat and eyepositions and camera
     {
@@ -190,8 +190,6 @@ namespace OFC.Common
 
         #region More Position functions not causing Slew to cancel
 
-        private Vector3 cameravector = new Vector3(0, 1, 0);        // camera vector, at CameraDir(0,0)
-
         public void SetPosition(Vector3 lookp, Vector3 eyeposp, float camerarotp = 0)     // set lookat/eyepos, rotation
         {
             lookat = lookp;
@@ -218,29 +216,16 @@ namespace OFC.Common
 
         public void SetEyePositionFromLookat(Vector2 cameradirdegreesp, float distance)              // from current lookat, set eyeposition, given a camera angle and a distance
         {
-            Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
-
-            transform *= Matrix3.CreateRotationX((float)(cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
-            transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
-
-            Vector3 eyerel = Vector3.Transform(cameravector, transform);       // the 0,1,0 sets the axis of the camera dir
-
-            eyeposition = lookat - eyerel * distance;
+            eyeposition = lookat.CalculateEyePositionFromLookat(cameradirdegreesp, distance);
             cameradir = cameradirdegreesp;
         }
 
         public void SetLookatPositionFromEye(Vector2 cameradirdegreesp, float distance)              // from current eye position, set lookat, given a camera angle and a distance
         {
-            Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
-
-            transform *= Matrix3.CreateRotationX((float)(cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
-            transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
-
-            Vector3 eyerel = Vector3.Transform(cameravector, transform);       // the 0,1,0 sets the axis of the camera dir
-
-            lookat = eyeposition + eyerel * distance;      
+            lookat = eyeposition.CalculateLookatPositionFromEye(cameradirdegreesp, distance);
             cameradir = cameradirdegreesp;
         }
+
 
         #endregion
 
@@ -413,12 +398,6 @@ namespace OFC.Common
                     }
                     else
                     {
-                        // we need to rotate components to get the X/Y/Z into the same meaning as the camera angles.
-
-                        
-                        
-                        // TBD
-
                         var cameramove = Matrix4.CreateTranslation(new Vector3(positionMovement.X,positionMovement.Z,-positionMovement.Y));
                         cameramove *= Matrix4.CreateRotationZ(CameraRotation.Radians());   // rotate the translation by the camera look angle
                         cameramove *= Matrix4.CreateRotationX(cameraDir.X.Radians());

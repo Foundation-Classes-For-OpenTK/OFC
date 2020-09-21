@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
@@ -60,7 +60,7 @@ namespace TestOpenTk
         {
             public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(c));
+                AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -174,7 +174,7 @@ namespace TestOpenTk
                                                 rt, numberposz.Length));
             }
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
 
             float h = 50;
             if (h != -1)
@@ -435,16 +435,16 @@ namespace TestOpenTk
             var cdmt = gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int times = 1000;
                 System.Diagnostics.Debug.WriteLine("Start test");
                 long tickcount = gl3dcontroller.Redraw(times);
                 System.Diagnostics.Debug.WriteLine("Redraw {0} ms per {1}", tickcount, (float)tickcount / (float)times);
             }
-            if (kb.HasBeenPressed(Keys.F5, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 IGLProgramShader ps = items.Shader("Galaxy");
                 if (ps != null)
@@ -453,7 +453,7 @@ namespace TestOpenTk
                     glwfc.Invalidate();
                 }
             }
-            if (kb.HasBeenPressed(Keys.F6, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 IGLProgramShader ps = items.Shader("SD");
                 if (ps != null)

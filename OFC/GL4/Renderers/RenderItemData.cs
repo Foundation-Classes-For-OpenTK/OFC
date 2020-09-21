@@ -136,17 +136,17 @@ namespace OFC.GL4
         private IGLTexture Texture;                      // set to bind texture.
     }
 
-    public class GLRenderDataTranslationRotationColour : GLRenderDataTranslationRotation
+    public class GLRenderDataTranslationRotationColor : GLRenderDataTranslationRotation
     {
         public int ColorBind { get; set; }
 
-        public GLRenderDataTranslationRotationColour(System.Drawing.Color c, Vector3 p, float rx = 0, float ry = 0, float rz = 0, float scale = 1.0f, int uniformbinding = 25) : base(p, rx, ry, rx, scale)
+        public GLRenderDataTranslationRotationColor(System.Drawing.Color c, Vector3 p, float rx = 0, float ry = 0, float rz = 0, float scale = 1.0f, int uniformbinding = 25) : base(p, rx, ry, rx, scale)
         {
             col = c;
             ColorBind = uniformbinding;
         }
 
-        public GLRenderDataTranslationRotationColour(System.Drawing.Color c, Vector3 p, Vector3 rotp, float scale = 1.0f, int uniformbinding = 25) : base(p, rotp, scale)
+        public GLRenderDataTranslationRotationColor(System.Drawing.Color c, Vector3 p, Vector3 rotp, float scale = 1.0f, int uniformbinding = 25) : base(p, rotp, scale)
         {
             col = c;
             ColorBind = uniformbinding;
@@ -184,11 +184,11 @@ namespace OFC.GL4
 
     // colour only
 
-    public class GLRenderDataColour : IGLRenderItemData
+    public class GLRenderDataColor : IGLRenderItemData
     {
         public int ColorBind { get; set; }
 
-        public GLRenderDataColour(System.Drawing.Color c, int uniformbinding = 25) 
+        public GLRenderDataColor(System.Drawing.Color c, int uniformbinding = 25) 
         {
             col = c;
             ColorBind = uniformbinding;

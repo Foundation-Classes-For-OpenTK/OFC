@@ -134,7 +134,7 @@ void main(void)
     //      location 0 : vs_color
     //      location 1 : modelpos
 
-    public class GLPLVertexShaderColourModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
     {
         public string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
@@ -167,7 +167,7 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderColourModelCoordWithObjectTranslation()
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

@@ -14,11 +14,10 @@
  * 
  */
 
-using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace OFC.Common
+namespace OFC.Controller
 {
     // hook Keydown/Keyup to it, then it keeps track of what keys are currently pressed
 

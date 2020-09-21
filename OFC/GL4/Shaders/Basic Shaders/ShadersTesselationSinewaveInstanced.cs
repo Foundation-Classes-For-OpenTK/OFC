@@ -13,11 +13,6 @@
  * governing permissions and limitations under the License.
  */
 
-
-using System;
-using OpenTK;
-using OpenTK.Graphics.OpenGL4;
-
 namespace OFC.GL4
 {
     // Shader, with tesselation, and Y change in amp using sin, autoscale

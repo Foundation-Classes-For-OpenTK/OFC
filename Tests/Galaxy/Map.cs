@@ -3,7 +3,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using OFC.GL4.Controls;
 using System;
@@ -207,7 +207,7 @@ namespace TestOpenTk
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
-                items.Add(new GLPLFragmentShaderVSColour(), "PLGRIDFragShader");
+                items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
                 GLRenderControl rl = GLRenderControl.Lines(1);
                 rl.DepthTest = false;
@@ -295,16 +295,18 @@ namespace TestOpenTk
 
             // menu system
 
-            displaycontrol = new GLControlDisplay(items, glwfc);       // hook form to the window - its the master
+            GLMatrixCalc mc = new GLMatrixCalc();
+            mc.PerspectiveNearZDistance = 1f;
+            mc.PerspectiveFarZDistance = 120000f;
+            mc.InPerspectiveMode = true;
+
+            displaycontrol = new GLControlDisplay(items, glwfc, mc);       // hook form to the window - its the master
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.SetFocus();
 
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
-            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance = 120000f;
-            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
             gl3dcontroller.ZoomDistance = 5000F;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
@@ -316,7 +318,8 @@ namespace TestOpenTk
             };
 
             // hook gl3dcontroller to display control - its the slave
-            gl3dcontroller.Start(displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F);
+            PositionCamera pc = new PositionCamera();
+            gl3dcontroller.Start(mc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F);
 
             if (displaycontrol != null)
             {
@@ -469,36 +472,36 @@ namespace TestOpenTk
             }
         }
 
-        private void OtherKeys(OFC.Common.KeyboardMonitor kb)
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F4, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
-            if (kb.HasBeenPressed(Keys.F5, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 EnableGalaxy = !EnableGalaxy;
             }
-            if (kb.HasBeenPressed(Keys.F6, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 EnableStarDots = !EnableStarDots;
             }
-            if (kb.HasBeenPressed(Keys.F7, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 EnableTravelPath = !EnableTravelPath;
             }
-            if (kb.HasBeenPressed(Keys.F8, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 GalObjectEnable = !GalObjectEnable;
             }
-            if (kb.HasBeenPressed(Keys.F9, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 if (EDSMRegionsEnable)
                     edsmgalmapregions.Toggle();
                 else
                     elitemapregions.Toggle();
             }
-            if (kb.HasBeenPressed(Keys.F9, OFC.Common.KeyboardMonitor.ShiftState.Alt))
+            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.Alt))
             {
                 bool edsm = EDSMRegionsEnable;
                 EDSMRegionsEnable = !edsm;
@@ -506,7 +509,7 @@ namespace TestOpenTk
             }
 
             // DEBUG!
-            if (kb.HasBeenPressed(Keys.F2, OFC.Common.KeyboardMonitor.ShiftState.Shift))
+            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
             {
                 Random rnd = new Random(System.Environment.TickCount);
                 List<ISystem> pos = new List<ISystem>();

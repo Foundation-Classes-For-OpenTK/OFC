@@ -30,11 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\OpenTK.3.0.1\lib\net20\OpenTK.dll</HintPath>
+    <Reference Include="OpenTK, Version=3.2.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.3.2\lib\net20\OpenTK.dll</HintPath>
     </Reference>
-    <Reference Include="OpenTK.GLControl, Version=3.0.1.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\OpenTK.GLControl.3.0.1\lib\net20\OpenTK.GLControl.dll</HintPath>
+    <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
+      <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,6 +52,7 @@
     <Compile Include="BaseUtils\StringObjectExtensionsLists.cs" />
     <Compile Include="BaseUtils\Timers.cs" />
     <Compile Include="Controller3D\KeyboardState.cs" />
+    <Compile Include="GL4\BasicTypes\GLFrameBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLLayoutStandards.cs" />
     <Compile Include="GL4\BasicTypes\GLBuffer.cs" />
     <Compile Include="GL4\Controls\ControlNumberBox.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Models\WaveFrontObj\GLWavefrontObjReader.cs" />
     <Compile Include="GL4\Textures\BindlessTextureBlock.cs" />
     <Compile Include="GL\GLMesh.cs" />
-    <Compile Include="GL\GLRenderControl.cs" />
+    <Compile Include="GL4\BasicTypes\GLRenderControl.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderCompute.cs" />
     <Compile Include="GL4\Shaders\Compute\ComputeGaussian.cs" />
     <Compile Include="GL4\Shaders\Compute\ComputeNoise.cs" />
@@ -117,11 +118,11 @@
     <Compile Include="GL4\Shaders\Base\ShaderPipeline.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderPipelineShadersBase.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderStandard.cs" />
-    <Compile Include="GL4\Shaders\PipelineShaders\ShadersFragmentColours.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersFragmentColors.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexNoTranslation.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexTranslation.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexTranslationObject.cs" />
-    <Compile Include="GL4\Shaders\Basic Shaders\ShadersColourObjects.cs" />
+    <Compile Include="GL4\Shaders\Basic Shaders\ShadersColorObjects.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewave.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTexturedBlendedMultiple.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTexturedObjects.cs" />
@@ -136,7 +137,7 @@
     <Compile Include="GL4\BasicTypes\GLVertexArray.cs" />
     <Compile Include="GL\GLClasses.cs" />
     <Compile Include="GL4\BasicTypes\GL4Statics.cs" />
-    <Compile Include="GL\GLWinFormControl.cs">
+    <Compile Include="WinForm\GLWinFormControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GL\GLVector2Statics.cs" />

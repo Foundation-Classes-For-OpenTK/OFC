@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC.GL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -145,7 +145,7 @@ void main(void)
             };
 
             {
-                items.Add( new GLColourShaderWithWorldCoord(), "COS");
+                items.Add( new GLColorShaderWithWorldCoord(), "COS");
                 GLRenderControl rl = GLRenderControl.Lines(1);
 
                 rObjects.Add(items.Shader("COS"), GLRenderableItem.CreateVector4Color4(items, rl,
@@ -217,7 +217,7 @@ void main(void)
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
 

@@ -15,11 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -136,7 +132,7 @@ namespace OFC.GL4.Controls
             {
                 for (int i = 0; i < partlist.Count; i++)
                 {
-                    if (partlist[i].ptype >= PartsTypes.Day && e.X >= partlist[i].xpos + xstart && e.X <= partlist[i].endx + xstart)
+                    if (partlist[i].ptype >= PartsTypes.Day && e.Location.X >= partlist[i].xpos + xstart && e.Location.X <= partlist[i].endx + xstart)
                     {
                         //System.Diagnostics.Debug.WriteLine(".. on " + i);
                         if (selectedpart == i)      // click again, increment

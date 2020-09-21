@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using OFC.WaveFront;
 using OpenTK;
 using System.Collections.Generic;
 using System.Drawing;
@@ -23,11 +24,11 @@ namespace OFC.GL4
 
     public class GLWavefrontObjCreator
     {
-        public Color DefaultColour { get; set; } = Color.Transparent;
+        public Color DefaultColor { get; set; } = Color.Transparent;
 
         private GLItemsList items;
         private GLRenderProgramSortedList rlist;
-        private GLUniformColourShaderWithObjectTranslation shadercolour = null;
+        private GLUniformColorShaderWithObjectTranslation shadercolor = null;
         private GLTexturedShaderWithObjectTranslation shadertexture = null;
 
         // give the item store and the render list to add to.
@@ -92,24 +93,24 @@ namespace OFC.GL4
 
                         if (c.A == 0 && c.R == 0 && c.G == 0 && c.B == 0)
                         {
-                            if (DefaultColour != Color.Transparent)
-                                c = DefaultColour;
+                            if (DefaultColor != Color.Transparent)
+                                c = DefaultColor;
                             else
                                 return false;
                         }
 
-                        if (shadercolour == null)
+                        if (shadercolor == null)
                         {
-                            shadercolour = new GLUniformColourShaderWithObjectTranslation();
-                            items.Add(shadercolour);
+                            shadercolor = new GLUniformColorShaderWithObjectTranslation();
+                            items.Add(shadercolor);
                         }
 
                         obj.Indices.RefactorVertexIndiciesIntoTriangles();
 
-                        var ri = GLRenderableItem.CreateVector4(items, rts, vert, 0, 0, new GLRenderDataTranslationRotationColour(c, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
+                        var ri = GLRenderableItem.CreateVector4(items, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(c, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
                         ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
 
-                        rlist.Add(shadercolour, name, ri);
+                        rlist.Add(shadercolor, name, ri);
                         okay = true;
                     }
 

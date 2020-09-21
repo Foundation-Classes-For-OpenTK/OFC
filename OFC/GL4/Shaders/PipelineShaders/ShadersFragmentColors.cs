@@ -20,7 +20,7 @@ namespace OFC.GL4
     // Requires:
     //      no inputs
 
-    public class GLPLFragmentShaderFixedColour : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderFixedColor : GLShaderPipelineShadersBase
     {
         OpenTK.Graphics.Color4 col;
 
@@ -38,7 +38,7 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentShaderFixedColour(OpenTK.Graphics.Color4 c)
+        public GLPLFragmentShaderFixedColor(OpenTK.Graphics.Color4 c)
         {
             col = c;
             CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name);
@@ -49,7 +49,7 @@ void main(void)
     // Requires:
     //      uniform : vec4 of colour
 
-    public class GLPLFragmentShaderUniformColour : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderUniformColor : GLShaderPipelineShadersBase
     {
         public string Code()
         {
@@ -68,7 +68,7 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentShaderUniformColour(int uniform = 25)
+        public GLPLFragmentShaderUniformColor(int uniform = 25)
         {
             CompileLink(ShaderType.FragmentShader, Code(), constvalues:new object[] { "bindingpoint", uniform }, auxname: GetType().Name);
         }
@@ -78,7 +78,7 @@ void main(void)
     // Requires:
     //      vs_color : vec4 of colour
 
-    public class GLPLFragmentShaderVSColour : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderVSColor : GLShaderPipelineShadersBase
     {
         public string Code()
         {
@@ -95,7 +95,7 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentShaderVSColour()
+        public GLPLFragmentShaderVSColor()
         {
             CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name);
         }
@@ -103,7 +103,7 @@ void main(void)
 
     // Pipeline shader, one of six colour based on primitive ID, selectable divisor, mostly for testing
 
-    public class GLPLFragmentIDShaderColour : GLShaderPipelineShadersBase
+    public class GLPLFragmentIDShaderColor : GLShaderPipelineShadersBase
     {
         public string Code(int divisor)
         {
@@ -121,7 +121,7 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentIDShaderColour(int divisor)
+        public GLPLFragmentIDShaderColor(int divisor)
         {
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Code(divisor), auxname: GetType().Name);
         }

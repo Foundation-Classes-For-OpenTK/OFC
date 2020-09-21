@@ -206,7 +206,11 @@ namespace OFC.GL4.Controls
                     }
                     else if (captured == GLMouseEventArgs.AreaType.Top)
                     {
-                        Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
+                        GLControlDisplay d = FindDisplay();
+                        if (originalwindow.Top + capturedelta.Y >= 0 && 
+                            originalwindow.Left + capturedelta.X + 16 < d.Width &&
+                            originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
+                            Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
                     }
                     else if (captured == GLMouseEventArgs.AreaType.Bottom)
                     {
@@ -315,7 +319,7 @@ namespace OFC.GL4.Controls
         private bool OverClose(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Over close {0} {1} {2} {3}", e.Area == GLMouseEventArgs.AreaType.Top && e.X >= Width - TitleBarHeight, e.Area, e.X , Width - TitleBarHeight);
-            return ShowClose && e.Area == GLMouseEventArgs.AreaType.Top && e.X >= Width - TitleBarHeight;
+            return ShowClose && e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight;
         }
 
         private GLMouseEventArgs.AreaType captured = GLMouseEventArgs.AreaType.Client;  // meaning none

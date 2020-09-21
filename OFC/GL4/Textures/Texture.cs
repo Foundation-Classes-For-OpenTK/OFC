@@ -167,38 +167,73 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
-        // Return texture as a set of floats. 
-        // it always reads all of them, but you can select the range to return using start/end
-        public float[] GetTextureImageAsFloats(PixelFormat pxformatback = PixelFormat.Rgba , int level = 0, int start = 0, int end = int.MaxValue)
-        {
-            int items = Width*Height*Depth;
-            if (pxformatback == PixelFormat.Red)
-                items *= 1;
-            else if (pxformatback == PixelFormat.Rgba)
-                items *= 4;
-            else
-                System.Diagnostics.Debug.Assert(false);     // others later
+        // Return texture as a set of floats or byte only (others not supported as of yet)
+        // use inverty to correct for any inversion if your getting the data from a framebuffer texture - it appears to be inverted when written
 
-            int bufsize = items * sizeof(float);
+        public T[] GetTextureImageAs<T>(PixelFormat pxformatback = PixelFormat.Rgba, int level = 0, bool inverty = false) 
+        {
+            int elementsperpixel = GL4Statics.ElementsPerPixel(pxformatback);
+
+            int totalelements = Width * Height * elementsperpixel;
+
+            int elementsizeT = System.Runtime.InteropServices.Marshal.SizeOf(typeof(T));
+
+            int elementstride = elementsperpixel * Width;
+
+            int bufsize = totalelements * elementsizeT;
 
             IntPtr unmanagedPointer = System.Runtime.InteropServices.Marshal.AllocHGlobal(bufsize); // get an unmanaged buffer
-
-            GL.GetTextureImage(Id, level, pxformatback, PixelType.Float, bufsize, unmanagedPointer);  // fill
+            GL.GetTextureImage(Id, level, pxformatback, (elementsizeT == 4) ? PixelType.Float : PixelType.UnsignedByte, bufsize, unmanagedPointer);  // fill
             OFC.GLStatics.Check();
 
-            if (start < items)
+            if (elementsizeT == 4)
             {
-                end = Math.Min(items, end);
-                items = end - start;
+                float[] data = new float[totalelements];
 
-                float[] data = new float[items];
-                unmanagedPointer += sizeof(float) * start;
+                if (inverty)
+                {
+                    IntPtr p = unmanagedPointer;
+                    for (int y = 0; y < Height; y++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(p, data, (Height - 1 - y) * elementstride, elementstride);      // transfer buffer to floats
+                        p += elementstride;
+                    }
+                }
+                else
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(unmanagedPointer, data, 0, totalelements);      // transfer buffer to floats
+                }
 
-                System.Runtime.InteropServices.Marshal.Copy(unmanagedPointer, data, 0, items);      // transfer buffer to floats
-                return data;
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(unmanagedPointer);
+                return data as T[];
             }
             else
-                return null;
+            {
+                byte[] data = new byte[totalelements];
+
+                if ( inverty )
+                {
+                    IntPtr p = unmanagedPointer;
+                    for (int y = 0; y < Height; y++)
+                    {
+                        System.Runtime.InteropServices.Marshal.Copy(p, data, (Height - 1 - y) * elementstride, elementstride);      // transfer buffer to floats
+                        p += elementstride;
+                    }
+                }
+                else
+                {
+                    System.Runtime.InteropServices.Marshal.Copy(unmanagedPointer, data, 0, totalelements);      // transfer buffer to floats
+                }
+
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(unmanagedPointer);
+                return data as T[];
+            }
+        }
+
+        public Bitmap GetBitmap(int level = 0, bool inverty = false)
+        {
+            byte[] texdatab = GetTextureImageAs<byte>(OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, level, inverty);
+            return BitMapHelpers.CreateBitmapFromARGBBytes(Width, Height, texdatab);
         }
 
         public void SetSamplerMode(TextureWrapMode s, TextureWrapMode t, TextureWrapMode p)
@@ -226,13 +261,19 @@ namespace OFC.GL4
             GL.TextureParameterI(Id, TextureParameterName.TextureWrapS, ref st);
         }
 
-        // TBD! find out why i did this.
         public void SetMinMagFilter()
         {
             var textureMinFilter = (int)All.LinearMipmapLinear;
             GL.TextureParameterI(Id, TextureParameterName.TextureMinFilter, ref textureMinFilter);
             var textureMagFilter = (int)All.Linear;
             GL.TextureParameterI(Id, TextureParameterName.TextureMagFilter, ref textureMagFilter);
+        }
+
+        public void SetMinMagLinear()
+        {
+            var textureFilter = (int)All.Linear;
+            GL.TextureParameterI(Id, TextureParameterName.TextureMinFilter, ref textureFilter);
+            GL.TextureParameterI(Id, TextureParameterName.TextureMagFilter, ref textureFilter);
         }
 
         public void GenMipMapTextures()     // only call if mipmaplevels > 1 after you have loaded all z planes. Called automatically for 2d+2darrays

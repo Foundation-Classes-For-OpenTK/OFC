@@ -59,11 +59,6 @@ namespace OFC.GL4
             if (NotAllocated)
                 AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
 
-            Matrix4 screenmat = Matrix4.Zero;
-            screenmat.Column0 = new Vector4(2.0f / c.ScreenSize.Width, 0, 0, -1);      // transform of x = x * 2 / width - 1
-            screenmat.Column1 = new Vector4(0.0f, -2.0f / c.ScreenSize.Height, 0, 1);  // transform of y = y * -2 / height +1
-            screenmat.Column2 = new Vector4(0, 0, 1, 0);                  // transform of z = none
-            screenmat.Column3 = new Vector4(0, 0, 0, 1);                  // transform of w = none
 
             StartWrite(0, Length);        // the whole schebang
             Write(c.ProjectionModelMatrix);     //0, 64 long
@@ -72,7 +67,7 @@ namespace OFC.GL4
             Write(c.TargetPosition, 0);         //192, vec4, 16 long
             Write(c.EyePosition, 0);            // 208, vec3, 16 long
             Write(c.EyeDistance);               // 224, float, 4 long
-            Write(screenmat);                // 240, into the project model matrix slot
+            Write(c.ScreenCoordToClipSpace());                // 240, into the project model matrix slot
             StopReadWrite();                                // and complete..
         }
 

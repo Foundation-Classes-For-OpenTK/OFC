@@ -14,7 +14,7 @@
  */
 
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
@@ -172,7 +172,7 @@ void main(void)
             rObjects.Add(items.Shader("Shader"), "T1", new GLRenderableItem(ri, vertexes.Length, null, null, 1));
 
 
-            items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColour(new Color4(0.9f, 0.0f, 0.0f, 1.0f))), "ResultShader");
+            items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(new Color4(0.9f, 0.0f, 0.0f, 1.0f))), "ResultShader");
             GLRenderControl rs = GLRenderControl.Points(30);
             redraw = GLRenderableItem.CreateVector4(items, rs, vecoutbuffer, 0);
             rObjects2.Add(items.Shader("ResultShader"), redraw);
@@ -220,7 +220,7 @@ void main(void)
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
     }

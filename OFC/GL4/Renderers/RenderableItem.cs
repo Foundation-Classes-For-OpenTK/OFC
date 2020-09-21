@@ -74,10 +74,11 @@ namespace OFC.GL4
             InstanceCount = ic;
         }
 
-        public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      // called by Render() to bind data to GL, vertex and InstanceData
+        // called before Render to set up data for the render.
+        public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
             if (currentstate != null)
-                currentstate.ApplyState(RenderControl);         // go to this state first
+                currentstate.ApplyState(RenderControl, c);         // go to this state
 
             VertexArray?.Bind();      
             RenderData?.Bind(this,shader,c);
@@ -85,7 +86,8 @@ namespace OFC.GL4
             IndirectBuffer?.BindIndirect();
         }
 
-        public void Render()                                               // called by Render() to draw the item.
+        // Render. Shader already set up - RenderableLists uses this
+        public void Render()                                               
         {
             //System.Diagnostics.Debug.WriteLine("Draw " + RenderControl.PrimitiveType + " " + DrawCount + " " + InstanceCount);
 
@@ -531,15 +533,19 @@ namespace OFC.GL4
 
         #region Execute without a List.. usually used if shader is not rendering to screen, but is computing, and that would normally have discard=true
 
-        public void Execute( IGLProgramShader shader , GLRenderControl state, GLMatrixCalc c = null, bool discard = true )
+        public void Execute( IGLProgramShader shader , GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false  )
         {
             if (discard)
                 GL.Enable(EnableCap.RasterizerDiscard);
 
-            shader.Start();
+            if ( !noshaderstart)
+                shader.Start();
+
             Bind(state, shader, c);
             Render();
-            shader.Finish();
+
+            if ( !noshaderstart)
+                shader.Finish();
 
             if (discard)
                 GL.Disable(EnableCap.RasterizerDiscard);

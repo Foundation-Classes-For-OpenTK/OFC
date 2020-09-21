@@ -91,6 +91,32 @@ namespace OFC
             return new Vector4(v.X, v.Y, v.Z,w);
         }
 
+        private static Vector3 cameravector = new Vector3(0, 1, 0);        // camera vector, at CameraDir(0,0)
 
+        // from current eye position, calculate lookat, given a camera angle and a distance
+        public static Vector3 CalculateLookatPositionFromEye(this Vector3 eyeposition, Vector2 cameradirdegreesp, float distance)
+        {
+            Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
+
+            transform *= Matrix3.CreateRotationX((float)(cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
+            transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
+
+            Vector3 eyerel = Vector3.Transform(cameravector, transform);       // the 0,1,0 sets the axis of the camera dir
+
+            return eyeposition + eyerel * distance;
+        }
+
+        // from current lookat, calculate eyeposition, given a camera angle and a distance
+        public static Vector3 CalculateEyePositionFromLookat(this Vector3 lookat, Vector2 cameradirdegreesp, float distance)
+        {
+            Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
+
+            transform *= Matrix3.CreateRotationX((float)(cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
+            transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
+
+            Vector3 eyerel = Vector3.Transform(cameravector, transform);       // the 0,1,0 sets the axis of the camera dir
+
+            return lookat - eyerel * distance;
+        }
     }
 }

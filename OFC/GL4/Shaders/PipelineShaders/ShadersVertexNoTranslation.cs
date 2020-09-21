@@ -99,7 +99,7 @@ void main(void)
     //      location 0: vs_color
     //      gl_Position
 
-    public class GLPLVertexShaderColourWorldCoord : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineShadersBase
     {
         public string Code()
         {
@@ -128,7 +128,7 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderColourWorldCoord()
+        public GLPLVertexShaderColorWorldCoord()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
@@ -282,7 +282,7 @@ void main(void)
     //      location 0: vs_color
     //      gl_Position
 
-    public class GLPLVertexShaderFixedColourPalletWorldCoords : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineShadersBase
     {
         public string Code()
         {
@@ -313,12 +313,12 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderFixedColourPalletWorldCoords(Vector4[] varray)
+        public GLPLVertexShaderFixedColorPalletWorldCoords(Vector4[] varray)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", varray }, auxname: GetType().Name);
         }
 
-        public GLPLVertexShaderFixedColourPalletWorldCoords(System.Drawing.Color[] cpal) : this( cpal.ToVector4() )
+        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] cpal) : this( cpal.ToVector4() )
         { 
         }
     }

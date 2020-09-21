@@ -17,12 +17,13 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using OFC.WaveFront;
 
 namespace TestOpenTk
 {
@@ -68,9 +69,9 @@ namespace TestOpenTk
 
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
             items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
-            items.Add(new GLColourShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColourShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColourShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
+            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
             items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
 
             items.Add( new GLTexture2D(Properties.Resources.dotted)  ,           "dotted"    );
@@ -368,7 +369,7 @@ namespace TestOpenTk
             #region Instancing
             if (true)
             {
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithMatrixTranslation(), new GLPLFragmentShaderVSColour()),"IC-1");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithMatrixTranslation(), new GLPLFragmentShaderVSColor()),"IC-1");
 
                 Matrix4[] pos1 = new Matrix4[3];
                 pos1[0] = Matrix4.CreateTranslation(new Vector3(10, 0, 10));
@@ -690,7 +691,7 @@ namespace TestOpenTk
                     GLBuffer vert = new GLBuffer();
                     vert.AllocateFill(objlist[0].Vertices.Vertices.ToArray());
 
-                    var shader = new GLUniformColourShaderWithObjectTranslation();
+                    var shader = new GLUniformColorShaderWithObjectTranslation();
 
                     GLRenderControl rts = GLRenderControl.Tri();
 
@@ -700,7 +701,7 @@ namespace TestOpenTk
                         {
                             obj.Indices.RefactorVertexIndiciesIntoTriangles();
 
-                            var ri = GLRenderableItem.CreateVector4(items, rts, vert, 0, 0, new GLRenderDataTranslationRotationColour(Color.FromName(obj.Material), new Vector3(20, 0, -20), scale: 2f));           // renderable item pointing to vert for vertexes
+                            var ri = GLRenderableItem.CreateVector4(items, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(Color.FromName(obj.Material), new Vector3(20, 0, -20), scale: 2f));           // renderable item pointing to vert for vertexes
                             ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
 
                             rObjects.Add(shader, ri);
@@ -763,7 +764,7 @@ namespace TestOpenTk
                 var objlist = read.ReadOBJData(System.Text.Encoding.UTF8.GetString(Properties.Resources.Koltuk));
 
                 GLWavefrontObjCreator oc = new GLWavefrontObjCreator(items, rObjects);
-                oc.DefaultColour = Color.Red;
+                oc.DefaultColor = Color.Red;
 
                 bool v = oc.Create(objlist, new Vector3(-20, 0, -20), new Vector3(0, 0, 0), 8.0f);
                 System.Diagnostics.Debug.Assert(v == true);
@@ -920,29 +921,29 @@ namespace TestOpenTk
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
-            if (kb.HasBeenPressed(Keys.F5, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(0, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F6, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(4, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F7, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(10, 0, -10), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F8, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(50, 0, 50), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
@@ -964,7 +965,7 @@ namespace TestOpenTk
     {
         public GLColourShaderWithWorldCoordXX(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentIDShaderColour(2));
+            AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentIDShaderColor(2));
         }
     }
 

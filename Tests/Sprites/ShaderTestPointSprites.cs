@@ -14,7 +14,7 @@
  */
 
 using OFC;
-using OFC.Common;
+using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
@@ -121,7 +121,7 @@ void main(void)
             //items.Add("lensflarewhite", new GLTexture2D(Properties.Resources.lensflare_white64));
             items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
 
-            items.Add(new GLColourShaderWithWorldCoord(), "COS");
+            items.Add(new GLColorShaderWithWorldCoord(), "COS");
 
             #region coloured lines
 
@@ -184,24 +184,24 @@ void main(void)
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(0, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F2, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(4, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F3, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(10, 0, -10), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Common.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.CameraLookAt(new Vector3(50, 0, 50), 1, 2);
             }

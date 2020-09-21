@@ -2,7 +2,7 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OFC.GL4;
-using OFC.Common;
+using OFC.Controller;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -50,7 +50,7 @@ namespace TestOpenTk
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.ZoomDistance = 100F;
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 0.1f;
-            glwfc.BackColour = Color.FromArgb(0, 0, 60);
+            glwfc.BackColor = Color.FromArgb(0, 0, 60);
             gl3dcontroller.Start(glwfc,new Vector3(0, 0, 0), new Vector3(120f, 0, 0f), 1F);
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
@@ -159,7 +159,7 @@ namespace TestOpenTk
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Common.KeyboardMonitor kb )
+        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
         }
     }
