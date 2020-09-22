@@ -531,24 +531,27 @@ namespace OFC.GL4
 
         #endregion
 
-        #region Execute without a List.. usually used if shader is not rendering to screen, but is computing, and that would normally have discard=true
+        #region Execute directly. Usually used if shader is not rendering to screen or to a framebuffer, and that would normally have discard=true
 
         public void Execute( IGLProgramShader shader , GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false  )
         {
-            if (discard)
-                GL.Enable(EnableCap.RasterizerDiscard);
+            if (shader.Enable)
+            {
+                if (discard)
+                    GL.Enable(EnableCap.RasterizerDiscard);
 
-            if ( !noshaderstart)
-                shader.Start();
+                if (!noshaderstart)
+                    shader.Start();
 
-            Bind(state, shader, c);
-            Render();
+                Bind(state, shader, c);
+                Render();
 
-            if ( !noshaderstart)
-                shader.Finish();
+                if (!noshaderstart)
+                    shader.Finish();
 
-            if (discard)
-                GL.Disable(EnableCap.RasterizerDiscard);
+                if (discard)
+                    GL.Disable(EnableCap.RasterizerDiscard);
+            }
         }
 
         #endregion
