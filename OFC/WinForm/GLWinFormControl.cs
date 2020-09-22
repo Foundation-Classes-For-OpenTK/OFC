@@ -234,7 +234,7 @@ namespace OFC.WinForm
             if ( MakeCurrentOnPaint )
                 glControl.MakeCurrent();    // only needed if running multiple GLs windows in same thread
 
-            GL.Disable(EnableCap.ScissorTest);      // clear takes account of scissors, so we must clear the state
+            GL.Disable(EnableCap.ScissorTest);      // Scissors off by default
 
             GL.ClearColor(backcolor);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);  // note renderdiscard affects this..
@@ -242,10 +242,8 @@ namespace OFC.WinForm
             if ( RenderState == null )
             {
                 RenderState = GL4.GLRenderControl.AllNull();
-                RenderState.ApplyState(GL4.GLRenderControl.DefaultStartState(),null);
+                RenderState.ApplyState(GL4.GLRenderControl.DefaultStartState());
             }
-
-            //RenderState.Scissors = new int[0];          // we are in scissors off.
 
             Paint?.Invoke(glControl);
 

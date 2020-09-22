@@ -91,7 +91,7 @@ void main(void)
 
         public class GLFixedShader : GLShaderPipeline
         {
-            public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
+            public GLFixedShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
                 AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
@@ -99,7 +99,7 @@ void main(void)
 
         public class GLFixedProjectionShader : GLShaderPipeline
         {
-            public GLFixedProjectionShader(Color c, Action<IGLProgramShader> action = null) : base(action)
+            public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
                 AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColor(c));
             }

@@ -58,7 +58,7 @@ namespace OFC.GL4
 
             Shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0,alphablend:true));
             items.Add(Shader);
-            Shader.StartAction += (s) => { if (TextureDirty) CreateTexture(); textures.Bind(1); };
+            Shader.StartAction += (s,m) => { if (TextureDirty) CreateTexture(); textures.Bind(1); };
 
             textures = new GLTexture2DArray();
             items.Add(textures);

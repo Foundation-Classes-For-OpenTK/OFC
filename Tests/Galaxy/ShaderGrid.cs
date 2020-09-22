@@ -285,9 +285,9 @@ void main(void)
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode());
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             texcoords.Bind(1);
         }
 

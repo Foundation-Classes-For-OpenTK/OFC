@@ -207,10 +207,14 @@ namespace OFC.GL4.Controls
                     else if (captured == GLMouseEventArgs.AreaType.Top)
                     {
                         GLControlDisplay d = FindDisplay();
-                        if (originalwindow.Top + capturedelta.Y >= 0 && 
+                        if (originalwindow.Top + capturedelta.Y >= 0 &&
                             originalwindow.Left + capturedelta.X + 16 < d.Width &&
                             originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
+                        {
                             Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
+                        }
+
+                        System.Diagnostics.Debug.WriteLine("Drag to {0}", Location);
                     }
                     else if (captured == GLMouseEventArgs.AreaType.Bottom)
                     {

@@ -281,9 +281,9 @@ void main(void)
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             Matrix4 t = Transform.Transform;
             GL.ProgramUniformMatrix4(Id, 23, false, ref t);
             OFC.GLStatics.Check();
@@ -340,9 +340,9 @@ void main(void)
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             Matrix4 t = Transform.Transform;
             GL.ProgramUniformMatrix4(Id, 23, false, ref t);
             OFC.GLStatics.Check();

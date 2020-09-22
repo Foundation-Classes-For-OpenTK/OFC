@@ -48,7 +48,7 @@ namespace TestOpenTk
 
         public class GLFixedShader : GLShaderPipeline
         {
-            public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
+            public GLFixedShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
                 AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
@@ -56,11 +56,22 @@ namespace TestOpenTk
 
         class MatrixCalcSpecial : GLMatrixCalc
         {
+            public MatrixCalcSpecial()
+            {
+                ScreenCoordMax = new Size(2000, 1000);
+                ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
+                ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
+                //ScreenCoordClipSpaceSize = new SizeF(1f, 1f);
+                //ScreenCoordClipSpaceOffset = new PointF(-0.5f, 0.5f);
+            }
+
             public override void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
             {
                 if (!(sender is Controller3D))         // ignore from 3dcontroller as it also sends it, but it will be reporting the size of the display window
                 {
-                    int margin = 10;
+                    System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
+                    ScreenSize = newsize;
+                    int margin = 200;
                     ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
                     SetViewPort();
                 }
@@ -184,19 +195,10 @@ namespace TestOpenTk
                 bool testtabcontrol = true;
                 bool testdatetime = true;
 
-                                testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
-                //testform1 = false;
-            //    testform2 = false;
+                testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
                 testbuttons = true;
 
-
-                //GLBaseControl.DefaultControlBackColor = Color.Orange;
-
-                //mc.ScreenCoordMax = glwfc.Size;
-                mc.ScreenCoordMax = new Size(2048, 1024);
-                mc.ResizeViewPort(this,glwfc.Size);          // must establish size before starting
-                mc.ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
-                mc.ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
+                mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
                 displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
                 displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
@@ -205,7 +207,7 @@ namespace TestOpenTk
 
                 if (testform1)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(10, 0, 1000, 800));
+                    GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 800));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
                     pform.BackColorGradient = 90;

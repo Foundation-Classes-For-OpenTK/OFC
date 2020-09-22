@@ -103,7 +103,7 @@ namespace TestOpenTk
                 GLTexture3D noise3d = new GLTexture3D(1024 * sc, 64 * sc, 1024 * sc, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
                 items.Add(noise3d, "Noise");
                 ComputeShaderNoise3D csn = new ComputeShaderNoise3D(noise3d.Width, noise3d.Height, noise3d.Depth, 128 * sc, 16 * sc, 128 * sc, gnoisetexbinding);       // must be a multiple of localgroupsize in csn
-                csn.StartAction += (A) => { noise3d.BindImage(gnoisetexbinding); };
+                csn.StartAction += (A,m) => { noise3d.BindImage(gnoisetexbinding); };
                 csn.Run();      // compute noise
 
                 GLTexture1D gaussiantex = new GLTexture1D(1024, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
@@ -112,7 +112,7 @@ namespace TestOpenTk
                 // set centre=width, higher widths means more curve, higher std dev compensate.
                 // fill the gaussiantex with data
                 ComputeShaderGaussian gsn = new ComputeShaderGaussian(gaussiantex.Width, 2.0f, 2.0f, 1.4f, gdisttexbinding);
-                gsn.StartAction += (A) => { gaussiantex.BindImage(gdisttexbinding); };
+                gsn.StartAction += (A,m) => { gaussiantex.BindImage(gdisttexbinding); };
                 gsn.Run();      // compute noise
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
@@ -123,7 +123,7 @@ namespace TestOpenTk
                 galaxyshader = new GalaxyShader(volumenticuniformblock, galtexbinding, gnoisetexbinding, gdisttexbinding);
                 items.Add(galaxyshader, "Galaxy-sh");
                 // bind the galaxy texture, the 3dnoise, and the gaussian 1-d texture for the shader
-                galaxyshader.StartAction = (a) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
+                galaxyshader.StartAction += (a,m) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
 
                 GLRenderControl rt = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
                 galaxyrenderable = GLRenderableItem.CreateNullVertex(rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet

@@ -112,16 +112,16 @@ void main(void)
             CompileLink(vertex: vert, tcs: TCS(tesselation), tes: TES(amplitude,repeats), frag: frag);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
             OFC.GLStatics.Check();
         }
 
-        public override void Finish()
+        public override void Finish(GLMatrixCalc c)
         {
-            base.Finish();
+            base.Finish(c);
         }
     }
 }

@@ -32,8 +32,8 @@ namespace OFC.GL4
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
 
         public IGLShader Get(ShaderType t) { return this; }
-        public Action<IGLProgramShader> StartAction { get; set; }
-        public Action<IGLProgramShader> FinishAction { get; set; }
+        public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
+        public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
 
         protected GLProgram program;
 
@@ -41,12 +41,12 @@ namespace OFC.GL4
         {
         }
 
-        public GLShaderStandard(Action<IGLProgramShader> sa) : this()
+        public GLShaderStandard(Action<IGLProgramShader, GLMatrixCalc> sa) : this()
         {
             StartAction = sa;
         }
 
-        public GLShaderStandard(Action<IGLProgramShader> sa, Action<IGLProgramShader> fa) : this()
+        public GLShaderStandard(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader, GLMatrixCalc> fa) : this()
         {
             StartAction = sa;
             FinishAction = fa;
@@ -105,15 +105,15 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
-        public virtual void Start()     
+        public virtual void Start(GLMatrixCalc c)     
         {
             GL.UseProgram(Id);
-            StartAction?.Invoke(this);
+            StartAction?.Invoke(this,c);
         }
 
-        public virtual void Finish()                 
+        public virtual void Finish(GLMatrixCalc c)                 
         {
-            FinishAction?.Invoke(this);                           // any shader hooks get a chance.
+            FinishAction?.Invoke(this,c);                           // any shader hooks get a chance.
         }
 
         public virtual void Dispose()

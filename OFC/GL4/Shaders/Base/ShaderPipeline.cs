@@ -33,8 +33,8 @@ namespace OFC.GL4
         public int Id { get { return pipelineid + 100000; } }            // to avoid clash with standard ProgramIDs, use an offset for pipeline IDs
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
 
-        public Action<IGLProgramShader> StartAction { get; set; }
-        public Action<IGLProgramShader> FinishAction { get; set; }
+        public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
+        public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
 
         public IGLShader Get(ShaderType t) { return shaders[t]; }
         public T Get<T>(ShaderType t) where T : IGLPipelineShader
@@ -49,20 +49,21 @@ namespace OFC.GL4
             shaders = new Dictionary<ShaderType, IGLPipelineShader>();
         }
 
-        public GLShaderPipeline(Action<IGLProgramShader> sa, Action<IGLProgramShader> fa = null) : this()
+        public GLShaderPipeline(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
         {
             StartAction = sa;
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, Action<IGLProgramShader> sa = null, Action<IGLProgramShader> fa = null) : this()
+        public GLShaderPipeline(IGLPipelineShader vertex, Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
         {
             AddVertex(vertex);
             StartAction = sa;
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader fragment, Action<IGLProgramShader> sa = null, Action<IGLProgramShader> fa = null) : this()
+        public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader fragment, Action<IGLProgramShader, GLMatrixCalc> sa = null, 
+                                Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
         {
             AddVertexFragment(vertex, fragment);
             StartAction = sa;
@@ -70,7 +71,7 @@ namespace OFC.GL4
         }
 
         public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader tcs, IGLPipelineShader tes, IGLPipelineShader geo, IGLPipelineShader fragment, 
-                                Action<IGLProgramShader> sa = null, Action<IGLProgramShader> fa = null) : this()
+                                Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
         {
             AddVertexTCSTESGeoFragment(vertex, tcs,tes,geo, fragment);
             StartAction = sa;
@@ -109,23 +110,23 @@ namespace OFC.GL4
             GLStatics.Check();
         }
 
-        public virtual void Start()
+        public virtual void Start(GLMatrixCalc c)
         {
             GL.UseProgram(0);           // ensure no active program - otherwise the stupid thing picks it
             GL.BindProgramPipeline(pipelineid);
 
             foreach (var x in shaders)                             // let any programs do any special set up
-                x.Value.Start();
+                x.Value.Start(c);
 
-            StartAction?.Invoke(this);                           // any shader hooks get a chance.
+            StartAction?.Invoke(this,c);                           // any shader hooks get a chance.
         }
 
-        public virtual void Finish()                                        // and clean up afterwards
+        public virtual void Finish(GLMatrixCalc c)                                        // and clean up afterwards
         {
             foreach (var x in shaders)
-                x.Value.Finish();
+                x.Value.Finish(c);
 
-            FinishAction?.Invoke(this);                           // any shader hooks get a chance.
+            FinishAction?.Invoke(this,c);                           // any shader hooks get a chance.
 
             GL.BindProgramPipeline(0);
         }

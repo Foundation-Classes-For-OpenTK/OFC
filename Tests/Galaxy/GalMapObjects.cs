@@ -34,7 +34,7 @@ namespace TestOpenTk
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);
             items.Add( objectshader, "ShaderGalObj");
 
-            objectshader.StartAction += (s) =>
+            objectshader.StartAction += (s,m) =>
             {
                 texarray.Bind(1);
             };

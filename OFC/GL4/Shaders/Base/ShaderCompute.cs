@@ -31,12 +31,12 @@ namespace OFC.GL4
         {
         }
 
-        public GLShaderCompute(Action<IGLProgramShader> sa = null) : this()
+        public GLShaderCompute(Action<IGLProgramShader, GLMatrixCalc> sa = null) : this()
         {
             StartAction = sa;
         }
 
-        public GLShaderCompute(int x, int y, int z, Action<IGLProgramShader> sa = null) : this()
+        public GLShaderCompute(int x, int y, int z, Action<IGLProgramShader, GLMatrixCalc> sa = null) : this()
         {
             XWorkgroupSize = x; YWorkgroupSize = y; ZWorkgroupSize = z;
             StartAction = sa;
@@ -53,16 +53,16 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
-        public override void Start()                 // override.. but call back.  Executes compute.
+        public override void Start(GLMatrixCalc c)                 // override.. but call back.  Executes compute.
         {
-            base.Start();
+            base.Start(c);
             GL.DispatchCompute(XWorkgroupSize, YWorkgroupSize, ZWorkgroupSize);
         }
 
         public void Run()                           // for compute shaders, we can just run them.  
         {
-            Start();
-            Finish();
+            Start(null);
+            Finish(null);
         }
     }
 }

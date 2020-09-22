@@ -159,9 +159,9 @@ void main(void)
             GL.ProgramUniform1(Id, 11, pixd);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             vecoutbuffer.ZeroBuffer();
         }
 

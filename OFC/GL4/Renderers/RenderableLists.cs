@@ -73,7 +73,7 @@ namespace OFC.GL4
                 if (kvp.Key.Enable && kvp.Value.Find((x)=>x.Item2 == null || x.Item2.Visible)!=null)      
                 {
                     // System.Diagnostics.Debug.WriteLine("Shader " + d.Key.GetType().Name);
-                    kvp.Key.Start();                                                  // start the program - if compute shader, this executes the code
+                    kvp.Key.Start(c);                                                  // start the program - if compute shader, this executes the code
 
                     foreach (var g in kvp.Value)
                     {
@@ -86,7 +86,7 @@ namespace OFC.GL4
                         }
                     }
 
-                    kvp.Key.Finish();
+                    kvp.Key.Finish(c);
                 }
             }
 

@@ -163,9 +163,9 @@ void main(void)
             CommonTransform = new GLRenderDataTranslationRotation();
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
 
             Matrix4 t = CommonTransform.Transform;
             GL.ProgramUniformMatrix4(Id, 20, false, ref t);
@@ -183,9 +183,9 @@ void main(void)
             OFC.GLStatics.Check();
         }
 
-        public override void Finish()
+        public override void Finish(GLMatrixCalc c)
         {
-            base.Finish();
+            base.Finish(c);
         }
     }
 }

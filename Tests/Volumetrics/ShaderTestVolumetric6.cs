@@ -53,7 +53,7 @@ namespace TestOpenTk
 
         public class GLFixedShader : GLShaderPipeline
         {
-            public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
+            public GLFixedShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
                 AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
@@ -309,7 +309,7 @@ namespace TestOpenTk
             public ShaderV2( IGLTexture t)
             {
                 CompileLink(vertex: vcode, frag: fcode, geo: "#include TestOpenTk.Volumetrics.volumetricgeo6.glsl");
-                StartAction = (a) => { t.Bind(1); };
+                StartAction += (a,m) => { t.Bind(1); };
             }
         }
 

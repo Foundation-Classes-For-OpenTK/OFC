@@ -204,7 +204,7 @@ namespace TestOpenTk
                 ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(mc);
 
                 var renderState = GLRenderControl.AllNull();
-                renderState.ApplyState(GLRenderControl.DefaultStartState(),mc);
+                renderState.ApplyState(GLRenderControl.DefaultStartState());
 
                 Vector4[] p = new Vector4[4];
 
@@ -412,7 +412,7 @@ namespace TestOpenTk
 
         public class GLDirect : GLShaderPipeline
         {
-            public GLDirect(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
             {
                 AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
             }

@@ -64,7 +64,7 @@ namespace TestOpenTk
             if (true)
             {
                 items.Add(new GLMultipleTexturedBlended(false, 2), "ShaderPos");
-                items.Shader("ShaderPos").StartAction += (s) =>
+                items.Shader("ShaderPos").StartAction += (s,m) =>
                 {
                     array2d.Bind(1);
                 };
@@ -88,7 +88,7 @@ namespace TestOpenTk
             if (true)
             {
                 IGLProgramShader smat = items.Add(new GLMultipleTexturedBlended(true, 2), "ShaderMat");
-                smat.StartAction += (s) =>
+                smat.StartAction += (s,m) =>
                 {
                     array2d.Bind(1);
                 };

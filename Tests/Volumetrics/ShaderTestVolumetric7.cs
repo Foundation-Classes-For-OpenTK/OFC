@@ -251,7 +251,7 @@ namespace TestOpenTk
                 GLTexture3D noise3d = new GLTexture3D(1024 * sc, 64 * sc, 1024 * sc, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
                 items.Add(noise3d, "Noise");
                 ComputeShaderNoise3D csn = new ComputeShaderNoise3D(noise3d.Width, noise3d.Height, noise3d.Depth, 128 * sc, 16 * sc, 128 * sc);       // must be a multiple of localgroupsize in csn
-                csn.StartAction += (A) => { noise3d.BindImage(3); };
+                csn.StartAction += (A,m) => { noise3d.BindImage(3); };
                 csn.Run();      // compute noise
 
                 GLTexture1D gaussiantex = new GLTexture1D(1024, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
@@ -260,7 +260,7 @@ namespace TestOpenTk
                 // set centre=width, higher widths means more curve, higher std dev compensate
 
                 ComputeShaderGaussian gsn = new ComputeShaderGaussian(gaussiantex.Width, 2.0f, 2.0f, 1.4f, 4);
-                gsn.StartAction += (A) => { gaussiantex.BindImage(4); };
+                gsn.StartAction += (A,m) => { gaussiantex.BindImage(4); };
                 gsn.Run();      // compute noise
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
@@ -272,7 +272,7 @@ namespace TestOpenTk
                 items.Add( galtex, "gal");
                 GalaxyShader gs = new GalaxyShader();
                 items.Add( gs, "Galaxy");
-                gs.StartAction = (a) => { galtex.Bind(1); noise3d.Bind(3); gaussiantex.Bind(4); };
+                gs.StartAction += (a,m) => { galtex.Bind(1); noise3d.Bind(3); gaussiantex.Bind(4); };
 
                 GLRenderControl rv = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
                 galaxy = GLRenderableItem.CreateNullVertex(rv);   // no vertexes, all data from bound volumetric uniform, no instances as yet

@@ -115,7 +115,7 @@ void main(void)
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             Matrix4 a = ModelTranslation;
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);
@@ -280,7 +280,7 @@ void main(void)
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             Matrix4 a = ModelTranslation;
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);

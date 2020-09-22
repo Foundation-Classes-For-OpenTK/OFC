@@ -27,7 +27,7 @@ namespace OFC.GL4
 
     public class GLTexturedShaderWithWorldCoord : GLShaderPipeline
     {
-        public GLTexturedShaderWithWorldCoord(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureWorldCoord(), new GLPLFragmentShaderTexture());
         }
@@ -43,7 +43,7 @@ namespace OFC.GL4
 
     public class GLTexturedShaderWithObjectTranslation : GLShaderPipeline
     {
-        public GLTexturedShaderWithObjectTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture());
         }
@@ -60,7 +60,7 @@ namespace OFC.GL4
 
     public class GLTexturedShaderWithObjectCommonTranslation : GLShaderPipeline
     {
-        public GLTexturedShaderWithObjectCommonTranslation(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderWithObjectCommonTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(), new GLPLFragmentShaderTexture());
         }
@@ -77,7 +77,7 @@ namespace OFC.GL4
 
     public class GLTexturedShader2DBlendWithWorldCoord : GLShaderPipeline
     {
-        public GLTexturedShader2DBlendWithWorldCoord(Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShader2DBlendWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture2DBlend());
         }
@@ -94,7 +94,7 @@ namespace OFC.GL4
     {
         GLPLFragmentShaderTextureTriangleStrip frag;
 
-        public GLTexturedShaderTriangleStripWithWorldCoord(bool backtoback, Action<IGLProgramShader> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderTriangleStripWithWorldCoord(bool backtoback, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
         {
             frag = new GLPLFragmentShaderTextureTriangleStrip(backtoback);
             AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord(), frag);

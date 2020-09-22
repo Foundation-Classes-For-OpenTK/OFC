@@ -78,7 +78,7 @@ void main(void)
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             if ( UpdateControls )
             {

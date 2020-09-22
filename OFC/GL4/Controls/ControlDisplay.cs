@@ -230,12 +230,14 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                shader.Start();
+                GLScissors.SetToScreenCoords(0, MatrixCalc);
+                shader.Start(MatrixCalc);
                 ri.Bind(currentstate, shader, MatrixCalc);        // binds VA AND the element buffer
                 ri.Render();                                // draw using primitive restart on element index buffer with bindless textures
-                shader.Finish();
+                shader.Finish(MatrixCalc);
                 GL.UseProgram(0);           // final clean up
                 GL.BindProgramPipeline(0);
+                GLScissors.Disable(0);
                 GLStatics.Check();
 
                 foreach (var c in ControlsIZ)
@@ -331,7 +333,7 @@ namespace OFC.GL4.Controls
         private void Gc_MouseMove(object sender, GLMouseEventArgs e)
         {
             e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
-            //System.Diagnostics.Debug.WriteLine("WLoc {0} SLoc {1}", e.WindowLocation, e.ScreenCoord);
+            System.Diagnostics.Debug.WriteLine("WLoc {0} SLoc {1}", e.WindowLocation, e.ScreenCoord);
 
             GlobalMouseMove?.Invoke(e);         // feed global mouse move - coords are form coords
 

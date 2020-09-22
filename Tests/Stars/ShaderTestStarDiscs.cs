@@ -153,9 +153,9 @@ void main(void)
 
             public float TimeDelta{ get; set; } = 0.00001f*10;
 
-            public override void Start()
+            public override void Start(GLMatrixCalc c)
             {
-                base.Start();
+                base.Start(c);
 
                 GL.ProgramUniform1(Id, 15, TimeDelta);
                 OFC.GLStatics.Check();

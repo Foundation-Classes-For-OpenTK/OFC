@@ -72,7 +72,7 @@ namespace OFC.GL4
 
         public GLPointSpriteShader(IGLTexture tex, float maxsize = 120, float scale = 80) : base()
         {
-            StartAction = (a) =>
+            StartAction = (a,m) =>
             {
                 tex.Bind(4);
             };

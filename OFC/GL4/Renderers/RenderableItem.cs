@@ -78,7 +78,7 @@ namespace OFC.GL4
         public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
             if (currentstate != null)
-                currentstate.ApplyState(RenderControl, c);         // go to this state
+                currentstate.ApplyState(RenderControl);         // go to this state
 
             VertexArray?.Bind();      
             RenderData?.Bind(this,shader,c);
@@ -541,13 +541,13 @@ namespace OFC.GL4
                     GL.Enable(EnableCap.RasterizerDiscard);
 
                 if (!noshaderstart)
-                    shader.Start();
+                    shader.Start(c);
 
                 Bind(state, shader, c);
                 Render();
 
                 if (!noshaderstart)
-                    shader.Finish();
+                    shader.Finish(c);
 
                 if (discard)
                     GL.Disable(EnableCap.RasterizerDiscard);

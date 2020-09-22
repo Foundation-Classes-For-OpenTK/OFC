@@ -50,11 +50,13 @@ namespace OFC
         public float FovDeg { get { return Fov.Degrees(); } }
         public float FovFactor { get; set; } = 1.258925F;                       // scaling
 
-        public Rectangle ViewPort { get; protected set; }                       // area of window GL is drawing to
+        public Size ScreenSize { get; protected set; }                          // screen size, total, of GL window.
 
-        public Size ScreenCoordMax { get; set; }                      // screen co-ords max
+        public Rectangle ViewPort { get; protected set; }                       // area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left
+
+        public Size ScreenCoordMax { get; set; }                                // screen co-ords max. Does not have to match the screensize. If not, you get a fixed scalable area
         public virtual SizeF ScreenCoordClipSpaceSize { get; set; } = new SizeF(2, 2);   // Clip space size to use for screen coords, override to set up another
-        public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);     // Origin in clip space (-1,1) = coord (0,0)
+        public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);     // Origin in clip space (-1,1) = top left, screen coord (0,0)
 
         // after Calculate model matrix
         public Vector3 EyePosition { get; private set; }                       
@@ -167,6 +169,8 @@ namespace OFC
 
         public virtual void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
         {
+            //System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
+            ScreenSize = newsize;
             ScreenCoordMax = newsize;
             ViewPort = new Rectangle(new Point(0, 0), newsize);
             SetViewPort();
@@ -174,20 +178,15 @@ namespace OFC
 
         public void SetViewPort()
         {
-            //System.Diagnostics.Debug.WriteLine("Set GL Viewport {0}", ViewPort);
-            OpenTK.Graphics.OpenGL.GL.Viewport(ViewPort.Left, ViewPort.Top, ViewPort.Width, ViewPort.Height);
+            //System.Diagnostics.Debug.WriteLine("Set GL Viewport {0} {1} w {2} h {3}", ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
+            OpenTK.Graphics.OpenGL.GL.Viewport(ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
         }
 
         public virtual Matrix4 ScreenCoordToClipSpace()             // matrix to convert a screen co-ord to clip space
         {
-            Size scr = ScreenCoordMax;
-            SizeF clipsize = ScreenCoordClipSpaceSize;
-            PointF clipoff = ScreenCoordClipSpaceOffset;
-            //System.Diagnostics.Debug.WriteLine("{0} {1} {2}", scr, clipsize, clipoff);
-
             Matrix4 screenmat = Matrix4.Zero;
-            screenmat.Column0 = new Vector4(clipsize.Width / scr.Width , 0, 0, clipoff.X);      // transform of x = x * 2 / width - 1
-            screenmat.Column1 = new Vector4(0.0f, -clipsize.Height / scr.Height, 0, clipoff.Y);  // transform of y = y * -2 / height +1, y = 0 gives +1 (top), y = sh gives -1 (bottom)
+            screenmat.Column0 = new Vector4(ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width , 0, 0, ScreenCoordClipSpaceOffset.X);      // transform of x = x * 2 / width - 1
+            screenmat.Column1 = new Vector4(0.0f, -ScreenCoordClipSpaceSize.Height / ScreenCoordMax.Height, 0, ScreenCoordClipSpaceOffset.Y);  // transform of y = y * -2 / height +1, y = 0 gives +1 (top), y = sh gives -1 (bottom)
             screenmat.Column2 = new Vector4(0, 0, 1, 0);                  // transform of z = none
             screenmat.Column3 = new Vector4(0, 0, 0, 1);                  // transform of w = none
             return screenmat;
@@ -231,7 +230,7 @@ namespace OFC
             return np;
         }
 
-        // calculate the screen pixel of the world pos.  Return s.x,s.y, flag to say if outside screen, 0
+        // tbd later calculate the screen pixel of the world pos.  Return s.x,s.y, flag to say if outside screen, 0
         //public Vector4 WorldToScreen(Vector4 pos, string debug = null)           // return.W = 1 if inside screen co-ord
         //{
         //    Vector4 m = Vector4.Transform(pos, ModelMatrix);

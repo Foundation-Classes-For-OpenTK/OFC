@@ -170,7 +170,7 @@ void main(void)
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform1(Id, 30, Blend);
         }
@@ -236,7 +236,7 @@ void main(void)
             CompileLink(ShaderType.FragmentShader, Code(backtobackrect,binding), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
@@ -281,7 +281,7 @@ void main(void)
             CompileLink(ShaderType.FragmentShader, Code(arbblock), auxname: GetType().Name);
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }

@@ -34,11 +34,11 @@ namespace OFC.GL4
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
         }
 
-        public virtual void Start()
+        public virtual void Start(GLMatrixCalc c)
         {
         }
 
-        public virtual void Finish()
+        public virtual void Finish(GLMatrixCalc c)
         {
         }
 

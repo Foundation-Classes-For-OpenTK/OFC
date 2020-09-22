@@ -87,9 +87,9 @@ void main(void)
             CompileLink(ShaderType.TessEvaluationShader, TES(), constvalues: new object[] { "amplitude", amplitude, "repeats", repeats });
         }
 
-        public override void Start()
+        public override void Start(GLMatrixCalc c)
         {
-            base.Start();
+            base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
             OFC.GLStatics.Check();
         }

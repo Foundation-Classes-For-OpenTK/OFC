@@ -37,7 +37,7 @@ namespace TestOpenTk
 
         public class GLFixedShader : GLShaderPipeline
         {
-            public GLFixedShader(Color c, Action<IGLProgramShader> action = null) : base(action)
+            public GLFixedShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
                 AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
             }
@@ -235,7 +235,7 @@ namespace TestOpenTk
             //}
 
             ShaderNoiseDisplay ns = new ShaderNoiseDisplay();
-            ns.StartAction = (a) => { noise3d.Bind(3); };
+            ns.StartAction += (a,m) => { noise3d.Bind(3); };
             items.Add(ns, "NS");
             GLRenderControl rv = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
             noisebox = GLRenderableItem.CreateNullVertex(rv);   // no vertexes, all data from bound volumetric uniform, no instances as yet
@@ -245,7 +245,7 @@ namespace TestOpenTk
             // make a compute shader noise and run it, to fill up noise3d buffer
 
             ComputeShaderNoise csn = new ComputeShaderNoise(noise3d.Width, noise3d.Height, noise3d.Depth,32,4,32);       // must be a multiple of localgroupsize in csn
-            csn.StartAction += (A) => { noise3d.BindImage(3); };
+            csn.StartAction += (A,m) => { noise3d.BindImage(3); };
             items.Add(csn, "CE1");
             GLComputeShaderList p = new GLComputeShaderList();      // demonstrate a render list holding a compute shader.
             p.Add(csn);
