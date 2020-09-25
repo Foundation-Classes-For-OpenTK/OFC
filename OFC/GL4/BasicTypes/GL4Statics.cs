@@ -50,7 +50,13 @@ namespace OFC.GL4
                 return 3;
             else
                 System.Diagnostics.Debug.Assert(false, "Not supported px format");
+
             return 0;
+        }
+
+        public static int GetValue(GetPName p)
+        {
+            return GL.GetInteger(p);
         }
     }
 }

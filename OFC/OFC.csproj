@@ -55,6 +55,8 @@
     <Compile Include="GL4\BasicTypes\GLFrameBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLLayoutStandards.cs" />
     <Compile Include="GL4\BasicTypes\GLBuffer.cs" />
+    <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
+    <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
     <Compile Include="GL4\Controls\ControlNumberBox.cs" />
     <Compile Include="GL4\Controls\ControlToolTip.cs" />
@@ -84,6 +86,7 @@
     <Compile Include="GL4\Controls\ControlDisplay.cs" />
     <Compile Include="GL4\Controls\Control.cs" />
     <Compile Include="GL4\Controls\ControlTabStyleCustom.cs" />
+    <Compile Include="GL4\Shaders\Base\ShaderNull.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewaveInstanced.cs" />
     <Compile Include="GL4\Shaders\Find\ShaderFindGeoTriangles.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersTesselationEvaluateSinewave.cs" />

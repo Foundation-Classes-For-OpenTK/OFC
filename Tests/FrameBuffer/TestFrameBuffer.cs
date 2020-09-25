@@ -105,7 +105,6 @@ namespace TestOpenTk
             if (true)
             {
                 GLRenderControl lines = GLRenderControl.Lines(5);
-                //lines.Scissors = new int[] { 300, 300, glwfc.Width - 400, glwfc.Height - 400 };
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines,
@@ -114,7 +113,6 @@ namespace TestOpenTk
                                    );
 
                 GLRenderControl lines2 = GLRenderControl.Lines(1);
-                //lines2.Scissors = new int[0];
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines2,
@@ -203,8 +201,7 @@ namespace TestOpenTk
 
                 ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(mc);
 
-                var renderState = GLRenderControl.AllNull();
-                renderState.ApplyState(GLRenderControl.DefaultStartState());
+                var renderState = GLRenderControl.Start();
 
                 Vector4[] p = new Vector4[4];
 
@@ -335,29 +332,11 @@ namespace TestOpenTk
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetFull(gl3dcontroller.MatrixCalc);
 
-            //GL.ScissorIndexed(0, 100, 100, glwfc.Width - 200, glwfc.Height - 200);
-            //GL.Enable(EnableCap.ScissorTest);
-
-
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-
-            //GL.Disable(EnableCap.ScissorTest);
 
             var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.Lookat, true);
 
             this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
-
-            //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-            //Vector4[] databack = dataoutbuffer.ReadVector4(0, 4);
-            //for (int i = 0; i < databack.Length; i += 1)
-            //{
-            //   // databack[i] = databack[i] / databack[i].W;
-            //   // databack[i].X = databack[i].X * gl3dcontroller.glControl.Width / 2 + gl3dcontroller.glControl.Width/2;
-            //   // databack[i].Y = gl3dcontroller.glControl.Height - databack[i].Y * gl3dcontroller.glControl.Height;
-            //    System.Diagnostics.Debug.WriteLine("{0}={1}", i, databack[i].ToStringVec(true));
-            //}
-            //GLStatics.Check();
-
         }
 
         private void SystemTick(object sender, EventArgs e )

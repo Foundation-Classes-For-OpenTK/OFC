@@ -277,7 +277,7 @@ namespace OFC.GL4.Controls
                 currentmouseover.Hover = false;
 
                 var mouseleaveev = new GLMouseEventArgs(e.WindowLocation);
-                mouseleaveev.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
+                SetViewScreenCoord(ref e);
 
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseLeave(mouseleaveev);
@@ -288,9 +288,9 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseEnter(object sender, GLMouseEventArgs e)
         {
-            e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
-
             Gc_MouseLeave(sender, e);       // leave current
+
+            SetViewScreenCoord(ref e);
 
             currentmouseover = FindControlOver(e.ScreenCoord);
 
@@ -312,7 +312,7 @@ namespace OFC.GL4.Controls
             {
                 currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
 
-                e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
+                SetViewScreenCoord(ref e);
                 SetControlLocation(ref e, currentmouseover);
 
                 if (currentmouseover.Enabled)
@@ -332,8 +332,8 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseMove(object sender, GLMouseEventArgs e)
         {
-            e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
-            System.Diagnostics.Debug.WriteLine("WLoc {0} SLoc {1}", e.WindowLocation, e.ScreenCoord);
+            SetViewScreenCoord(ref e);
+            System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
 
             GlobalMouseMove?.Invoke(e);         // feed global mouse move - coords are form coords
 
@@ -398,11 +398,12 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseUp(object sender, GLMouseEventArgs e)
         {
+            SetViewScreenCoord(ref e);
+
             if (currentmouseover != null)
             {
                 currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
 
-                e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                 if (currentmouseover.Enabled)
@@ -419,11 +420,12 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseClick(object sender, GLMouseEventArgs e)
         {
+            SetViewScreenCoord(ref e);
+
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null )        // clicks only occur if mouse is still over initial control
             {
                 SetFocus(currentmouseover);
 
-                e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                 if (currentmouseover.Enabled)
@@ -432,6 +434,7 @@ namespace OFC.GL4.Controls
             else if ( currentmouseover == null)        // not over any control, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
                 SetFocus(this);
+
                 if (this.Enabled)
                     this.OnMouseClick(e);
             }
@@ -441,7 +444,7 @@ namespace OFC.GL4.Controls
         {
             if (currentmouseover != null && currentmouseover.Enabled)
             {
-                e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
+                SetViewScreenCoord(ref e);
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                 if (currentmouseover.Enabled)
@@ -449,7 +452,13 @@ namespace OFC.GL4.Controls
             }
         }
 
-        // Set up control locations, relative location, and area
+        // Set up other locations, control locations, relative location, and area, etc
+
+        private void SetViewScreenCoord(ref GLMouseEventArgs e)
+        {
+            e.ViewportLocation = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+            e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
+        }
 
         private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
         {

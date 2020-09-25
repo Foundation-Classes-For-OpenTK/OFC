@@ -18,7 +18,7 @@ using System.Drawing;
 
 namespace OFC.GL4
 {
-    // Base Class for vertex data to vertex shader..
+    // Set up by a shader start/end, or inline during render paint
 
     public static class GLScissors 
     {
@@ -40,7 +40,6 @@ namespace OFC.GL4
         }
 
         // calculate the area to scissor for screen coords.. Note scissor is defined by the openGL whole windows, not its viewport.
-        // scissor 0,0 = lower left
 
         static public void SetToScreenCoords(int viewport, GLMatrixCalc c)
         {

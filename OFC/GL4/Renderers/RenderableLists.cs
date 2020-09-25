@@ -62,6 +62,13 @@ namespace OFC.GL4
             AddItem(cprog, n, null);
         }
 
+        // a null shader
+        public void Add(GLShaderNull nprog)
+        {
+            string n = "NS " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            AddItem(nprog, n, null);
+        }
+
         public IGLRenderableItem this[string renderitem] { get { return byname[renderitem]; } }
         public bool Contains(string renderitem) { return byname.ContainsKey(renderitem); }
 
@@ -69,7 +76,7 @@ namespace OFC.GL4
         {
             foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
-                // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute shader would be)
+                // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute/null shader would be)
                 if (kvp.Key.Enable && kvp.Value.Find((x)=>x.Item2 == null || x.Item2.Visible)!=null)      
                 {
                     // System.Diagnostics.Debug.WriteLine("Shader " + d.Key.GetType().Name);
@@ -79,10 +86,10 @@ namespace OFC.GL4
                     {
                         if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
                         {
-                           // System.Diagnostics.Debug.WriteLine("Render " + g.Item1 + " shader " + d.Key.GetType().Name);
+                            System.Diagnostics.Debug.WriteLine("Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
                             g.Item2.Bind(currentstate, kvp.Key, c);
                             g.Item2.Render();
-                          //  System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
+                            //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
                         }
                     }
 

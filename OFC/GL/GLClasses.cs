@@ -27,20 +27,27 @@ namespace OFC
         public GLMouseEventArgs(MouseButtons b, Point l, int c, int delta, bool alt, bool ctrl, bool sh) { Button = MouseButtons.None; WindowLocation = l; Clicks = c; Delta = delta; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
         public GLMouseEventArgs(MouseButtons b, Point l, int c, bool alt, bool ctrl, bool sh) { Button = b; WindowLocation = l; Clicks = c;Delta = 0; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
 
-        public MouseButtons Button { get; set; }        
+        // Set by GLWinForm etc
+
+        public MouseButtons Button { get; set; }
         public Point WindowLocation { get; set; }       // Window position - set by GLWinForm etc across all of GL window
         public int Clicks { get; set; }
         public int Delta { get; set; }
-        public bool Handled { get; set; }
         public bool Alt { get; private set; }
         public bool Shift { get; private set; }
 
-        // FOR controls only
+        public bool Handled { get; set; }               // indicate if handled
+
+        // Set by displaycontrol
+
+        public Point ViewportLocation { get; set; }     // View port location
         public Point ScreenCoord { get; set; }          // moved to screen coord space (takes into account viewport and screen coord scaling). Available via GlobalMouseMove
 
+        // Set by displaycontrol if over a control
+
+        public bool Control { get; private set; }       // the control its within
         public Point ControlLocation { get; set; }      // the control location in screen coords.  Available to OnXXXevents etc
         public Point Location { get; set; }             // Location within control
-        public bool Control { get; private set; }       // the control its within
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
         public AreaType Area { get; set; }
     }

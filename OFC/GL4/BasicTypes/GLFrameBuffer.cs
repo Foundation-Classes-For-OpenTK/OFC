@@ -47,6 +47,15 @@ namespace OFC.GL4
             GLStatics.Check();
         }
 
+        public void AttachColor(GLTexture2DArray tex, int colourtarget = 0, int mipmaplevel = 0)    // not tested.. page 397
+        {
+            ColorTarget = colourtarget;
+            Width = tex.Width;
+            Height = tex.Height;
+            GL.NamedFramebufferTexture(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, tex.Id, mipmaplevel);
+            GLStatics.Check();
+        }
+
         public void AttachDepth(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthAttachment, tex.Id, mipmaplevel);
@@ -84,6 +93,12 @@ namespace OFC.GL4
             GL.ClearColor(colourback);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);  // clear the FB
             GLStatics.Check();
+        }
+
+        public FramebufferStatus GetStatus()     // page 405 get status
+        {
+            return GL.CheckNamedFramebufferStatus(Id, FramebufferTarget.DrawFramebuffer);
+
         }
 
         public static void UnBind()

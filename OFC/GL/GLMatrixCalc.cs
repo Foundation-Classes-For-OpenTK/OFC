@@ -53,6 +53,7 @@ namespace OFC
         public Size ScreenSize { get; protected set; }                          // screen size, total, of GL window.
 
         public Rectangle ViewPort { get; protected set; }                       // area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left
+        public Vector2 DepthRange { get; set; } = new Vector2(0, 1);            // depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)
 
         public Size ScreenCoordMax { get; set; }                                // screen co-ords max. Does not have to match the screensize. If not, you get a fixed scalable area
         public virtual SizeF ScreenCoordClipSpaceSize { get; set; } = new SizeF(2, 2);   // Clip space size to use for screen coords, override to set up another
@@ -180,6 +181,7 @@ namespace OFC
         {
             //System.Diagnostics.Debug.WriteLine("Set GL Viewport {0} {1} w {2} h {3}", ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
             OpenTK.Graphics.OpenGL.GL.Viewport(ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
+            OpenTK.Graphics.OpenGL.GL.DepthRange(DepthRange.X, DepthRange.Y);
         }
 
         public virtual Matrix4 ScreenCoordToClipSpace()             // matrix to convert a screen co-ord to clip space

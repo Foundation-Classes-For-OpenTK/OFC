@@ -168,7 +168,8 @@ void main(void)
         // returns null or vec4 ( PrimitiveID, InstanceID, average Z of triangle points, result index)
         public Vector4[] GetResult()
         {
-            GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
+            GLMemoryBarrier.All();
+
             vecoutbuffer.StartRead(0);
             int count = Math.Min(vecoutbuffer.ReadInt(),maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
 

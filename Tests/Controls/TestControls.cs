@@ -71,7 +71,7 @@ namespace TestOpenTk
                 {
                     System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
                     ScreenSize = newsize;
-                    int margin = 200;
+                    int margin = 32;
                     ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
                     SetViewPort();
                 }

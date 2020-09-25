@@ -26,6 +26,11 @@ namespace OFC.WinForm
 
     public class GLControlKeyOverride : OpenTK.GLControl
     {
+        public GLControlKeyOverride(OpenTK.Graphics.GraphicsMode m ) : base(m)
+        {
+
+        }
+
         protected override bool IsInputKey(Keys keyData)    // disable normal windows control change
         {
             if (keyData == Keys.Tab || keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
@@ -39,7 +44,7 @@ namespace OFC.WinForm
     {
         public GLControlKeyOverride glControl { get; private set; }      // use only in extreams for back compat
 
-        public Color BackColor { get { return backcolor; } set { backcolor = value; } }
+        public Color BackColor { get; set; } = Color.Black;
         public int Width { get { return glControl.Width; } }
         public int Height { get { return glControl.Height; } }
         public Size Size { get { return glControl.Size; } }
@@ -47,6 +52,7 @@ namespace OFC.WinForm
         public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
         public GL4.GLRenderControl RenderState { get; set; } = null;
         public bool MakeCurrentOnPaint { get; set; } = false;           // set if using multiple opengl in one thread
+        public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;    // what buffers to clear
 
         public Action<Object, GLMouseEventArgs> MouseDown { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseUp { get; set; } = null;
@@ -61,9 +67,18 @@ namespace OFC.WinForm
         public Action<Object> Resize { get; set; } = null;
         public Action<Object> Paint { get; set; } = null;
 
-        public GLWinFormControl(Control attachcontrol)
+        public GLWinFormControl(Control attachcontrol, OpenTK.Graphics.GraphicsMode mode = null)
         {
-            glControl = CreateGLClass();
+            if (mode == null)
+                mode = OpenTK.Graphics.GraphicsMode.Default;
+
+            glControl = new GLControlKeyOverride(mode);
+            glControl.Dock = DockStyle.Fill;
+            glControl.BackColor = System.Drawing.Color.Black;
+            glControl.Name = "glControl";
+            glControl.TabIndex = 0;
+            glControl.VSync = true;
+            glControl.PreviewKeyDown += Gl_PreviewKeyDown;
 
             attachcontrol.Controls.Add(glControl);
 
@@ -79,6 +94,7 @@ namespace OFC.WinForm
             glControl.KeyPress += Gc_KeyPress;
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
+
         }
 
         public void Invalidate()        // repaint
@@ -102,33 +118,12 @@ namespace OFC.WinForm
                 glControl.Cursor = Cursors.Default;
         }
 
-        //public void RestoreViewPort()
-        //{
-        //    GL.Viewport(0, 0, glControl.Width, glControl.Height);                        // Use all of the glControl painting area
-        //}
-
-        private GLControlKeyOverride CreateGLClass()
-        {
-            GLControlKeyOverride gl;
-            gl = new GLControlKeyOverride();
-            gl.Dock = DockStyle.Fill;
-            gl.BackColor = System.Drawing.Color.Black;
-            gl.Name = "glControl";
-            gl.TabIndex = 0;
-            gl.VSync = true;
-            gl.PreviewKeyDown += Gl_PreviewKeyDown;
-            
-            return gl;
-        }
-
 
         private void Gl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)    // all keys are for us
         {
             if ( e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Up || e.KeyCode == Keys.Down )
                 e.IsInputKey = true;
         }
-
-        private Color backcolor { get; set; } = (Color)System.Drawing.ColorTranslator.FromHtml("#0D0D10");
 
         private Point FindCursorFormCoords()
         {
@@ -234,15 +229,15 @@ namespace OFC.WinForm
             if ( MakeCurrentOnPaint )
                 glControl.MakeCurrent();    // only needed if running multiple GLs windows in same thread
 
-            GL.Disable(EnableCap.ScissorTest);      // Scissors off by default
+            GL.Disable(EnableCap.ScissorTest);      // Scissors off by default at start of each render.
+            GL.Disable(EnableCap.StencilTest);      // and stencil
 
-            GL.ClearColor(backcolor);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);  // note renderdiscard affects this..
+            GL.ClearColor(BackColor);
+            GL.Clear(ClearBuffers);                 // note renderdiscard affects this..
 
             if ( RenderState == null )
             {
-                RenderState = GL4.GLRenderControl.AllNull();
-                RenderState.ApplyState(GL4.GLRenderControl.DefaultStartState());
+                RenderState = GL4.GLRenderControl.Start();
             }
 
             Paint?.Invoke(glControl);

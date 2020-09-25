@@ -454,7 +454,7 @@ namespace TestOpenTk
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
-            var sys = travelpath.FindSystem(e.Location, glwfc.RenderState, glwfc.Size);
+            var sys = travelpath.FindSystem(e.ViewportLocation, glwfc.RenderState, glwfc.Size);
             if ( sys != null )
             {
                 gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
@@ -462,7 +462,7 @@ namespace TestOpenTk
             }
             else
             {
-                var gmo = galmapobjects.FindPOI(e.Location, glwfc.RenderState, glwfc.Size, galmap);
+                var gmo = galmapobjects.FindPOI(e.ViewportLocation, glwfc.RenderState, glwfc.Size, galmap);
 
                 if ( gmo != null )
                 {
