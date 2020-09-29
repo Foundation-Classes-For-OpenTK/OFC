@@ -36,6 +36,9 @@ namespace OFC
     //     p0-p7 are in world coords                                                               -1
     // https://learnopengl.com/Getting-started/Coordinate-Systems
 
+    // this class computes the model and projection matrices
+    // also the screen co-ord matrix
+
     public class GLMatrixCalc
     {
         public bool InPerspectiveMode { get; set; } = true;                     // perspective mode
@@ -67,6 +70,8 @@ namespace OFC
         public Matrix4 ProjectionMatrix { get; private set; }
         public Matrix4 ProjectionModelMatrix { get; private set; }
         public Matrix4 GetResMat { get { return ProjectionModelMatrix; } }      // used for calculating positions on the screen from pixel positions.  Remembering Apollo
+
+        // after Projection calc
         public float ZNear { get; private set; }
 
         // Screen coords are different from windows cooreds. Used for controls
@@ -232,21 +237,29 @@ namespace OFC
             return np;
         }
 
-        // tbd later calculate the screen pixel of the world pos.  Return s.x,s.y, flag to say if outside screen, 0
-        //public Vector4 WorldToScreen(Vector4 pos, string debug = null)           // return.W = 1 if inside screen co-ord
-        //{
-        //    Vector4 m = Vector4.Transform(pos, ModelMatrix);
-        //    Vector4 p = Vector4.Transform(m, ProjectionMatrix);
-        //    Vector4 c = p / p.W;
-        //    bool outside = c.X <= -1 || c.X >= 1 || c.Y <= -1 || c.Y >= 1 || c.Z >= 1;    // in screen range and P.W must be less than p.Z far z clipping
+        
+        public Vector4 WorldToNormalisedClipSpace(Vector4 worldpos)     // World pos -> normalised clip space
+        {
+            Vector4 m = Vector4.Transform(worldpos, ProjectionModelMatrix);  // go from world-> viewspace -> clip space
+            Vector4 c = m / m.W;                                            // to normalised clip space
+            return c;
+        }
 
-        //    Size scr = ModelMatrixViewPortSize();
+        public bool IsNormalisedClipSpaceInView(Vector4 clipspace)
+        {
+            return !(clipspace.X <= -1 || clipspace.X >= 1 || clipspace.Y <= -1 || clipspace.Y >= 1 || clipspace.Z >= 1);
+        }
 
-        //    Vector4 s = new Vector4((c.X + 1) / 2 * scr.Width, (-c.Y + 1) / 2 * scr.Height, 0, outside ? 0 : 1);
-        //    if (debug != null)
-        //        System.Diagnostics.Debug.WriteLine("{0} {1} ->m {2} ->p {3} ->c {4} ->s {5}", debug, pos.ToStringVec(), m.ToStringVec("10:0.00"), p.ToStringVec("10:0.00"), c.ToStringVec("10:0.00"), s.ToStringVec("10:0.00"));
-        //    return s;
-        //}
+        public Vector4 NormalisedClipSpaceToViewPortScreenCoord(Vector4 clipspace)   // world->viewport co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords
+        {
+            bool inview = IsNormalisedClipSpaceInView(clipspace);
+            return new Vector4((clipspace.X + 1) / 2 * ViewPort.Width, (-clipspace.Y + 1) / 2 * ViewPort.Height, 0, inview ? 0 : 1);
+        }
 
+        public Vector4 NormalisedClipSpaceToWindowCoord(Vector4 clipspace)   // world->window co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords
+        {
+            Vector4 viewportscreencoord = NormalisedClipSpaceToViewPortScreenCoord(clipspace);
+            return new Vector4(viewportscreencoord.X + ViewPort.Left, viewportscreencoord.Y + ViewPort.Top, viewportscreencoord.Z, viewportscreencoord.W);
+        }
     }
 }

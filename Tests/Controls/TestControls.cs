@@ -489,7 +489,6 @@ namespace TestOpenTk
 
             if ( displaycontrol != null )
             {
-                PositionCamera pc = new PositionCamera();
                 gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
                 displaycontrol.Paint += (o) =>        // subscribing after start means we paint over the scene, letting transparency work

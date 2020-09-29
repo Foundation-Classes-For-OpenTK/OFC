@@ -66,6 +66,7 @@ void main(void)
             string gcode = @"
 #version 450 core
 #include UniformStorageBlocks.matrixcalc.glsl
+
 layout (points) in;
 layout (points) out;
 layout (max_vertices=2) out;
@@ -86,25 +87,26 @@ void main(void)
     int i;
     for( i = 0 ; i < gl_in.length() ; i++)
     {
-        if ( (gl_PrimitiveIDIn & 1) != 0)
-            gl_PointSize = 5;
-        else
-            gl_PointSize = gl_PrimitiveIDIn+5;
-        gl_Position = mc.ProjectionModelMatrix * gl_in[i].gl_Position;
-        vs_color = vec4(gl_PrimitiveIDIn*0.05,0.4,gl_PrimitiveIDIn*0.05,1.0);
-
-        if (gl_PrimitiveIDIn != 9 && gl_PrimitiveIDIn != 13 )
-        {
+        if (gl_PrimitiveIDIn < 9 || gl_PrimitiveIDIn>10 )
+        {   
+            if ( (gl_PrimitiveIDIn & 1) != 0)
+                gl_PointSize = 3;
+            else
+                gl_PointSize = gl_PrimitiveIDIn*2+5;
+            gl_Position = mc.ProjectionModelMatrix * gl_in[i].gl_Position;
+            vs_color = vec4(gl_PrimitiveIDIn*0.05,0.4,gl_PrimitiveIDIn*0.05,1.0);
             EmitVertex();
         }
         else
         {
             uint ipos = atomicAdd(count,1);
 
-            if ( ipos < 128 )
+            if ( ipos < 128 )   
+            {
                 rejectedpos[ipos] = gl_in[i].gl_Position;
+            }
         }
-
+       
         if ( gl_PrimitiveIDIn ==8  )        // on 8, emit an extra
         {
             gl_PointSize = 50;
@@ -113,7 +115,6 @@ void main(void)
             vs_color = vec4(1.0-gl_PrimitiveIDIn*0.05,0.4,gl_PrimitiveIDIn*0.05,1.0);
             EmitVertex();
         }
-
     }
 
     EndPrimitive();
@@ -155,26 +156,30 @@ void main(void)
                 return (float)ms / 20.0f;
             };
 
+            // 16 vertexes, passed thru geo shader above
+
             GLStorageBlock storagebuffer = new GLStorageBlock(5);           // new storage block on binding index 5 to provide vertexes
             Vector4[] vertexes = new Vector4[16];
             for (int v = 0; v < vertexes.Length; v++)
                 vertexes[v] = new Vector4(v % 4, 0, v / 4, 1);
             storagebuffer.AllocateFill(vertexes);
 
-            vecoutbuffer = new GLStorageBlock(1);           // new storage block on binding index 1 for vector out
-            vecoutbuffer.AllocateBytes(sizeof(float) * 4 * 128, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
-
-            countbuffer = new GLStorageBlock(2);           // new storage block on binding index 2 for count out
-            countbuffer.AllocateBytes(sizeof(int), OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);       // set size to a int.
-
             items.Add(new ShaderT3(), "Shader");            // geo shader
             GLRenderControl ri = GLRenderControl.PointsByProgram();
             rObjects.Add(items.Shader("Shader"), "T1", new GLRenderableItem(ri, vertexes.Length, null, null, 1));
 
+            // list of rejected by geoshader above
+
+            rejectedbuffer = new GLStorageBlock(1);           // new storage block on binding index 1 for vector out
+            rejectedbuffer.AllocateBytes(sizeof(float) * 4 * 128, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
+            countbuffer = new GLStorageBlock(2);           // new storage block on binding index 2 for count out
+            countbuffer.AllocateBytes(sizeof(int), OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);       // set size to a int.
+
+            // redrawer of rejected items
 
             items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(new Color4(0.9f, 0.0f, 0.0f, 1.0f))), "ResultShader");
             GLRenderControl rs = GLRenderControl.Points(30);
-            redraw = GLRenderableItem.CreateVector4(items, rs, vecoutbuffer, 0);
+            redraw = GLRenderableItem.CreateVector4(items, rs, rejectedbuffer, 0);
             rObjects2.Add(items.Shader("ResultShader"), redraw);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0
@@ -184,7 +189,7 @@ void main(void)
 
         GLRenderableItem redraw;
         GLStorageBlock countbuffer;
-        GLStorageBlock vecoutbuffer;
+        GLStorageBlock rejectedbuffer;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
@@ -201,10 +206,11 @@ void main(void)
             countbuffer.ZeroBuffer();
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-            GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
+
+            GLMemoryBarrier.Vertex();
 
             int count = countbuffer.ReadInt(0);
-            Vector4[] d = vecoutbuffer.ReadVector4(0, count);
+            Vector4[] d = rejectedbuffer.ReadVector4(0, count);
             for (int i = 0; i < count; i++)
             {
                 System.Diagnostics.Debug.WriteLine(i + " = " + d[i]);
@@ -216,13 +222,9 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
-            gl3dcontroller.Redraw();
+            gl3dcontroller.HandleKeyboardSlewsInvalidate(true);
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
-        {
-        }
     }
 }
 

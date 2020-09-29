@@ -12,8 +12,6 @@
  * governing permissions and limitations under the License.
  */
 
-
-using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -74,6 +72,8 @@ namespace OFC.GL4
 
         public void Render(GLRenderControl currentstate, GLMatrixCalc c)
         {
+            GLRenderControl lastapplied = null;
+
             foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
                 // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute/null shader would be)
@@ -86,8 +86,17 @@ namespace OFC.GL4
                     {
                         if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
                         {
-                            System.Diagnostics.Debug.WriteLine("Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
-                            g.Item2.Bind(currentstate, kvp.Key, c);
+                          //  System.Diagnostics.Debug.WriteLine("Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
+                            if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                            {
+                                g.Item2.Bind(null, kvp.Key, c);
+                            }
+                            else
+                            {
+                                g.Item2.Bind(currentstate, kvp.Key, c);
+                                lastapplied = g.Item2.RenderControl;
+                            }
+
                             g.Item2.Render();
                             //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
                         }

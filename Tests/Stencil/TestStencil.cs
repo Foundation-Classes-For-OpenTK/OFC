@@ -34,7 +34,6 @@ namespace TestOpenTk
         private Timer systemtimer = new Timer();
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
-       // GLRenderProgramSortedList rObjects2 = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
 
         public TestStencil()
@@ -85,7 +84,7 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderControl def = new GLRenderControl() { DepthTest = false };      // set up default state for fixed values
+            GLRenderControl def = new GLRenderControl() { DepthTest = false };      // set up default state for fixed values - no depth test, rely on stencil
 
             if ( true )
             {

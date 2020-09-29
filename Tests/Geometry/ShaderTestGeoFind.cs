@@ -13,22 +13,15 @@
  * governing permissions and limitations under the License.
  */
 
+using OFC;
+using OFC.Controller;
+using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OFC.GL4;
-using OFC.Controller;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OFC;
 
 namespace TestOpenTk
 {
@@ -95,30 +88,30 @@ namespace TestOpenTk
             var shader = new GLShaderPipeline(vert, frag);
             items.Add(shader,"TRI");
 
-            var vecp4 = new Vector4[] { new Vector4(0, 0, 0, 1), new Vector4(10, 0, 0, 1), new Vector4(10, 0, 10, 1) ,
+            var triangles = new Vector4[] { new Vector4(0, 0, 0, 1), new Vector4(10, 0, 0, 1), new Vector4(10, 0, 10, 1) ,
                                     new Vector4(-20, 0, 0, 1), new Vector4(-10, 0, 0, 1), new Vector4(-10, 0, 10, 1)
             };
 
-            var wpp4 = new Vector4[] { new Vector4(0, 0, 0, 0), new Vector4(0, 0, 12, 0) };
+            var worldpos = new Vector4[] { new Vector4(0, 0, 0, 0), new Vector4(0, 0, 12, 0) };
 
             GLRenderControl rc = GLRenderControl.Tri();
 
-            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, rc, vecp4, wpp4, ic:2, seconddivisor:1));
+            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, rc, triangles, worldpos, ic:2, seconddivisor:1));
 
             findshader = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(11, 16), null, null, null);
-            findrender = GLRenderableItem.CreateVector4Vector4Buf2(items, GLRenderControl.Tri(), vecp4, wpp4, ic:2, seconddivisor:1 );
+            findrender = GLRenderableItem.CreateVector4Vector4Buf2(items, GLRenderControl.Tri(), triangles, worldpos, ic:2, seconddivisor:1 );
 
             Closed += ShaderTest_Closed;
         }
 
         void mousedown(Object sender, GLMouseEventArgs e)
         {
-         //   GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
+         //  GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
            // mcub.Set(gl3dcontroller.MatrixCalc);
 
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
 
-            geo.SetScreenCoords(e.Location, glwfc.Size);
+            geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
 
             System.Diagnostics.Debug.WriteLine("Run find");
             findrender.Execute(findshader, glwfc.RenderState, discard:true);
@@ -146,23 +139,16 @@ namespace TestOpenTk
 
         private void ControllerDraw(OFC.GLMatrixCalc mc, long time)
         {
-
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.Set(gl3dcontroller.MatrixCalc);
-
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-            GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
-
         }
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsInvalidate(true);
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
-        {
-        }
     }
 }
 

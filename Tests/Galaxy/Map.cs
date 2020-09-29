@@ -299,6 +299,7 @@ namespace TestOpenTk
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 120000f;
             mc.InPerspectiveMode = true;
+            mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
             displaycontrol = new GLControlDisplay(items, glwfc, mc);       // hook form to the window - its the master
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
@@ -318,7 +319,6 @@ namespace TestOpenTk
             };
 
             // hook gl3dcontroller to display control - its the slave
-            PositionCamera pc = new PositionCamera();
             gl3dcontroller.Start(mc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F);
 
             if (displaycontrol != null)

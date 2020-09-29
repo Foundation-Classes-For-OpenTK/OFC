@@ -75,6 +75,8 @@ namespace OFC.GL4
         }
 
         // called before Render to set up data for the render.
+        // currentstate may be null, meaning, don't apply
+        // RenderControl must be set for normal renders. 
         public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
             if (currentstate != null)
@@ -531,7 +533,10 @@ namespace OFC.GL4
 
         #endregion
 
-        #region Execute directly. Usually used if shader is not rendering to screen or to a framebuffer, and that would normally have discard=true
+        #region Execute directly outside of a render list
+
+        // Use Cases: if shader is not rendering to screen (such as a finder) and that would have discard=true
+        // or to a framebuffer in stages
 
         public void Execute( IGLProgramShader shader , GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false  )
         {

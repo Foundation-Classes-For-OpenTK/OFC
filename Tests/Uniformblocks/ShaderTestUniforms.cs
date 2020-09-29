@@ -1,4 +1,7 @@
-﻿/*
+﻿using OFC;
+using OFC.Controller;
+using OFC.GL4;
+/*
  * Copyright 2019 Robbyxp1 @ github.com
  * Part of the EDDiscovery Project
  *
@@ -15,20 +18,10 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OFC.GL4;
 using OpenTK.Graphics.OpenGL4;
-using OFC.Controller;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OFC;
 
 namespace TestOpenTk
 {

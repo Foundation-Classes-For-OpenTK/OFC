@@ -47,7 +47,7 @@ namespace OFC
 
         public bool Control { get; private set; }       // the control its within
         public Point ControlLocation { get; set; }      // the control location in screen coords.  Available to OnXXXevents etc
-        public Point Location { get; set; }             // Location within control
+        public Point Location { get; set; }             // offset within control (similar to Location in winforms)
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
         public AreaType Area { get; set; }
     }
