@@ -71,6 +71,7 @@ namespace TestOpenTk
                 {
                     System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
                     ScreenSize = newsize;
+                    ScreenCoordMax = newsize;
                     int margin = 32;
                     ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
                     SetViewPort();
@@ -183,10 +184,11 @@ namespace TestOpenTk
             if (true)
             {
                 bool testform1 = true;
-                bool testform2 = true;
+                bool testpanel = true;
+                bool testgroupbox = true;
                 bool testtable = true;
                 bool testflow = true;
-                bool testtextbox = true;
+                bool testtextbox = false;
                 bool testcombobox = true;
                 bool testscrollbar = true;
                 bool testvsp = true;
@@ -195,8 +197,17 @@ namespace TestOpenTk
                 bool testtabcontrol = true;
                 bool testdatetime = true;
 
-                testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
-                testbuttons = true;
+                testpanel = testgroupbox = testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
+
+                bool testform2 = true;
+                bool testflowlayout = true;
+                bool testmultiline = true;
+                bool testfloat = false;
+                testflowlayout = false;
+
+                //testform2 = false;
+
+                testscrollbar = true;
 
                 mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
@@ -215,17 +226,18 @@ namespace TestOpenTk
 
                     displaycontrol.Add(pform);
 
-                    GLPanel p1 = new GLPanel("P3", new Size(200, 200), DockingType.BottomRight, 0);
-                    p1.DockingMargin = new Margin(50, 20, 10, 20);
-                    pform.Add(p1);
+                    if (testpanel)
+                    {
+                        GLPanel p1 = new GLPanel("P3", new Size(200, 200), DockingType.BottomRight, 0);
+                        p1.DockingMargin = new Margin(50, 20, 10, 20);
+                        pform.Add(p1);
+                    }
 
-                    GLPanel p2 = new GLPanel("P2", new Size(200, 300), DockingType.LeftTop, 0.15f);
-                    p2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                    p2.DockingMargin = new Margin(10, 20, 1, 10);
-                    pform.Add(p2);
-
-                    GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", DockingType.Right, 0.15f);
-                    pform.Add(p3);
+                    if (testgroupbox)
+                    {
+                        GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", DockingType.Right, 0.15f);
+                        pform.Add(p3);
+                    }
 
                     if (testtabcontrol)
                     {
@@ -303,14 +315,17 @@ namespace TestOpenTk
 
                     if (testtextbox)
                     {
-                        GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(600, 10, 150, 20), "Text Data Which is a very long string of very many many characters");
+                        GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(600, 10, 150, 40), "Text Data Which is a very long string of very many many characters");
+                        tb1.Font = new Font("Arial", 12);
+                        tb1.ForeColor = Color.Black;
+                        //tb1.BackColor = Color.Red;
                         pform.Add(tb1);
                     }
 
                     if (testcombobox)
                     {
                         List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
-                        GLComboBox cb1 = new GLComboBox("CB1", new Rectangle(600, 40, 150, 20), i1);
+                        GLComboBox cb1 = new GLComboBox("CB1", new Rectangle(600, 60, 150, 20), i1);
                         cb1.SelectedIndex = 0;
                         cb1.BackColorGradient = 90;
                         cb1.BackColorGradientAlt = Color.Aqua;
@@ -322,10 +337,15 @@ namespace TestOpenTk
 
                     if (testscrollbar)
                     {
-                        GLPanel psb = new GLPanel("panelsb", new Rectangle(600, 80, 50, 100));
+                        GLPanel psb = new GLPanel("panelsb", new Rectangle(600, 90, 200, 100));
                         pform.Add(psb);
+                        
                         GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(0, 0, 20, 100), 0, 100);
                         psb.Add(sb1);
+
+                        GLScrollBar sb2 = new GLScrollBar("SB2", new Rectangle(40, 10, 150, 20), 0, 100);
+                        sb2.HorizontalScroll = true;
+                        psb.Add(sb2);
                     }
 
                     if (testvsp)
@@ -360,6 +380,10 @@ namespace TestOpenTk
 
                     if (testbuttons)
                     {
+                        GLPanel p2 = new GLPanel("P2", new Size(200, 300), DockingType.LeftTop, 0.15f);
+                        p2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                        p2.DockingMargin = new Margin(10, 20, 1, 10);
+                        pform.Add(p2);
 
                         GLButton b1 = new GLButton("B1", new Rectangle(5, 5, 80, 40), "Button 1");
                         b1.Margin = new Margin(5);
@@ -421,46 +445,58 @@ namespace TestOpenTk
                     pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
                     displaycontrol.Add(pform2);
 
-                    GLFlowLayoutPanel ptable = new GLFlowLayoutPanel("Flowlayout2", DockingType.Top, 0);
-                    ptable.AutoSize = true;
-                    ptable.SuspendLayout();
-                    ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                    ptable.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 5);
-                    pform2.Add(ptable);
-
-                    GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
-                    ptable.Add(pti1);
-                    GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
-                    ptable.Add(pti2);
-                    GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
-                    ptable.Add(pti3);
-
-                    for( int i = 0; i < 15; i++)
+                    if (testflowlayout)
                     {
-                        GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
-                        ptable.Add(pti4);
+                        GLFlowLayoutPanel ptable = new GLFlowLayoutPanel("Flowlayout2", DockingType.Top, 0);
+                        ptable.AutoSize = true;
+                        ptable.SuspendLayout();
+                        ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                        ptable.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 5);
+                        pform2.Add(ptable);
+
+                        GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
+                        ptable.Add(pti1);
+                        GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
+                        ptable.Add(pti2);
+                        GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
+                        ptable.Add(pti3);
+
+                        for (int i = 0; i < 15; i++)
+                        {
+                            GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
+                            ptable.Add(pti4);
+                        }
                     }
 
-                    string l = "";
-                    for (int i = 0; i < 2; i++)
-                        l += string.Format("This is line " + i) + "\r\n";
-                    l += "And a much much longer Line which should break the width\r\n";
-                    for (int i = 10; i < 12; i++)
-                        l += string.Format("This is line " + i) + "\r\n";
-                    //l += "This is a longer line\r\n";
-                    l += "And a much much longer Line which should break the width\r\n";
-                    l += "trail ";
-                    // l = "";
+                    if (testmultiline)
+                    {
+                        string l = "";
+                        for (int i = 0; i < 20; i++)
+                        {
+                            string s = string.Format("Line " + i);
+                            if ( i == 5 )
+                                s += "And a much much longer Line which should break the width";
+                            l += s + "\r\n";
+                        }
+                        l += "trail ";
+                        // l = "";
 
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(10, 200, 200, 200), l);
-                    mtb.Font = new Font("Ms Sans Serif", 12);
-                    mtb.LineColor = Color.Green;
-                    mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    pform2.Add(mtb);
+                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(10, 200, 200, 200), l);
+                        mtb.Font = new Font("Ms Sans Serif", 12);
+                        mtb.LineColor = Color.Green;
+                        mtb.EnableVerticalScrollBar = true;
+                        mtb.EnableHorizontalScrollBar = true;
+                        mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                        pform2.Add(mtb);
+                    }
 
-                    GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(10, 450, 100, 25),23.4f);
-                    glf.Font = new Font("Ms Sans Serif", 12);
-                    pform2.Add(glf);
+
+                    if (testfloat)
+                    {
+                        GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(10, 450, 100, 25), 23.4f);
+                        glf.Font = new Font("Ms Sans Serif", 12);
+                        pform2.Add(glf);
+                    }
 
 
                     pform2.ResumeLayout();

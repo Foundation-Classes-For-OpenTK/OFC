@@ -20,7 +20,7 @@ namespace OFC.GL4.Controls
     {
         public GLTextBox(string name, Rectangle pos, string text = "") : base(name, pos, text)
         {
-            AllowLF = false;
+            MultiLineMode = false;
         }
 
         public GLTextBox() : this("TB?", DefaultWindowRectangle, "")

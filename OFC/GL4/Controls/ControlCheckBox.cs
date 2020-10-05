@@ -13,14 +13,9 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -60,8 +55,10 @@ namespace OFC.GL4.Controls
 
         public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null)
         {
+            //System.Diagnostics.Debug.WriteLine("Apply drawn bitmap scaling to " + Name);
             drawnImageAttributesUnchecked?.Dispose();
-            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out System.Drawing.Imaging.ImageAttributes drawnImageAttributesDisabled, 1.0f, remap, colormatrix);
+            drawnImageAttributesDisabled?.Dispose();
+            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out drawnImageAttributesDisabled, DisabledScaling, remap, colormatrix);
             Invalidate();
         }
 
@@ -299,6 +296,7 @@ namespace OFC.GL4.Controls
             }
             else
             {
+               // System.Diagnostics.Debug.WriteLine("Draw {0} e{1} c{2}", Name, Enabled, Checked);
                 base.DrawImage(Image, box, g, (Enabled) ? ((Checked) ? drawnImageAttributesEnabled: drawnImageAttributesUnchecked) :drawnImageAttributesDisabled);
             }
         }

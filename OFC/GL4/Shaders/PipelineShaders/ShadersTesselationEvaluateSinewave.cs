@@ -18,7 +18,7 @@ namespace OFC.GL4
 {
     // Pipeline shader, Tesselation Control, with sinewave
     // input gl_in
-    // input (1) tcs_worldposinstance
+    // input (1) tcs_worldposinstance - w holds the image no. image no bit16 = don't animate.
     // input (2) tcs_instance
     // output gl_position
     // output (0) vs_textureCoordinate
@@ -62,15 +62,20 @@ const float repeats = 0;
 
 void main(void)
 {
+    imageno = int(tcs_worldposinstance[0].w);
     vs_textureCoordinate = vec2(gl_TessCoord.x,1.0-gl_TessCoord.y);         //1.0-y is due to the project model turning Y upside down so Y points upwards on screen
-
     vec4 p1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);  
     vec4 p2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x); 
     vec4 pos = mix(p1, p2, gl_TessCoord.y);                                     
 
-    pos.y += amplitude*sin((phase+gl_TessCoord.x)*PI*2*repeats);           // .x goes 0-1, phase goes 0-1, convert to radians
-
-    imageno = int(tcs_worldposinstance[0].w);
+    if ( imageno > 65535)
+    {
+        imageno -= 65536;
+    }
+    else
+    {
+        pos.y += amplitude*sin((phase+gl_TessCoord.x)*PI*2*repeats);           // .x goes 0-1, phase goes 0-1, convert to radians
+    }
 
     pos += vec4(tcs_worldposinstance[0].xyz,0);     // shift by instance pos
     

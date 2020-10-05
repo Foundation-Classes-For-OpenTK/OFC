@@ -54,7 +54,7 @@ namespace OFC.Timers
             this.Running = true;
             timerlist.Add(timeout, this);
 
-            System.Diagnostics.Debug.WriteLine("Start timer");
+            //System.Diagnostics.Debug.WriteLine("Start timer");
         }
 
         public void Stop()
@@ -64,7 +64,7 @@ namespace OFC.Timers
             {
                 timerlist.RemoveAt(i);
                 Running = false;
-                System.Diagnostics.Debug.WriteLine("Stop timer");
+              //  System.Diagnostics.Debug.WriteLine("Stop timer");
             }
         }
 

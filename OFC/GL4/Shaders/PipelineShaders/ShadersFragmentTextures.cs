@@ -54,8 +54,7 @@ void main(void)
     // Pipeline shader for a 2D array texture
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      location 1 : flat in imageno to select
-    // inputs
+    //      location 1 : flat in imageno to select, <0 discard
 
     public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineShadersBase
     {
@@ -73,11 +72,13 @@ out vec4 color;
 
 void main(void)
 {
-    vec4 c = texture(textureObject2D, vec3(vs_textureCoordinate,imageno));       // vs_texture coords normalised 0 to 1.0f
-    if ( c.w < 0.01)
+    if ( imageno < 0 )
         discard;
     else
+    {   
+        vec4 c = texture(textureObject2D, vec3(vs_textureCoordinate,imageno));       // vs_texture coords normalised 0 to 1.0f
         color = c;
+    }   
 }
 ";
         }

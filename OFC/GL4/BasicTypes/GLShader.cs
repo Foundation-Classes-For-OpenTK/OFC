@@ -176,7 +176,7 @@ namespace OFC.GL4
                 {
                     if ( line.HasChars() && constcode != null && line.ContainsIn(constvars)>=0) // check to see its not a const redefinition
                     {
-                        System.Diagnostics.Debug.WriteLine("Repeat const " + line);
+                        //System.Diagnostics.Debug.WriteLine("Repeat const " + line);
                     }
                     else
                         code += line + Environment.NewLine;

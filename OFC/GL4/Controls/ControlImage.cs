@@ -13,11 +13,7 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -77,6 +73,13 @@ namespace OFC.GL4.Controls
                 g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, imgattr);
             else
                 g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            drawnImageAttributesEnabled?.Dispose();
+            drawnImageAttributesDisabled?.Dispose();
         }
     }
 

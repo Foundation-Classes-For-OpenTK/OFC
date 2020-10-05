@@ -20,6 +20,7 @@ using System.Drawing;
 
 namespace OFC.GL4.Controls
 {
+    [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
     public struct Padding
     {
         public int Left; public int Top; public int Right; public int Bottom;
@@ -34,6 +35,7 @@ namespace OFC.GL4.Controls
         public override int GetHashCode() { return base.GetHashCode(); }
     };
 
+    [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
     public struct Margin
     {
         public int Left; public int Top; public int Right; public int Bottom;
@@ -56,7 +58,7 @@ namespace OFC.GL4.Controls
                               };
 
     [System.Diagnostics.DebuggerDisplay("Control {Name} {window}")]
-    public abstract class GLBaseControl
+    public abstract class GLBaseControl : IDisposable
     {
         #region Main UI
         public string Name { get; set; } = "?";
@@ -104,8 +106,9 @@ namespace OFC.GL4.Controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
         public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
         public virtual bool Focused { get { return focused; } }
-        public virtual bool Focusable { get { return focusable; } set { focusable = value; } }
-        public virtual void SetFocus() { FindDisplay()?.SetFocus(this); }
+        public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
+        public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
+        public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
 
         // colour font
 
@@ -320,7 +323,7 @@ namespace OFC.GL4.Controls
             return found;
         }
 
-        public void PerformLayout()     // override for other layouts
+        public void PerformLayout()             // perform layout on all child containers inside us. Does not call Layout on ourselves
         {
             if (suspendLayoutSet)
             {
@@ -342,7 +345,8 @@ namespace OFC.GL4.Controls
 
         public void ResumeLayout()
         {
-            if ( suspendLayoutSet )   System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
+            if ( suspendLayoutSet )
+                System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
 
             suspendLayoutSet = false;
             if (needLayout)
@@ -397,7 +401,7 @@ namespace OFC.GL4.Controls
             System.Diagnostics.Debug.WriteLine("Dispose {0} {1}", child.GetType().Name, child.Name);
             FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
 
-            child.levelbmp?.Dispose();
+            child.Dispose();
 
             childrenz.Remove(child);
             childreniz.Remove(child);
@@ -585,9 +589,9 @@ namespace OFC.GL4.Controls
 
         // second, layout after sizing, layout children.  We are layedout by parent, and lay out our children inside our client rectangle
 
-        public virtual void PerformRecursiveLayout()     // go down the tree.  
+        public virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
-            //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
+            System.Diagnostics.Debug.WriteLine("Laying out " + Name);
             Rectangle area = ClientRectangle;
 
             foreach (var c in childrenz)     // in z order, top gets first go
@@ -861,7 +865,7 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseLeave(GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
+            //System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
             MouseLeave?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
@@ -870,7 +874,7 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseEnter(GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location);
+            //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location);
             MouseEnter?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
@@ -1049,6 +1053,12 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public virtual void Dispose()
+        {
+            levelbmp?.Dispose();
+            levelbmp = null;
+        }
+
         protected bool NeedRedraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
@@ -1072,7 +1082,8 @@ namespace OFC.GL4.Controls
         private int column { get; set; } = 0;     // for table layouts
         private int row { get; set; } = 0;        // for table layouts
         private bool focused { get; set; } = false;
-        private bool focusable { get; set; } = false;
+        private bool focusable { get; set; } = false;       // if true, clicking on it gets focus.  If not true, clincking on it set focus to null, unless next is set
+        private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
         private bool topMost { get; set; } = false;              // if set, always force to top
 
         private GLBaseControl parent { get; set; } = null;       // its parent, null if top of top

@@ -71,7 +71,7 @@ namespace OFC.GL4.Controls
                                 bounds.Width - Margin.TotalWidth - 1,
                                 bounds.Height - Margin.Bottom- topoffset - 1);
 
-            System.Diagnostics.Debug.WriteLine("Bounds {0} rectarea {1}", bounds, rectarea);
+            //System.Diagnostics.Debug.WriteLine("Bounds {0} rectarea {1}", bounds, rectarea);
 
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
             {

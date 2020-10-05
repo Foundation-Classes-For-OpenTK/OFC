@@ -13,11 +13,7 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -44,13 +40,15 @@ namespace OFC.GL4.Controls
         public bool HideScrollBar { get; set; } = false;                   // hide if no scroll needed
         public bool IsScrollBarOn { get { return thumbenable; } }           // is it on?
 
+        public bool HorizontalScroll { get; set; } = false;             // set for horizonal orientation
+
         public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }       // of text
         public Color SliderColor { get { return slidercolor; } set { slidercolor = value; Invalidate(); } }
 
         public Color ArrowButtonColor { get { return arrowButtonColor; } set { arrowButtonColor = value; Invalidate(); } }
         public Color ArrowBorderColor { get { return arrowBorderColor; } set { arrowBorderColor = value; Invalidate(); } }
-        public float ArrowUpDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
-        public float ArrowDownDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
+        public float ArrowDecreaseDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
+        public float ArrowIncreaseDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
         public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
 
         public Color MouseOverButtonColor { get { return mouseOverButtonColor; } set { mouseOverButtonColor = value; Invalidate(); } }
@@ -59,6 +57,7 @@ namespace OFC.GL4.Controls
         public Color ThumbBorderColor { get { return thumbBorderColor; } set { thumbBorderColor = value; Invalidate(); } }
         public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
         public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
+
 
         public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name,pos)
         {
@@ -75,8 +74,8 @@ namespace OFC.GL4.Controls
             using (Brush br = new SolidBrush(this.SliderColor))
                 gr.FillRectangle(br, new Rectangle(area.Left + sliderarea.Left, area.Top + sliderarea.Top, sliderarea.Width, sliderarea.Height));
 
-            DrawButton(gr, new Rectangle(area.Left + upbuttonarea.Left, area.Top + upbuttonarea.Top,upbuttonarea.Width,upbuttonarea.Height), MouseOver.MouseOverUp);
-            DrawButton(gr, new Rectangle(area.Left + downbuttonarea.Left, area.Top + downbuttonarea.Top, downbuttonarea.Width, downbuttonarea.Height), MouseOver.MouseOverDown);
+            DrawButton(gr, new Rectangle(area.Left + decreasebuttonarea.Left, area.Top + decreasebuttonarea.Top,decreasebuttonarea.Width,decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
+            DrawButton(gr, new Rectangle(area.Left + increasebuttonarea.Left, area.Top + increasebuttonarea.Top, increasebuttonarea.Width, increasebuttonarea.Height), MouseOver.MouseOverIncrease);
             DrawButton(gr, new Rectangle(area.Left + thumbbuttonarea.Left, area.Top + thumbbuttonarea.Top, thumbbuttonarea.Width, thumbbuttonarea.Height), MouseOver.MouseOverThumb);
         }
 
@@ -85,9 +84,9 @@ namespace OFC.GL4.Controls
             if (rect.Height < 4 || rect.Width < 4)
                 return;
 
-            bool isthumb = (but == MouseOver.MouseOverThumb);
             Color c1, c2;
             float angle;
+            bool isthumb = but == MouseOver.MouseOverThumb;
 
             if (isthumb)
             {
@@ -102,40 +101,57 @@ namespace OFC.GL4.Controls
             {
                 c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ArrowButtonColor);
                 c2 = c1.Multiply(ArrowColorScaling);
-                angle = (but == MouseOver.MouseOverUp) ? ArrowUpDrawAngle : ArrowDownDrawAngle;
+                angle = (but == MouseOver.MouseOverDecrease) ? ArrowDecreaseDrawAngle : ArrowIncreaseDrawAngle;
             }
 
             using (Brush bbck = new System.Drawing.Drawing2D.LinearGradientBrush(rect, c1, c2, angle))
-                g.FillRectangle(bbck, rect);
+                    g.FillRectangle(bbck, rect);
 
             if (Enabled && thumbenable && !isthumb)
             {
-                int hoffset = rect.Width / 3;
-                int voffset = rect.Height / 3;
-                Point arrowpt1 = new Point(rect.X + hoffset, rect.Y + voffset);
-                Point arrowpt2 = new Point(rect.X + rect.Width / 2, rect.Y + rect.Height - voffset);
-                Point arrowpt3 = new Point(rect.X + rect.Width - hoffset, arrowpt1.Y);
-
-                Point arrowpt1c = new Point(arrowpt1.X, arrowpt2.Y);
-                Point arrowpt2c = new Point(arrowpt2.X, arrowpt1.Y);
-                Point arrowpt3c = new Point(arrowpt3.X, arrowpt2.Y);
-
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 using (Pen p2 = new Pen(ArrowColor))
                 {
-                    if (but == MouseOver.MouseOverDown)
+                    int hoffset = rect.Width / 3;
+                    int voffset = rect.Height / 3;
+
+                    Point arrowpt1inc, arrowpt2inc, arrowpt3inc, arrowpt1dec, arrowpt2dec, arrowpt3dec;
+
+                    if (HorizontalScroll)
                     {
-                        g.DrawLine(p2, arrowpt1, arrowpt2);            // the arrow!
-                        g.DrawLine(p2, arrowpt2, arrowpt3);
+                        arrowpt1inc = new Point(rect.X + hoffset, rect.Y + voffset);
+                        arrowpt2inc = new Point(rect.Right-hoffset, rect.Y + rect.Height / 2);
+                        arrowpt3inc = new Point(rect.X + hoffset, rect.Bottom - voffset);
+
+                        arrowpt1dec = new Point(arrowpt2inc.X, arrowpt1inc.Y);
+                        arrowpt2dec = new Point(arrowpt1inc.X, arrowpt2inc.Y);
+                        arrowpt3dec = new Point(arrowpt2inc.X, arrowpt3inc.Y);
                     }
                     else
                     {
-                        g.DrawLine(p2, arrowpt1c, arrowpt2c);            // the arrow!
-                        g.DrawLine(p2, arrowpt2c, arrowpt3c);
+                        arrowpt1inc = new Point(rect.X + hoffset, rect.Y + voffset);
+                        arrowpt2inc = new Point(rect.X + rect.Width / 2, rect.Bottom - voffset);
+                        arrowpt3inc = new Point(rect.Right - hoffset, arrowpt1inc.Y);
+
+                        arrowpt1dec = new Point(arrowpt1inc.X, arrowpt2inc.Y);
+                        arrowpt2dec = new Point(arrowpt2inc.X, arrowpt1inc.Y);
+                        arrowpt3dec = new Point(arrowpt3inc.X, arrowpt2inc.Y);
+                    }
+
+                    //System.Diagnostics.Debug.WriteLine("{0} {1} {2} r{3} ", arrowpt1inc, arrowpt2inc, arrowpt3inc, rect);
+
+                    if (but == MouseOver.MouseOverIncrease)
+                    {
+                        g.DrawLine(p2, arrowpt1inc, arrowpt2inc);            // the arrow!
+                        g.DrawLine(p2, arrowpt2inc, arrowpt3inc);
+                    }
+                    else
+                    {
+                        g.DrawLine(p2, arrowpt1dec, arrowpt2dec);            // the arrow!
+                        g.DrawLine(p2, arrowpt2dec, arrowpt3dec);
                     }
                 }
-
             }
 
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
@@ -160,13 +176,23 @@ namespace OFC.GL4.Controls
 
             if (thumbmove)                        // if moving thumb, we calculate where we are in value
             {
-                int voffset = e.Location.Y - (sliderarea.Y + thumbmovecaptureoffset);
-                //Console.WriteLine("Voffset " + voffset);
-                int sliderrangepx = sliderarea.Height - thumbbuttonarea.Height;      // range of values to represent Min-Max.
-                voffset = Math.Min(Math.Max(voffset, 0), sliderrangepx);        // bound within slider range
-                float percent = (float)voffset / (float)sliderrangepx;          // % in
-                int newthumbvalue = minimum + (int)((float)(UserMaximum - minimum) * percent);
-                //Console.WriteLine("Slider px" + voffset + " to value " + newthumbvalue);
+                int offset, sliderrangepx;
+                if (HorizontalScroll)
+                {
+                    offset = e.Location.X - (sliderarea.X + thumbmovecaptureoffset);
+                    sliderrangepx = sliderarea.Width - thumbbuttonarea.Width;      // range of values to represent Min-Max.
+                }
+                else
+                {
+                    offset = e.Location.Y - (sliderarea.Y + thumbmovecaptureoffset);
+                    sliderrangepx = sliderarea.Height - thumbbuttonarea.Height;      // range of values to represent Min-Max.
+                }
+
+                offset = Math.Min(Math.Max(offset, 0), sliderrangepx);        // bound within slider range
+                float percent = (float)offset / (float)sliderrangepx;         // % in
+                int newthumbvalue = minimum + (int)((float)(UserMaximum - minimum) * percent);  // thumb value
+
+                //System.Diagnostics.Debug.WriteLine("Slider px" + offset + " over " + sliderrangepx + " to value " + newthumbvalue);
 
                 if (newthumbvalue != thumbvalue)        // and if changed, apply it.
                 {
@@ -176,19 +202,19 @@ namespace OFC.GL4.Controls
                     Invalidate();
                 }
             }
-            else if (upbuttonarea.Contains(e.Location))
+            else if (decreasebuttonarea.Contains(e.Location))
             {
-                if (mouseover != MouseOver.MouseOverUp)
+                if (mouseover != MouseOver.MouseOverDecrease)
                 {
-                    mouseover = MouseOver.MouseOverUp;
+                    mouseover = MouseOver.MouseOverDecrease;
                     Invalidate();
                 }
             }
-            else if (downbuttonarea.Contains(e.Location))
+            else if (increasebuttonarea.Contains(e.Location))
             {
-                if (mouseover != MouseOver.MouseOverDown)
+                if (mouseover != MouseOver.MouseOverIncrease)
                 {
-                    mouseover = MouseOver.MouseOverDown;
+                    mouseover = MouseOver.MouseOverIncrease;
                     Invalidate();
                 }
             }
@@ -214,18 +240,16 @@ namespace OFC.GL4.Controls
             if (!Enabled || !thumbenable)
                 return;
 
-            if (upbuttonarea.Contains(e.Location))
+            if (decreasebuttonarea.Contains(e.Location))
             {
-                mousepressed = MouseOver.MouseOverUp;
+                mousepressed = MouseOver.MouseOverDecrease;
                 Invalidate();
-                //StartRepeatClick(e);
                 MoveThumb(-smallchange);
             }
-            else if (downbuttonarea.Contains(e.Location))
+            else if (increasebuttonarea.Contains(e.Location))
             {
-                mousepressed = MouseOver.MouseOverDown;
+                mousepressed = MouseOver.MouseOverIncrease;
                 Invalidate();
-                //StartRepeatClick(e);
                 MoveThumb(smallchange);
             }
             else if (thumbbuttonarea.Contains(e.Location))
@@ -233,12 +257,14 @@ namespace OFC.GL4.Controls
                 mousepressed = MouseOver.MouseOverThumb;
                 Invalidate();
                 thumbmove = true;                           // and mouseover should be on as well
-                thumbmovecaptureoffset = e.Location.Y - thumbbuttonarea.Y;      // pixels down the thumb when captured..
-                //Console.WriteLine("Thumb captured at " + thumbmovecaptureoffset);
+                thumbmovecaptureoffset = HorizontalScroll ? (e.Location.X - thumbbuttonarea.X) : (e.Location.Y - thumbbuttonarea.Y);      // pixels down the thumb when captured..
+               // System.Diagnostics.Debug.WriteLine("Thumb captured at " + thumbmovecaptureoffset);
             }
             else if (sliderarea.Contains(e.Location))      // slider, but not thumb..
-                MoveThumb((e.Location.Y < thumbbuttonarea.Y) ? -largechange : largechange);
-
+            {
+                bool decdir = HorizontalScroll ? (e.Location.X < thumbbuttonarea.X) : (e.Location.Y < thumbbuttonarea.Y);
+                MoveThumb( decdir ? -largechange : largechange);
+            }
         }
 
         public override void OnMouseUp(GLMouseEventArgs e)
@@ -271,24 +297,51 @@ namespace OFC.GL4.Controls
             }
         }
 
-
-        public override void Layout(ref Rectangle area)
+        public override void OnMouseWheel(GLMouseEventArgs e)
         {
-            base.Layout(ref area);
+            base.OnMouseWheel(e);
+            if ( e.Delta<0)
+                MoveThumb(smallchange);
+            else
+                MoveThumb(-smallchange);
+        }
+
+        public override void PerformRecursiveLayout()       // do this in recursive layout, better than Layout as it gets called by an update to any parameters
+        {
+            base.PerformRecursiveLayout();
+
+            //System.Diagnostics.Debug.WriteLine("Scroll Layout " + Name + " " + ClientRectangle);
 
             sliderarea = ClientRectangle;
 
-            int scrollheight = sliderarea.Width;
-            if (scrollheight * 2 > ClientRectangle.Height / 3)  // don't take up too much of the slider with the buttons
-                scrollheight = ClientRectangle.Height / 6;
+            if (HorizontalScroll)
+            {
+                int buttonsize = sliderarea.Height;
+                if (buttonsize * 2 > sliderarea.Width / 3)  // don't take up too much of the slider with the buttons
+                    buttonsize = sliderarea.Width / 6;
 
-            upbuttonarea = sliderarea;
-            upbuttonarea.Height = scrollheight;
-            downbuttonarea = sliderarea;
-            downbuttonarea.Y = sliderarea.Bottom - scrollheight;
-            downbuttonarea.Height = scrollheight;
-            sliderarea.Y += scrollheight;
-            sliderarea.Height -= 2 * scrollheight;
+                decreasebuttonarea = sliderarea;
+                decreasebuttonarea.Width = buttonsize;
+                increasebuttonarea = sliderarea;
+                increasebuttonarea.X = sliderarea.Right - buttonsize;
+                increasebuttonarea.Width = buttonsize;
+                sliderarea.X += buttonsize;
+                sliderarea.Width -= 2 * buttonsize;
+            }
+            else
+            {
+                int buttonsize = sliderarea.Width;
+                if (buttonsize * 2 > sliderarea.Height / 3)  // don't take up too much of the slider with the buttons
+                    buttonsize = sliderarea.Height / 6;
+
+                decreasebuttonarea = sliderarea;
+                decreasebuttonarea.Height = buttonsize;
+                increasebuttonarea = sliderarea;
+                increasebuttonarea.Y = sliderarea.Bottom - buttonsize;
+                increasebuttonarea.Height = buttonsize;
+                sliderarea.Y += buttonsize;
+                sliderarea.Height -= 2 * buttonsize;
+            }
 
             CalculateThumb();
         }
@@ -299,21 +352,25 @@ namespace OFC.GL4.Controls
 
             if (largechange < userrange)                   // largerange is less than number of individual positions
             {
-                float fthumbheight = ((float)largechange / (float)userrange) * sliderarea.Height;    // less than H
-                int thumbheight = (int)fthumbheight;
-                if (thumbheight < sliderarea.Width)             // too small, adjust
-                    thumbheight = sliderarea.Width;
+                int useablearea = HorizontalScroll ? sliderarea.Width : sliderarea.Height;
+                int minthumbsize = HorizontalScroll ? sliderarea.Height : sliderarea.Width;
+
+                int thumbsize = (int)(((float)largechange / (float)userrange) * useablearea);   // calculate a thumsize
+                if (thumbsize < minthumbsize)             // too small, adjust
+                    thumbsize = minthumbsize;
 
                 int sliderrangev = UserMaximum - minimum;       // Usermaximum will be > minimum, due to above < test.
                 int lthumb = Math.Min(thumbvalue, UserMaximum);         // values beyond User maximum screened out
 
                 float fposition = (float)(lthumb - minimum) / (float)sliderrangev;
 
-                int sliderrangepx = sliderarea.Height - thumbheight;      // range of values to represent Min-Max.
+                int sliderrangepx = useablearea - thumbsize;      // range of values to represent Min-Max.
                 int thumboffsetpx = (int)((float)sliderrangepx * fposition);
                 thumboffsetpx = Math.Min(thumboffsetpx, sliderrangepx);     // LIMIT, because we can go over slider range if value=maximum
 
-                thumbbuttonarea = new Rectangle(sliderarea.X, sliderarea.Y + thumboffsetpx, sliderarea.Width, thumbheight);
+                thumbbuttonarea = HorizontalScroll ? new Rectangle(sliderarea.X+thumboffsetpx, sliderarea.Y, thumbsize, sliderarea.Height) :
+                                new Rectangle(sliderarea.X, sliderarea.Y + thumboffsetpx, sliderarea.Width, thumbsize);
+
                 thumbenable = true;
             }
             else
@@ -407,8 +464,8 @@ namespace OFC.GL4.Controls
         private float thumbDrawAngle { get; set; } = 0F;
 
         private Rectangle sliderarea;
-        private Rectangle upbuttonarea;
-        private Rectangle downbuttonarea;
+        private Rectangle decreasebuttonarea;
+        private Rectangle increasebuttonarea;
         private Rectangle thumbbuttonarea;
 
         private int maximum = 100;
@@ -419,7 +476,7 @@ namespace OFC.GL4.Controls
         private bool thumbenable = true;
         private bool thumbmove = false;
 
-        enum MouseOver { MouseOverNone, MouseOverUp, MouseOverDown, MouseOverThumb };
+        enum MouseOver { MouseOverNone, MouseOverDecrease, MouseOverIncrease, MouseOverThumb };
         private MouseOver mouseover = MouseOver.MouseOverNone;
         private MouseOver mousepressed = MouseOver.MouseOverNone;
         private int thumbmovecaptureoffset = 0;     // px down the thumb when captured..

@@ -57,16 +57,18 @@ namespace EliteDangerousCore.EDSM
         public string Typeid;
         public string Description;
         public Image Image;
+        public bool Animate;
         public GalMapGroup Group;
         public bool Enabled;
         public int Index;
 
-        public GalMapType(string id, string desc, GalMapGroup g, Image b, int i)
+        public GalMapType(string id, string desc, GalMapGroup g, Image b, bool animate, int i)
         {
             Typeid = id;
             Description = desc;
             Group = g;
             Image = b;
+            Animate = animate;
             Enabled = false;
             Index = i;
         }
@@ -77,36 +79,36 @@ namespace EliteDangerousCore.EDSM
 
             int index = 0;
 
-            type.Add(new GalMapType("historicalLocation", "η Historical Location", GalMapGroup.Markers, TestOpenTk.Properties.Resources.historicalLocation, index++));
-            type.Add(new GalMapType("nebula", "α Nebula", GalMapGroup.Markers, TestOpenTk.Properties.Resources.nebula, index++));
-            type.Add(new GalMapType("planetaryNebula", "β Planetary Nebula", GalMapGroup.Markers, TestOpenTk.Properties.Resources.planetaryNebula, index++));
-            type.Add(new GalMapType("stellarRemnant", "γ Stellar Features", GalMapGroup.Markers, TestOpenTk.Properties.Resources.stellarRemnant, index++));
-            type.Add(new GalMapType("blackHole", "δ Black Hole", GalMapGroup.Markers, TestOpenTk.Properties.Resources.blackHole, index++));
-            type.Add(new GalMapType("starCluster", "σ Star Cluster", GalMapGroup.Markers, TestOpenTk.Properties.Resources.starCluster, index++));
-            type.Add(new GalMapType("pulsar", "ζ Pulsar", GalMapGroup.Markers , TestOpenTk.Properties.Resources.pulsar, index++));
-            type.Add(new GalMapType("minorPOI", "★ Minor POI or Star", GalMapGroup.Markers , TestOpenTk.Properties.Resources.minorPOI, index++));
-            type.Add(new GalMapType("beacon", "⛛ Beacon", GalMapGroup.Markers , TestOpenTk.Properties.Resources.beacon, index++));
-            type.Add(new GalMapType("surfacePOI", "∅ Surface POI", GalMapGroup.Markers , TestOpenTk.Properties.Resources.surfacePOI, index++));
-            type.Add(new GalMapType("cometaryBody", "☄ Cometary Body", GalMapGroup.Markers , TestOpenTk.Properties.Resources.cometaryBody, index++));
-            type.Add(new GalMapType("jumponiumRichSystem", "☢ Jumponium-Rich System", GalMapGroup.Markers, TestOpenTk.Properties.Resources.jumponiumRichSystem, index++));
-            type.Add(new GalMapType("planetFeatures", "∅ Planetary Features", GalMapGroup.Markers, TestOpenTk.Properties.Resources.planetFeatures, index++));
-            type.Add(new GalMapType("deepSpaceOutpost", "Deep space outpost", GalMapGroup.Markers, TestOpenTk.Properties.Resources.deepSpaceOutpost, index++));
-            type.Add(new GalMapType("mysteryPOI", "Mystery POI", GalMapGroup.Markers, TestOpenTk.Properties.Resources.mysteryPOI, index++));
-            type.Add(new GalMapType("restrictedSectors", "Restricted Sectors", GalMapGroup.Markers, TestOpenTk.Properties.Resources.restrictedSectors, index++));
+            type.Add(new GalMapType("historicalLocation", "η Historical Location", GalMapGroup.Markers, TestOpenTk.Properties.Resources.historicalLocation, true, index++));
+            type.Add(new GalMapType("nebula", "α Nebula", GalMapGroup.Markers, TestOpenTk.Properties.Resources.nebula, true, index++));
+            type.Add(new GalMapType("planetaryNebula", "β Planetary Nebula", GalMapGroup.Markers, TestOpenTk.Properties.Resources.planetaryNebula, true, index++));
+            type.Add(new GalMapType("stellarRemnant", "γ Stellar Features", GalMapGroup.Markers, TestOpenTk.Properties.Resources.stellarRemnant, false, index++));
+            type.Add(new GalMapType("blackHole", "δ Black Hole", GalMapGroup.Markers, TestOpenTk.Properties.Resources.blackHole, true, index++));
+            type.Add(new GalMapType("starCluster", "σ Star Cluster", GalMapGroup.Markers, TestOpenTk.Properties.Resources.starCluster, true, index++));
+            type.Add(new GalMapType("pulsar", "ζ Pulsar", GalMapGroup.Markers , TestOpenTk.Properties.Resources.pulsar, true, index++));
+            type.Add(new GalMapType("minorPOI", "★ Minor POI or Star", GalMapGroup.Markers , TestOpenTk.Properties.Resources.minorPOI, true, index++));
+            type.Add(new GalMapType("beacon", "⛛ Beacon", GalMapGroup.Markers , TestOpenTk.Properties.Resources.beacon, true, index++));
+            type.Add(new GalMapType("surfacePOI", "∅ Surface POI", GalMapGroup.Markers , TestOpenTk.Properties.Resources.surfacePOI, true, index++));
+            type.Add(new GalMapType("cometaryBody", "☄ Cometary Body", GalMapGroup.Markers , TestOpenTk.Properties.Resources.cometaryBody, true, index++));
+            type.Add(new GalMapType("jumponiumRichSystem", "☢ Jumponium-Rich System", GalMapGroup.Markers, TestOpenTk.Properties.Resources.jumponiumRichSystem, true, index++));
+            type.Add(new GalMapType("planetFeatures", "∅ Planetary Features", GalMapGroup.Markers, TestOpenTk.Properties.Resources.planetFeatures, true, index++));
+            type.Add(new GalMapType("deepSpaceOutpost", "Deep space outpost", GalMapGroup.Markers, TestOpenTk.Properties.Resources.deepSpaceOutpost, true, index++));
+            type.Add(new GalMapType("mysteryPOI", "Mystery POI", GalMapGroup.Markers, TestOpenTk.Properties.Resources.mysteryPOI, true, index++));
+            type.Add(new GalMapType("restrictedSectors", "Restricted Sectors", GalMapGroup.Markers, TestOpenTk.Properties.Resources.restrictedSectors, true, index++));
      
-            type.Add(new GalMapType("travelRoute", "Travel Route", GalMapGroup.Routes , null, index++));
-            type.Add(new GalMapType("historicalRoute", "Historical Route", GalMapGroup.Routes , null, index++));
-            type.Add(new GalMapType("minorRoute", "Minor Route", GalMapGroup.Routes, null, index++));
-            type.Add(new GalMapType("neutronRoute", "Neutron highway", GalMapGroup.Routes, null, index++));
+            type.Add(new GalMapType("travelRoute", "Travel Route", GalMapGroup.Routes , null, true, index++));
+            type.Add(new GalMapType("historicalRoute", "Historical Route", GalMapGroup.Routes , null, true, index++));
+            type.Add(new GalMapType("minorRoute", "Minor Route", GalMapGroup.Routes, null, true, index++));
+            type.Add(new GalMapType("neutronRoute", "Neutron highway", GalMapGroup.Routes, null, true, index++));
 
-            type.Add(new GalMapType("region", "Region", GalMapGroup.Regions, null, index++));
-            type.Add(new GalMapType("regionQuadrants", "Galactic Quadrants", GalMapGroup.Quadrants , null, index++));
+            type.Add(new GalMapType("region", "Region", GalMapGroup.Regions, null, true, index++));
+            type.Add(new GalMapType("regionQuadrants", "Galactic Quadrants", GalMapGroup.Quadrants , null, true, index++));
 
-            type.Add(new GalMapType("regional", "Regional Marker", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, index++));
-            type.Add(new GalMapType("geyserPOI", "Geyser", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, index++));
-            type.Add(new GalMapType("organicPOI", "Organic Material", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, index++));
+            type.Add(new GalMapType("regional", "Regional Marker", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, true, index++));
+            type.Add(new GalMapType("geyserPOI", "Geyser", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, true, index++));
+            type.Add(new GalMapType("organicPOI", "Organic Material", GalMapGroup.Markers, TestOpenTk.Properties.Resources.minorPOI, true, index++));
 
-            type.Add(new GalMapType("EDSMUnknown", "EDSM other POI type", GalMapGroup.Markers, TestOpenTk.Properties.Resources.EDSMUnknown, index++));
+            type.Add(new GalMapType("EDSMUnknown", "EDSM other POI type", GalMapGroup.Markers, TestOpenTk.Properties.Resources.EDSMUnknown, true, index++));
 
             return type;
         }

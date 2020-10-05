@@ -30,8 +30,8 @@ namespace OFC.GL4.Controls
 
         public Color ArrowButtonColor { get { return scrollbar.ArrowButtonColor; } set { scrollbar.ArrowButtonColor = value; } }
         public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value;  } }
-        public float ArrowUpDrawAngle { get { return scrollbar.ArrowUpDrawAngle; } set { scrollbar.ArrowUpDrawAngle = value;  } }
-        public float ArrowDownDrawAngle { get { return scrollbar.ArrowDownDrawAngle; } set { scrollbar.ArrowDownDrawAngle = value;  } }
+        public float ArrowUpDrawAngle { get { return scrollbar.ArrowDecreaseDrawAngle; } set { scrollbar.ArrowDecreaseDrawAngle = value;  } }
+        public float ArrowDownDrawAngle { get { return scrollbar.ArrowIncreaseDrawAngle; } set { scrollbar.ArrowIncreaseDrawAngle = value;  } }
         public float ArrowColorScaling { get { return scrollbar.ArrowColorScaling; } set { scrollbar.ArrowColorScaling = value;  } }
 
         public Color MouseOverButtonColor { get { return scrollbar.MouseOverButtonColor; } set { scrollbar.MouseOverButtonColor = value;  } }

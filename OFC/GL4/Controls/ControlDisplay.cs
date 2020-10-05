@@ -103,15 +103,22 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public void SetFocus(GLBaseControl ctrl)    // null to clear focus
+        public bool SetFocus(GLBaseControl newfocus)    // null to clear focus
         {
-            System.Diagnostics.Debug.WriteLine("Focus to " + ctrl?.Name);
+            //System.Diagnostics.Debug.WriteLine("Focus to " + newfocus?.Name);
 
-            if (ctrl == currentfocus)
-                return;
+            if (newfocus == currentfocus)
+                return true;
+
+            if (newfocus != null)
+            {
+                if (newfocus.RejectFocus)       // if reject focus change when clicked, abort
+                    return false;
+                if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
+                    newfocus = null;
+            }
 
             GLBaseControl oldfocus = currentfocus;
-            GLBaseControl newfocus = (ctrl != null && ctrl.Enabled && ctrl.Focusable) ? ctrl : null;
 
             GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);
 
@@ -123,9 +130,11 @@ namespace OFC.GL4.Controls
             
             if (newfocus != null)
             {
-                currentfocus = ctrl;
+                currentfocus = newfocus;
                 currentfocus.OnFocusChanged(true, oldfocus);
             }
+
+            return true;
         }
 
         public override void PerformRecursiveLayout()
@@ -333,7 +342,7 @@ namespace OFC.GL4.Controls
         private void Gc_MouseMove(object sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
-            System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
+            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
 
             GlobalMouseMove?.Invoke(e);         // feed global mouse move - coords are form coords
 
@@ -424,7 +433,7 @@ namespace OFC.GL4.Controls
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null )        // clicks only occur if mouse is still over initial control
             {
-                SetFocus(currentmouseover);
+                SetFocus(currentmouseover);         
 
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
 

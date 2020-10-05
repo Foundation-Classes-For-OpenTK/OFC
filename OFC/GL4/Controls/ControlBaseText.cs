@@ -40,13 +40,13 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public string Text { get { return text; } set { text = value; OnTextSet(); Invalidate(); } }
+        public string Text { get { return text; } set { text = value; TextValueChanged(); } }
 
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
 
         protected string text = "";
         protected ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleLeft;
 
-        protected virtual void OnTextSet() { }      // default - no action
+        protected virtual void TextValueChanged() { }                                    // default - no action
     }
 }

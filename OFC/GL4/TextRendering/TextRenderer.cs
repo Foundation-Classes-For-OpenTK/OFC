@@ -118,7 +118,7 @@ namespace OFC.GL4
             mat[2, 3] = alphascale;
             mat[3, 3] = alphaend;
 
-            System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
+            //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
             matrixbuffer.StartWrite(GLLayoutStandards.Mat4size * pos);
             matrixbuffer.Write(mat);
             matrixbuffer.StopReadWrite();

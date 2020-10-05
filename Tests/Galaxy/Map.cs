@@ -202,8 +202,7 @@ namespace TestOpenTk
 
             }
 
-            // grids
-            if (true)
+            if (true) // grids
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
@@ -220,8 +219,7 @@ namespace TestOpenTk
 
             }
 
-            // grid coords
-            if (true)
+            if (true)       // grid coords
             {
 
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
@@ -241,17 +239,16 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
             }
 
-            // travel path
-            if (true)
+            if (true)       // travel path
             {
                 Random rnd = new Random(52);
                 List<ISystem> pos = new List<ISystem>();
                 for (int i = 0; i <= 60000; i += 500)
                 {
                     if (i < 30000)
-                        pos.Add(new ISystem(i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem("s" + i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
                     else
-                        pos.Add(new ISystem(i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem("s" + i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
                 }
 
                 travelpath = new TravelPath();
@@ -260,16 +257,13 @@ namespace TestOpenTk
                 currentsystem = pos[3];
             }
 
-            // Gal map objects
-            if (true)
+            if (true)       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, galmap, findgeomapblock);
-
             }
 
-            // Gal map regions
-            if (true)
+            if (true)       // Gal map regions
             {
                 var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
                     new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
@@ -283,14 +277,12 @@ namespace TestOpenTk
                 edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr:corr);
             }
 
-            // Elite regions
-            if (true)
+            if (true)           // Elite regions
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
             }
 
-            //EDSMRegionsEnable = false;
             EliteRegionsEnable = false;
 
             // menu system
@@ -302,6 +294,7 @@ namespace TestOpenTk
             mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
             displaycontrol = new GLControlDisplay(items, glwfc, mc);       // hook form to the window - its the master
+            displaycontrol.Font = new Font("Arial", 10f);
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.SetFocus();
 
@@ -412,14 +405,20 @@ namespace TestOpenTk
         {
             var sys = travelpath.NextSystem();
             if (sys != null)
+            { 
                 gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
+                SetEntryText(sys.Name);
+            }
         }
 
         public void TravelPathMoveBack()
         {
             var sys = travelpath.PrevSystem();
             if (sys != null)
+            {
                 gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
+                SetEntryText(sys.Name);
+            }
         }
 
         public void GoToCurrentSystem()
@@ -428,7 +427,13 @@ namespace TestOpenTk
             {
                 gl3dcontroller.SlewToPosition(new Vector3((float)currentsystem.X, (float)currentsystem.Y, (float)currentsystem.Z), -1);
                 travelpath.SetSystem(currentsystem);
+                SetEntryText(currentsystem.Name);
             }
+        }
+
+        public void SetEntryText(string text)
+        {
+            ((GLTextBox)displaycontrol["EntryText"]).Text = text;
         }
 
         public bool GalObjectEnable { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
@@ -459,6 +464,7 @@ namespace TestOpenTk
             {
                 gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
                 travelpath.SetSystem(sys);
+                SetEntryText(sys.Name);
             }
             else
             {
@@ -467,7 +473,7 @@ namespace TestOpenTk
                 if ( gmo != null )
                 {
                     gl3dcontroller.SlewToPosition(new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z), -1);
-
+                    SetEntryText(gmo.name);
                 }
             }
         }

@@ -16,6 +16,9 @@ using System.Drawing;
 
 namespace OFC.GL4.Controls
 {
+    // tooltip, if added to GLControlDisplay, it acts as a global tooltip and displays the tooltip of the current mouseover control
+    // if added to another form, its manual and you need to call Show() to display it and Hide() to remove it.
+
     public class GLToolTip : GLForeDisplayBase
     {
         public int AutomaticDelay { get; set; } = 500;
@@ -38,6 +41,7 @@ namespace OFC.GL4.Controls
         {
             using (Brush br = new SolidBrush(ForeColor))
             {
+                System.Diagnostics.Debug.WriteLine("Tooltip paint " + tiptext);
                 if (StringFormat != null)
                     gr.DrawString(tiptext, Font, br, area,StringFormat);
                 else
@@ -78,6 +82,7 @@ namespace OFC.GL4.Controls
                 TopMost = true;
                 tiptext = text;
                 Visible = true;
+                Invalidate();       // must invalidate as paint uses tiptext.
             }
         }
 
@@ -104,13 +109,13 @@ namespace OFC.GL4.Controls
                 {
                     if (ctrl.ToolTipText.HasChars())
                     {
-                        System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
+                     //   System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Start(AutomaticDelay);     // start timer
                         showloc = entryloc = e.ScreenCoord;
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine("No Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
+                      //  System.Diagnostics.Debug.WriteLine("No Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Stop();
                     }
                 }
@@ -127,7 +132,7 @@ namespace OFC.GL4.Controls
                     {
                         entryloc = e.ScreenCoord;
                         timer.Start(AutomaticDelay);        // moved within control, restart
-                        System.Diagnostics.Debug.WriteLine("Restart " + mouseover.Name);
+                       // System.Diagnostics.Debug.WriteLine("Restart " + mouseover.Name);
                     }
 
                     showloc = e.ScreenCoord;
@@ -139,7 +144,7 @@ namespace OFC.GL4.Controls
         {
             if (!Visible && mouseover != null )
             {
-                System.Diagnostics.Debug.WriteLine("Show " + mouseover.Name + " " + showloc);
+                //System.Diagnostics.Debug.WriteLine("Show " + mouseover.Name + " " + showloc +  " " + mouseover.ToolTipText);
                 Show(showloc, mouseover.ToolTipText);
             }
         }
