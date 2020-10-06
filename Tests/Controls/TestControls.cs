@@ -60,8 +60,8 @@ namespace TestOpenTk
             public MatrixCalcSpecial()
             {
                 ScreenCoordMax = new Size(2000, 1000);
-                ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
-                ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
+                //ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
+                //ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
                 //ScreenCoordClipSpaceSize = new SizeF(1f, 1f);
                 //ScreenCoordClipSpaceOffset = new PointF(-0.5f, 0.5f);
             }
@@ -73,7 +73,7 @@ namespace TestOpenTk
                     System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
                     ScreenSize = newsize;
                     ScreenCoordMax = newsize;
-                    int margin = 32;
+                    int margin = 0;
                     ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
                     SetViewPort();
                 }
@@ -483,11 +483,12 @@ namespace TestOpenTk
                         l += "trail ";
                         // l = "";
 
-                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(10, 200, 200, 200), l);
-                        mtb.Font = new Font("Ms Sans Serif", 12);
+                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(10, 200, 400, 200), l);
+                        mtb.Font = new Font("Ms Sans Serif", 14);
                         mtb.LineColor = Color.Green;
                         mtb.EnableVerticalScrollBar = true;
                         mtb.EnableHorizontalScrollBar = true;
+                        mtb.FlashingCursor = false;
                         mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
                         pform2.Add(mtb);
                     }

@@ -25,7 +25,7 @@ namespace OFC.GL4.Controls
         public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     // not fired by programatically 
         public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
 
-        public List<string> Items { get { return items; } set { items = value; Invalidate(); PerformLayout(); } }
+        public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; Invalidate(); PerformLayout(); } }
         public List<Image> ImageItems { get { return images; } set { images = value; Invalidate(); PerformLayout(); } }
         public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; Invalidate(); } }
 
@@ -35,6 +35,8 @@ namespace OFC.GL4.Controls
 
         public bool FitToItemsHeight { get { return fitToItemsHeight; } set { fitToItemsHeight = value; Invalidate(); } }
         public bool FitImagesToItemHeight { get { return fitImagesToItemHeight; } set { fitImagesToItemHeight = value; Invalidate(); } }
+
+        public int DisplayableItems { get { return displayableitems; } }            // not valid until first layout
 
         public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; InvalidateLayoutParent(); } }
 
@@ -102,45 +104,27 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public void ScrollUpOne()
+        public void FocusUp(int count = 1)
         {
-            if (firstindex > 0)
+            count = Math.Min(focusindex, count);
+
+            if (Items != null && count > 0 )
             {
-                firstindex--;
-                scrollbar.Value = firstindex;
+                focusindex -= count;
+                EnsureInView();
                 Invalidate();
             }
         }
 
-        public void ScrollDownOne()
+        public void FocusDown(int count = 1)
         {
-            if (Items != null && firstindex < Items.Count() - displayableitems)
-            {
-                firstindex++;
-                scrollbar.Value = firstindex;
-                Invalidate();
-            }
-        }
+            count = Math.Min(count, Items.Count - focusindex - 1);
 
-        public void FocusUpOne()
-        {
-            if (focusindex > 0)
+            if (Items != null && count > 0)
             {
-                focusindex--;
+                focusindex += count;
+                EnsureInView();
                 Invalidate();
-                if (focusindex < firstindex)
-                    ScrollUpOne();
-            }
-        }
-
-        public void FocusDownOne()
-        {
-            if (Items != null && focusindex < Items.Count() - 1)
-            {
-                focusindex++;
-                Invalidate();
-                if (focusindex >= firstindex + displayableitems)
-                    ScrollDownOne();
             }
         }
 
@@ -302,6 +286,24 @@ namespace OFC.GL4.Controls
             }
         }
 
+        private void EnsureInView()
+        {
+            if (focusindex < firstindex)
+            {
+                firstindex = focusindex;
+                scrollbar.Value = firstindex;
+                Invalidate();
+            }
+            else if (focusindex >= firstindex + displayableitems)
+            {
+                firstindex = focusindex - displayableitems + 1;
+                scrollbar.Value = firstindex;
+                Invalidate();
+            }
+            System.Diagnostics.Debug.WriteLine("Ensure view {0} {1}", focusindex, firstindex);
+        }
+
+
         private void SetSelectedIndex(int i)
         {
             if (items != null)
@@ -310,6 +312,7 @@ namespace OFC.GL4.Controls
                 {
                     selectedIndex = i;
                     selectedindexset = true;
+                    EnsureInView();
                     Invalidate();
                 }
             }
@@ -351,9 +354,9 @@ namespace OFC.GL4.Controls
             if (!e.Handled)
             {
                 if (e.Delta > 0)
-                    FocusUpOne();
+                    FocusUp();
                 else
-                    FocusDownOne();
+                    FocusDown();
             }
         }
 
@@ -385,11 +388,11 @@ namespace OFC.GL4.Controls
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
-                    FocusUpOne();
+                    FocusUp();
                 }
                 else if (e.KeyCode == System.Windows.Forms.Keys.Down)
                 {
-                    FocusDownOne();
+                    FocusDown();
                 }
 
                 if ((e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return) || (e.Alt && (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Down)))

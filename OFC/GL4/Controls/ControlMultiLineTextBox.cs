@@ -32,6 +32,7 @@ namespace OFC.GL4.Controls
         public Margin TextBoundary { get; set; } = new Margin(0);           // limit text area
         public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }       // of text
         public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }       // lined text, default off
+        public bool FlashingCursor { get; set; } = true;
 
         public bool IsSelectionSet { get { return startpos != cursorpos; } }
         public int SelectionStart { get { return Math.Min(startpos, cursorpos); } }
@@ -54,7 +55,7 @@ namespace OFC.GL4.Controls
         {
             Focusable = true;
             this.text = text;
-            cursortimer.Tick += cursortick;
+            cursortimer.Tick += CursorTick;
             CalculateTextParameters();
             Finish(false, false, false);
         }
@@ -504,39 +505,42 @@ namespace OFC.GL4.Controls
             if (displaystartx < 0)      // we start at -1, to indicate not calculated in case paint is called first, calc
                 displaystartx = 0;
 
-            using (Bitmap bmp = new Bitmap(1, 1))
+            int cursoroffset = cursorpos - cursorlinecpos;  // offset into line
+
+            if (displaystartx > cursoroffset)           // if > cursor offset, go back to cursor offset so it shows
             {
-                using (Graphics gr = Graphics.FromImage(bmp))
+                displaystartx = Math.Max(0, cursoroffset - 1);
+            }
+            else
+            {
+                Rectangle usablearea = UsableAreaForText(ClientRectangle);
+                Rectangle measurearea = usablearea;
+                measurearea.Width = 7000;        // big rectangle so we get all the text in
+
+                using (Bitmap bmp = new Bitmap(1, 1))
                 {
-                    int cursoroffset = cursorpos - cursorlinecpos;  // offset into line
-
-                    if (displaystartx > cursoroffset)           // if > cursor offset, go back to cursor offset so it shows
-                        displaystartx = Math.Max(0, cursoroffset - 1);
-                    else
+                    using (Graphics gr = Graphics.FromImage(bmp))
                     {
-                        Rectangle usablearea = UsableAreaForText(ClientRectangle);
+                        gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
 
-                        while (true)        // this part sets startx so cursor is visible
+                        using (var sfmt = new StringFormat())       // measure where the cursor will be and move startx to make it visible
                         {
-                            string cursorline = GetLineWithoutCRLF(cursorlinecpos, cursorlineno, displaystartx);
-                            if (cursorline.IsEmpty())
-                                break;
+                            sfmt.Alignment = StringAlignment.Near;
+                            sfmt.LineAlignment = StringAlignment.Near;
 
-                            Rectangle ma = usablearea;
-                            ma.Width = 7000;        // big rectangle so we get all the text in
-
-                            using (var sfmt = new StringFormat())       // measure where the cursor will be and move startx to make it visible
+                            while (true)        // this part sets startx so cursor is visible
                             {
-                                sfmt.Alignment = StringAlignment.Near;
-                                sfmt.LineAlignment = StringAlignment.Near;
+                                string cursorline = GetLineWithoutCRLF(cursorlinecpos, cursorlineno, displaystartx);
+                                if (cursorline.IsEmpty())
+                                    break;
 
                                 CharacterRange[] characterRanges = { new CharacterRange(0, cursoroffset - displaystartx) };   // measure where the cursor is..
                                 sfmt.SetMeasurableCharacterRanges(characterRanges);
-                                var rect = gr.MeasureCharacterRanges(cursorline + "@", Font, ma, sfmt)[0].GetBounds(gr);    // ensure at least 1 char
-                                                                                                                            //System.Diagnostics.Debug.WriteLine("{0} {1} {2}", startx, cursoroffset, rect);
-                                if ((int)(rect.Width + 1) > usablearea.Width - Font.Height)      // Font.Height is to allow for an overlap  TBD fix this later
+                                var rect = gr.MeasureCharacterRanges(cursorline + "@", Font, measurearea, sfmt)[0].GetBounds(gr);    // ensure at least 1 char
+                                                                                                                                     //System.Diagnostics.Debug.WriteLine("{0} {1} {2}", startx, cursoroffset, rect);
+                                if ((int)(rect.Width + 1) > usablearea.Width - Font.Height)      // Font.Height is to allow for an overlap  
                                 {
-                                    //  System.Diagnostics.Debug.WriteLine("Display start move right");
+                                    //System.Diagnostics.Debug.WriteLine("Display start move right");
                                     displaystartx++;
                                 }
                                 else
@@ -582,7 +586,7 @@ namespace OFC.GL4.Controls
             if (invalidate)
                 Invalidate();
 
-            System.Diagnostics.Debug.WriteLine("Cpos Line {0} cpos {1} cur {2} off {3} len {4} maxline {5} text '{6}'", cursorlineno, cursorlinecpos, cursorpos, cursorpos - cursorlinecpos, linelengths[cursorlineno], MaxLineLength, text.EscapeControlChars());
+            System.Diagnostics.Debug.WriteLine("Cpos Line {0} cpos {1} cur {2} off {3} len {4} maxline {5} line '{6}'", cursorlineno, cursorlinecpos, cursorpos, cursorpos - cursorlinecpos, linelengths[cursorlineno], MaxLineLength, GetLineWithoutCRLF(cursorlinecpos,cursorlineno,displaystartx));
         }
 
 
@@ -705,11 +709,13 @@ namespace OFC.GL4.Controls
 
         private void CursorTimerRestart()
         {
-            cursortimer.Start(1000, 500);
+            if (FlashingCursor)
+                cursortimer.Start(1000, 500);
+
             cursorshowing = true;
         }
 
-        private void cursortick(OFC.Timers.Timer t, long tick)
+        private void CursorTick(OFC.Timers.Timer t, long tick)
         {
             cursorshowing = !cursorshowing;
             Invalidate();
@@ -768,6 +774,8 @@ namespace OFC.GL4.Controls
                     int bottom = usablearea.Bottom;
                     usablearea.Height = Font.Height;        // move the area down the screen progressively
 
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
+
                     while (usablearea.Top < bottom)       // paint each line
                     {
                         if (!lineColor.IsFullyTransparent())        // lined paper
@@ -822,9 +830,7 @@ namespace OFC.GL4.Controls
 
                         if (s.Length > 0)
                         {
-                            gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
-                            gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
                         }
 
                         int cursoroffset = cursorpos - cursorlinecpos - displaystartx;
@@ -839,10 +845,11 @@ namespace OFC.GL4.Controls
                                 sfmt.LineAlignment = StringAlignment.Near;
                                 sfmt.FormatFlags = StringFormatFlags.NoWrap;
 
-                                CharacterRange[] characterRanges = { new CharacterRange(0, Math.Max(1, cursoroffset)) };   // if offset=0, 1 char and we use the left pos
+                                CharacterRange[] characterRanges = { new CharacterRange(0, Math.Max(cursoroffset, 1)) };   // if offset=0, 1 char and we use the left pos
 
                                 string t = GetLineWithoutCRLF(cursorlinecpos, cursorlineno, displaystartx) + "a";
-                               // System.Diagnostics.Debug.WriteLine(" Offset '{0}' {1} {2}", t, characterRanges[0].First, characterRanges[0].Length);
+                                //System.Diagnostics.Debug.WriteLine(" Offset '{0}' {1} {2} {3}", t.Substring(cursoroffset), cursoroffset, characterRanges[0].First, characterRanges[0].Length);
+
                                 sfmt.SetMeasurableCharacterRanges(characterRanges);
                                 var rect = gr.MeasureCharacterRanges(t, Font, usablearea, sfmt)[0].GetBounds(gr);    // ensure at least 1 char, need to do it in area otherwise it does not works:
 
@@ -851,9 +858,9 @@ namespace OFC.GL4.Controls
                                 if (cursoroffset == 0)
                                     cursorxpos = (int)rect.Left;
                                 else if (rect.Right < usablearea.Width)
-                                    cursorxpos = (int)rect.Right;
+                                    cursorxpos = (int)rect.Right-1;
 
-                               // System.Diagnostics.Debug.WriteLine(" Measured {0} -> {1}", rect, cursorxpos);
+                                //System.Diagnostics.Debug.WriteLine(" Measured {0} -> {1}", rect, cursorxpos);
                             }
 
                             if (cursorxpos >= 0)
@@ -872,6 +879,8 @@ namespace OFC.GL4.Controls
                         usablearea.Y += Font.Height;
                         lineno++;
                     }
+
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;     // back to system default
                 }
             }
         }
@@ -971,6 +980,8 @@ namespace OFC.GL4.Controls
         private int FindCursorPos(Point click, out int cpos, out int lineno)
         {
             Rectangle usablearea = UsableAreaForText(ClientRectangle);
+            usablearea.Width = 7000;        // set so chars don't clip and extend across
+
             lineno = cpos = -1;
 
             if (click.Y < usablearea.Y)
@@ -994,19 +1005,23 @@ namespace OFC.GL4.Controls
             {
                 using (Graphics gr = Graphics.FromImage(b))
                 {
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
+
                     for (int i = 0; i < s.Length; i++)    // we have to do it one by one, as the query is limited to 32 char ranges
                     {
                         using (var fmt = new StringFormat())
                         {
                             fmt.Alignment = StringAlignment.Near;
-                            fmt.FormatFlags = StringFormatFlags.NoWrap;
+                            fmt.LineAlignment = StringAlignment.Near;
+
                             CharacterRange[] characterRanges = { new CharacterRange(i, 1) };
                             fmt.SetMeasurableCharacterRanges(characterRanges);
 
                             var rect = gr.MeasureCharacterRanges(s, Font, usablearea, fmt)[0].GetBounds(gr);
-                            //System.Diagnostics.Debug.WriteLine("Region " + rect + " char " + i + " vs " + e.Location);
+                            //System.Diagnostics.Debug.WriteLine("Region " + rect + " char " + i + " " + s[i] + " vs " + click);
                             if (click.X >= rect.Left && click.X < rect.Right)
                             {
+                                //System.Diagnostics.Debug.WriteLine("Return " + (cpos + displaystartx + i));
                                 return cpos + displaystartx + i;
                             }
                         }
@@ -1014,7 +1029,9 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            return cpos + linelengths[lineno] - lineendlengths[lineno]; ;
+            //System.Diagnostics.Debug.WriteLine("Failed to find ");
+
+            return cpos + displaystartx+ s.Length;
         }
 
         public override void OnMouseDown(GLMouseEventArgs e)
@@ -1029,10 +1046,7 @@ namespace OFC.GL4.Controls
                     cursorlinecpos = xlinecpos;
                     cursorlineno = xlineno;
                     cursorpos = xcursorpos;
-                    if (!e.Shift)
-                        ClearMarkers();
-
-                    Invalidate();
+                    Finish(invalidate: true, clearmarkers: !e.Shift, restarttimer: true);
                 }
             }
         }

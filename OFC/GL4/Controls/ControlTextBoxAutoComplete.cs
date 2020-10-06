@@ -21,6 +21,7 @@ namespace OFC.GL4.Controls
     public class GLTextBoxAutoComplete : GLMultiLineTextBox
     {
         public Func<string,GLTextBoxAutoComplete,List<string>> PerformAutoComplete { get; set; } = null;
+        public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        // called on return, or autocomplete entry selected.
 
         public int AutoCompleteInitialDelay { get; set; } = 500;
 
@@ -32,8 +33,9 @@ namespace OFC.GL4.Controls
             waitforautotimer.Tick += TimeOutTick;
             triggercomplete.Tick += AutoCompleteFinished;
             ListBox.AutoSize = true;
-            ListBox.SelectedIndexChanged += (c0, i) => { Text = ListBox.SelectedItem; CancelAutoComplete(); };
+            ListBox.SelectedIndexChanged += (c0, i) => { Text = ListBox.SelectedItem; CancelAutoComplete(); SelectedEntry?.Invoke(this); };
             ListBox.OtherKeyPressed += (c1, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Delete) CancelAutoComplete(); };
+            ListBox.Name = name + "_LB";
         }
 
         public GLTextBoxAutoComplete() : this("TBAC?", DefaultWindowRectangle, "")
@@ -94,7 +96,7 @@ namespace OFC.GL4.Controls
                 System.Diagnostics.Debug.WriteLine("{0} Begin AC", Environment.TickCount % 10000);
                 restartautocomplete = false;
                 autocompletestrings = PerformAutoComplete(string.Copy(autocompletestring), this);    // pass a copy, in case we change it out from under it
-                System.Diagnostics.Debug.WriteLine("{0} finish func ret {1} restart {2}", Environment.TickCount % 10000, autocompletestrings.Count, restartautocomplete);
+                System.Diagnostics.Debug.WriteLine("{0} finish func ret {1} restart {2}", Environment.TickCount % 10000, autocompletestrings?.Count, restartautocomplete);
             } while (restartautocomplete == true);
 
             executingautocomplete = false;
@@ -104,10 +106,11 @@ namespace OFC.GL4.Controls
         private void AutoCompleteFinished(OFC.Timers.Timer t, long tick)
         {
             System.Diagnostics.Debug.WriteLine("{0} Auto Complete finished", tick);
-            foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String {0}", s); }
 
-            if ( autocompletestrings.Count > 0 )
+            if ( autocompletestrings != null && autocompletestrings.Count > 0 )
             {
+                foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String {0}", s); }
+
                 if ( ListBox.Parent != null )
                 {
                     FindDisplay()?.Remove(ListBox);
@@ -118,7 +121,6 @@ namespace OFC.GL4.Controls
                 ListBox.Font = Font;
                 ListBox.Location = new Point(sc.X, sc.Y + Height);
                 ListBox.Items = autocompletestrings;
-                //                listbox = new GLListBox("ACLB", new Rectangle(sc.X, sc.Y+Height, DropDownSize.Width>0 ? DropDownSize.Width : -this.Width * DropDownSize.Width / 100, DropDownSize.Height), autocompletestrings);
                 FindDisplay().Add(ListBox);
             }
         }
@@ -130,15 +132,24 @@ namespace OFC.GL4.Controls
             {
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
-                    ListBox?.FocusUpOne();
+                    ListBox?.FocusUp();
                 }
                 else if (e.KeyCode == System.Windows.Forms.Keys.Down)
                 {
-                    ListBox?.FocusDownOne();
+                    ListBox?.FocusDown();
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.PageUp)
+                {
+                    ListBox?.FocusUp(ListBox?.DisplayableItems??0);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.PageDown)
+                {
+                    ListBox?.FocusDown(ListBox?.DisplayableItems??0);
                 }
                 else if (e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return)
                 {
                     ListBox?.SelectCurrent();
+                    SelectedEntry?.Invoke(this);
                 }
             }
         }
@@ -150,9 +161,9 @@ namespace OFC.GL4.Controls
             if (!e.Handled)
             {
                 if (e.Delta > 0)
-                    ListBox?.FocusUpOne();
+                    ListBox?.FocusUp();
                 else
-                    ListBox?.FocusDownOne();
+                    ListBox?.FocusDown();
             }
         }
 

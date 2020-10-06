@@ -221,7 +221,6 @@ namespace TestOpenTk
 
             if (true)       // grid coords
             {
-
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
                 items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding 1
@@ -327,6 +326,24 @@ namespace TestOpenTk
             displaycontrol.MouseDown += MouseDownOnMap;
 
             galaxymenu = new MapMenu(this);
+
+            GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol["EntryText"]);
+            tbac.PerformAutoComplete = (s, a) => 
+            {
+                var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s,StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
+                List<string> list = glist.Select(x => x.name).ToList();
+                return list;
+            };
+            tbac.SelectedEntry = (a) => 
+            {
+                System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
+                var gmo = galmap.galacticMapObjects.Find(x=>x.name.Equals(tbac.Text,StringComparison.InvariantCultureIgnoreCase));
+                if ( gmo != null )
+                {
+                    System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.points[0]);
+                    gl3dcontroller.SlewToPosition(new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z), -1);
+                }
+            };
         }
 
         #endregion
@@ -433,7 +450,7 @@ namespace TestOpenTk
 
         public void SetEntryText(string text)
         {
-            ((GLTextBox)displaycontrol["EntryText"]).Text = text;
+            ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).Text = text;
         }
 
         public bool GalObjectEnable { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
@@ -459,6 +476,8 @@ namespace TestOpenTk
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("Mouse down on map");
+
             var sys = travelpath.FindSystem(e.ViewportLocation, glwfc.RenderState, glwfc.Size);
             if ( sys != null )
             {

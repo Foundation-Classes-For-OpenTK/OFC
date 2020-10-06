@@ -36,7 +36,7 @@ namespace TestOpenTk
             map.displaycontrol.Add(tpforward);
             tpforward.MouseClick = (o, e1) => { g.TravelPathMoveForward(); };
 
-            GLTextBox tptextbox = new GLTextBox("EntryText", new Rectangle(170, 10, 200, iconsize), "");
+            GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete("EntryText", new Rectangle(170, 10, 200, iconsize), "");
             tptextbox.TextAlign = ContentAlignment.MiddleLeft;
             tptextbox.BackColor = Color.Transparent;
             tptextbox.BorderColor = Color.Gray;

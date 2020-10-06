@@ -421,7 +421,7 @@ namespace OFC.GL4.Controls
             else
             {
                 if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
-                    this.OnMouseDown(e);
+                    this.OnMouseUp(e);
             }
 
             mousedowninitialcontrol = null;
@@ -433,6 +433,7 @@ namespace OFC.GL4.Controls
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null )        // clicks only occur if mouse is still over initial control
             {
+                System.Diagnostics.Debug.WriteLine("DC Mouse down on " + currentmouseover.Name);
                 SetFocus(currentmouseover);         
 
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
