@@ -402,6 +402,7 @@ namespace OFC.GL4.Controls
             FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
 
             child.Dispose();
+            child.parent = null;
 
             childrenz.Remove(child);
             childreniz.Remove(child);
@@ -591,7 +592,7 @@ namespace OFC.GL4.Controls
 
         public virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
-            System.Diagnostics.Debug.WriteLine("Laying out " + Name);
+            //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
             Rectangle area = ClientRectangle;
 
             foreach (var c in childrenz)     // in z order, top gets first go

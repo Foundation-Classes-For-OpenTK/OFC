@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using OFC.GL4.Controls;
+using System.Linq;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -202,7 +203,8 @@ namespace TestOpenTk
                 bool testform2 = true;
                 bool testflowlayout = true;
                 bool testmultiline = true;
-                bool testfloat = false;
+                bool testfloat = true;
+                bool testautocomplete = true;
                 testflowlayout = false;
 
                 //testform2 = false;
@@ -496,6 +498,18 @@ namespace TestOpenTk
                         GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(10, 450, 100, 25), 23.4f);
                         glf.Font = new Font("Ms Sans Serif", 12);
                         pform2.Add(glf);
+                    }
+
+                    if (testautocomplete)
+                    {
+                        GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(10, 500, 100, 25));
+                        gla.Font = new Font("Ms Sans Serif", 12);
+                        gla.PerformAutoComplete += (s, a) => 
+                        {
+                            var r = new List<string>() { "one", "two", "three" };
+                            return r.Where(x => x.StartsWith(s)).ToList();
+                        };
+                        pform2.Add(gla);
                     }
 
 

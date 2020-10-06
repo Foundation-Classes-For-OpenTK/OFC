@@ -19,6 +19,8 @@ using System.Diagnostics;
 
 namespace OFC.Timers
 {
+    // timer is thread safe
+
     public class Timer : IDisposable
     {
         public bool Running { get; private set; } = false;
@@ -40,7 +42,7 @@ namespace OFC.Timers
             Start(initialdelayms, repeatdelay);
         }
 
-        public void Start(int initialdelayms, int repeatdelay = 0)  // can call repeatedly
+        public void Start(int initialdelayms, int repeatdelay = 0)  // can call repeatedly on same timer, just resets the time
         {
             if (!mastertimer.IsRunning)
                 mastertimer.Start();
@@ -52,39 +54,49 @@ namespace OFC.Timers
             long timeout = mastertimer.ElapsedTicks + (Stopwatch.Frequency * initialdelayms / 1000);
 
             this.Running = true;
-            timerlist.Add(timeout, this);
+
+            lock (timerlist)
+            {
+                timerlist.Add(timeout, this);
+            }
 
             //System.Diagnostics.Debug.WriteLine("Start timer");
         }
 
         public void Stop()
         {
-            int i = timerlist.IndexOfValue(this);
-            if (i >= 0)
+            lock (timerlist)
             {
-                timerlist.RemoveAt(i);
-                Running = false;
-              //  System.Diagnostics.Debug.WriteLine("Stop timer");
+                int i = timerlist.IndexOfValue(this);
+                if (i >= 0)
+                {
+                    timerlist.RemoveAt(i);
+                    Running = false;
+                    //  System.Diagnostics.Debug.WriteLine("Stop timer");
+                }
             }
         }
 
         public static void ProcessTimers()      // Someone needs to call this..
         {
-            long timenow = mastertimer.ElapsedTicks;
-
-            while (timerlist.Count > 0 && timerlist.Keys[0] < timenow)     // for all timers which have ticked out
+            lock (timerlist)
             {
-                long tickout = timerlist.Keys[0];   // remember its tick
+                long timenow = mastertimer.ElapsedTicks;
 
-                Timer t = timerlist.Values[0];
-
-                t.Tick?.Invoke(t, mastertimer.ElapsedMilliseconds);   // fire event
-
-                timerlist.RemoveAt(timerlist.IndexOfValue(t));  // remove from list
-
-                if ( t.recurringtickdelta > 0  )  // add back if recurring
+                while (timerlist.Count > 0 && timerlist.Keys[0] < timenow)     // for all timers which have ticked out
                 {
-                    timerlist.Add(tickout + t.recurringtickdelta, t);     // add back to list
+                    long tickout = timerlist.Keys[0];   // remember its tick
+
+                    Timer t = timerlist.Values[0];      // get the timer
+
+                    timerlist.RemoveAt(timerlist.IndexOfValue(t));  // remove from list
+
+                    t.Tick?.Invoke(t, mastertimer.ElapsedMilliseconds);   // fire event
+
+                    if (t.recurringtickdelta > 0)       // add back if recurring
+                    {
+                        timerlist.Add(tickout + t.recurringtickdelta, t);     // add back to list
+                    }
                 }
             }
         }

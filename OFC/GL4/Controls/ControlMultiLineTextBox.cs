@@ -69,7 +69,7 @@ namespace OFC.GL4.Controls
         {
             if (p >= 0 && p <= Text.Length)
             {
-                cursorpos = p;
+                startpos = cursorpos = p;
                 if (cursorpos < Text.Length && text[cursorpos] == '\n' && cursorpos > 0 && text[cursorpos - 1] == '\r') // if on a \r\n at \n, need to move back 1 more to disallow
                     cursorpos--;
 
@@ -293,7 +293,7 @@ namespace OFC.GL4.Controls
         {
             startpos = Math.Min(start, end);
             cursorpos = Math.Max(start, end);
-            CalculateTextParameters();
+            CalculateTextParameters();                      // will correct for out of range start/cursor pos
             Finish(invalidate: true, clearmarkers: false, restarttimer: true);
         }
 
@@ -596,8 +596,7 @@ namespace OFC.GL4.Controls
 
         protected override void TextValueChanged()      // called by upper class to say i've changed the text.
         {
-            CalculateTextParameters();
-            Finish(true, false, true);
+            SetCursorPos(Text.Length);          // will set to end, cause Calculate and FInish
         }
 
         private void ClearMarkers()
@@ -1158,7 +1157,6 @@ namespace OFC.GL4.Controls
 
         private int firstline = 0;  // first line to display
         private int displaystartx = -1; // first character to display
-        private int cursorxpos = 0;     // cursor x pos in pixels
 
         private Color highlightColor { get; set; } = DefaultHighlightColor;
         private Color lineColor { get; set; } = Color.Transparent;

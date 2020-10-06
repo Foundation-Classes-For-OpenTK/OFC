@@ -16,8 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -45,7 +43,6 @@ namespace OFC.GL4.Controls
 
         // scroll bar
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
-
         public Color SliderColor { get { return scrollbar.SliderColor; } set { scrollbar.SliderColor = value; } }
         public Color ArrowButtonColor { get { return scrollbar.ArrowButtonColor; } set { scrollbar.ArrowButtonColor = value; } }
         public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value; } }
@@ -105,6 +102,58 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public void ScrollUpOne()
+        {
+            if (firstindex > 0)
+            {
+                firstindex--;
+                scrollbar.Value = firstindex;
+                Invalidate();
+            }
+        }
+
+        public void ScrollDownOne()
+        {
+            if (Items != null && firstindex < Items.Count() - displayableitems)
+            {
+                firstindex++;
+                scrollbar.Value = firstindex;
+                Invalidate();
+            }
+        }
+
+        public void FocusUpOne()
+        {
+            if (focusindex > 0)
+            {
+                focusindex--;
+                Invalidate();
+                if (focusindex < firstindex)
+                    ScrollUpOne();
+            }
+        }
+
+        public void FocusDownOne()
+        {
+            if (Items != null && focusindex < Items.Count() - 1)
+            {
+                focusindex++;
+                Invalidate();
+                if (focusindex >= firstindex + displayableitems)
+                    ScrollDownOne();
+            }
+        }
+
+        public void SelectCurrent()
+        {
+            if (focusindex >= 0)
+            {
+                selectedIndex = focusindex;
+                OnSelectedIndexChanged();
+            }
+        }
+
+        #region Implementation
 
         public override void OnFontChanged()
         {
@@ -276,45 +325,6 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected void ScrollUpOne()
-        {
-            if (firstindex > 0)
-            {
-                firstindex--;
-                scrollbar.Value = firstindex;
-                Invalidate();
-            }
-        }
-        protected void ScrollDownOne()
-        {
-            if (Items != null && firstindex < Items.Count() - displayableitems)
-            {
-                firstindex++;
-                scrollbar.Value = firstindex;
-                Invalidate();
-            }
-        }
-        protected void FocusUpOne()
-        {
-            if (focusindex > 0)
-            {
-                focusindex--;
-                Invalidate();
-                if (focusindex < firstindex)
-                    ScrollUpOne();
-            }
-        }
-        protected void FocusDownOne()
-        {
-            if (Items != null && focusindex < Items.Count() - 1)
-            {
-                focusindex++;
-                Invalidate();
-                if (focusindex >= firstindex + displayableitems)
-                    ScrollDownOne();
-            }
-        }
-
         public override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -341,9 +351,9 @@ namespace OFC.GL4.Controls
             if (!e.Handled)
             {
                 if (e.Delta > 0)
-                    ScrollUpOne();
+                    FocusUpOne();
                 else
-                    ScrollDownOne();
+                    FocusDownOne();
             }
         }
 
@@ -366,7 +376,6 @@ namespace OFC.GL4.Controls
             }
         }
 
-
         public override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -385,8 +394,7 @@ namespace OFC.GL4.Controls
 
                 if ((e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return) || (e.Alt && (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Down)))
                 {
-                    selectedIndex = focusindex;
-                    OnSelectedIndexChanged();
+                    SelectCurrent();
                 }
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Delete || e.KeyCode == System.Windows.Forms.Keys.Escape || e.KeyCode == System.Windows.Forms.Keys.Back)
@@ -406,6 +414,7 @@ namespace OFC.GL4.Controls
             OtherKeyPressed?.Invoke(this, e);
         }
 
+        #endregion
 
         private bool fitToItemsHeight { get; set; } = true;              // if set, move the border to integer of item height.
         private bool fitImagesToItemHeight { get; set; } = false;        // if set images scaled to fit within item height
