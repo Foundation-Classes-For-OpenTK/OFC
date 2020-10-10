@@ -100,10 +100,7 @@ namespace TestOpenTk
             var res = geo.GetResult();
             if (res != null)
             {
-                for (int i = 0; i < res.Length; i++)
-                {
-                    System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                }
+//                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
 
                 int instance = (int)res[0].Y;
                 return galmap.RenderableMapObjectsEnabled[instance];

@@ -42,6 +42,11 @@ namespace OFC.Timers
             Start(initialdelayms, repeatdelay);
         }
 
+        public void FireNow()
+        {
+            Start(0);
+        }
+
         public void Start(int initialdelayms, int repeatdelay = 0)  // can call repeatedly on same timer, just resets the time
         {
             if (!mastertimer.IsRunning)

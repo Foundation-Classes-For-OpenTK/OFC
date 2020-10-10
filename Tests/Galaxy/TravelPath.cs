@@ -21,6 +21,8 @@ namespace TestOpenTk
 
     class TravelPath
     {
+        public List<ISystem> CurrentList { get { return lastlist; } }
+
         public void CreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, List<ISystem> pos, float sunsize, float tapesize, int bufferfindbinding)
         {
             if (lastpos != -1)
@@ -107,10 +109,7 @@ namespace TestOpenTk
             var res = geo.GetResult();
             if (res != null)
             {
-                for (int i = 0; i < res.Length; i++)
-                {
-                    System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                }
+                //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
                 return lastlist[(int)res[0].Y];
             }
 

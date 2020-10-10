@@ -12,13 +12,8 @@
  * governing permissions and limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -63,6 +58,10 @@ namespace OFC.GL4.Controls
             MarginNI = new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins);
         }
 
+        protected override void TextValueChanged()      // called by upper class to say i've changed the text.
+        {
+            Invalidate();
+        }
         protected override void DrawBorder(Rectangle bounds, Graphics gr, Color bc, float bw)      // normal override, you can overdraw border if required.
         {
             int topoffset = this.Text.HasChars() ? (Margin.Top * 3 / 8 ) : GBMargins;

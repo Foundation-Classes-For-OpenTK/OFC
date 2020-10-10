@@ -600,6 +600,7 @@ namespace OFC.GL4.Controls
 
         protected override void TextValueChanged()      // called by upper class to say i've changed the text.
         {
+            displaystartx = 0;
             SetCursorPos(Text.Length);          // will set to end, cause Calculate and FInish
         }
 

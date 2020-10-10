@@ -12,12 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -47,6 +42,6 @@ namespace OFC.GL4.Controls
         protected string text = "";
         protected ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleLeft;
 
-        protected virtual void TextValueChanged() { }                                    // default - no action
+        protected abstract void TextValueChanged();                                   
     }
 }

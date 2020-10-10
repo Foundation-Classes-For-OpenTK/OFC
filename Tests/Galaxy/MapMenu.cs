@@ -1,4 +1,5 @@
 ﻿using OFC.GL4.Controls;
+using OFC.GL4.Controls;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -36,7 +37,7 @@ namespace TestOpenTk
             map.displaycontrol.Add(tpforward);
             tpforward.MouseClick = (o, e1) => { g.TravelPathMoveForward(); };
 
-            GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete("EntryText", new Rectangle(170, 10, 200, iconsize), "");
+            GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete("EntryText", new Rectangle(170, 10, 300, iconsize), "");
             tptextbox.TextAlign = ContentAlignment.MiddleLeft;
             tptextbox.BackColor = Color.Transparent;
             tptextbox.BorderColor = Color.Gray;
@@ -47,7 +48,7 @@ namespace TestOpenTk
             maintooltip.ForeColor = Color.Orange;
             map.displaycontrol.Add(maintooltip);
 
-            status = new GLLabel("Status", new Rectangle(10, 500, 400, 24), "x");
+            status = new GLLabel("Status", new Rectangle(10, 500, 600, 24), "x");
             status.Dock = DockingType.BottomLeft;
             status.ForeColor = Color.Orange;
             status.BackColor = Color.FromArgb(50, 50, 50, 50);

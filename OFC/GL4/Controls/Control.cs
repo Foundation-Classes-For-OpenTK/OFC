@@ -162,6 +162,7 @@ namespace OFC.GL4.Controls
         public Action<Object, GLMouseEventArgs> MouseUp { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseMove { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseClick { get; set; } = null;
+        public Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseWheel { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseEnter { get; set; } = null;  // location in terms of whole window
         public Action<Object, GLMouseEventArgs> MouseLeave { get; set; } = null;  // location in terms of whole window
@@ -904,6 +905,12 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("click " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
             MouseClick?.Invoke(this, e);
+        }
+
+        public virtual void OnMouseDoubleClick(GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine("doubleclick " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
+            MouseDoubleClick?.Invoke(this, e);
         }
 
         public virtual void OnMouseMove(GLMouseEventArgs e)

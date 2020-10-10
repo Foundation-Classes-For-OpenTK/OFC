@@ -505,7 +505,7 @@ namespace TestOpenTk
                     {
                         GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(10, 500, 100, 25));
                         gla.Font = new Font("Ms Sans Serif", 12);
-                        gla.PerformAutoComplete += (s, a) => 
+                        gla.PerformAutoCompleteInThread += (s, a) => 
                         {
                             var r = new List<string>() { "one", "two", "three" };
                             return r.Where(x => x.StartsWith(s)).ToList();

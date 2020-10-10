@@ -114,6 +114,11 @@ namespace OFC.GL4.Controls
             DialogCallback?.Invoke(this, dialogResult);
         }
 
+        protected override void TextValueChanged()      // called by upper class to say i've changed the text.
+        {
+            Invalidate();
+        }
+
         public override void PerformRecursiveLayout()
         {
             if (text.HasChars())

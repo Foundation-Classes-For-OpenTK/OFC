@@ -54,24 +54,36 @@ namespace OFC.Controller
             Start(win, lookat, cameradirdegrees, zoomn);
         }
 
-        public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
+        public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn,
+                        bool registermouseui = true, bool registerkeyui = true)
         {
             MatrixCalc = mc;
-            Start(win, lookat, cameradirdegrees, zoomn);
+            Start(win, lookat, cameradirdegrees, zoomn, registermouseui, registerkeyui);
         }
 
-        public void Start(GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
+        // set up starting conditions. If registerui = false, you handle the direct window mouse/keyboard actions
+
+        public void Start(GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn,
+                            bool registermouseui = true, bool registerkeyui = true)
         {
             glwin = win;
 
             win.Resize += GlControl_Resize;
             win.Paint += glControl_Paint;
-            win.MouseDown += glControl_MouseDown;
-            win.MouseUp += glControl_MouseUp;
-            win.MouseMove += glControl_MouseMove;
-            win.MouseWheel += glControl_MouseWheel;
-            win.KeyDown += glControl_KeyDown;
-            win.KeyUp += glControl_KeyUp;
+
+            if (registermouseui)
+            {
+                win.MouseDown += MouseDown;
+                win.MouseUp += MouseUp;
+                win.MouseMove += MouseMove;
+                win.MouseWheel += MouseWheel;
+            }
+
+            if ( registerkeyui )
+            { 
+                win.KeyDown += KeyDown;
+                win.KeyUp += KeyUp;
+            }
 
             MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
 
@@ -173,27 +185,9 @@ namespace OFC.Controller
             return moved;
         }
 
-        #region Implementation
-
-        private void GlControl_Resize(object sender)          // from the window, a resize event
+        public void MouseDown(object sender, GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
-            MatrixCalc.ResizeViewPort(this,glwin.Size);
-            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
-            MatrixCalc.CalculateProjectionMatrix();
-            glwin.Invalidate();
-        }
-
-        // Paint the scene - just pass the call down to the installed PaintObjects
-
-        private void glControl_Paint(Object obj)
-        {
-            PaintObjects?.Invoke(MatrixCalc, sysinterval.ElapsedMilliseconds);
-        }
-
-        private void glControl_MouseDown(object sender, GLMouseEventArgs e)
-        {
-            KillSlews();
+            //System.Diagnostics.Debug.WriteLine("3dcontroller mouse down");
 
             mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
@@ -209,8 +203,10 @@ namespace OFC.Controller
             }
         }
 
-        private void glControl_MouseUp(object sender, GLMouseEventArgs e)
+        public void MouseUp(object sender, GLMouseEventArgs e)
         {
+            //System.Diagnostics.Debug.WriteLine("3dcontroller mouse up");
+
             var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
             bool notmovedmouse = Math.Abs(mousepos.X - mouseDownPos.X) + Math.Abs(mousepos.Y - mouseDownPos.Y) < 4;
@@ -225,7 +221,7 @@ namespace OFC.Controller
             }
         }
 
-        private void glControl_MouseMove(object sender, GLMouseEventArgs e)
+        public void MouseMove(object sender, GLMouseEventArgs e)
         {
             var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
@@ -287,7 +283,7 @@ namespace OFC.Controller
 
         }
 
-        private void glControl_MouseWheel(object sender, GLMouseEventArgs e)
+        public void MouseWheel(object sender, GLMouseEventArgs e)
         {
             if (e.Delta != 0)
             {
@@ -306,18 +302,35 @@ namespace OFC.Controller
             }
         }
 
-        private void glControl_KeyDown(object sender, GLKeyEventArgs e)
+        public void KeyDown(object sender, GLKeyEventArgs e)
         {
             keyboard.KeyDown(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
 
-        private void glControl_KeyUp(object sender, GLKeyEventArgs e)
+        public void KeyUp(object sender, GLKeyEventArgs e)
         {
             keyboard.KeyUp(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
 
+        #region Implementation
 
-        private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
+        private void GlControl_Resize(object sender)          // from the window, a resize event
+        {
+            System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
+            MatrixCalc.ResizeViewPort(this,glwin.Size);
+            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
+            MatrixCalc.CalculateProjectionMatrix();
+            glwin.Invalidate();
+        }
+
+        // Paint the scene - just pass the call down to the installed PaintObjects
+
+        private void glControl_Paint(Object obj)
+        {
+            PaintObjects?.Invoke(MatrixCalc, sysinterval.ElapsedMilliseconds);
+        }
+
+          private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
 
         private Stopwatch sysinterval = new Stopwatch();    // to accurately measure interval between system ticks
         private long lastintervalcount = 0;                   // last update tick at previous update

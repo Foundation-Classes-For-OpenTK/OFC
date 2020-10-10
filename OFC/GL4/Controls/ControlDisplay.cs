@@ -66,6 +66,7 @@ namespace OFC.GL4.Controls
 
             glwin.MouseMove += Gc_MouseMove;
             glwin.MouseClick += Gc_MouseClick;
+            glwin.MouseDoubleClick += Gc_MouseDoubleClick;
             glwin.MouseDown += Gc_MouseDown;
             glwin.MouseUp += Gc_MouseUp;
             glwin.MouseEnter += Gc_MouseEnter;
@@ -431,22 +432,41 @@ namespace OFC.GL4.Controls
         {
             SetViewScreenCoord(ref e);
 
-            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null )        // clicks only occur if mouse is still over initial control
+            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
-                System.Diagnostics.Debug.WriteLine("DC Mouse down on " + currentmouseover.Name);
-                SetFocus(currentmouseover);         
-
+                SetFocus(currentmouseover);
                 SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseClick(e);
             }
-            else if ( currentmouseover == null)        // not over any control, but still click, (due to screen coord clip space), so send thru the displaycontrol
+            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
                 SetFocus(this);
 
                 if (this.Enabled)
                     this.OnMouseClick(e);
+            }
+        }
+
+        private void Gc_MouseDoubleClick(object sender, GLMouseEventArgs e)
+        {
+            SetViewScreenCoord(ref e);
+
+            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
+            {
+                SetFocus(currentmouseover);
+                SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                if (currentmouseover.Enabled)
+                    currentmouseover.OnMouseDoubleClick(e);
+            }
+            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
+            {
+                SetFocus(this);
+
+                if (this.Enabled)
+                    this.OnMouseDoubleClick(e);
             }
         }
 

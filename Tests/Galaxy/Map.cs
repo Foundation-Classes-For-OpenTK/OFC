@@ -284,13 +284,15 @@ namespace TestOpenTk
 
             EliteRegionsEnable = false;
 
-            // menu system
+            // Matrix calc holding transform info
 
             GLMatrixCalc mc = new GLMatrixCalc();
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 120000f;
             mc.InPerspectiveMode = true;
             mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
+
+            // menu system
 
             displaycontrol = new GLControlDisplay(items, glwfc, mc);       // hook form to the window - its the master
             displaycontrol.Font = new Font("Arial", 10f);
@@ -310,8 +312,8 @@ namespace TestOpenTk
                 return (float)ms * 1.0f * Math.Min(eyedist / 1000, 10);
             };
 
-            // hook gl3dcontroller to display control - its the slave
-            gl3dcontroller.Start(mc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F);
+            // hook gl3dcontroller to display control - its the slave. Do not register mouse UI, we will deal with that.
+            gl3dcontroller.Start(mc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F, false, true);
 
             if (displaycontrol != null)
             {
@@ -323,25 +325,49 @@ namespace TestOpenTk
                 };
             }
 
+            displaycontrol.MouseClick += MouseClickOnMap;
+            displaycontrol.MouseUp += MouseUpOnMap;
             displaycontrol.MouseDown += MouseDownOnMap;
+            displaycontrol.MouseMove += MouseMoveOnMap;
+            displaycontrol.MouseWheel += MouseWheelOnMap;
+            displaycontrol.MouseDoubleClick += MouseDoubleClickOnMap;
 
             galaxymenu = new MapMenu(this);
 
+            // Autocomplete text box at top for searching
+
             GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol["EntryText"]);
-            tbac.PerformAutoComplete = (s, a) => 
+
+            tbac.PerformAutoCompleteInUIThread = (s, a) =>       
             {
-                var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s,StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
+                System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
+                var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
                 List<string> list = glist.Select(x => x.name).ToList();
+                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x=>x.Name));
+                list.Sort();
                 return list;
             };
-            tbac.SelectedEntry = (a) => 
+
+            tbac.SelectedEntry = (a) =>     // in UI thread
             {
+                System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
                 var gmo = galmap.galacticMapObjects.Find(x=>x.name.Equals(tbac.Text,StringComparison.InvariantCultureIgnoreCase));
-                if ( gmo != null )
+                if (gmo != null)
                 {
                     System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.points[0]);
                     gl3dcontroller.SlewToPosition(new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z), -1);
+                }
+                else
+                {
+                    var sys = travelpath.CurrentList.Find(x => x.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                    if (sys != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Move to sys " + sys.Name);
+                        gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
+                    }
+                    else
+                        tbac.InErrorCondition = true;
                 }
             };
         }
@@ -352,8 +378,8 @@ namespace TestOpenTk
 
         public void Systick()
         {
-            if (displaycontrol != null && displaycontrol.RequestRender)
-                glwfc.Invalidate();
+            //if (displaycontrol != null && displaycontrol.RequestRender)
+              //  glwfc.Invalidate();
             var cdmt = gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
             glwfc.Invalidate();
         }
@@ -451,6 +477,7 @@ namespace TestOpenTk
         public void SetEntryText(string text)
         {
             ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).Text = text;
+            ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).CancelAutoComplete();
         }
 
         public bool GalObjectEnable { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
@@ -459,6 +486,29 @@ namespace TestOpenTk
         {
             galmapobjects.UpdateEnables(galmap);
             glwfc.Invalidate();
+        }
+
+        public Object FindObjectOnMap(Point loc)
+        {
+            var sys = travelpath.FindSystem(loc, glwfc.RenderState, glwfc.Size);
+            if (sys != null)
+                return sys;
+            var gmo = galmapobjects.FindPOI(loc, glwfc.RenderState, glwfc.Size, galmap);
+            if (gmo != null)
+                return gmo;
+            return null;
+        }
+
+        public Tuple<string,Vector3> NameLocation(Object obj)       // given a type, return its name and location
+        {
+            var sys = obj as ISystem;
+            var gmo = obj as GalacticMapObject;
+            if (sys != null)
+                return new Tuple<string, Vector3>(sys.Name, new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z));
+            else if (gmo != null)
+                return new Tuple<string, Vector3>(gmo.name, new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z));
+            else
+                return null;
         }
 
         public bool EDSMRegionsEnable { get { return edsmgalmapregions.Enable; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
@@ -476,25 +526,49 @@ namespace TestOpenTk
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Mouse down on map");
+            //System.Diagnostics.Debug.WriteLine("Mouse down on map");
 
-            var sys = travelpath.FindSystem(e.ViewportLocation, glwfc.RenderState, glwfc.Size);
-            if ( sys != null )
-            {
-                gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
-                travelpath.SetSystem(sys);
-                SetEntryText(sys.Name);
-            }
-            else
-            {
-                var gmo = galmapobjects.FindPOI(e.ViewportLocation, glwfc.RenderState, glwfc.Size, galmap);
+            Object item = FindObjectOnMap(e.ViewportLocation);
 
-                if ( gmo != null )
-                {
-                    gl3dcontroller.SlewToPosition(new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z), -1);
-                    SetEntryText(gmo.name);
-                }
+            if (item != null)
+            {
+                var nl = NameLocation(item);
+                System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
+                SetEntryText(nl.Item1);
+                gl3dcontroller.SlewToPosition(nl.Item2, -1);
             }
+        }
+
+        private void MouseUpOnMap(Object s, GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine("Mouse up on map");
+            gl3dcontroller.MouseUp(s, e);
+        }
+
+        private void MouseMoveOnMap(Object s, GLMouseEventArgs e)
+        {
+           // System.Diagnostics.Debug.WriteLine("Mouse move on map");
+            gl3dcontroller.MouseMove(s, e);
+        }
+
+        private void MouseClickOnMap(Object s, GLMouseEventArgs e)
+        {
+           // System.Diagnostics.Debug.WriteLine("Mouse click on map");
+        }
+
+        private void MouseDoubleClickOnMap(Object s, GLMouseEventArgs e)
+        {
+            gl3dcontroller.KillSlews();
+          //  System.Diagnostics.Debug.WriteLine("Mouse double click on map");
+            Object item = FindObjectOnMap(e.ViewportLocation);
+            if (item != null)
+                System.Diagnostics.Debug.WriteLine("Double click on " + item);
+
+        }
+
+        private void MouseWheelOnMap(Object s, GLMouseEventArgs e)
+        {
+            gl3dcontroller.MouseWheel(s, e);
         }
 
         private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
@@ -547,6 +621,7 @@ namespace TestOpenTk
                 }
 
                 travelpath.CreatePath(null, null, pos, 20, 2, 0);
+
                 glwfc.Invalidate();
             }
         }

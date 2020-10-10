@@ -99,6 +99,7 @@ namespace OFC
         Action<Object, GLMouseEventArgs> MouseEnter { get; set; }
         Action<Object, GLMouseEventArgs> MouseLeave { get; set; }
         Action<Object, GLMouseEventArgs> MouseClick { get; set; }
+        Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; }
         Action<Object, GLMouseEventArgs> MouseWheel { get; set; }
         Action<Object, GLKeyEventArgs> KeyDown { get; set; }
         Action<Object, GLKeyEventArgs> KeyUp { get; set; }

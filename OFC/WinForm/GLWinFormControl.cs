@@ -60,6 +60,7 @@ namespace OFC.WinForm
         public Action<Object, GLMouseEventArgs> MouseEnter { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseLeave { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseClick { get; set; } = null;
+        public Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseWheel { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyDown { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
@@ -88,6 +89,7 @@ namespace OFC.WinForm
             glControl.MouseEnter += Gc_MouseEnter;
             glControl.MouseLeave += Gc_MouseLeave;
             glControl.MouseClick += Gc_MouseClick;
+            glControl.MouseDoubleClick += Gc_MouseDoubleClick;
             glControl.MouseWheel += Gc_MouseWheel;
             glControl.KeyDown += Gc_KeyDown;
             glControl.KeyUp += Gc_KeyUp;
@@ -176,6 +178,16 @@ namespace OFC.WinForm
             var ev = new GLMouseEventArgs(b, e.Location, e.Clicks,
                             Control.ModifierKeys.HasFlag(Keys.Alt), Control.ModifierKeys.HasFlag(Keys.Control), Control.ModifierKeys.HasFlag(Keys.Shift));
             MouseClick?.Invoke(this, ev);
+        }
+
+        private void Gc_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
+                (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
+                (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
+            var ev = new GLMouseEventArgs(b, e.Location, e.Clicks,
+                            Control.ModifierKeys.HasFlag(Keys.Alt), Control.ModifierKeys.HasFlag(Keys.Control), Control.ModifierKeys.HasFlag(Keys.Shift));
+            MouseDoubleClick?.Invoke(this, ev);
         }
 
         private void Gc_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)

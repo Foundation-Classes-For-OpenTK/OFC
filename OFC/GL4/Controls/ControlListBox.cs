@@ -94,29 +94,36 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public void SetSelectedItem(string v, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
+        public bool SetSelectedItem(string v, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
         {
             if (items != null)
             {
                 int i = items.FindIndex((x) => x.Equals(v, c));
                 if (i >= 0 && i < items.Count)
+                {
                     SetSelectedIndex(v);
+                    return true;
+                }
             }
+            return false;
         }
 
-        public void FocusUp(int count = 1)
+        public bool FocusUp(int count = 1)
         {
             count = Math.Min(focusindex, count);
 
-            if (Items != null && count > 0 )
+            if (Items != null && count > 0)
             {
                 focusindex -= count;
                 EnsureInView();
                 Invalidate();
+                return true;
             }
+            else
+                return false;
         }
 
-        public void FocusDown(int count = 1)
+        public bool FocusDown(int count = 1)
         {
             count = Math.Min(count, Items.Count - focusindex - 1);
 
@@ -125,16 +132,22 @@ namespace OFC.GL4.Controls
                 focusindex += count;
                 EnsureInView();
                 Invalidate();
+                return true;
             }
+            else
+                return false;
         }
 
-        public void SelectCurrent()
+        public bool SelectCurrent()
         {
             if (focusindex >= 0)
             {
                 selectedIndex = focusindex;
                 OnSelectedIndexChanged();
+                return true;
             }
+            else
+                return false;
         }
 
         #region Implementation

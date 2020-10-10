@@ -15,27 +15,43 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 
 namespace OFC.GL4.Controls
 {
+    // Autocomplete text box
+    // PerformAutoCompleteInThread runs in a thread - not the main UI
+    // PerformAutoCompleteInUIThread runs in the UI thread
+    // you can have both
+    // SelectedEntry is run when use hits return or clicks on an autocompleted item in drop down, runs in the UI thread
+    // Set InErrorCondition if required, next text will clear it
+
     public class GLTextBoxAutoComplete : GLMultiLineTextBox
     {
-        public Func<string,GLTextBoxAutoComplete,List<string>> PerformAutoComplete { get; set; } = null;
+        public Func<string, GLTextBoxAutoComplete, List<string>> PerformAutoCompleteInThread { get; set; } = null;
+        public Func<string, GLTextBoxAutoComplete, List<string>> PerformAutoCompleteInUIThread { get; set; } = null;
+
         public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        // called on return, or autocomplete entry selected.
 
-        public int AutoCompleteInitialDelay { get; set; } = 500;
+        public int AutoCompleteInitialDelay { get; set; } = 2000;
 
         public GLListBox ListBox { get; set; } = new GLListBox();           // if you want to set its visual properties, do it via this
 
         public GLTextBoxAutoComplete(string name, Rectangle pos, string text = "") : base(name, pos, text)
         {
             MultiLineMode = false;
-            waitforautotimer.Tick += TimeOutTick;
+            waitforautotimer.Tick += InitialDelayOver;
+            autocompleteinuitimer.Tick += AutoCompleteInUI;
             triggercomplete.Tick += AutoCompleteFinished;
             ListBox.AutoSize = true;
-            ListBox.SelectedIndexChanged += (c0, i) => { Text = ListBox.SelectedItem; CancelAutoComplete(); SelectedEntry?.Invoke(this); };
+            ListBox.SelectedIndexChanged += (c0, i) => {
+                Text = ListBox.SelectedItem;
+                CancelAutoComplete();
+                SelectedEntry?.Invoke(this);
+            };
             ListBox.OtherKeyPressed += (c1, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Delete) CancelAutoComplete(); };
             ListBox.Name = name + "_LB";
+            ListBox.Visible = false;
         }
 
         public GLTextBoxAutoComplete() : this("TBAC?", DefaultWindowRectangle, "")
@@ -45,33 +61,34 @@ namespace OFC.GL4.Controls
         public void AutoComplete(string autocomplete)           // call to autocomplete this
         {
             autocompletestring = autocomplete;
-            TimeOutTick(null, 0);
+            InitialDelayOver(null, 0);
         }
 
         public void CancelAutoComplete()        // Sometimes, the user is quicker than the timer, and has commited to a selection before the results even come back.
         {
             waitforautotimer.Stop();
             triggercomplete.Stop();
-            if (ListBox.Parent != null)
-            {
-                FindDisplay()?.Remove(ListBox);
-            }
+            ListBox.Visible = false;
             this.SetFocus();
         }
 
         protected override void OnTextChanged()
         {
             System.Diagnostics.Debug.WriteLine("{0} text change event", Environment.TickCount % 10000);
-            if (PerformAutoComplete != null )
+
+            if (InErrorCondition)               // cancel any error condition on typing
+                InErrorCondition = false;
+
+            if (PerformAutoCompleteInThread != null || PerformAutoCompleteInUIThread != null )
             {
-                if (!executingautocomplete)
+                if (!executingautocomplete)     // if not executing, start a timeout
                 {
                     System.Diagnostics.Debug.WriteLine("{0} Start timer", Environment.TickCount % 10000);
                     waitforautotimer.Start(AutoCompleteInitialDelay);
                     autocompletestring = String.Copy(this.Text);    // a copy in case the text box changes it after complete starts
                 }
                 else
-                {
+                {                               // we are executing a long one, but another autocomplete needs to be done
                     System.Diagnostics.Debug.WriteLine("{0} in ac, go again", Environment.TickCount % 10000);
                     autocompletestring = String.Copy(this.Text);
                     restartautocomplete = true;
@@ -79,11 +96,9 @@ namespace OFC.GL4.Controls
             }
         }
 
-        private void TimeOutTick(OFC.Timers.Timer t, long tick)
+        private void InitialDelayOver(OFC.Timers.Timer t, long tick)
         {
-            waitforautotimer.Stop();
             executingautocomplete = true;
-
             ThreadAutoComplete = new System.Threading.Thread(new System.Threading.ThreadStart(AutoComplete));
             ThreadAutoComplete.Name = "AutoComplete";
             ThreadAutoComplete.Start();
@@ -95,33 +110,60 @@ namespace OFC.GL4.Controls
             {
                 System.Diagnostics.Debug.WriteLine("{0} Begin AC", Environment.TickCount % 10000);
                 restartautocomplete = false;
-                autocompletestrings = PerformAutoComplete(string.Copy(autocompletestring), this);    // pass a copy, in case we change it out from under it
+
+                autocompletestrings = new List<string>();
+
+                if ( PerformAutoCompleteInThread != null)           // first see if a thread wants action
+                {
+                    System.Diagnostics.Debug.WriteLine("AC in thread");
+                    var ret = PerformAutoCompleteInThread(string.Copy(autocompletestring), this);
+                    if (ret != null)
+                        autocompletestrings.AddRange(ret);
+                }
+
+                if ( PerformAutoCompleteInUIThread != null )        // then see if the UI wants action
+                {
+                    System.Diagnostics.Debug.WriteLine("Fire in ui");
+                    autocompleteinuitimer.FireNow();                // fire a UI thread timer off
+                    AutocompleteUIDone.WaitOne();                   // and stop thread until AutoCompleteInUI done
+                    System.Diagnostics.Debug.WriteLine("Fire in ui done");
+                }
+
                 System.Diagnostics.Debug.WriteLine("{0} finish func ret {1} restart {2}", Environment.TickCount % 10000, autocompletestrings?.Count, restartautocomplete);
             } while (restartautocomplete == true);
 
             executingautocomplete = false;
-            triggercomplete.Start(0);  // fire it immediately.  Next timer call around will trigger in correct thread.  This is thread safe.
+            triggercomplete.FireNow();  // fire it immediately.  Next timer call around will trigger in correct thread.  This is thread safe.
         }
 
-        private void AutoCompleteFinished(OFC.Timers.Timer t, long tick)
+        private void AutoCompleteInUI(OFC.Timers.Timer t, long tick)      // in UI thread, fired by autocompleteinui timer
+        {
+            System.Diagnostics.Debug.WriteLine("{0} Perform in UI ", tick);
+            var uistrings = PerformAutoCompleteInUIThread.Invoke(string.Copy(autocompletestring), this);        // we know its not null
+            if (uistrings != null)
+                autocompletestrings.AddRange(uistrings);
+            AutocompleteUIDone.Set();
+        }
+            
+        private void AutoCompleteFinished(OFC.Timers.Timer t, long tick)        // in UI thread
         {
             System.Diagnostics.Debug.WriteLine("{0} Auto Complete finished", tick);
 
+            ListBox.Visible = false;
+
             if ( autocompletestrings != null && autocompletestrings.Count > 0 )
             {
-                foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String {0}", s); }
-
-                if ( ListBox.Parent != null )
-                {
-                    FindDisplay()?.Remove(ListBox);
-                }
+                foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String " + s); }
 
                 Point sc = this.DisplayControlCoords(false);
 
                 ListBox.Font = Font;
                 ListBox.Location = new Point(sc.X, sc.Y + Height);
                 ListBox.Items = autocompletestrings;
-                FindDisplay().Add(ListBox);
+                ListBox.Visible = true;
+
+                if ( ListBox.Parent == null )
+                    FindDisplay().Add(ListBox);
             }
         }
 
@@ -130,26 +172,37 @@ namespace OFC.GL4.Controls
             base.OnKeyDown(e);
             if (!e.Handled)
             {
-                if (e.KeyCode == System.Windows.Forms.Keys.Up)
+                if (ListBox.Visible)
                 {
-                    ListBox?.FocusUp();
+                    if (e.KeyCode == System.Windows.Forms.Keys.Up)
+                    {
+                        ListBox.FocusUp();
+                    }
+                    else if (e.KeyCode == System.Windows.Forms.Keys.Down)
+                    {
+                        ListBox.FocusDown();
+                    }
+                    else if (e.KeyCode == System.Windows.Forms.Keys.PageUp)
+                    {
+                        ListBox.FocusUp(ListBox?.DisplayableItems ?? 0);
+                    }
+                    else if (e.KeyCode == System.Windows.Forms.Keys.PageDown)
+                    {
+                        ListBox.FocusDown(ListBox?.DisplayableItems ?? 0);
+                    }
                 }
-                else if (e.KeyCode == System.Windows.Forms.Keys.Down)
+
+                if (e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return)
                 {
-                    ListBox?.FocusDown();
-                }
-                else if (e.KeyCode == System.Windows.Forms.Keys.PageUp)
-                {
-                    ListBox?.FocusUp(ListBox?.DisplayableItems??0);
-                }
-                else if (e.KeyCode == System.Windows.Forms.Keys.PageDown)
-                {
-                    ListBox?.FocusDown(ListBox?.DisplayableItems??0);
-                }
-                else if (e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return)
-                {
-                    ListBox?.SelectCurrent();
-                    SelectedEntry?.Invoke(this);
+                    if (ListBox.Visible)
+                    {
+                        ListBox.SelectCurrent();
+                    }
+                    else
+                    {
+                        CancelAutoComplete();                   // close any list box, and select this
+                        SelectedEntry?.Invoke(this);
+                    }
                 }
             }
         }
@@ -158,16 +211,18 @@ namespace OFC.GL4.Controls
         {
             base.OnMouseWheel(e);
 
-            if (!e.Handled)
+            if (!e.Handled && ListBox.Visible)
             {
                 if (e.Delta > 0)
-                    ListBox?.FocusUp();
+                    ListBox.FocusUp();
                 else
-                    ListBox?.FocusDown();
+                    ListBox.FocusDown();
             }
         }
 
         private OFC.Timers.Timer waitforautotimer = new Timers.Timer();
+        private OFC.Timers.Timer autocompleteinuitimer = new Timers.Timer();
+        private AutoResetEvent AutocompleteUIDone = new AutoResetEvent(false);
         private OFC.Timers.Timer triggercomplete = new Timers.Timer();
         private string autocompletestring;
         private bool executingautocomplete = false;

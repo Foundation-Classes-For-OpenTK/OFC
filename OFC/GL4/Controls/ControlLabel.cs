@@ -12,13 +12,8 @@
  * governing permissions and limitations under the License.
  */
 
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OFC.GL4.Controls
 {
@@ -56,7 +51,7 @@ namespace OFC.GL4.Controls
         {
             if (Text.HasChars())
             {
-                gr.SmoothingMode = SmoothingMode.AntiAlias;
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
@@ -66,8 +61,14 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                gr.SmoothingMode = SmoothingMode.None;
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
             }
         }
+
+        protected override void TextValueChanged()      // called by upper class to say i've changed the text.
+        {
+            Invalidate();
+        }
+
     }
 }
