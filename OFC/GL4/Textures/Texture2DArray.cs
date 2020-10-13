@@ -66,14 +66,17 @@ namespace OFC.GL4
         }
 
         // You can reload the bitmap, it will create a new Texture if required. 
-        // Bitmaps array can be sparse will null entries if you don't want to use that level. Level 0 must be there
+        // Bitmaps array can be sparse will null entries if you don't want to use that level. 
+        // texture size is either bmpsize or Level 0 size (which therefore must be there)
 
-        public void LoadBitmaps(Bitmap[] bmps, int bitmapmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)
+        public void LoadBitmaps(Bitmap[] bmps, int bitmapmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, 
+                                               bool ownbitmaps = false, Size? bmpsize = null)
         {
-            int h = MipMapHeight(bmps[0], bitmapmipmaplevels);        // if bitmap is mipped mapped, work out correct height.
+            int width = bmpsize.HasValue ? bmpsize.Value.Width : bmps[0].Width;
+            int height = bmpsize.HasValue ? bmpsize.Value.Height : MipMapHeight(bmps[0], bitmapmipmaplevels);        // if bitmap is mipped mapped, work out correct height.
             int texmipmaps = Math.Max(bitmapmipmaplevels, genmipmaplevel);
 
-            CreateTexture(bmps[0].Width, h, bmps.Length, texmipmaps, internalformat);
+            CreateTexture(width, height, bmps.Length, texmipmaps, internalformat);
 
             BitMaps = bmps;
             OwnBitmaps = ownbitmaps;

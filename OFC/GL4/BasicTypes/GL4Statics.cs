@@ -58,6 +58,10 @@ namespace OFC.GL4
         {
             return GL.GetInteger(p);
         }
+        public static int GetMaxUniformBlockSize()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxUniformBlockSize);     // biggest uniform buffer (64k on Nvidia in 2020)
+        }
     }
 }
 

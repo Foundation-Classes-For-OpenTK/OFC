@@ -16,7 +16,7 @@ namespace TestOpenTk
 
         public void Toggle() { renderstate = (renderstate + 1) % 8; Set(); }
         public int SelectionMask { get { return renderstate; } set { renderstate = value; Set(); } }
-        public bool Enable { get { return enable; } set { enable = value;  if (value) Set(); else regionshader.Enable = outlineshader.Enable = textrenderer.Shader.Enable = false; } }
+        public bool Enable { get { return enable; } set { enable = value;  if (value) Set(); else regionshader.Enable = outlineshader.Enable = textrenderer.Enable = false; } }
         public bool Regions { get { return (renderstate & 1) != 0; } set { renderstate = (renderstate & 0x6) | (value ? 1 : 0); Set(); } }
         public bool Outlines { get { return (renderstate & 2) != 0; } set { renderstate = (renderstate & 0x5) | (value ? 2 : 0); Set(); } }
         public bool Text { get { return (renderstate & 4) != 0; } set { renderstate = (renderstate & 0x3) | (value ? 4 : 0); Set(); } }
@@ -35,7 +35,7 @@ namespace TestOpenTk
             List<ushort> vertexregionoutlineindex = new List<ushort>();
 
             Size bitmapsize = new Size(250, 22);
-            textrenderer = new GLTextRenderer(bitmapsize,200,depthtest:false);
+            textrenderer = new GLTextRenderer(rObjects, bitmapsize,depthtest:false);
             StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             Font fnt = new Font("MS Sans Serif", 12F);
 
@@ -108,7 +108,7 @@ namespace TestOpenTk
                         Vector3 bestpos = new Vector3(final.Item1.X, 0, final.Item1.Y);
                         Vector3 bestsize = new Vector3(final.Item2.X, 1, final.Item2.Y);
                         
-                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphascale:5000, alphaend:500);
+                   //     textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphascale:5000, alphaend:500);
                     }
                 }
             }
@@ -143,9 +143,6 @@ namespace TestOpenTk
 
             rObjects.Add(outlineshader, rioutline);
 
-            // text renderer
-
-            rObjects.Add(textrenderer.Shader, textrenderer.RenderableItem);
             renderstate = 7;
         }
 
@@ -159,7 +156,7 @@ namespace TestOpenTk
         {
             regionshader.Enable = Regions;
             outlineshader.Enable = Outlines;
-            textrenderer.Shader.Enable = Text;
+            textrenderer.Enable = Text;
         }
 
         private static Color[] array = new Color[] { Color.Red, Color.Green, Color.Blue,

@@ -165,6 +165,12 @@
     <Compile Include="Stars\ShaderTestStarPointsDiscs.Designer.cs">
       <DependentUpon>ShaderTestStarPointsDiscs.cs</DependentUpon>
     </Compile>
+    <Compile Include="TextRenderer\TestTextRenderer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TextRenderer\TestTextRenderer.designer.cs">
+      <DependentUpon>TestTextRenderer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Textures\ShaderTestBlendedShaderMultImages.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -305,6 +311,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Stars\ShaderTestStarPointsDiscs.resx">
       <DependentUpon>ShaderTestStarPointsDiscs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextRenderer\TestTextRenderer.resx">
+      <DependentUpon>TestTextRenderer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Textures\ShaderTestBlendedShaderMultImages.resx">
       <DependentUpon>ShaderTestBlendedShaderMultImages.cs</DependentUpon>

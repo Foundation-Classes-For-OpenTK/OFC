@@ -47,9 +47,6 @@ namespace TestOpenTk
 
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
-
-        private ISystem currentsystem;
-
         public Map()
         {
         }
@@ -90,7 +87,7 @@ namespace TestOpenTk
             const int findstarblock = 3;
             const int findgeomapblock = 4;
 
-            if (true) // galaxy
+            if ( true ) // galaxy
             {
                 const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
                 const int gdisttexbinding = 4;
@@ -130,7 +127,7 @@ namespace TestOpenTk
                 rObjects.Add(galaxyshader, galaxyrenderable);
             }
 
-            if (true) // star points
+            if ( true ) // star points
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -189,7 +186,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
-            if (true)  // point sprite
+            if ( true )  // point sprite
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
@@ -202,7 +199,7 @@ namespace TestOpenTk
 
             }
 
-            if (true) // grids
+            if ( true ) // grids
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
@@ -219,7 +216,7 @@ namespace TestOpenTk
 
             }
 
-            if (true)       // grid coords
+            if ( true )       // grid coords
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
@@ -252,17 +249,16 @@ namespace TestOpenTk
 
                 travelpath = new TravelPath();
                 travelpath.CreatePath(items, rObjects, pos, 20, 2, findstarblock);
-
-                currentsystem = pos[3];
+                travelpath.SetSystem(3);
             }
 
-            if (true)       // Gal map objects
+            if ( true )       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, galmap, findgeomapblock);
             }
 
-            if (true)       // Gal map regions
+            if ( true )       // Gal map regions
             {
                 var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
                     new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
@@ -276,13 +272,13 @@ namespace TestOpenTk
                 edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr:corr);
             }
 
-            if (true)           // Elite regions
+            if ( true )           // Elite regions
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
+                EliteRegionsEnable = false;
             }
 
-            EliteRegionsEnable = false;
 
             // Matrix calc holding transform info
 
@@ -395,19 +391,22 @@ namespace TestOpenTk
 
             // set up the grid shader size
 
-            if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis, set the vertical shader grid size
+            if (gridrenderable != null)
             {
-                gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
-                lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
+                if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis, set the vertical shader grid size
+                {
+                    gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
+                    lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
+                }
+
+                gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, gridrenderable.InstanceCount);
+
+                // set the coords fader
+
+                float coordfade = lastgridwidth == 10000 ? (0.7f - (mc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
+                Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
+                gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
             }
-
-            gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, gridrenderable.InstanceCount);
-
-            // set the coords fader
-
-            float coordfade = lastgridwidth == 10000 ? (0.7f - (mc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
-            Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
-            gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
 
             // set the galaxy volumetric block
 
@@ -417,10 +416,12 @@ namespace TestOpenTk
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
                 galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? mc.EyeDistance : -1f);
             }
+            
+            if ( travelpath != null)
+                travelpath.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
-            travelpath.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
-
-            galmapobjects.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
+            if ( galmapobjects != null)
+                galmapobjects.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -444,33 +445,13 @@ namespace TestOpenTk
         public bool EnableStarDots { get { return stardots.Enable; } set { stardots.Enable = value; glwfc.Invalidate(); } }
         public bool EnableTravelPath { get { return travelpath.Enable; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
 
-        public void TravelPathMoveForward()
+        public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {
-            var sys = travelpath.NextSystem();
-            if (sys != null)
-            { 
-                gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
-                SetEntryText(sys.Name);
-            }
-        }
-
-        public void TravelPathMoveBack()
-        {
-            var sys = travelpath.PrevSystem();
-            if (sys != null)
+            var sys = dir == 0 ? travelpath.CurrentSystem : (dir < 0 ? travelpath.PrevSystem() : travelpath.NextSystem());
+            if ( sys!= null)
             {
                 gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
                 SetEntryText(sys.Name);
-            }
-        }
-
-        public void GoToCurrentSystem()
-        {
-            if (currentsystem != null)
-            {
-                gl3dcontroller.SlewToPosition(new Vector3((float)currentsystem.X, (float)currentsystem.Y, (float)currentsystem.Z), -1);
-                travelpath.SetSystem(currentsystem);
-                SetEntryText(currentsystem.Name);
             }
         }
 
@@ -532,11 +513,15 @@ namespace TestOpenTk
 
             if (item != null)
             {
+                if (item is ISystem)
+                    travelpath.SetSystem(item as ISystem);
                 var nl = NameLocation(item);
                 System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
                 SetEntryText(nl.Item1);
                 gl3dcontroller.SlewToPosition(nl.Item2, -1);
             }
+            else
+                gl3dcontroller.MouseDown(s, e);
         }
 
         private void MouseUpOnMap(Object s, GLMouseEventArgs e)

@@ -74,7 +74,17 @@ namespace TestOpenTk
 
                 rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: pos.Count, seconddivisor: 1);
 
-                // tbd now names - maybe autoscale the suns
+                textrenderer = new GLTextRenderer(rObjects, new Size(100, 100), depthtest:false);
+
+                Font fnt = new Font("MS Sans Serif", 12F);
+
+                foreach ( var e in lastlist)
+                {
+                    textrenderer.Add(e, e.Name, fnt, Color.White, Color.Red, new Vector3((float)e.X, (float)e.Y-60, (float)e.Z), 
+                                new Vector3(100, 1, 50), new Vector3(-90F.Radians(), 0, 0));
+                }
+
+                fnt.Dispose();
             }
             else
             {
@@ -84,7 +94,7 @@ namespace TestOpenTk
             }
         }
 
-        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = value; } }
+        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable= value; } }
 
         public void Update(long time, float eyedistance)
         {
@@ -116,6 +126,30 @@ namespace TestOpenTk
             return null;
         }
 
+        public ISystem CurrentSystem { get { return lastlist!=null ? lastlist[lastpos] : null; } }
+
+        public bool SetSystem(ISystem s)
+        {
+            if (lastlist != null)
+            {
+                lastpos = lastlist.IndexOf(s); // -1 if not in list, hence no system
+            }
+            else
+                lastpos = -1;
+            return lastpos != -1;
+        }
+
+        public bool SetSystem(int i)
+        {
+            if (lastlist != null && i >= 0 && i < lastlist.Count)
+            {
+                lastpos = i;
+                return true;
+            }
+            else
+                return false;
+        }
+
         public ISystem NextSystem()
         {
             if (lastlist == null)
@@ -142,14 +176,6 @@ namespace TestOpenTk
             return lastlist[lastpos];
         }
 
-        public void SetSystem(ISystem s)
-        {
-            if (lastlist != null)
-            {
-                lastpos = lastlist.IndexOf(s); // -1 if not in list, hence no system
-            }
-        }
-
         private GLTexturedShaderTriangleStripWithWorldCoord tapeshader;
         private GLShaderPipeline sunshader;
         private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
@@ -158,6 +184,7 @@ namespace TestOpenTk
         private GLBuffer starposbuf;
         private GLShaderPipeline findshader;
         private GLRenderableItem rifind;
+        private GLTextRenderer textrenderer;
 
         private List<ISystem> lastlist;
         private int lastpos = -1;       // -1 no system

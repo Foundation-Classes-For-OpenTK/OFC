@@ -1,5 +1,4 @@
 ﻿using OFC.GL4.Controls;
-using OFC.GL4.Controls;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -25,17 +24,17 @@ namespace TestOpenTk
             GLImage tpback = new GLImage("MSTPBack", new Rectangle(50, 10, iconsize, iconsize), Properties.Resources.GoBackward);
             tpback.ToolTipText = "Go back one system";
             map.displaycontrol.Add(tpback);
-            tpback.MouseClick = (o, e1) => { g.TravelPathMoveBack(); };
+            tpback.MouseClick = (o, e1) => { g.GoToTravelSystem(-1); };
 
             GLImage tphome = new GLImage("MSTPHome", new Rectangle(90, 10, iconsize, iconsize), Properties.Resources.GoToHomeSystem);
             tphome.ToolTipText = "Go to current home system";
             map.displaycontrol.Add(tphome);
-            tphome.MouseClick = (o, e1) => { g.GoToCurrentSystem(); };
+            tphome.MouseClick = (o, e1) => { g.GoToTravelSystem(0); };
 
             GLImage tpforward = new GLImage("MSTPForward", new Rectangle(130, 10, iconsize, iconsize), Properties.Resources.GoForward);
             tpforward.ToolTipText = "Go forward one system";
             map.displaycontrol.Add(tpforward);
-            tpforward.MouseClick = (o, e1) => { g.TravelPathMoveForward(); };
+            tpforward.MouseClick = (o, e1) => { g.GoToTravelSystem(1); };
 
             GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete("EntryText", new Rectangle(170, 10, 300, iconsize), "");
             tptextbox.TextAlign = ContentAlignment.MiddleLeft;

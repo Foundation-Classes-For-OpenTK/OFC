@@ -34,7 +34,7 @@ using OFC;
 
 namespace TestOpenTk
 {
-    public partial class TestMain2 : Form
+    public partial class TestTextRenderer : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -46,7 +46,7 @@ namespace TestOpenTk
         GLItemsList items = new GLItemsList();
         GLStorageBlock dataoutbuffer;
 
-        public TestMain2()
+        public TestTextRenderer()
         {
             InitializeComponent();
 
@@ -71,7 +71,7 @@ namespace TestOpenTk
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
-                return (float)ms / 100.0f;
+                return (float)ms / 20.0f;
             };
 
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
@@ -140,53 +140,42 @@ namespace TestOpenTk
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
                             ));
 
-                rObjects.Add(items.Shader("COSOT"), "scopen2",
-                            GLRenderableItem.CreateVector4Color4(items, rc,
-                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
-                                            new Color4[] { Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red },
-                                            new GLRenderDataTranslationRotation(new Vector3(-10, -3, -20))
-                            ));
             }
 
             #endregion
-            #region textures
-            if (true)
+
+            #region Text Renderer
+
+
             {
-                GLRenderControl rq = GLRenderControl.Quads();
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+                {
+                    Size bitmapsize = new Size(64, 20);
+                    float width = 2.5f;
+                    Vector3 bannersize = new Vector3(width, 0, 0);
+                    Font f = new Font("MS sans serif", 8f);
 
-                rObjects.Add(items.Shader("TEXOT"),
-                            GLRenderableItem.CreateVector4Vector2(items, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
-                            ));
+                    tim = new GLTextRenderer(rObjects, bitmapsize, false, true,2);      // group 2
+                    tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                    tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                    tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
+                    tim.Remove("T2");
+                    tim.Add("T2a", "M2Jim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                    tim.Remove("T3");       // meaning group 2 should be empty .. test it
+                   // tim.Add("T3a", "M2George", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
-                rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(2,0,0))
-                            ));
+                    tim2 = new GLTextRenderer(rObjects, bitmapsize, false, true);
+                    for ( int i = 0; i < 10000; i++)
+                    {
+                        tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red, 
+                                        new Vector3((i % 10)*10-50, 5, (i/10)*4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(4,0,0))
-                            ));
+                    }
+                    //tim.Dispose(); // for test
 
-                GLRenderControl rqnc = GLRenderControl.Quads(cullface: false);
-
-                rObjects.Add(items.Shader("TEXOT"), "EDDFlat",
-                    GLRenderableItem.CreateVector4Vector2(items, rqnc,
-                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(6, 0, 0))
-                            ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, rqnc,
-                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( 90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("smile"), new Vector3(8, 0, 0))
-                           ));
-
+                }
             }
+
 
             #endregion
 
@@ -201,6 +190,9 @@ namespace TestOpenTk
             dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back
 
         }
+
+        GLTextRenderer tim;
+        GLTextRenderer tim2;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
@@ -236,7 +228,7 @@ namespace TestOpenTk
         private void SystemTick(object sender, EventArgs e )
         {
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
-            gl3dcontroller.Redraw();
+          //  gl3dcontroller.Redraw();
         }
 
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )

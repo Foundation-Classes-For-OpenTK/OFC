@@ -67,6 +67,31 @@ namespace OFC.GL4
             AddItem(nprog, n, null);
         }
 
+        public bool Remove(IGLRenderableItem r)
+        {
+            var f = Find(r);
+            return r != null ? Remove(f.Item1, r) : false;
+        }
+
+        public bool Remove(IGLProgramShader prog, IGLRenderableItem r)
+        {
+            if ( renderables.ContainsKey(prog))
+            {
+                var i = renderables[prog].FindIndex(x => Object.ReferenceEquals(x.Item2, r));
+                if ( i >= 0)
+                {
+                    renderables[prog].RemoveAt(i);          // remove renderer
+                    if ( renderables[prog].Count == 0 )     // if nothing more in shader
+                    {
+                        renderables.Remove(prog);           // remove shader
+                    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public IGLRenderableItem this[string renderitem] { get { return byname[renderitem]; } }
         public bool Contains(string renderitem) { return byname.ContainsKey(renderitem); }
 
@@ -79,7 +104,7 @@ namespace OFC.GL4
                 // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute/null shader would be)
                 if (kvp.Key.Enable && kvp.Value.Find((x)=>x.Item2 == null || x.Item2.Visible)!=null)      
                 {
-                    // System.Diagnostics.Debug.WriteLine("Shader " + d.Key.GetType().Name);
+                   // System.Diagnostics.Debug.WriteLine("Shader " + kvp.Key.GetType().Name);
                     kvp.Key.Start(c);                                                  // start the program - if compute shader, this executes the code
 
                     foreach (var g in kvp.Value)
@@ -130,6 +155,17 @@ namespace OFC.GL4
         private string EnsureName(string name, IGLProgramShader prog, IGLRenderableItem r)
         {
             return name.HasChars() ? name : (prog.GetType().Name + ":" + r.GetType().Name + " # " + (unnamed++).ToStringInvariant());
+        }
+
+        private Tuple<IGLProgramShader, int> Find(IGLRenderableItem r)        // find r in list
+        {
+            foreach (var kvp in renderables)
+            {
+                var i = kvp.Value.FindIndex(x => Object.ReferenceEquals(x.Item2, r));
+                if (i >= 0)
+                    return new Tuple<IGLProgramShader, int>(kvp.Key, i);
+            }
+            return null;
         }
     }
 
