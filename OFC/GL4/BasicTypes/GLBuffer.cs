@@ -345,23 +345,34 @@ namespace OFC.GL4
 
         #region Write to map
 
-        public void Write(Matrix4 mat)
+        public void Write(Matrix4 mat, int repeat = 1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             var p = AlignArrayPtr(Vec4size, 4);
-            float[] r = new float[] {   mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W ,
-                                        mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W ,
-                                        mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W ,
-                                        mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W };
-            System.Runtime.InteropServices.Marshal.Copy(r, 0, p.Item1, r.Length);          // number of units, not byte length!
+            float[] r = new float[] {   mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W ,        // row major order, 
+                                        mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W ,        // as per https://stackoverflow.com/questions/17717600/confusion-between-c-and-opengl-matrix-order-row-major-vs-column-major
+                                        mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W ,        // which works with vtransform = M.V transforms which is what we uses
+                                        mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W };       // Matrix4 holds it in row order
+            IntPtr ptr = p.Item1;
+
+            while (repeat-- > 0)
+            {
+                System.Runtime.InteropServices.Marshal.Copy(r, 0, ptr, r.Length);          // number of units, not byte length!
+                ptr += Mat4size;
+            }
         }
 
-        public void Write(Vector4 v4)
+        public void Write(Vector4 v4, int repeat = 1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             var p = AlignArrayPtr(Vec4size, 1);
             float[] a = new float[] { v4.X, v4.Y, v4.Z, v4.W };
-            System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);   
+            IntPtr ptr = p.Item1;
+            while (repeat-- > 0)
+            {
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, ptr, a.Length);
+                ptr += Vec4size;
+            }
         }
 
         public void Write(System.Drawing.Rectangle r)
@@ -587,10 +598,10 @@ namespace OFC.GL4
             int size = sizeof(float);
             var data = new float[count];
             var p = AlignArrayPtr(size, count);
-            if (p.Item2 == size || ignorestd130)
-                System.Runtime.InteropServices.Marshal.Copy(p.Item1, data, 0, data.Length);
+            if (p.Item2 == size || ignorestd130)            
+                System.Runtime.InteropServices.Marshal.Copy(p.Item1, data, 0, data.Length); // read tight array
             else
-            {
+            {                                                   // read sparse array
                 var temp = new float[count*4];
                 System.Runtime.InteropServices.Marshal.Copy(p.Item1, data, 0, temp.Length);
                 for (int i = 0; i < data.Length; i++)
@@ -615,7 +626,7 @@ namespace OFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count*4);
             Vector4[] data = new Vector4[count];
             for (int i = 0; i < count; i++)
-                data[i] = new Vector4(fdata[i * 4], fdata[i * 4+1], fdata[i * 4 + 2], fdata[i * 4 + 3]);
+                data[i] = new Vector4(fdata[i * 4], fdata[i * 4 + 1], fdata[i * 4 + 2], fdata[i * 4 + 3]);
             return data;
         }
 
@@ -630,10 +641,27 @@ namespace OFC.GL4
         public Matrix4 ReadMatrix4()
         {
             var data = new float[16];
-            var p  = AlignArrayPtr(Vec4size,4);
+            var p = AlignArrayPtr(Vec4size, 4);
             System.Runtime.InteropServices.Marshal.Copy(p.Item1, data, 0, 16);
             return new Matrix4(data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
                                 data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+        }
+
+        public Matrix4[] ReadMatrix4s(int count)
+        {
+            var p = AlignArrayPtr(Vec4size, 4);
+            var fdata = new float[16*count];
+            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, fdata.Length);
+            Matrix4[] data = new Matrix4[count];
+            for (int i = 0; i < fdata.Length; i += 16)
+            {
+                data[i/16] = new Matrix4(fdata[i], fdata[i + 1], fdata[i + 2], fdata[i + 3],
+                                        fdata[i + 4], fdata[i + 5], fdata[i + 6], fdata[i + 7],
+                                        fdata[i + 8], fdata[i + 9], fdata[i + 10], fdata[i + 11],
+                                        fdata[i + 12], fdata[i + 13], fdata[i + 14], fdata[i + 15]);
+            }
+
+            return data;
         }
 
         #endregion
@@ -680,10 +708,18 @@ namespace OFC.GL4
             return v;
         }
 
-        public Vector4[] ReadVector4(int offset, int number)
+        public Vector4[] ReadVector4s(int offset, int number)
         {
             StartRead(offset);
             var v = ReadVector4s(number);
+            StopReadWrite();
+            return v;
+        }
+
+        public Matrix4[] ReadMatrix4s(int offset, int number)
+        {
+            StartRead(offset);
+            var v = ReadMatrix4s(number);
             StopReadWrite();
             return v;
         }

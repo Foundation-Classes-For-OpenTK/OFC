@@ -161,6 +161,12 @@ namespace OFC.GL4
             return disp;
         }
 
+        public GLBitmaps Add(GLBitmaps disp, string name = null)
+        {
+            items.Add(EnsureName(name), disp);
+            return disp;
+        }
+
         // New items
 
         public GLVertexArray NewArray(string name = null)

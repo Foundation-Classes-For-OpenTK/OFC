@@ -22,6 +22,7 @@ namespace TestOpenTk
     class TravelPath
     {
         public List<ISystem> CurrentList { get { return lastlist; } }
+        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable = value; } }
 
         public void CreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, List<ISystem> pos, float sunsize, float tapesize, int bufferfindbinding)
         {
@@ -37,21 +38,23 @@ namespace TestOpenTk
 
             if (ritape == null) // first time..
             {
-                // create shaders
-                items.Add(new GLTexture2D(Properties.Resources.chevron), "tapelogo");
-                items.Tex("tapelogo").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+                // first the tape
+                var tapetex = new GLTexture2D(Properties.Resources.chevron);
+                items.Add(tapetex);
+                tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
                 tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true);
-                items.Add(tapeshader, "tapeshader");
+                items.Add(tapeshader);
 
                 GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);
                 rts.DepthTest = false;
 
-                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo")));
+                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
                 tapepointbuf = items.LastBuffer();
+                ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
                 ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3);
 
-                rObjects.Add(items.Shader("tapeshader"), "traveltape", ritape);
+                rObjects.Add(tapeshader, ritape);
 
                 // now the stars
 
@@ -60,7 +63,7 @@ namespace TestOpenTk
 
                 sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-                items.Add(sunshader, "STAR-PATH-SUNS");
+                items.Add(sunshader);
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
 
@@ -68,33 +71,38 @@ namespace TestOpenTk
                 rt.DepthTest = false;
                 GLRenderableItem rs = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, pos.Count, 1);
 
-                rObjects.Add(items.Shader("STAR-PATH-SUNS"), "star-path-suns", rs);
+                rObjects.Add(sunshader, rs);
 
-                findshader = items.NewShaderPipeline("STAR-PATH_FIND", sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+                findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
 
                 rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: pos.Count, seconddivisor: 1);
 
-                textrenderer = new GLTextRenderer(rObjects, new Size(100, 100), depthtest:false);
-
-                Font fnt = new Font("MS Sans Serif", 12F);
-
-                foreach ( var e in lastlist)
-                {
-                    textrenderer.Add(e, e.Name, fnt, Color.White, Color.Red, new Vector3((float)e.X, (float)e.Y-60, (float)e.Z), 
-                                new Vector3(100, 1, 50), new Vector3(-90F.Radians(), 0, 0));
-                }
-
-                fnt.Dispose();
+                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest:false, cullface:false);
+                items.Add(textrenderer);
             }
             else
             {
                 tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
                 ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
-                starposbuf.AllocateFill(positionsv4);
-            }
-        }
+                ritape.Visible = tape.Item1.Count > 0;
 
-        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable= value; } }
+                starposbuf.AllocateFill(positionsv4);
+                textrenderer.Clear();
+            }
+
+            Font fnt = new Font("Arial", 8.5F);
+            using (StringFormat fmt = new StringFormat())
+            {
+                fmt.Alignment = StringAlignment.Center;
+                foreach (var isys in lastlist)
+                {
+                    textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
+                                new Vector3(50, 0,0), new Vector3(0, 0, 0), fmt:fmt, rotatetoviewer:true, rotateelevation:true, alphascale:-200,alphaend:250);
+                }
+            }
+
+            fnt.Dispose();
+        }
 
         public void Update(long time, float eyedistance)
         {
@@ -109,10 +117,10 @@ namespace TestOpenTk
             tapeshader.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
-        public ISystem FindSystem(Point l, GLRenderControl state, Size screensize)
+        public ISystem FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(l, screensize);
+            geo.SetScreenCoords(viewportloc, viewportsize);
 
             rifind.Execute(findshader, state, discard:true); // execute, discard
 
@@ -184,7 +192,7 @@ namespace TestOpenTk
         private GLBuffer starposbuf;
         private GLShaderPipeline findshader;
         private GLRenderableItem rifind;
-        private GLTextRenderer textrenderer;
+        private GLBitmaps textrenderer;
 
         private List<ISystem> lastlist;
         private int lastpos = -1;       // -1 no system

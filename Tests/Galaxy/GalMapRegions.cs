@@ -35,7 +35,9 @@ namespace TestOpenTk
             List<ushort> vertexregionoutlineindex = new List<ushort>();
 
             Size bitmapsize = new Size(250, 22);
-            textrenderer = new GLTextRenderer(rObjects, bitmapsize,depthtest:false);
+            textrenderer = new GLBitmaps(rObjects, bitmapsize,depthtest:false);
+            items.Add(textrenderer);
+
             StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             Font fnt = new Font("MS Sans Serif", 12F);
 
@@ -108,7 +110,7 @@ namespace TestOpenTk
                         Vector3 bestpos = new Vector3(final.Item1.X, 0, final.Item1.Y);
                         Vector3 bestsize = new Vector3(final.Item2.X, 1, final.Item2.Y);
                         
-                   //     textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphascale:5000, alphaend:500);
+                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphascale:5000, alphaend:500);
                     }
                 }
             }
@@ -116,13 +118,13 @@ namespace TestOpenTk
             fmt.Dispose();
             fnt.Dispose();
 
-            
             // regions
 
             var vertregion = new GLPLVertexShaderFixedColorPalletWorldCoords(array.ToVector4(0.1f));
             var fragregion = new GLPLFragmentShaderVSColor();
 
             regionshader = new GLShaderPipeline(vertregion, fragregion, null, null);
+            items.Add(regionshader);
 
             GLRenderControl rt = GLRenderControl.Tri();
             rt.DepthTest = false;
@@ -135,6 +137,8 @@ namespace TestOpenTk
             var fragoutline = new GLPLFragmentShaderFixedColor(Color.Cyan);
 
             outlineshader = new GLShaderPipeline(vertoutline, fragoutline, null, null);
+            items.Add(outlineshader);
+
             GLRenderControl ro = GLRenderControl.LineStrip();
             ro.DepthTest = false;
             ro.PrimitiveRestart = 0xffff;
@@ -148,7 +152,7 @@ namespace TestOpenTk
 
         private GLShaderPipeline regionshader;
         private GLShaderPipeline outlineshader;
-        private GLTextRenderer textrenderer;
+        private GLBitmaps textrenderer;
         private int renderstate = 0;
         private bool enable = true;
 

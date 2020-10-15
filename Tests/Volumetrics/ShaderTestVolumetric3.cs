@@ -246,7 +246,7 @@ void main(void)
 
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
-            Vector4[] databack = dataoutbuffer.ReadVector4(0, 12);
+            Vector4[] databack = dataoutbuffer.ReadVector4s(0, 12);
 
             System.Diagnostics.Debug.WriteLine("avg {0} txtavg {1}", databack[0].ToStringVec(), databack[1].ToStringVec());
 

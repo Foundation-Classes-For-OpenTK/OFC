@@ -32,7 +32,7 @@ namespace TestOpenTk
             var frag = new GLPLFragmentShaderTexture2DDiscard(1);
 
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);
-            items.Add( objectshader, "ShaderGalObj");
+            items.Add( objectshader);
 
             objectshader.StartAction += (s,m) =>
             {
@@ -53,12 +53,14 @@ namespace TestOpenTk
             int modelpos = modelworldbuffer.Positions[0];
             worldpos = modelworldbuffer.Positions[1];
 
-            rObjects.Add(objectshader, "GalObj", ridisplay);
+            rObjects.Add(objectshader,  ridisplay);
 
             // find
 
             var geofind = new GLPLGeoShaderFindTriangles(bufferfindbinding, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
-            findshader = items.NewShaderPipeline("GEOMAP_FIND", vert, tcs, tes, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+            items.Add(geofind);
+
+            findshader = items.NewShaderPipeline(null, vert, tcs, tes, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
 
             // hook to modelworldbuffer, at modelpos and worldpos.  UpdateEnables will fill in instance count
             rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount, 
@@ -86,13 +88,13 @@ namespace TestOpenTk
         }
 
 
-        public GalacticMapObject FindPOI(Point l, GLRenderControl state, Size screensize, GalacticMapping galmap)
+        public GalacticMapObject FindPOI(Point viewportloc, GLRenderControl state, Size viewportsize, GalacticMapping galmap)
         {
             if (!objectshader.Enable)
                 return null;
 
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(l, screensize);
+            geo.SetScreenCoords(viewportloc, viewportsize);
 
             GLStatics.Check();
             rifind.Execute(findshader, state, discard:true); // execute, discard

@@ -34,30 +34,35 @@ namespace OFC.GL4
         {
             List<Vector4> vec = new List<Vector4>();
             List<uint> eids = new List<uint>();
+            DrawElementsType det = DrawElementsType.UnsignedByte;
 
-            uint vno = 0;
-
-            for( int  i = 0; i < points.Length-1; i++)
+            if (points.Length >= 2)
             {
-                if (vec.Count % 4 == 2)   // must start each line on a mod 4 vector index boundary for the triangle strip to work (vertex shader)
+                uint vno = 0;
+
+                for (int i = 0; i < points.Length - 1; i++)
                 {
-                    vec.Add(Vector4.Zero);
-                    vec.Add(Vector4.Zero);
-                    vno += 2;
+                    if (vec.Count % 4 == 2)   // must start each line on a mod 4 vector index boundary for the triangle strip to work (vertex shader)
+                    {
+                        vec.Add(Vector4.Zero);
+                        vec.Add(Vector4.Zero);
+                        vno += 2;
+                    }
+
+                    Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, ensureintegersamples, margin);
+                    vec.AddRange(vec1);
+
+                    for (int l = 0; l < vec1.Length; l++)
+                        eids.Add(vno++);
+
+                    eids.Add(restartindex);
                 }
 
-                Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, ensureintegersamples,margin);
-                vec.AddRange(vec1);
-
-                for (int l = 0; l < vec1.Length; l++)
-                    eids.Add(vno++);
-
-                eids.Add(restartindex);
+                eids.RemoveAt(eids.Count - 1);  // remove last restart
+                det = GL4Statics.DrawElementsTypeFromMaxEID(vno - 1);
             }
 
-            eids.RemoveAt(eids.Count - 1);  // remove last restart
-
-            return new Tuple<List<Vector4>, List<uint>,DrawElementsType>(vec, eids,GL4Statics.DrawElementsTypeFromMaxEID(vno-1));
+            return new Tuple<List<Vector4>, List<uint>,DrawElementsType>(vec, eids,det);
         }
         
 

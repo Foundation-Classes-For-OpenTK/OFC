@@ -55,6 +55,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes.cs" />
+    <Compile Include="Functions\TestFunctions.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Functions\TestFunctions.Designer.cs">
+      <DependentUpon>TestFunctions.cs</DependentUpon>
+    </Compile>
     <Compile Include="Compute\ShaderTestVertexCompute.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -243,6 +249,9 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Functions\TestFunctions.resx">
+      <DependentUpon>TestFunctions.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Compute\ShaderTestVertexCompute.resx">
       <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
     </EmbeddedResource>

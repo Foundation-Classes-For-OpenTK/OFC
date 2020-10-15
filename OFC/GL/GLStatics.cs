@@ -36,7 +36,9 @@ namespace OFC
             }
 
             if (errmsg.HasChars())
+            {
                 System.Diagnostics.Debug.Assert(false, errmsg);
+            }
         }
 
         public static void SetEnable( EnableCap c , bool state)

@@ -42,9 +42,7 @@ namespace TestOpenTk
         private Timer systemtimer = new Timer();
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
-        GLRenderProgramSortedList rObjectscw = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
-        GLStorageBlock dataoutbuffer;
 
         public TestTextRenderer()
         {
@@ -155,7 +153,7 @@ namespace TestOpenTk
                     Vector3 bannersize = new Vector3(width, 0, 0);
                     Font f = new Font("MS sans serif", 8f);
 
-                    tim = new GLTextRenderer(rObjects, bitmapsize, false, true,2);      // group 2
+                    tim = new GLBitmaps(rObjects, bitmapsize, false, true,2);      // group 2
                     tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
                     tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                     tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
@@ -164,13 +162,23 @@ namespace TestOpenTk
                     tim.Remove("T3");       // meaning group 2 should be empty .. test it
                    // tim.Add("T3a", "M2George", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
-                    tim2 = new GLTextRenderer(rObjects, bitmapsize, false, true);
-                    for ( int i = 0; i < 10000; i++)
+                    tim2 = new GLBitmaps(rObjects, bitmapsize, false, true,25);
+                    for (int i = 0; i < 50; i++)
                     {
-                        tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red, 
-                                        new Vector3((i % 10)*10-50, 5, (i/10)*4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
+                        tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red,
+                                        new Vector3((i % 10) * 10 - 50, 5, (i / 10) * 4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
                     }
+
+                    tim2.Clear();
+
+                    for (int i = 0; i < 10000; i++)
+                    {
+                        tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red,
+                                        new Vector3((i % 10) * 10 - 50, 5, (i / 10) * 4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
+
+                    }
+
                     //tim.Dispose(); // for test
 
                 }
@@ -186,13 +194,10 @@ namespace TestOpenTk
 
             #endregion
 
-            dataoutbuffer = items.NewStorageBlock(5);
-            dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back
-
         }
 
-        GLTextRenderer tim;
-        GLTextRenderer tim2;
+        GLBitmaps tim;
+        GLBitmaps tim2;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {

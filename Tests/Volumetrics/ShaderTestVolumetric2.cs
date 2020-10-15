@@ -230,7 +230,7 @@ void main(void)
 
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
-            Vector4[] databack = dataoutbuffer.ReadVector4(0, 2);
+            Vector4[] databack = dataoutbuffer.ReadVector4s(0, 2);
             for (int i = 0; i < databack.Length; i++)
             {
                 System.Diagnostics.Debug.WriteLine(i + " = " + databack[i].ToString());

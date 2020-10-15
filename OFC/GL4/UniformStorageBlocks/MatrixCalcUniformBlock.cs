@@ -67,7 +67,7 @@ namespace OFC.GL4
             Write(c.TargetPosition, 0);         //192, vec4, 16 long
             Write(c.EyePosition, 0);            // 208, vec3, 16 long
             Write(c.EyeDistance);               // 224, float, 4 long
-            Write(c.ScreenCoordToClipSpace());                // 240, into the project model matrix slot
+            Write(c.MatrixScreenCoordToClipSpace());                // 240, into the project model matrix slot
             StopReadWrite();                                // and complete..
         }
 

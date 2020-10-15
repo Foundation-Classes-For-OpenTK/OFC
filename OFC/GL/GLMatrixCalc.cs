@@ -36,6 +36,22 @@ namespace OFC
     //     p0-p7 are in world coords                                                               -1
     // https://learnopengl.com/Getting-started/Coordinate-Systems
 
+    // GL           GL Window                          View Port                                 Screen Coords Area
+    //                                   Viewport in GL window coord, 0,0 top left  ScreenCoordClipSpace/Offset defines the area
+    //    ----------------------------       ----------------------------               -----------------------------------
+    //    |0,0                       |       |Defined in screen coords  |               |                                 |
+    //    |                          |       |    -------------------   |               |  -----------------------------  |
+    //    |                          |       |    |       +1        |   |               |  |Viewport                   |  |
+    //    |                          |       |    |                 |   |               |  |    ====================== |  |
+    //    |                          |       |    |                 |   |               |  |    |Screen Coord Area   | |  |
+    //    |                          |       |    | -1 Clip Space +1|   |               |  |    |ScreenCoordMax      | |  |
+    //    |                          |       |    |                 |   |               |  |    |Defines the logical | |  |
+    //    |                          |       |    |                 |   |               |  |    |size of this        | |  |
+    //    |                          |       |    |                 |   |               |  |    ====================== |  |
+    //    |                          |       |    |       -1        |   |               |  |                           |  |
+    //    |                          |       |    -------------------   |               |  -----------------------------  |
+    //    ----------------------------       ----------------------------               -----------------------------------
+    
     // this class computes the model and projection matrices
     // also the screen co-ord matrix
 
@@ -189,7 +205,7 @@ namespace OFC
             OpenTK.Graphics.OpenGL.GL.DepthRange(DepthRange.X, DepthRange.Y);
         }
 
-        public virtual Matrix4 ScreenCoordToClipSpace()             // matrix to convert a screen co-ord to clip space
+        public virtual Matrix4 MatrixScreenCoordToClipSpace()             // matrix to convert a screen co-ord to clip space
         {
             Matrix4 screenmat = Matrix4.Zero;
             screenmat.Column0 = new Vector4(ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width , 0, 0, ScreenCoordClipSpaceOffset.X);      // transform of x = x * 2 / width - 1
@@ -199,12 +215,12 @@ namespace OFC
             return screenmat;
         }
 
-        public virtual Point AdjustWindowCoordToViewPortCoord(int x, int y)     // p is in windows coords (gl_Control), adjust to clip space taking into account view port
+        public virtual Point AdjustWindowCoordToViewPortCoord(int x, int y)     // p is in windows coords (gl_Control), adjust to view port/clip space taking into account view port
         {
             return new Point(x - ViewPort.Left, y - ViewPort.Top);
         }
 
-        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)     // p is in windows coords (gl_Control), adjust to clip space taking into account view port
+        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)          // p is in windows coords (gl_Control), adjust 
         {
             return new Point(p.X - ViewPort.Left, p.Y - ViewPort.Top);
         }

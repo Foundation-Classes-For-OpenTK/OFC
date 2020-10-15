@@ -74,8 +74,9 @@ void main(void)
     //      uniform 4 : transform: mat4 array of transforms, one per instance 
     //              [col=3,row=0] is the image index, 
     //              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, -1 means cull primitive
-    //              [col=3,row=2] Fade distance, 0 = none.  formula is alpha = clamp((EyeDistance-fade end)/Fade distance,0,1).  Fades as you get closer
-    //              [col=3,row=3] Fast End, 0 = none.  f
+    //              [col=3,row=2] Fade distance, 0 = none.  >0 fade out as eye goes in, <0 fade in as eye goes in
+    //              [col=3,row=3] Fade End, 0 = none.   > 0 formula is alpha = clamp((EyeDistance-fade end)/Fade distance,0,1).  Fades out as you get closer
+    //                                                  < 0 formula is alpha = clamp((fadeend-EyeDistance)/-Fade distance,0,1).  Fades in as you get closer
     // Out:
     //      location 0 : vs_textureCoordinate
     //      location 2 : image index to use
@@ -112,55 +113,60 @@ void main(void)
     vec4 vertex[] = { vec4(-0.5,0,0.5,1), vec4(-0.5,0,-0.5,1), vec4(0.5,0,-0.5,1), vec4(0.5,0,0.5,1)};      // flat on z plane is the default
     vec2 tex[] = { vec2(0,0), vec2(0,1), vec2(1,1), vec2(1,0)};
 
+
+//layout (binding = 31, std430) buffer Positions      // For debug
+//{
+//    vec3 wpout;
+//    vec3 epout;
+//    vec4 dirout;
+//};
+
+
     void main(void)
     {
         mat4 tx = transform;
-        vs.vs_index = int(tx[0][3]);
+        vs.vs_index = int(tx[0][3]);                                // row/col ordering
 
-        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position
+        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 (floats 12-14)
+
+        //wpout = worldposition; epout = mc.EyePosition.xyz; // for debug
 
         if ( tx[2][3]>0)
-        {
-            float dist = length(mc.EyePosition.xyz-worldposition);
-            alpha = clamp((dist-tx[3][3])/tx[2][3],0,1);
-        }
+            alpha = clamp((mc.EyeDistance-tx[3][3])/tx[2][3],0,1);
+        else if (tx[2][3]<0)
+            alpha = clamp((tx[3][3]-mc.EyeDistance)/-tx[2][3],0,1);
         else
             alpha = 1;
 
         float ctrl = tx[1][3];
 
-        if ( ctrl >= 1 )    // very confused over this, this is row/column order, but the info says its col/row order
-        {
-            vec3 scale = vec3(tx[0][0],tx[1][1],tx[2][2]);              // extrace scale only
-
-            vec2 dir = AzEl(worldposition,mc.EyePosition.xyz);      // y = azimuth
-
-            if ( ctrl == 2 )
-            {
-                tx = mat4rotateXthenY(dir.x,PI-dir.y);              // rotate the flat image to vertical using dir.x (0 = on top, 90 = straight on, etc) then rotate by 180-dir (0 if directly facing from neg z)
-            }
-            else
-            {
-                tx = mat4rotateXthenY(PI/2,PI-dir.y);               // rotate 90 up and by azimuth
-            }
-
-            tx = mat4translationscale(tx,worldposition,scale);      // apply stored world pos and scaling
-
-            gl_CullDistance[0] = +1;        // not culled
-            gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];        // order important
-        }
-        else if ( ctrl < 0 )
+        if ( ctrl < 0 )
         {
             gl_CullDistance[0] = -1;        // all vertex culled
         }
-        else    
+        else 
         {
-            tx[0][3] = tx[1][3] = tx[2][3] = 0;
-            tx[3][3] = 1;
             gl_CullDistance[0] = +1;        // not culled
-            gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];        // order important
-        }
 
+            if ( ctrl == 0 )                // if not auto rotate to viewer
+            {
+                tx[0][3] = tx[1][3] = tx[2][3] = 0;     // use the matrix supplied, correct for flags
+                tx[3][3] = 1;
+            }
+            else
+            {
+                vec3 scale = vec3(tx[0][0],tx[1][1],tx[2][2]);
+
+                vec2 dir = AzEl(worldposition,mc.EyePosition.xyz);      // x = elevation y = azimuth
+
+                // dirout = vec4(degrees(dir.x),degrees(dir.y),mc.EyeDistance,alpha); // for debug
+
+                tx = mat4rotateXthenYthenScalethenTranslation(ctrl >= 2 ? -dir.x : -PI/2,-PI+dir.y,scale,worldposition);
+            }
+
+            gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];    
+        }
+            
         vs_textureCoordinate = tex[gl_VertexID];
     }
     ";

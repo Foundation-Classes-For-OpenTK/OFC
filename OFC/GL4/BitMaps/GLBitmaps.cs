@@ -20,19 +20,21 @@ using System.Linq;
 
 namespace OFC.GL4
 {
-    // Class can hold varying number of text bitmaps, each can be rotated/sized/lookat individually.
-    // You can delete by tag name, and compress/resize the list when required if deletions get too big
-    // the number stored can autogrow
+    // Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
+    // can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation
+    // You can delete by tag name or clear all
+    // Holds as many text bitmaps as you need, it will grow to fit. It won't shrink, but it will reused deleted slot.
 
-    public class GLTextRenderer : IDisposable
+    public class GLBitmaps : IDisposable
     {
         public int MipMapLevel { get; set; } = 3;
         public bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
-        public GLTextRenderer(GLRenderProgramSortedList rlist, Size bitmapsize, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
+        public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
             int m = Math.Min(GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers), GL4Statics.GetMaxUniformBlockSize() / GLLayoutStandards.Mat4size);
             this.maxpergroup = Math.Min(m, maxpergroup);
+
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
 
@@ -45,15 +47,16 @@ namespace OFC.GL4
             rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
         }
 
-        public Bitmap Add(  object tag, 
+        // add text
+        public Bitmap Add(object tag,
                             string text, Font f, Color fore, Color back,
                             Vector3 worldpos,
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
-                            Vector3 rotationradians,
+                            Vector3 rotationradians,        // ignored if rotates are on
                             StringFormat fmt = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphascale = 0 , float alphaend = 0
-                         ) 
+                            float alphascale = 0, float alphaend = 0
+                         )
         {
             if (size.Z == 0 && size.Y == 0)
             {
@@ -62,20 +65,32 @@ namespace OFC.GL4
 
             Bitmap bmp = BitMapHelpers.DrawTextIntoFixedSizeBitmapC(text, bitmapsize, f, fore, back, backscale, false, fmt);
 
-            var entry = new EntryInfo() { bitmap = bmp, tag = tag };
+            return Add(tag, bmp, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:true);
+        }
 
-            TextGroup g = groups.Find(x => (x.Count-x.Deleted) < maxpergroup);      // find one with space..
+        // add a bitmap
+        public Bitmap Add(object tag,
+                            Bitmap bmp, 
+                            Vector3 worldpos,
+                            Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
+                            Vector3 rotationradians,        // ignored if rotates are on
+                            bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
+                            float alphascale = 0, float alphaend = 0 , 
+                            bool ownbitmap = false
+                         )
+        {
+            BitmapGroup g = groups.Find(x => (x.Count-x.Deleted) < maxpergroup);      // find one with space..
 
             if ( g == null )
             {
-                g = new TextGroup(items,rc, maxpergroup, MipMapLevel, bitmapsize);          // no space, make a new one
+                g = new BitmapGroup(items,rc, maxpergroup, MipMapLevel, bitmapsize);          // no space, make a new one
                 renderlist.Add(shader, g.RenderableItem);
                 groups.Add(g);
             }
 
             Matrix4 mat = Matrix4.Identity;
             mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
-            if (rotatetoviewer == false)
+            if (rotatetoviewer == false)                                            // if autorotating, no rotation is allowed. matrix is just scaling/translation
             {
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
@@ -86,24 +101,33 @@ namespace OFC.GL4
             mat[2, 3] = alphascale;
             mat[3, 3] = alphaend;
 
-            g.Add(entry,mat);                                                               // add entry with matrix
+            g.Add(tag, bmp, ownbitmap, mat);                                        // add entry with matrix
 
             return bmp;
         }
 
         public bool Remove(Object tag)
         {
-            TextGroup g = groups.Find(x => x.IndexOfTag(tag) >= 0);
+            BitmapGroup g = groups.Find(x => x.IndexOfTag(tag) >= 0);
             if (g != null)
                 return g.RemoveAt(g.IndexOfTag(tag));
             else
                 return false;
         }
 
+        public void Clear()
+        {
+            foreach( var g in groups )
+            {
+                g.Clear();
+            }
+        }
+
         public void Dispose()           // you can double dispose.
         {
-            foreach( TextGroup g in groups)
+            foreach( BitmapGroup g in groups)
             {
+                g.Clear();
                 renderlist.Remove(shader,g.RenderableItem);
             }
 
@@ -112,17 +136,18 @@ namespace OFC.GL4
 
         #region Implementation
 
-        private struct EntryInfo
-        {
-            public Bitmap bitmap;
-            public Object tag;
-        }
-
-        private class TextGroup
+        private class BitmapGroup
         {
             public int Count { get { return entries.Count; } }
             public int Deleted { get; set; } = 0;
             public GLRenderableItem RenderableItem { get; set; }
+
+            private struct EntryInfo
+            {
+                public Bitmap bitmap;
+                public Object tag;
+                public bool owned;
+            }
 
             private List<EntryInfo> entries = new List<EntryInfo>();
             private GLTexture2DArray texture;
@@ -131,7 +156,7 @@ namespace OFC.GL4
             private int mipmaplevel { get; set; } = 3;
             private Size bitmapsize { get; set; }
 
-            public TextGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevel, Size bitmapsize)
+            public BitmapGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevel, Size bitmapsize)
             {
                 matrixbuffer = new GLBuffer();
                 items.Add(matrixbuffer);
@@ -149,8 +174,10 @@ namespace OFC.GL4
                 //System.Diagnostics.Debug.WriteLine("Create group " + maxpergroup);
             }
 
-            public int Add(EntryInfo entry, Matrix4 mat)
+            public int Add(object tag, Bitmap bmp, bool owned, Matrix4 mat)
             {
+                var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned};
+
                 int pos = Deleted > 0 ? entries.FindIndex(x => x.bitmap == null) : -1;     // find an empty slot if any deleted
 
                 if (pos == -1)
@@ -179,10 +206,9 @@ namespace OFC.GL4
             {
                 if (entries.Count > 0)
                 {
-                    texture.OwnBitmaps = false; // stops current bitmaps being unloaded on recreate
                     //System.Diagnostics.Debug.WriteLine("Tex on " + entries.Count);
                     var barray = entries.Select(x => x.bitmap).ToArray();
-                    texture.LoadBitmaps(barray, genmipmaplevel: mipmaplevel, ownbitmaps: true, bmpsize: bitmapsize);
+                    texture.LoadBitmaps(barray, genmipmaplevel: mipmaplevel, ownbitmaps: false, bmpsize: bitmapsize);       // we own the bitmaps and manage them
                 }
                 else
                     texture.Dispose();             // dispose of it, set it back to ID==-1
@@ -208,11 +234,13 @@ namespace OFC.GL4
             {
                 if (i >= 0 && i < entries.Count)
                 {
-                    entries[i].bitmap.Dispose();
-                    entries[i] = new EntryInfo(); // all will be null
+                    if (entries[i].owned)
+                        entries[i].bitmap.Dispose();
+
+                    entries[i] = new EntryInfo(); // all will be null/false
 
                     Matrix4 zero = Matrix4.Identity;      // set ctrl 1,3 to -1 to indicate cull matrix
-                    zero[1, 3] = -1;                        // if it did not work, it would appear at (0,0,0)
+                    zero[1, 3] = -1;                      // if it did not work, it would appear at (0,0,0)
                     matrixbuffer.StartWrite(GLLayoutStandards.Mat4size * i, GLLayoutStandards.Mat4size);
                     matrixbuffer.Write(zero);
                     matrixbuffer.StopReadWrite();
@@ -223,11 +251,29 @@ namespace OFC.GL4
                     return false;
             }
 
+            public void Clear()
+            {
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    if (entries[i].owned)
+                        entries[i].bitmap.Dispose();
+
+                    entries[i] = new EntryInfo(); // all will be null
+                }
+
+                Matrix4 zero = Matrix4.Identity;      
+                zero[1, 3] = -1;                      
+                matrixbuffer.StartWrite(0);
+                matrixbuffer.Write(zero, entries.Count);
+                matrixbuffer.StopReadWrite();
+                Deleted = entries.Count;
+            }
+
         }
 
         private class RenderData : IGLRenderItemData
         {
-            public RenderData(TextGroup g)
+            public RenderData(BitmapGroup g)
             {
                 group = g;
             }
@@ -237,13 +283,13 @@ namespace OFC.GL4
                 group.Bind();
             }
 
-            private TextGroup group;
+            private BitmapGroup group;
         }
 
         private Size bitmapsize;
         private int maxpergroup;
         private GLItemsList items = new GLItemsList();      // we have our own item list, which is disposed when we dispose
-        private List<TextGroup> groups = new List<TextGroup>();
+        private List<BitmapGroup> groups = new List<BitmapGroup>();
         private GLRenderProgramSortedList renderlist;
         private GLRenderControl rc;
         private GLShaderPipeline shader { get; set; }

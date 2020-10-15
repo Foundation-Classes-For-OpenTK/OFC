@@ -18,6 +18,7 @@ namespace TestOpenTk
 {
     public class Map
     {
+        public GLMatrixCalc matrixcalc;
         public Controller3D gl3dcontroller;
         public GLControlDisplay displaycontrol;
         public GalacticMapping galmap;
@@ -44,6 +45,8 @@ namespace TestOpenTk
         private GalMapRegions edsmgalmapregions;
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
+
+        private GLBuffer debugbuffer;
 
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
@@ -87,7 +90,7 @@ namespace TestOpenTk
             const int findstarblock = 3;
             const int findgeomapblock = 4;
 
-            if ( true ) // galaxy
+            if (true) // galaxy
             {
                 const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
                 const int gdisttexbinding = 4;
@@ -100,7 +103,7 @@ namespace TestOpenTk
                 GLTexture3D noise3d = new GLTexture3D(1024 * sc, 64 * sc, 1024 * sc, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
                 items.Add(noise3d, "Noise");
                 ComputeShaderNoise3D csn = new ComputeShaderNoise3D(noise3d.Width, noise3d.Height, noise3d.Depth, 128 * sc, 16 * sc, 128 * sc, gnoisetexbinding);       // must be a multiple of localgroupsize in csn
-                csn.StartAction += (A,m) => { noise3d.BindImage(gnoisetexbinding); };
+                csn.StartAction += (A, m) => { noise3d.BindImage(gnoisetexbinding); };
                 csn.Run();      // compute noise
 
                 GLTexture1D gaussiantex = new GLTexture1D(1024, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
@@ -109,7 +112,7 @@ namespace TestOpenTk
                 // set centre=width, higher widths means more curve, higher std dev compensate.
                 // fill the gaussiantex with data
                 ComputeShaderGaussian gsn = new ComputeShaderGaussian(gaussiantex.Width, 2.0f, 2.0f, 1.4f, gdisttexbinding);
-                gsn.StartAction += (A,m) => { gaussiantex.BindImage(gdisttexbinding); };
+                gsn.StartAction += (A, m) => { gaussiantex.BindImage(gdisttexbinding); };
                 gsn.Run();      // compute noise
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
@@ -120,14 +123,14 @@ namespace TestOpenTk
                 galaxyshader = new GalaxyShader(volumenticuniformblock, galtexbinding, gnoisetexbinding, gdisttexbinding);
                 items.Add(galaxyshader, "Galaxy-sh");
                 // bind the galaxy texture, the 3dnoise, and the gaussian 1-d texture for the shader
-                galaxyshader.StartAction += (a,m) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
+                galaxyshader.StartAction += (a, m) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
 
                 GLRenderControl rt = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
                 galaxyrenderable = GLRenderableItem.CreateNullVertex(rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
                 rObjects.Add(galaxyshader, galaxyrenderable);
             }
 
-            if ( true ) // star points
+            if (true) // star points
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -186,7 +189,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
-            if ( true )  // point sprite
+            if (true)  // point sprite
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
@@ -199,7 +202,7 @@ namespace TestOpenTk
 
             }
 
-            if ( true ) // grids
+            if (true) // grids
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
@@ -216,7 +219,7 @@ namespace TestOpenTk
 
             }
 
-            if ( true )       // grid coords
+            if (true)       // grid coords
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
@@ -241,24 +244,25 @@ namespace TestOpenTk
                 List<ISystem> pos = new List<ISystem>();
                 for (int i = 0; i <= 60000; i += 500)
                 {
+                    string name = "Kyli Flyuae AA-B h" + i.ToString();
                     if (i < 30000)
-                        pos.Add(new ISystem("s" + i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem(name, i + rnd.Next(1000) - 500, rnd.Next(100), i));
                     else
-                        pos.Add(new ISystem("s" + i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
                 }
 
                 travelpath = new TravelPath();
-                travelpath.CreatePath(items, rObjects, pos, 20, 2, findstarblock);
-                travelpath.SetSystem(3);
+                travelpath.CreatePath(items, rObjects, pos, 2, 0.8f, findstarblock);
+                travelpath.SetSystem(0);
             }
 
-            if ( true )       // Gal map objects
+            if (true)       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, galmap, findgeomapblock);
             }
 
-            if ( true )       // Gal map regions
+            if (true)       // Gal map regions
             {
                 var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
                     new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
@@ -269,10 +273,10 @@ namespace TestOpenTk
                 };
 
                 edsmgalmapregions = new GalMapRegions();
-                edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr:corr);
+                edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr: corr);
             }
 
-            if ( true )           // Elite regions
+            if (true)           // Elite regions
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
@@ -282,15 +286,15 @@ namespace TestOpenTk
 
             // Matrix calc holding transform info
 
-            GLMatrixCalc mc = new GLMatrixCalc();
-            mc.PerspectiveNearZDistance = 1f;
-            mc.PerspectiveFarZDistance = 120000f;
-            mc.InPerspectiveMode = true;
-            mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
+            matrixcalc = new GLMatrixCalc();
+            matrixcalc.PerspectiveNearZDistance = 1f;
+            matrixcalc.PerspectiveFarZDistance = 120000f;
+            matrixcalc.InPerspectiveMode = true;
+            matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
             // menu system
 
-            displaycontrol = new GLControlDisplay(items, glwfc, mc);       // hook form to the window - its the master
+            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc);       // hook form to the window - its the master
             displaycontrol.Font = new Font("Arial", 10f);
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.SetFocus();
@@ -298,18 +302,22 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 5000F;
+            gl3dcontroller.ZoomDistance = 2000F;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.EliteMovement = true;
             gl3dcontroller.PaintObjects = Controller3DDraw;
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
-                return (float)ms * 1.0f * Math.Min(eyedist / 1000, 10);
+                double eyedistr = Math.Pow(eyedist, 1.0);
+                float v =  (float)Math.Max(eyedistr / 1200, 0);
+                //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
+                return (float)ms * v;
             };
 
             // hook gl3dcontroller to display control - its the slave. Do not register mouse UI, we will deal with that.
-            gl3dcontroller.Start(mc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F, false, true);
+            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F, false, true);
+            //gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(90F, 0, 0), 0.5F, false, true);
 
             if (displaycontrol != null)
             {
@@ -334,12 +342,12 @@ namespace TestOpenTk
 
             GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol["EntryText"]);
 
-            tbac.PerformAutoCompleteInUIThread = (s, a) =>       
+            tbac.PerformAutoCompleteInUIThread = (s, a) =>
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
                 List<string> list = glist.Select(x => x.name).ToList();
-                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x=>x.Name));
+                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Name));
                 list.Sort();
                 return list;
             };
@@ -348,7 +356,7 @@ namespace TestOpenTk
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
-                var gmo = galmap.galacticMapObjects.Find(x=>x.name.Equals(tbac.Text,StringComparison.InvariantCultureIgnoreCase));
+                var gmo = galmap.galacticMapObjects.Find(x => x.name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
                 if (gmo != null)
                 {
                     System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.points[0]);
@@ -366,6 +374,13 @@ namespace TestOpenTk
                         tbac.InErrorCondition = true;
                 }
             };
+
+            if ( false )        // enable for debug
+            {
+                debugbuffer = new GLStorageBlock(31, true);
+                debugbuffer.AllocateBytes(32000, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
+            }
+
         }
 
         #endregion
@@ -425,6 +440,13 @@ namespace TestOpenTk
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
+            if (debugbuffer != null)
+            {
+                GLMemoryBarrier.All();
+                Vector4[] debugout = debugbuffer.ReadVector4s(0, 3);
+                System.Diagnostics.Debug.WriteLine("{0},{1}, {2}", debugout[0], debugout[1], debugout[2]);
+            }
+
             long t = sw.ElapsedMilliseconds;
             long diff = t - lastms;
             lastms = t;
@@ -459,6 +481,7 @@ namespace TestOpenTk
         {
             ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).Text = text;
             ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).CancelAutoComplete();
+            displaycontrol.SetFocus();
         }
 
         public bool GalObjectEnable { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
@@ -469,12 +492,12 @@ namespace TestOpenTk
             glwfc.Invalidate();
         }
 
-        public Object FindObjectOnMap(Point loc)
+        public Object FindObjectOnMap(Point vierpowerloc)
         {
-            var sys = travelpath.FindSystem(loc, glwfc.RenderState, glwfc.Size);
+            var sys = travelpath?.FindSystem(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size) ?? null;
             if (sys != null)
                 return sys;
-            var gmo = galmapobjects.FindPOI(loc, glwfc.RenderState, glwfc.Size, galmap);
+            var gmo = galmapobjects?.FindPOI(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size, galmap) ?? null;
             if (gmo != null)
                 return gmo;
             return null;
@@ -600,12 +623,13 @@ namespace TestOpenTk
                 for (int i = 0; i <= 60000; i += 500)
                 {
                     if (i < 30000)
-                        pos.Add(new ISystem(i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem("2+" + i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
                     else
-                        pos.Add(new ISystem(i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem("2+"  + i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
                 }
 
-                travelpath.CreatePath(null, null, pos, 20, 2, 0);
+                travelpath.CreatePath(null, null, pos, 2, 2, 0);
+                travelpath.SetSystem(0);
 
                 glwfc.Invalidate();
             }

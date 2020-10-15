@@ -19,42 +19,6 @@ using System.Linq;
 
 public static class ObjectExtensionsNumbersBool
 {
-    #region Evaluator - cheap and nasty
-
-    public static bool Eval(this string ins, out string res)        // true, res = eval.  false, res = error
-    {
-        System.Data.DataTable dt = new System.Data.DataTable();
-
-        res = "";
-
-        try
-        {
-            var v = dt.Compute(ins, "");
-            System.Type t = v.GetType();
-            //System.Diagnostics.Debug.WriteLine("Type return is " + t.ToString());
-            if (v is double)
-                res = ((double)v).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            else if (v is System.Decimal)
-                res = ((System.Decimal)v).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            else if (v is int)
-                res = ((int)v).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            else
-            {
-                res = "Expression is Not A Number";
-                return false;
-            }
-
-            return true;
-        }
-        catch
-        {
-            res = "Expression does not evaluate";
-            return false;
-        }
-    }
-
-    #endregion
-
     #region Int
 
     static public bool InvariantParse(this string s, out int i)
@@ -223,196 +187,7 @@ public static class ObjectExtensionsNumbersBool
 
     #endregion
 
-    #region Version
-
-    static public int[] VersionFromString(this string s)
-    {
-        string[] list = s.Split('.');
-        return VersionFromStringArray(list);
-    }
-
-    static public int[] VersionFromStringArray(this string[] list)
-    {
-        if (list.Length > 0)
-        {
-            int[] v = new int[list.Length];
-
-            for (int i = 0; i < list.Length; i++)
-            {
-                if (!list[i].InvariantParse(out v[i]))
-                    return null;
-            }
-
-            return v;
-        }
-
-        return null;
-    }
-
-    static public int CompareVersion(this int[] v1, int[] v2)    // is V1>V2, 1, 0 = equals, -1 less
-    {
-        for (int i = 0; i < v1.Length; i++)
-        {
-            if (i >= v2.Length || v1[i] > v2[i])
-                return 1;
-            else if (v1[i] < v2[i])
-                return -1;
-        }
-
-        return 0;
-    }
-
-    static public int[] GetVersionInts(this System.Reflection.Assembly aw)
-    {
-        System.Reflection.AssemblyName an = new System.Reflection.AssemblyName(aw.FullName);            // offical way to split it
-        return new int[4] { an.Version.Major, an.Version.Minor, an.Version.Build, an.Version.Revision };
-    }
-
-    static public string GetVersionString(this System.Reflection.Assembly aw)
-    {
-        System.Reflection.AssemblyName an = new System.Reflection.AssemblyName(aw.FullName);
-        return an.Version.Major.ToStringInvariant() + "." + an.Version.Minor.ToStringInvariant() + "." + an.Version.Build.ToStringInvariant() + "." + an.Version.Revision.ToStringInvariant();
-    }
-
-    #endregion
-
-    #region Arrays and Lists
-
-    static public int[] RestoreArrayFromString(this string plist, int def, int length)      // fill array from comma separ string, with defined length and defined default
-    {
-        int i = 0;
-        string[] parray = plist.Split(',');
-        int[] newarray = new int[length];
-        for (; i < length; i++)
-        {
-            if (i >= parray.Length || !parray[i].InvariantParse(out newarray[i]))
-                newarray[i] = def;
-        }
-
-        return newarray;
-    }
-    // fill array from comma separ string, with min leng (def if less) and max length
-    static public List<int> RestoreIntListFromString(this string plist, int minlength = 0, int def = 0, int maxlength = int.MaxValue)
-    {
-        List<int> list = new List<int>();
-
-        if (plist.Length > 0)
-        {
-            string[] parray = plist.Split(',');
-
-            for (int i = 0; i < parray.Length && list.Count < maxlength; i++)
-            {
-                int v;
-                if (parray[i].InvariantParse(out v))
-                    list.Add(v);
-            }
-
-        }
-
-        while (list.Count < minlength)
-            list.Add(def);
-
-        return list;
-    }
-
-    static public bool RestoreArrayFromString(this string plist, out int[] array , int? min = null, int? max = null)   // string of comma values, parse out to array, false if any fail
-    {
-        string[] parray = plist.Split(',');
-
-        array = new int[parray.Length];
-
-        for (int i = 0; i < array.Length; i++)
-        {
-            if (!parray[i].InvariantParse(out array[i]) && (!min.HasValue || array[i]>=min) && (!max.HasValue || array[i]<=max))
-                return false;
-        }
-
-        return true;
-    }
-
-    #endregion
-
-    #region Outputs
-
-    static public bool SafeToString(this double v, string fmt, out string output)     //  safe as fmt can be crap string.. format it.  Additional M type.
-    {
-        output = "";
-
-        if (fmt.StartsWith("M"))
-        {
-            fmt = fmt.Substring(1);
-
-            if (v < 0)
-            {
-                output = "Minus ";
-                v = -v;
-            }
-        }
-
-        try
-        {
-            System.Globalization.CultureInfo cl = System.Globalization.CultureInfo.InvariantCulture;
-
-            if (fmt.StartsWith("CurC", StringComparison.InvariantCultureIgnoreCase))
-            {
-                cl = System.Globalization.CultureInfo.CurrentUICulture;
-                fmt = fmt.Substring(4);
-            }
-
-            output += v.ToString(fmt, cl);
-            return true;
-        }
-        catch
-        {
-            output = "Format must be a c# ToString format";
-            return false;
-        }
-    }
-
-    static public bool SafeToString(this long v, string fmt, out string output)
-    {
-        output = "";
-
-        if (fmt.StartsWith("M"))
-        {
-            fmt = fmt.Substring(1);
-
-            if (v < 0)
-            {
-                output = "Minus ";
-                v = -v;
-            }
-        }
-
-        try
-        {
-            if (fmt == "O")
-                output += Convert.ToString(v, 8);
-            else if (fmt == "B")
-                output += Convert.ToString(v, 2);
-            else
-            {
-                System.Globalization.CultureInfo cl = System.Globalization.CultureInfo.InvariantCulture;
-
-                if (fmt.StartsWith("CurC", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    cl = System.Globalization.CultureInfo.CurrentUICulture;
-                    fmt = fmt.Substring(4);
-                }
-
-                output += v.ToString(fmt, cl);
-            }
-            return true;
-        }
-        catch
-        {
-            output = "Format must be a c# ToString format";
-            return false;
-        }
-    }
-
-    #endregion
-
+ 
     #region Enhanced Compare
 
     static public bool CompareTo<T>(this T v, T other, int code) where T : IComparable       // 0 = equal, 1 = v is greater, 2 = v is greater equal, -1, -2
@@ -511,6 +286,18 @@ public static class ObjectExtensionsNumbersBool
         return 1 / Math.Sqrt(2 * Math.PI * stddist) * Math.Exp(-(x - u) * (x - u) / (2 * stddist * stddist));       // Wichura 1998, Gentle 2003, https://www.statsdirect.com/help/randomization/generate_random_numbers.htm
     }
 
+    public static bool ApproxEquals(this double left, double right, double epsilon = 2.2204460492503131E-16)       // fron newtonsoft JSON, et al, calculate relative epsilon and compare
+    {
+        if (left == right)
+        {
+            return true;
+        }
+
+        double tolerance = ((Math.Abs(left) + Math.Abs(right)) + 10.0) * epsilon;       // given an arbitary epsilon, scale to magnitude of values
+        double difference = left - right;
+        //System.Diagnostics.Debug.WriteLine("Approx equal {0} {1}", tolerance, difference);
+        return (-tolerance < difference && tolerance > difference);
+    }
 
 
     #endregion

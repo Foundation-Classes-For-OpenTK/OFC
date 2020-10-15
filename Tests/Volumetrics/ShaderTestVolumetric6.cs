@@ -235,7 +235,7 @@ namespace TestOpenTk
 
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
-            Vector4[] databack = dataoutbuffer.ReadVector4(0, 10);
+            Vector4[] databack = dataoutbuffer.ReadVector4s(0, 10);
 
             //System.Diagnostics.Debug.WriteLine("avg {0} txtavg {1}", databack[0].ToStringVec(), databack[1].ToStringVec());
 

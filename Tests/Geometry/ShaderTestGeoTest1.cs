@@ -210,7 +210,7 @@ void main(void)
             GLMemoryBarrier.Vertex();
 
             int count = countbuffer.ReadInt(0);
-            Vector4[] d = rejectedbuffer.ReadVector4(0, count);
+            Vector4[] d = rejectedbuffer.ReadVector4s(0, count);
             for (int i = 0; i < count; i++)
             {
                 System.Diagnostics.Debug.WriteLine(i + " = " + d[i]);
