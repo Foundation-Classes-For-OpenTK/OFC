@@ -65,11 +65,13 @@ namespace OFC.GL4
 
             Bitmap bmp = BitMapHelpers.DrawTextIntoFixedSizeBitmapC(text, bitmapsize, f, fore, back, backscale, false, fmt);
 
-            return Add(tag, bmp, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:true);
+            Add(tag, bmp, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:true);
+
+            return bmp;
         }
 
         // add a bitmap
-        public Bitmap Add(object tag,
+        public void Add(object tag,
                             Bitmap bmp, 
                             Vector3 worldpos,
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
@@ -102,25 +104,47 @@ namespace OFC.GL4
             mat[3, 3] = alphaend;
 
             g.Add(tag, bmp, ownbitmap, mat);                                        // add entry with matrix
+        }
 
-            return bmp;
+        public bool Exist(object tag)       // does this tag exist?
+        {
+            BitmapGroup g = groups.Find(x => x.FindIndex(tag) >= 0);
+            return g != null;
         }
 
         public bool Remove(Object tag)
         {
-            BitmapGroup g = groups.Find(x => x.IndexOfTag(tag) >= 0);
+            BitmapGroup g = groups.Find(x => x.FindIndex(tag) >= 0);
             if (g != null)
-                return g.RemoveAt(g.IndexOfTag(tag));
+                return g.RemoveAt(g.FindIndex(tag));
             else
                 return false;
         }
 
+        public void RemoveMarked(bool statetoremove = true)
+        {
+            foreach (var g in groups)
+                g.RemoveMarked(statetoremove);
+        }
+
         public void Clear()
         {
-            foreach( var g in groups )
+            foreach (var g in groups)
             {
                 g.Clear();
             }
+        }
+
+        public bool MarkIfExist(object tag, bool marktosetifexist = false)
+        {
+            BitmapGroup g = groups.Find(x => x.MarkIfExist(tag, marktosetifexist));      // find first tag, and mark it
+            return g != null;
+        }
+
+        public void SetMark(bool mark = true)       // set normally (or clear) all entries for mark
+        {
+            foreach (var g in groups)
+                g.SetMark(mark);
         }
 
         public void Dispose()           // you can double dispose.
@@ -134,7 +158,8 @@ namespace OFC.GL4
             items.Dispose();
         }
 
-        #region Implementation
+
+        #region Bit map group, multiple ones of these exist, entries size is limited by size of GLBuffer holding matrices
 
         private class BitmapGroup
         {
@@ -142,11 +167,13 @@ namespace OFC.GL4
             public int Deleted { get; set; } = 0;
             public GLRenderableItem RenderableItem { get; set; }
 
-            private struct EntryInfo
+            private class EntryInfo
             {
                 public Bitmap bitmap;
                 public Object tag;
-                public bool owned;
+                public bool owned;      // we own the bitmap
+                public bool marked;     // used for conditional delete, cleared on add
+                public bool IsEmpty { get { return bitmap == null; } }
             }
 
             private List<EntryInfo> entries = new List<EntryInfo>();
@@ -174,11 +201,12 @@ namespace OFC.GL4
                 //System.Diagnostics.Debug.WriteLine("Create group " + maxpergroup);
             }
 
+            // return position added as index
             public int Add(object tag, Bitmap bmp, bool owned, Matrix4 mat)
             {
-                var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned};
+                var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned, marked = false};
 
-                int pos = Deleted > 0 ? entries.FindIndex(x => x.bitmap == null) : -1;     // find an empty slot if any deleted
+                int pos = Deleted > 0 ? entries.FindIndex(x => x.IsEmpty) : -1;     // find an empty slot if any deleted
 
                 if (pos == -1)
                 {
@@ -202,32 +230,12 @@ namespace OFC.GL4
                 return pos;
             }
 
-            public void CreateTextures()
+            public int FindIndex(Object tag, StringComparison cmp = StringComparison.InvariantCultureIgnoreCase)
             {
-                if (entries.Count > 0)
-                {
-                    //System.Diagnostics.Debug.WriteLine("Tex on " + entries.Count);
-                    var barray = entries.Select(x => x.bitmap).ToArray();
-                    texture.LoadBitmaps(barray, genmipmaplevel: mipmaplevel, ownbitmaps: false, bmpsize: bitmapsize);       // we own the bitmaps and manage them
-                }
+                if (tag is string)
+                    return entries.FindIndex(x => x.tag is string ? ((string)x.tag).Equals((string)tag, cmp) : false);
                 else
-                    texture.Dispose();             // dispose of it, set it back to ID==-1
-
-                RenderableItem.InstanceCount = entries.Count;       // instance count can go to zero if required.
-                texturedirty = false;
-            }
-
-            public void Bind()
-            {
-                if (texturedirty)
-                    CreateTextures();
-                if (texture.Id >= 0)
-                    texture.Bind(1);
-            }
-
-            public int IndexOfTag(Object tag)
-            {
-                return Array.IndexOf(entries.Select(x => tag is string ? (string)x.tag : x.tag).ToArray(), tag);
+                    return entries.FindIndex(y => y.tag == tag);
             }
 
             public bool RemoveAt(int i)
@@ -251,6 +259,28 @@ namespace OFC.GL4
                     return false;
             }
 
+            public void RemoveMarked(bool marktoremove = true)
+            {
+                Matrix4 zero = Matrix4.Identity;      // set ctrl 1,3 to -1 to indicate cull matrix
+                zero[1, 3] = -1;                      // if it did not work, it would appear at (0,0,0)
+
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    if (entries[i].marked == marktoremove && entries[i].IsEmpty == false )      // if marked, and not empty
+                    {
+                        if (entries[i].owned)
+                            entries[i].bitmap.Dispose();
+
+                        entries[i] = new EntryInfo(); // all will be null
+
+                        matrixbuffer.StartWrite(GLLayoutStandards.Mat4size * i, GLLayoutStandards.Mat4size);
+                        matrixbuffer.Write(zero);
+                        matrixbuffer.StopReadWrite();
+                        Deleted++;
+                    }
+                }
+            }
+
             public void Clear()
             {
                 for (int i = 0; i < entries.Count; i++)
@@ -261,12 +291,53 @@ namespace OFC.GL4
                     entries[i] = new EntryInfo(); // all will be null
                 }
 
-                Matrix4 zero = Matrix4.Identity;      
-                zero[1, 3] = -1;                      
+                Matrix4 zero = Matrix4.Identity;
+                zero[1, 3] = -1;
                 matrixbuffer.StartWrite(0);
                 matrixbuffer.Write(zero, entries.Count);
                 matrixbuffer.StopReadWrite();
                 Deleted = entries.Count;
+            }
+
+            // mark if exist, leave otherwise
+            public bool MarkIfExist(object tag, bool marktosetifexist = false)
+            {
+                int tagindex = FindIndex(tag);
+                if (tagindex >= 0)     // not found, normal add
+                {
+                    entries[tagindex].marked = marktosetifexist;
+                    return true;
+                }
+                else
+                    return false;
+            }
+
+            public void SetMark(bool mark = true)       // set normally (or clear) all entries for mark
+            {
+                for (int i = 0; i < entries.Count; i++)
+                    entries[i].marked = mark;
+            }
+
+            public void Bind()
+            {
+                if (texturedirty)       // if dirty, we need to update the GL texture
+                {
+                    if (entries.Count > 0)
+                    {
+                        //System.Diagnostics.Debug.WriteLine("Tex on " + entries.Count);
+                        var barray = entries.Select(x => x.bitmap).ToArray();
+                        texture.LoadBitmaps(barray, genmipmaplevel: mipmaplevel, ownbitmaps: false, bmpsize: bitmapsize);       // we own the bitmaps and manage them
+                    }
+                    else
+                        texture.Dispose();             // dispose of it, set it back to ID==-1
+
+                    RenderableItem.InstanceCount = entries.Count;       // instance count can go to zero if required.
+                    texturedirty = false;
+
+                }
+
+                if (texture.Id >= 0)
+                    texture.Bind(1);
             }
 
         }

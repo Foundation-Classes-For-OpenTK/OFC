@@ -242,16 +242,23 @@ namespace TestOpenTk
             {
                 Random rnd = new Random(52);
                 List<ISystem> pos = new List<ISystem>();
-                for (int i = 0; i <= 60000; i += 500)
+                for (int j = 0; j <= 200; j++)
                 {
-                    string name = "Kyli Flyuae AA-B h" + i.ToString();
+                    int i = j * 10;
+                    string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
-                        pos.Add(new ISystem(name, i + rnd.Next(1000) - 500, rnd.Next(100), i));
-                    else
-                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem(name, i + rnd.Next(50), rnd.Next(50), i));
+                    else if (i < 60000)
+                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
+                    else if (i < 90000)
+                        pos.Add(new ISystem(name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
+                    else 
+                        pos.Add(new ISystem(name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
                 }
 
-                travelpath = new TravelPath();
+                // tested to 50k stars
+
+                travelpath = new TravelPath(1000);
                 travelpath.CreatePath(items, rObjects, pos, 2, 0.8f, findstarblock);
                 travelpath.SetSystem(0);
             }
@@ -620,21 +627,37 @@ namespace TestOpenTk
             {
                 Random rnd = new Random(System.Environment.TickCount);
                 List<ISystem> pos = new List<ISystem>();
-                for (int i = 0; i <= 60000; i += 500)
+                for (int j = 0; j <= 200; j++)
                 {
+                    int i = j * 10;
+                    string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
-                        pos.Add(new ISystem("2+" + i.ToString(), i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem(name, i + rnd.Next(50), rnd.Next(50), i));
+                    else if (i < 60000)
+                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
+                    else if (i < 90000)
+                        pos.Add(new ISystem(name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
                     else
-                        pos.Add(new ISystem("2+"  + i.ToString(), 60000 - i + rnd.Next(1000) - 500, rnd.Next(100), i));
+                        pos.Add(new ISystem(name, -30000 + (i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
                 }
 
-                travelpath.CreatePath(null, null, pos, 2, 2, 0);
+                travelpath.CreatePath(null, null, pos, 2, 0.8f, 0);
                 travelpath.SetSystem(0);
 
                 glwfc.Invalidate();
             }
+
+            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
+            {
+                ISystem prev = travelpath.CurrentList.Last();
+                travelpath.CurrentList.Add(new ISystem("new-" + newsys.ToString(), prev.X, prev.Y, prev.Z + 100));
+                newsys++;
+                travelpath.CreatePath(null, null, travelpath.CurrentList, 2, 0.8f, 0);
+                glwfc.Invalidate();
+            }
         }
 
+        int newsys = 1;
         #endregion
 
 

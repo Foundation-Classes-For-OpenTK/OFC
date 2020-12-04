@@ -23,60 +23,79 @@ namespace TestOpenTk
     {
         public List<ISystem> CurrentList { get { return lastlist; } }
         public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable = value; } }
+        public int MaxStars { get; }
 
-        public void CreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, List<ISystem> pos, float sunsize, float tapesize, int bufferfindbinding)
+        public TravelPath(int maxstars)
         {
-            if (lastpos != -1)
-                lastpos = pos.IndexOf(lastlist[lastpos]);       // will be -1 if the system has disappeared from the list.. this keeps the lastpos in the same place
+            MaxStars = maxstars;
+        }
 
-            lastlist = pos;
+        // tested to 50K+ stars, tested updating a single one
 
-            var positionsv4 = pos.Select(x => new Vector4((float)x.X, (float)x.Y, (float)x.Z, 0)).ToArray();
+        public void CreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, List<ISystem> incomingsys, float sunsize, float tapesize, int bufferfindbinding)
+        {
+            ISystem lastone = lastpos != -1 ? lastlist[lastpos] : null;
+
+            if (incomingsys.Count > MaxStars)       // limit to max stars so we don't eat stupid amounts of memory
+                lastlist = incomingsys.Skip(incomingsys.Count - MaxStars).ToList();
+            else
+                lastlist = incomingsys;
+
+            lastpos = lastlist.IndexOf(lastone);        // may be -1, may have been removed
+
+            var positionsv4 = lastlist.Select(x => new Vector4((float)x.X, (float)x.Y, (float)x.Z, 0)).ToArray();
             float seglen = tapesize * 10;
 
+            // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
             var tape = GLTapeObjectFactory.CreateTape(positionsv4, tapesize, seglen, 0F.Radians(), ensureintegersamples: true, margin: sunsize * 1.2f);
 
             if (ritape == null) // first time..
             {
                 // first the tape
-                var tapetex = new GLTexture2D(Properties.Resources.chevron);
+
+                var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
                 items.Add(tapetex);
                 tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true);
+
+                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
                 items.Add(tapeshader);
 
-                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);
-                rts.DepthTest = false;
+                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // gl control object
+                rts.DepthTest = false;  // no depth test so always appears
 
-                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
-                tapepointbuf = items.LastBuffer();
+                // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
+                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));   
+                tapepointbuf = items.LastBuffer();  // keep buffer for refill
                 ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
-                ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3);
+                ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
 
-                rObjects.Add(tapeshader, ritape);
+                rObjects.Add(tapeshader, ritape);   // add render to object list
 
                 // now the stars
 
-                starposbuf = items.NewBuffer();
+                starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
                 starposbuf.AllocateFill(positionsv4);
 
                 sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
+                items.Add(sunvertex);
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
                 items.Add(sunshader);
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                 rt.DepthTest = false;
-                GLRenderableItem rs = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, pos.Count, 1);
+                renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, lastlist.Count, 1);
+                rObjects.Add(sunshader, renderersun);
 
-                rObjects.Add(sunshader, rs);
+                // find compute
 
                 findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+                items.Add(findshader);
+                rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: lastlist.Count, seconddivisor: 1);
 
-                rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: pos.Count, seconddivisor: 1);
-
+                // Sun names, handled by textrenderer
                 textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest:false, cullface:false);
                 items.Add(textrenderer);
             }
@@ -86,9 +105,14 @@ namespace TestOpenTk
                 ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
                 ritape.Visible = tape.Item1.Count > 0;
 
-                starposbuf.AllocateFill(positionsv4);
-                textrenderer.Clear();
+                starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
+                renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
+
+                rifind.InstanceCount = positionsv4.Length;  // update the find list
+
             }
+
+            textrenderer.SetMark(true);     // set mark = true for all current entries, if they are not in the list, they will be deleted later
 
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())
@@ -96,10 +120,15 @@ namespace TestOpenTk
                 fmt.Alignment = StringAlignment.Center;
                 foreach (var isys in lastlist)
                 {
-                    textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
-                                new Vector3(50, 0,0), new Vector3(0, 0, 0), fmt:fmt, rotatetoviewer:true, rotateelevation:true, alphascale:-200,alphaend:250);
+                    if (textrenderer.MarkIfExist(isys, false) == false)        // if does not exist already, add a new one. if it does, mark set to false
+                    {
+                        textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
+                                new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphascale: -200, alphaend: 250);
+                    }
                 }
             }
+
+            textrenderer.RemoveMarked(true);    // remove all left marked
 
             fnt.Dispose();
         }
@@ -185,14 +214,18 @@ namespace TestOpenTk
         }
 
         private GLTexturedShaderTriangleStripWithWorldCoord tapeshader;
+        private GLBuffer tapepointbuf;
+        private GLRenderableItem ritape;
+
         private GLShaderPipeline sunshader;
         private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
-        private GLRenderableItem ritape;
-        private GLBuffer tapepointbuf;
         private GLBuffer starposbuf;
-        private GLShaderPipeline findshader;
+        private GLRenderableItem renderersun;
+
+        private GLBitmaps textrenderer;     // star names
+
+        private GLShaderPipeline findshader;        // finder
         private GLRenderableItem rifind;
-        private GLBitmaps textrenderer;
 
         private List<ISystem> lastlist;
         private int lastpos = -1;       // -1 no system

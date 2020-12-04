@@ -28,8 +28,8 @@ namespace OFC.GL4
     // It has a primitive type
     // it is associated with an optional VertexArray which is bound using Bind()
     // it is associated with an optional InstanceData which is instanced using Bind()
-    // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs
-    // it is associated with an optional IndirectBuffer giving draw command groups
+    // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
+    // it is associated with an optional IndirectBuffer giving draw command groups - this then selected the draw type to use
 
     // Renderable items are normally put into a GLRenderProgramSortedList by shader, but can be executed directly
     // using Execute.  This is normally only done for renders which do not produce output but compute to a buffer.
