@@ -41,7 +41,7 @@ namespace OFC.GL4
             shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
-            rc = GLRenderControl.Quads();
+            rc = GLRenderControl.Quads();      
             rc.CullFace = cullface;
             rc.DepthTest = depthtest;
             rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
@@ -81,6 +81,8 @@ namespace OFC.GL4
                             bool ownbitmap = false
                          )
         {
+            System.Diagnostics.Debug.Assert(bmp.Width == bitmapsize.Width && bmp.Height == bitmapsize.Height);
+
             BitmapGroup g = groups.Find(x => (x.Count-x.Deleted) < maxpergroup);      // find one with space..
 
             if ( g == null )
@@ -108,23 +110,23 @@ namespace OFC.GL4
 
         public bool Exist(object tag)       // does this tag exist?
         {
-            BitmapGroup g = groups.Find(x => x.FindIndex(tag) >= 0);
+            BitmapGroup g = groups.Find(x => x.FindTag(tag) >= 0);
             return g != null;
         }
 
         public bool Remove(Object tag)
         {
-            BitmapGroup g = groups.Find(x => x.FindIndex(tag) >= 0);
+            BitmapGroup g = groups.Find(x => x.FindTag(tag) >= 0);
             if (g != null)
-                return g.RemoveAt(g.FindIndex(tag));
+                return g.RemoveAt(g.FindTag(tag));
             else
                 return false;
         }
 
-        public void RemoveMarked(bool statetoremove = true)
+        public void RemoveGeneration(int generation = 1)
         {
             foreach (var g in groups)
-                g.RemoveMarked(statetoremove);
+                g.RemoveGeneration(generation);
         }
 
         public void Clear()
@@ -135,16 +137,16 @@ namespace OFC.GL4
             }
         }
 
-        public bool MarkIfExist(object tag, bool marktosetifexist = false)
+        public bool SetGenerationIfExist(object tag, int generation = 0)
         {
-            BitmapGroup g = groups.Find(x => x.MarkIfExist(tag, marktosetifexist));      // find first tag, and mark it
+            BitmapGroup g = groups.Find(x => x.SetGenerationIfExists(tag, generation));      // find first tag, and mark it
             return g != null;
         }
 
-        public void SetMark(bool mark = true)       // set normally (or clear) all entries for mark
+        public void IncreaseGeneration()     
         {
             foreach (var g in groups)
-                g.SetMark(mark);
+                g.IncreaseGeneration();
         }
 
         public void Dispose()           // you can double dispose.
@@ -169,21 +171,22 @@ namespace OFC.GL4
 
             private class EntryInfo
             {
-                public Bitmap bitmap;
-                public Object tag;
-                public bool owned;      // we own the bitmap
-                public bool marked;     // used for conditional delete, cleared on add
+                public Bitmap bitmap { get; set; }
+                public Object tag { get; set; }
+                public bool owned { get; set; }      // we own the bitmap
+                public int generation { get; set; } = int.MaxValue;     // 0 = newest
                 public bool IsEmpty { get { return bitmap == null; } }
             }
 
             private List<EntryInfo> entries = new List<EntryInfo>();
+            private Dictionary<object, int> tagtoentries = new Dictionary<object, int>();
             private GLTexture2DArray texture;
             private GLBuffer matrixbuffer;
             private bool texturedirty { get; set; } = false;
             private int mipmaplevel { get; set; } = 3;
             private Size bitmapsize { get; set; }
 
-            public BitmapGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevel, Size bitmapsize)
+            public BitmapGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevel, Size bitmapsize)//, int depth)
             {
                 matrixbuffer = new GLBuffer();
                 items.Add(matrixbuffer);
@@ -199,12 +202,16 @@ namespace OFC.GL4
                 this.mipmaplevel = mipmaplevel;
                 this.bitmapsize = bitmapsize;
                 //System.Diagnostics.Debug.WriteLine("Create group " + maxpergroup);
+
+                //.. call create texture..
+//!!
+      //          texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, depth, mipmaplevel);
             }
 
-            // return position added as index
+            // return position added as index. If tag == null, you can't find it again
             public int Add(object tag, Bitmap bmp, bool owned, Matrix4 mat)
             {
-                var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned, marked = false};
+                var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned, generation = 0};
 
                 int pos = Deleted > 0 ? entries.FindIndex(x => x.IsEmpty) : -1;     // find an empty slot if any deleted
 
@@ -219,6 +226,9 @@ namespace OFC.GL4
                     entries[pos] = entry;                               // set empty slot to active
                 }
 
+                if ( tag != null )
+                    tagtoentries[tag] = pos;
+
                 //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
                 mat[0, 3] = pos;     // store pos of image in stack
 
@@ -227,15 +237,14 @@ namespace OFC.GL4
                 matrixbuffer.StopReadWrite();
                 texturedirty = true;
 
+                //.. call add bitmap
+
                 return pos;
             }
 
-            public int FindIndex(Object tag, StringComparison cmp = StringComparison.InvariantCultureIgnoreCase)
+            public int FindTag(Object tag)
             {
-                if (tag is string)
-                    return entries.FindIndex(x => x.tag is string ? ((string)x.tag).Equals((string)tag, cmp) : false);
-                else
-                    return entries.FindIndex(y => y.tag == tag);
+                return tagtoentries.TryGetValue(tag, out int index) ? index : -1;
             }
 
             public bool RemoveAt(int i)
@@ -244,6 +253,9 @@ namespace OFC.GL4
                 {
                     if (entries[i].owned)
                         entries[i].bitmap.Dispose();
+
+                    if (entries[i].tag != null)
+                        tagtoentries.Remove(entries[i].tag);
 
                     entries[i] = new EntryInfo(); // all will be null/false
 
@@ -259,19 +271,22 @@ namespace OFC.GL4
                     return false;
             }
 
-            public void RemoveMarked(bool marktoremove = true)
+            public void RemoveGeneration(int generation = 1)        // all over this, is removed
             {
                 Matrix4 zero = Matrix4.Identity;      // set ctrl 1,3 to -1 to indicate cull matrix
                 zero[1, 3] = -1;                      // if it did not work, it would appear at (0,0,0)
 
                 for (int i = 0; i < entries.Count; i++)
                 {
-                    if (entries[i].marked == marktoremove && entries[i].IsEmpty == false )      // if marked, and not empty
+                    if (entries[i].generation >= generation)    // if older.. note invalid ones get generation = int.max
                     {
                         if (entries[i].owned)
                             entries[i].bitmap.Dispose();
 
-                        entries[i] = new EntryInfo(); // all will be null
+                        if (entries[i].tag != null)
+                            tagtoentries.Remove(entries[i].tag);
+
+                        entries[i] = new EntryInfo(); // all will be null, generation will be int.max
 
                         matrixbuffer.StartWrite(GLLayoutStandards.Mat4size * i, GLLayoutStandards.Mat4size);
                         matrixbuffer.Write(zero);
@@ -288,6 +303,9 @@ namespace OFC.GL4
                     if (entries[i].owned)
                         entries[i].bitmap.Dispose();
 
+                    if (entries[i].tag != null)
+                        tagtoentries.Remove(entries[i].tag);
+
                     entries[i] = new EntryInfo(); // all will be null
                 }
 
@@ -300,22 +318,21 @@ namespace OFC.GL4
             }
 
             // mark if exist, leave otherwise
-            public bool MarkIfExist(object tag, bool marktosetifexist = false)
+            public bool SetGenerationIfExists(object tag, int generation = 0)
             {
-                int tagindex = FindIndex(tag);
-                if (tagindex >= 0)     // not found, normal add
+                if (tagtoentries.TryGetValue(tag, out int index) )
                 {
-                    entries[tagindex].marked = marktosetifexist;
+                    entries[index].generation = generation;
                     return true;
                 }
                 else
                     return false;
             }
 
-            public void SetMark(bool mark = true)       // set normally (or clear) all entries for mark
+            public void IncreaseGeneration()       // increase all generations
             {
                 for (int i = 0; i < entries.Count; i++)
-                    entries[i].marked = mark;
+                    entries[i].generation++;
             }
 
             public void Bind()
@@ -333,7 +350,6 @@ namespace OFC.GL4
 
                     RenderableItem.InstanceCount = entries.Count;       // instance count can go to zero if required.
                     texturedirty = false;
-
                 }
 
                 if (texture.Id >= 0)

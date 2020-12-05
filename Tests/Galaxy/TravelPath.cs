@@ -112,7 +112,7 @@ namespace TestOpenTk
 
             }
 
-            textrenderer.SetMark(true);     // set mark = true for all current entries, if they are not in the list, they will be deleted later
+            textrenderer.IncreaseGeneration();  // all goes to gen 1
 
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())
@@ -120,7 +120,7 @@ namespace TestOpenTk
                 fmt.Alignment = StringAlignment.Center;
                 foreach (var isys in lastlist)
                 {
-                    if (textrenderer.MarkIfExist(isys, false) == false)        // if does not exist already, add a new one. if it does, mark set to false
+                    if (textrenderer.SetGenerationIfExist(isys) == false)        // if does not exist already, add a new one and reduce generation
                     {
                         textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
                                 new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphascale: -200, alphaend: 250);
@@ -128,7 +128,7 @@ namespace TestOpenTk
                 }
             }
 
-            textrenderer.RemoveMarked(true);    // remove all left marked
+            textrenderer.RemoveGeneration(1);    // remove all left marked
 
             fnt.Dispose();
         }

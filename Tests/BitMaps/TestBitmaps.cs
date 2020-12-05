@@ -34,7 +34,7 @@ using OFC;
 
 namespace TestOpenTk
 {
-    public partial class TestTextRenderer : Form
+    public partial class TestBitmaps : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -44,7 +44,7 @@ namespace TestOpenTk
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
 
-        public TestTextRenderer()
+        public TestBitmaps()
         {
             InitializeComponent();
 
@@ -142,7 +142,7 @@ namespace TestOpenTk
 
             #endregion
 
-            #region Text Renderer
+            #region bitmap Renderer
 
 
             {
@@ -172,9 +172,9 @@ namespace TestOpenTk
 
                     tim2.Clear();
 
-                    for (int i = 0; i < 10000; i++)
+                    for (int i = 0; i < 1; i++)
                     {
-                        tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red,
+                        tim2.Add("i" + i.ToString(), "j" + i.ToString() + "!", f, Color.White, Color.Red,
                                         new Vector3((i % 10) * 10 - 50, 5, (i / 10) * 4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
                     }
