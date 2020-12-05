@@ -254,7 +254,7 @@ void main(void)
                     int bsz = sz + majorlines * (i % 3);
                     string label = bsx.ToStringInvariant() + "," + sy.ToStringInvariant("0") + "," + bsz.ToStringInvariant();
                     BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, textcol, backcol);
-                    texcoords.LoadBitmap(texcoords.BitMaps[i], i);
+                    texcoords.LoadBitmap(texcoords.BitMaps[i], i, true, 1);
                 //    System.Diagnostics.Debug.WriteLine("At {0} Draw {1} {2}", i, bsx, bsz);
                 }
 
@@ -272,14 +272,13 @@ void main(void)
         {
             texcoords = new GLTexture2DArray();
             texcoords.CreateTexture(200, 25, 9);        // size and number
-            texcoords.OwnBitmaps = true;                // it will own the bitmaps
             
             gridfnt = f ?? new Font("MS Sans Serif", 16);
 
             for (int i = 0; i < 9; i++)
             {
                 Bitmap bmp = new Bitmap(texcoords.Width, texcoords.Height); // a bitmap for each number
-                texcoords.LoadBitmap(bmp, i);
+                texcoords.LoadBitmap(bmp, i,true, 1);
             }
 
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode());

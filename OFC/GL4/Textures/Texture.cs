@@ -32,11 +32,12 @@ namespace OFC.GL4
         public int Width { get; protected set; } = 0;           // W/H is always the width/height of the first bitmap in z=0.
         public int Height { get; protected set; } = 1;
         public int Depth { get; protected set; } = 1;           // Depth is no of bitmaps down for 2darray/3d
+        public int MipMapLevels { get; protected set; } = 1;     // Mip maps levels to support during create
 
         public SizedInternalFormat InternalFormat { get; protected set; }       // internal format of stored data in texture unit
 
-        public Bitmap[] BitMaps { get; protected set; }         // textures can own the bitmaps for disposal purposes.  Entries may be null if no bitmap at that entry
-        public bool OwnBitmaps { get; set; } = false;
+        public Bitmap[] BitMaps { get; private set; }         // textures can own the bitmaps for disposal purposes.  Entries may be null if no bitmap at that entry
+        public bool[] OwnBitMaps { get; private set; }
 
         // normal sampler bind - for sampler2D access etc.
 
@@ -89,40 +90,48 @@ namespace OFC.GL4
                 GL.DeleteTexture(Id);
                 Id = -1;
 
-                if (OwnBitmaps && BitMaps != null)
+                if (BitMaps != null)
                 {
-                    foreach (var b in BitMaps)
+                    for( int  i = 0; i < BitMaps.Length; i++ )
                     {
-                        if ( b != null)     // we may have empty spaces in the bitmap list
-                            b.Dispose();
+                        if ( OwnBitMaps[i] && BitMaps[i] != null)     // we may have empty spaces in the bitmap list
+                            BitMaps[i].Dispose();
                     }
 
                     BitMaps = null;
+                    OwnBitMaps = null;
                 }
 
             }
         }
 
+        // must have called CreateTexture before, allows bitmaps to be loaded individually
         // load bitmap into texture, allow for mipmapping (mipmaplevels = 1 no mip in current bitmap)
         // bitmap textures go into x/y plane (as per normal graphics).
         // see the derived classes for the actual load function - this is a helper
         // this can load into 2d texture, 2d arrays and 3d textures.
         // if zoffset = -1, load into 2d texture (can't use texture sub image 3d) otherwise its the 2d array or 3d texture at zoffset
 
-        protected static void LoadBitmap(int Id, Bitmap bmp, int mipmaplevels, int zoffset)
+        public void LoadBitmap(Bitmap bmp, int zoffset, bool ownbmp = false, int bmpmipmaplevels = 1)
         {
+            System.Diagnostics.Debug.Assert(bmpmipmaplevels <= MipMapLevels);
+
             System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
                             System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);     // 32 bit words, ARGB format
 
             IntPtr ptr = bmpdata.Scan0;     // its a byte ptr
 
             int curwidth = bmp.Width;
-            int masterheight = MipMapHeight(bmp, mipmaplevels);
+            int masterheight = MipMapHeight(bmp, bmpmipmaplevels);
+
+            System.Diagnostics.Debug.Assert(bmp.Width == Width);
+            System.Diagnostics.Debug.Assert(masterheight<=Height);  // bitmap may be shorter
+
             int curheight = masterheight;
 
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, bmp.Width);      // indicate the image width, if we take less, then GL will skip pixels to get to next row
 
-            for (int m = 0; m < mipmaplevels; m++)
+            for (int m = 0; m < bmpmipmaplevels; m++)
             {
                 if (zoffset == -1)
                 {
@@ -165,6 +174,18 @@ namespace OFC.GL4
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);      // back to off for safety
             bmp.UnlockBits(bmpdata);
             OFC.GLStatics.Check();
+
+            if (BitMaps == null)
+            {
+                BitMaps = new Bitmap[Depth];
+                OwnBitMaps = new bool[Depth];
+            }
+
+            if (zoffset == -1)      // -1 means use 2d load, so its really the first 0 zorder
+                zoffset = 0;
+
+            BitMaps[zoffset] = bmp;
+            OwnBitMaps[zoffset] = ownbmp;
         }
 
         // Return texture as a set of floats or byte only (others not supported as of yet)

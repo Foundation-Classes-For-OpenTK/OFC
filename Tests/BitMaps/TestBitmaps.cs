@@ -13,22 +13,14 @@
  * governing permissions and limitations under the License.
  */
 
+using OFC;
+using OFC.Controller;
+using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
-using OFC.GL4;
-using OFC.Controller;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OFC;
 
 // A simpler main for testing
 
@@ -172,7 +164,7 @@ namespace TestOpenTk
 
                     tim2.Clear();
 
-                    for (int i = 0; i < 1; i++)
+                    for (int i = 0; i < 100; i++)
                     {
                         tim2.Add("i" + i.ToString(), "j" + i.ToString() + "!", f, Color.White, Color.Red,
                                         new Vector3((i % 10) * 10 - 50, 5, (i / 10) * 4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);

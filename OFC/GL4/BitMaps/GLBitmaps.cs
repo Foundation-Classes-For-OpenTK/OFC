@@ -27,7 +27,8 @@ namespace OFC.GL4
 
     public class GLBitmaps : IDisposable
     {
-        public int MipMapLevel { get; set; } = 3;
+        public int MipMapLevel { get; set; } = 3;       // set before add..
+
         public bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
         public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
@@ -65,7 +66,7 @@ namespace OFC.GL4
 
             Bitmap bmp = BitMapHelpers.DrawTextIntoFixedSizeBitmapC(text, bitmapsize, f, fore, back, backscale, false, fmt);
 
-            Add(tag, bmp, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:true);
+            Add(tag, bmp, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:true);
 
             return bmp;
         }
@@ -73,6 +74,7 @@ namespace OFC.GL4
         // add a bitmap
         public void Add(object tag,
                             Bitmap bmp, 
+                            int bmpmipmaplevels,
                             Vector3 worldpos,
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
                             Vector3 rotationradians,        // ignored if rotates are on
@@ -87,7 +89,7 @@ namespace OFC.GL4
 
             if ( g == null )
             {
-                g = new BitmapGroup(items,rc, maxpergroup, MipMapLevel, bitmapsize);          // no space, make a new one
+                g = new BitmapGroup(items,rc, maxpergroup, MipMapLevel, bitmapsize, maxpergroup);          // no space, make a new one
                 renderlist.Add(shader, g.RenderableItem);
                 groups.Add(g);
             }
@@ -105,7 +107,7 @@ namespace OFC.GL4
             mat[2, 3] = alphascale;
             mat[3, 3] = alphaend;
 
-            g.Add(tag, bmp, ownbitmap, mat);                                        // add entry with matrix
+            g.Add(tag, bmp, bmpmipmaplevels, ownbitmap, mat);                                        // add entry with matrix
         }
 
         public bool Exist(object tag)       // does this tag exist?
@@ -182,11 +184,10 @@ namespace OFC.GL4
             private Dictionary<object, int> tagtoentries = new Dictionary<object, int>();
             private GLTexture2DArray texture;
             private GLBuffer matrixbuffer;
-            private bool texturedirty { get; set; } = false;
-            private int mipmaplevel { get; set; } = 3;
+            private bool refillmipmaps = false;
             private Size bitmapsize { get; set; }
 
-            public BitmapGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevel, Size bitmapsize)//, int depth)
+            public BitmapGroup(GLItemsList items, GLRenderControl rc, int groupsize, int mipmaplevels, Size bitmapsize, int depth)
             {
                 matrixbuffer = new GLBuffer();
                 items.Add(matrixbuffer);
@@ -199,17 +200,13 @@ namespace OFC.GL4
                 var rd = new RenderData(this);
 
                 RenderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);
-                this.mipmaplevel = mipmaplevel;
                 this.bitmapsize = bitmapsize;
-                //System.Diagnostics.Debug.WriteLine("Create group " + maxpergroup);
 
-                //.. call create texture..
-//!!
-      //          texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, depth, mipmaplevel);
+                texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, depth, mipmaplevels);
             }
 
             // return position added as index. If tag == null, you can't find it again
-            public int Add(object tag, Bitmap bmp, bool owned, Matrix4 mat)
+            public int Add(object tag, Bitmap bmp, int bmpmipmaplevels, bool owned, Matrix4 mat)
             {
                 var entry = new EntryInfo() { bitmap = bmp, tag = tag , owned = owned, generation = 0};
 
@@ -235,9 +232,15 @@ namespace OFC.GL4
                 matrixbuffer.StartWrite(GLLayoutStandards.Mat4size * pos, GLLayoutStandards.Mat4size);
                 matrixbuffer.Write(mat);
                 matrixbuffer.StopReadWrite();
-                texturedirty = true;
 
-                //.. call add bitmap
+                texture.LoadBitmap(bmp, pos, false, bmpmipmaplevels);       // texture does not own them, we may do
+
+                if ( bmpmipmaplevels < texture.MipMapLevels)        // if our mipmap is less than ordered, we need an auto gen
+                {
+                    refillmipmaps = true;
+                }
+
+                RenderableItem.InstanceCount = entries.Count;       
 
                 return pos;
             }
@@ -315,6 +318,7 @@ namespace OFC.GL4
                 matrixbuffer.Write(zero, entries.Count);
                 matrixbuffer.StopReadWrite();
                 Deleted = entries.Count;
+                RenderableItem.InstanceCount = 0;
             }
 
             // mark if exist, leave otherwise
@@ -337,19 +341,10 @@ namespace OFC.GL4
 
             public void Bind()
             {
-                if (texturedirty)       // if dirty, we need to update the GL texture
+                if (refillmipmaps )
                 {
-                    if (entries.Count > 0)
-                    {
-                        //System.Diagnostics.Debug.WriteLine("Tex on " + entries.Count);
-                        var barray = entries.Select(x => x.bitmap).ToArray();
-                        texture.LoadBitmaps(barray, genmipmaplevel: mipmaplevel, ownbitmaps: false, bmpsize: bitmapsize);       // we own the bitmaps and manage them
-                    }
-                    else
-                        texture.Dispose();             // dispose of it, set it back to ID==-1
-
-                    RenderableItem.InstanceCount = entries.Count;       // instance count can go to zero if required.
-                    texturedirty = false;
+                    texture.GenMipMapTextures();
+                    refillmipmaps = false;
                 }
 
                 if (texture.Id >= 0)

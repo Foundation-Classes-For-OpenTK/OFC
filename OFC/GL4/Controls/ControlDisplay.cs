@@ -234,7 +234,7 @@ namespace OFC.GL4.Controls
 
                         if (redrawn)
                         {
-                            textures[c].LoadBitmap(c.LevelBitmap);  // and update texture unit with new bitmap
+                            textures[c].CreateLoadBitmap(c.LevelBitmap);  // and update texture unit with new bitmap
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
                     }

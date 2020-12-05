@@ -13,11 +13,9 @@
  */
 
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using OpenTK.Graphics.OpenGL4;
+using System;
+using System.Drawing;
 
 namespace OFC.GL4
 {
@@ -32,22 +30,20 @@ namespace OFC.GL4
 
         public GLTexture2DArray(Bitmap[] bmps, int mipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)
         {
-            LoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
+            CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
         }
 
         public void CreateTexture( int width , int height, int depth , int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
         {
-            if (Id == -1 || Width != width || Height != height || Depth != depth)
+            if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)
             {
-                if (Id != -1)
-                {
-                    Dispose();
-                }
+                Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
                 Height = height;
                 Depth = depth;
+                MipMapLevels = mipmaplevels;
 
                 GL.CreateTextures(TextureTarget.Texture2DArray, 1, out int id);
                 Id = id;
@@ -69,7 +65,7 @@ namespace OFC.GL4
         // Bitmaps array can be sparse will null entries if you don't want to use that level. 
         // texture size is either bmpsize or Level 0 size (which therefore must be there)
 
-        public void LoadBitmaps(Bitmap[] bmps, int bitmapmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, 
+        public void CreateLoadBitmaps(Bitmap[] bmps, int bitmapmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, 
                                                bool ownbitmaps = false, Size? bmpsize = null)
         {
             int width = bmpsize.HasValue ? bmpsize.Value.Width : bmps[0].Width;
@@ -78,13 +74,10 @@ namespace OFC.GL4
 
             CreateTexture(width, height, bmps.Length, texmipmaps, internalformat);
 
-            BitMaps = bmps;
-            OwnBitmaps = ownbitmaps;
-
-            for (int bitmapnumber = 0; bitmapnumber < bmps.Length; bitmapnumber++)      // for all bitmaps, we load the texture into zoffset of 2darray
+            for (int zorder = 0; zorder < bmps.Length; zorder++)      // for all bitmaps, we load the texture into zoffset of 2darray
             {
-                if ( bmps[bitmapnumber] != null )       // it can be sparse
-                    LoadBitmap(Id, bmps[bitmapnumber], bitmapmipmaplevels, bitmapnumber);   // load into bitmapnumber zoffset level
+                if ( bmps[zorder] != null )       // it can be sparse
+                    LoadBitmap(bmps[zorder], zorder, ownbitmaps, bitmapmipmaplevels);   // load into bitmapnumber zoffset level
             }
 
             if (bitmapmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
@@ -92,22 +85,5 @@ namespace OFC.GL4
 
             OFC.GLStatics.Check();
         }
-
-        // must have called CreateTexture before, allows bitmaps to be loaded individually
-        // either make bitmapmipmaplevels>1 meaning the image is mipmapped, or use GenMipMapTextures() after all bitmaps in all z planes are loaded
-
-        public void LoadBitmap(Bitmap map, int zoffset, int bitmapmipmaplevels = 1)
-        {
-            int h = MipMapHeight(map, bitmapmipmaplevels);        // if bitmap is mipped mapped, work out correct height.
-            System.Diagnostics.Debug.Assert(map.Width == Width && map.Height == h && Id != -1);
-
-            LoadBitmap(Id, map, bitmapmipmaplevels, zoffset);
-
-            if (BitMaps == null)
-                BitMaps = new Bitmap[Depth];
-
-            BitMaps[zoffset] = map;
-        }
-
     }
 }

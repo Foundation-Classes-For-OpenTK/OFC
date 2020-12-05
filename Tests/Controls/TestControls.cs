@@ -198,7 +198,7 @@ namespace TestOpenTk
                 bool testtabcontrol = true;
                 bool testdatetime = true;
 
-                testpanel = testgroupbox = testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
+                //testpanel = testgroupbox = testtable = testflow = testtextbox = testcombobox = testscrollbar = testvsp = testlb = testbuttons = testtabcontrol = testdatetime = false;
 
                 bool testform2 = true;
                 bool testflowlayout = true;

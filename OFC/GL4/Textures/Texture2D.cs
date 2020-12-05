@@ -30,23 +30,21 @@ namespace OFC.GL4
         public GLTexture2D(Bitmap bmp, int bitmipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
                             int genmipmaplevel = 1, bool ownbitmaps = false)
         {
-            LoadBitmap(bmp, bitmipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
+            CreateLoadBitmap(bmp, bitmipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
         }
 
         // You can call as many times to create textures. Only creates one if required
 
         public void CreateOrUpdateTexture(int width, int height, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
         {
-            if (Id == -1 || Width != width || Height != height)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id == -1 || Width != width || Height != height || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
-                if ( Id != -1 )
-                { 
-                    Dispose();
-                }
+                Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
                 Height = height;
+                MipMapLevels = mipmaplevels;
 
                 GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
                 Id = id;
@@ -76,6 +74,7 @@ namespace OFC.GL4
                 InternalFormat = 0;         // PixelInternalFormat does not fit within this, so zero it
                 Width = width;
                 Height = height;
+                MipMapLevels = 1;
 
                 GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
                 Id = id;
@@ -100,18 +99,15 @@ namespace OFC.GL4
 
         // You can reload the bitmap, it will create a new Texture if required
 
-        public void LoadBitmap(Bitmap bmp, int bitmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)
+        public void CreateLoadBitmap(Bitmap bmp, int bitmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
+                                     int genmipmaplevel = 1, bool ownbitmap = false)
         {
             int h = MipMapHeight(bmp, bitmipmaplevels);
             int texmipmaps = Math.Max(bitmipmaplevels, genmipmaplevel);
 
             CreateOrUpdateTexture(bmp.Width, h, texmipmaps, internalformat);
 
-            BitMaps = new Bitmap[1];
-            BitMaps[0] = bmp;
-            OwnBitmaps = ownbitmaps;
-
-            GLTextureBase.LoadBitmap(Id, bmp, bitmipmaplevels, -1);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
+            LoadBitmap(bmp, -1, ownbitmap , bitmipmaplevels);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
 
             if (bitmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
@@ -119,10 +115,7 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
 
            // float[] tex = GetTextureImageAsFloats(end:100);
-
         }
-
-
     }
 }
 

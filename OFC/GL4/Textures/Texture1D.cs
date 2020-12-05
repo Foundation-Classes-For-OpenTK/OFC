@@ -13,11 +13,8 @@
  */
 
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using OpenTK.Graphics.OpenGL4;
+using System;
 
 namespace OFC.GL4
 {
@@ -34,15 +31,13 @@ namespace OFC.GL4
 
         public void CreateOrUpdateTexture(int width, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int mipmaplevel = 1)
         {
-            if (Id == -1 || Width != width)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id == -1 || Width != width || MipMapLevels != mipmaplevel)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
-                if (Id != -1)
-                {
-                    Dispose();
-                }
+                Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
+                MipMapLevels = mipmaplevel;
 
                 GL.CreateTextures(TextureTarget.Texture1D, 1, out int id);
                 Id = id;
