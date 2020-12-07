@@ -36,7 +36,8 @@ namespace OFC.GL4
 
         public SizedInternalFormat InternalFormat { get; protected set; }       // internal format of stored data in texture unit
 
-        public Bitmap[] BitMaps { get; private set; }         // textures can own the bitmaps for disposal purposes.  Entries may be null if no bitmap at that entry
+        public bool KeepBitmapList { get; set; } = false;       // we keep BMP records if any are owned, or this is set
+        public Bitmap[] BitMaps { get; private set; }           // each bitmap can be owned by this class and disposed of automatically
         public bool[] OwnBitMaps { get; private set; }
 
         // normal sampler bind - for sampler2D access etc.
@@ -175,17 +176,20 @@ namespace OFC.GL4
             bmp.UnlockBits(bmpdata);
             OFC.GLStatics.Check();
 
-            if (BitMaps == null)
+            if (ownbmp || KeepBitmapList)           // if we own the bmp, or we want to keep records..
             {
-                BitMaps = new Bitmap[Depth];
-                OwnBitMaps = new bool[Depth];
+                if (BitMaps == null)
+                {
+                    BitMaps = new Bitmap[Depth];
+                    OwnBitMaps = new bool[Depth];
+                }
+
+                if (zoffset == -1)      // -1 means use 2d load, so its really the first 0 zorder
+                    zoffset = 0;
+
+                BitMaps[zoffset] = bmp;
+                OwnBitMaps[zoffset] = ownbmp;
             }
-
-            if (zoffset == -1)      // -1 means use 2d load, so its really the first 0 zorder
-                zoffset = 0;
-
-            BitMaps[zoffset] = bmp;
-            OwnBitMaps[zoffset] = ownbmp;
         }
 
         // Return texture as a set of floats or byte only (others not supported as of yet)

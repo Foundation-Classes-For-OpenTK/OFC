@@ -122,7 +122,6 @@ namespace OFC.GL4
             if (vertices.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, vertices);
-                OFC.GLStatics.Check();
             }
         }
 
@@ -405,12 +404,28 @@ namespace OFC.GL4
             int size = sizeof(float);
             var p = AlignArrayPtr(size, a.Length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);       
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);
             else
             {
                 var fa = new float[a.Length * 4];
                 for (int i = 0; i < a.Length; i++)      // std140 'orrible
                     fa[i * 4] = a[i];
+                System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
+            }
+        }
+
+        public void Write(float[] a, int count, int sourceoffset=0)     // count in floats, source offset in floats
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
+            int size = sizeof(float);
+            var p = AlignArrayPtr(size, count);
+            if (p.Item2 == size)
+                System.Runtime.InteropServices.Marshal.Copy(a, sourceoffset, p.Item1, count);
+            else
+            {
+                var fa = new float[count * 4];
+                for (int i = 0; i < count; i++)      // std140 'orrible
+                    fa[i * 4] = a[i+sourceoffset];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
         }

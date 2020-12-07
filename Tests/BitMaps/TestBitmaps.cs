@@ -146,6 +146,7 @@ namespace TestOpenTk
                     Font f = new Font("MS sans serif", 8f);
 
                     tim = new GLBitmaps(rObjects, bitmapsize, false, true,2);      // group 2
+                    items.Add(tim);
                     tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
                     tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                     tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
@@ -155,6 +156,7 @@ namespace TestOpenTk
                    // tim.Add("T3a", "M2George", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
                     tim2 = new GLBitmaps(rObjects, bitmapsize, false, true,25);
+                    items.Add(tim2);
                     for (int i = 0; i < 50; i++)
                     {
                         tim2.Add("i" + i.ToString(), "i" + i.ToString() + "!", f, Color.White, Color.Red,
@@ -164,7 +166,7 @@ namespace TestOpenTk
 
                     tim2.Clear();
 
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 10000; i++)
                     {
                         tim2.Add("i" + i.ToString(), "j" + i.ToString() + "!", f, Color.White, Color.Red,
                                         new Vector3((i % 10) * 10 - 50, 5, (i / 10) * 4), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
@@ -225,7 +227,7 @@ namespace TestOpenTk
         private void SystemTick(object sender, EventArgs e )
         {
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
-          //  gl3dcontroller.Redraw();
+            //  gl3dcontroller.Redraw();
         }
 
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
@@ -255,6 +257,26 @@ namespace TestOpenTk
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
 
+
+            if (kb.HasBeenPressed(Keys.F10, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                System.Diagnostics.Debug.WriteLine("F10");
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+                {
+                    Font f = new Font("MS sans serif", 8f);
+                    tim.Add("T2g", "M3George", f, Color.White, Color.Blue, new Vector3(10, 5, -10), new Vector3(2.5f, 0, 0), new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                    gl3dcontroller.Redraw();
+                }
+            }
+
+            if (kb.HasBeenPressed(Keys.F11, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                System.Diagnostics.Debug.WriteLine("F11");
+                tim.Remove("T2g");
+                gl3dcontroller.Redraw();
+            }
+
+            //tbd why losing focus? why no key
 
             if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {

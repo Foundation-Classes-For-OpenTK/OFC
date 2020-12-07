@@ -58,6 +58,9 @@
     <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
+    <Compile Include="GL4\BitMaps\GLBitmapMatrixGroup.cs" />
+    <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
+    <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Controls\ControlNumberBox.cs" />
     <Compile Include="GL4\Controls\ControlTextBoxAutoComplete.cs" />
     <Compile Include="GL4\Controls\ControlToolTip.cs" />

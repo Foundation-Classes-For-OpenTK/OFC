@@ -271,7 +271,7 @@ void main(void)
         public DynamicGridCoordVertexShader(Font f = null)
         {
             texcoords = new GLTexture2DArray();
-            texcoords.CreateTexture(200, 25, 9);        // size and number
+            texcoords.CreateTexture(200, 25, 9);        // size and number, and the texcoord will own them, so it will dispose of them
             
             gridfnt = f ?? new Font("MS Sans Serif", 16);
 
