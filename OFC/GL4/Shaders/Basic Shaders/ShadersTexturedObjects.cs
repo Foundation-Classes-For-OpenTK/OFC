@@ -39,7 +39,7 @@ namespace OFC.GL4
     //      location 1 : vec2 texture co-ords
     //      tex binding 1 : textureObject : 2D 
     //      uniform 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
+    //      uniform 22 : objecttransform: mat4 transform
 
     public class GLTexturedShaderWithObjectTranslation : GLShaderPipeline
     {
@@ -54,9 +54,9 @@ namespace OFC.GL4
     //      location 0 : position: vec4 vertex array of positions
     //      location 1 : vec2 texture co-ords
     //      tex binding 1 : textureObject : 2D 
-    //      uniform 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    //      uniform 23 : commontransform: mat4 array of transforms
+    //      uniform block 0 : GL MatrixCalc
+    //      uniform 22 : objecttransform: mat4 transform
+    //      uniform 23 : commontransform: mat4 transform
 
     public class GLTexturedShaderWithObjectCommonTranslation : GLShaderPipeline
     {
@@ -71,9 +71,9 @@ namespace OFC.GL4
     //      location 0 : position: vec4 vertex array of positions
     //      location 1 : vec2 texture co-ords
     //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      uniform 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    //      location 30 : uniform float blend between the two texture
+    //      uniform block 0 : GL MatrixCalc
+    //      uniform 22 : objecttransform: mat4 transform
+    //      uniform 30 : uniform float blend between the two texture
 
     public class GLTexturedShader2DBlendWithWorldCoord : GLShaderPipeline
     {

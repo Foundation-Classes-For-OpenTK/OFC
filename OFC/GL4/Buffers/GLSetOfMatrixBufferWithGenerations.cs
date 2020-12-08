@@ -26,23 +26,30 @@ namespace OFC.GL4
 
     public class GLSetOfMatrixBufferWithGenerations : IDisposable
     {
+        public Action<int, GLBuffer> AddedNewGroup { get; set; } = null;      // add hook so you know when a new group made, its index and the matrix buffer
+
+        public int MaxPerGroup { get; private set; }
+
         public GLSetOfMatrixBufferWithGenerations(GLItemsList items, int groupsize)
         {
-            maxpergroup = groupsize;
+            MaxPerGroup = groupsize;
             this.items = items;
         }
 
-        public void Add(object tag, IDisposable data, Matrix4 mat)
+        public Tuple<int,int,int> Add(object tag, IDisposable data, Matrix4 mat)        // returning group, pos, total count of group
         {
-            var g = groups.Find(x => x.Left > 0);      // find one with space..
+            var gi = groups.FindIndex(x => x.Left > 0);      // find one with space..
 
-            if (g == null)
+            if (gi == -1)
             {
-                g = new GLMatrixBufferWithGenerations(items,maxpergroup);
-                groups.Add(g);
+                gi = groups.Count;
+                groups.Add(new GLMatrixBufferWithGenerations(items, MaxPerGroup));
+                AddedNewGroup?.Invoke(gi, groups[gi].MatrixBuffer);
             }
 
-            g.Add(tag, data, mat);
+            int pos = groups[gi].Add(tag, data, mat);
+
+            return new Tuple<int,int,int>(gi,pos,groups[gi].Count);
         }
 
         public bool Exist(object tag)       // does this tag exist?
@@ -88,7 +95,7 @@ namespace OFC.GL4
 
         public void Dispose()           // you can double dispose.
         {
-            foreach (GLBitmapGroup g in groups)
+            foreach (var g in groups)
             {
                 g.Dispose();
             }
@@ -96,7 +103,6 @@ namespace OFC.GL4
 
         private GLItemsList items;
         private List<GLMatrixBufferWithGenerations> groups = new List<GLMatrixBufferWithGenerations>();
-        private int maxpergroup;
     }
 }
 

@@ -1,16 +1,17 @@
-﻿Vertex
+﻿Vertex - per shader, so this is a guide
 
 0 = vec4 positions
 1 = vec4 colour | vec2 texcoord | model positions
 2 = instance positions
+4-7 = matrix inputs
 
-Vertex Out's
+Vertex Out's - per shader, so this is a guide
 0 vstexcoord/vs_color
 1 modelpos
 2 instance/image index
 3 alpha correction
 
-Textures
+Textures - per shader, so this is a guide
 
 1 = Texture Object
 
@@ -18,10 +19,9 @@ Uniform/Storage blocks - global across all shaders
 0 = MatrixCalc - see the MatrixCalcUniformBlock.cs
 
 Uniforms - these are per shader, so this is a guide.
-
 21 = transform to look at eye position
 22 = object transform position/rotation
-23 = common transform - rotation
+23 = common transform position/rotation OR vector4 world pos common move
 24 = vec2 texture co-ord offset to apply.
 25 = vec4 uniform colour for fragment shader
 26 = phase

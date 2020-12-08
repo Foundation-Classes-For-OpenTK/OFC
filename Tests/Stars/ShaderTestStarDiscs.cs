@@ -13,22 +13,15 @@
  * governing permissions and limitations under the License.
  */
 
+using OFC;
+using OFC.Controller;
+using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OFC.GL4;
-using OFC.Controller;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using OFC;
 
 namespace TestOpenTk
 {
@@ -246,20 +239,35 @@ void main(void)
                 GLRenderControl rt = GLRenderControl.Tri();
                 GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, rt, shape, pos, null, pos.Length, 1);
 
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), new GLPLStarSurfaceFragmentShader()), "STAR-M2");
-
-                rObjects.Add(items.Shader("STAR-M2"), "sun2", ri);
+                var shader = new GLShaderPipeline(new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), new GLPLStarSurfaceFragmentShader());
+                items.Add(shader, "STAR-M2");
+                rObjects.Add(shader, ri);
             }
 
+            {
+                Matrix4[] pos = new Matrix4[3];
+                pos[0] = Matrix4.CreateTranslation(-30, 0, 30);
+                pos[1] = Matrix4.CreateTranslation(0, 0, 30);
+                pos[2] = Matrix4.CreateTranslation(20, 0, 30);
 
+                pos[1][1,3] = -1;       // test clipping of vertex's from pos 1
 
-            //items.Add("BCK", new GLShaderPipeline(new GLVertexShaderObjectTransform(), new GLFragmentShaderFixedColour(new Color4(0.5f,0,0,0.5f))));
+                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
 
-            //rObjects.Add(items.Shader("BCK"), GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads,
-            //                            GLShapeObjectFactory.CreateQuad(20.0f),
-            //                            new GLObjectDataTranslationRotation(new Vector3(0, 0, 0.1f))
+                GLRenderControl rt = GLRenderControl.Tri();
+                rt.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+                GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, rt, shape, pos, null, pos.Length, 1);
 
-            //                            ));
+                var fragshader = new GLPLStarSurfaceFragmentShader();
+                fragshader.Scutoff = 0.3f;
+
+                var vertshader = new GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation();
+                vertshader.WorldPositionOffset = new Vector3(0, 10, 0);
+
+                var shader = new GLShaderPipeline(vertshader, fragshader);
+                items.Add(shader, "STAR-M3");
+                rObjects.Add(shader, ri);
+            }
 
             OFC.GLStatics.Check();
 
@@ -300,8 +308,17 @@ void main(void)
             if (items.Contains("STAR-M2"))
             {
                 var vid = items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s*Math.PI*2));
+                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
                 var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
+                stellarsurfaceshader.TimeDeltaSurface = timediv100s;
+            }
+
+            if (items.Contains("STAR-M3"))
+            {
+                var vid = items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
+                ((GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
+                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }

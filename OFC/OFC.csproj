@@ -58,7 +58,6 @@
     <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
-    <Compile Include="GL4\BitMaps\GLBitmapMatrixGroup.cs" />
     <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Controls\ControlNumberBox.cs" />
@@ -96,6 +95,8 @@
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersTesselationEvaluateSinewave.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersTesselationControl.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexScaleLookAt.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexModelWorld.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexQuads.cs" />
     <Compile Include="GL4\Shaders\PointSprites\ShaderPointSprites.cs" />
     <Compile Include="GL4\Shaders\Stars\ShaderStarSurface.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
@@ -128,9 +129,8 @@
     <Compile Include="GL4\Shaders\Base\ShaderPipelineShadersBase.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderStandard.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersFragmentColors.cs" />
-    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexNoTranslation.cs" />
-    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexTranslation.cs" />
-    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexTranslationObject.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexWorldPositions.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexModelObject.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersColorObjects.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewave.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTexturedBlendedMultiple.cs" />

@@ -13,9 +13,6 @@
  * governing permissions and limitations under the License.
  */
 
-
-using System;
-using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
@@ -23,7 +20,7 @@ namespace OFC.GL4
     // Autoscale to size on model if required
     //      location 0 : position: vec4 vertex array of positions model coords, w is ignored
     //      location 1 : worldpositions
-    //      uniform block 0 : GL MatrixCalc
+    //      uniform buffer 0 : GL MatrixCalc
     //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
     // Out:
     //      gl_Position

@@ -13,17 +13,17 @@
  * governing permissions and limitations under the License.
  */
 
-using System;
-using System.Linq;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
+
+// Vertex shaders taking world positions
 
 namespace OFC.GL4
 {
     // No extra translation, direct move
     // Requires:
-    //      location 0 vec4 positions
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    //      location 0 : vec4 positions
+    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
 
     public class GLPLVertexShaderWorldCoord : GLShaderPipelineShadersBase
     {
@@ -57,8 +57,8 @@ void main(void)
 
     // No modelview, just project view. Co-ords are in model view values
     // Requires:
-    //      location 0 vec4 positions
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    //      location 0 : vec4 positions
+    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
 
     public class GLPLVertexShaderModelViewCoord: GLShaderPipelineShadersBase
     {
@@ -92,9 +92,9 @@ void main(void)
 
     // No extra translation, direct move, but with colour
     // Requires:
-    //      location 0 vec4 positions in world space
-    //      location 1 vec4 color components
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    //      location 0 : vec4 positions in world space
+    //      location 1 : vec4 color components
+    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
     // Out:
     //      location 0: vs_color
     //      gl_Position
@@ -138,7 +138,7 @@ void main(void)
     // Requires:
     //      location 0 : position: vec4 vertex array of positions
     //      location 1 : vec2 texture co-ords
-    //      uniform 0 : GL MatrixCalc
+    //      uniform buffer 0 :  : GL MatrixCalc
     // Out:
     //      gl_Position
     //      location 0 : vs_textureCoordinate
@@ -185,7 +185,7 @@ void main(void)
     // Pipeline shader, Texture, Modelpos, transform
     // Requires:
     //      location 0 : position: vec4 vertex array of positions
-    //      uniform 0 : GL MatrixCalc
+    //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      gl_Position
     //      location 0 : vs_textureCoordinate per triangle strip rules
@@ -233,7 +233,7 @@ void main(void)
     // Pipeline shader, Texture, real screen coords  (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
     // Requires:
     //      location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w must be 1.
-    //      uniform 0 : GL MatrixCalc with ScreenMatrix set up
+    //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
     // Out:
     //      gl_Position
     //      location 0 : vs_textureCoordinate per triangle strip rules
@@ -277,7 +277,7 @@ void main(void)
     // Pipeline shader, Texture, real screen coords  (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
     // Requires:
     //      location 0 : position: vec4 vertex array of world positions, w = colour image index
-    //      uniform 0 : GL MatrixCalc with ScreenMatrix set up
+    //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
     // Out:
     //      location 0: vs_color
     //      gl_Position
@@ -322,6 +322,7 @@ void main(void)
         { 
         }
     }
+
 
 
 }

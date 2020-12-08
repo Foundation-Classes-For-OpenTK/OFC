@@ -113,8 +113,11 @@ namespace OFC.GL4
 
         public void RemoveGeneration(int generation = 1)        // all over this, is removed
         {
-            Matrix4 zero = Matrix4.Identity;      // set ctrl 1,3 to -1 to indicate cull matrix
-            zero[1, 3] = -1;                      // if it did not work, it would appear at (0,0,0)
+            Matrix4 zero = Matrix4.Identity;        // set ctrl 1,3 to -1 to indicate cull matrix
+            zero[1, 3] = -1;                        // if it did not work, it would appear at (0,0,0)
+            var fm = zero.ToFloatArray();           // writing in float arrays
+
+            MatrixBuffer.StartWrite(0);             // open from position 0 in matrix buffer
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -127,13 +130,12 @@ namespace OFC.GL4
                         tagtoentries.Remove(entries[i].tag);
 
                     entries[i] = new EntryInfo(); // all will be null, generation will be int.max
-
-                    MatrixBuffer.StartWrite(GLLayoutStandards.Mat4size * i, GLLayoutStandards.Mat4size);
-                    MatrixBuffer.Write(zero);
-                    MatrixBuffer.StopReadWrite();
+                    MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
                     Deleted++;
                 }
             }
+
+            MatrixBuffer.StopReadWrite();
         }
 
         public void Clear()
@@ -143,11 +145,10 @@ namespace OFC.GL4
                 if (entries[i].data != null)           // owned, bitmap will be valid
                     entries[i].data.Dispose();
 
-                if (entries[i].tag != null)
-                    tagtoentries.Remove(entries[i].tag);
-
                 entries[i] = new EntryInfo(); // all will be null
             }
+
+            tagtoentries = new Dictionary<object, int>();   // start a new list, quickest way
 
             Matrix4 zero = Matrix4.Identity;
             zero[1, 3] = -1;
@@ -186,6 +187,7 @@ namespace OFC.GL4
                 }
 
                 entries = null;
+                tagtoentries = null;
             }
         }
     }

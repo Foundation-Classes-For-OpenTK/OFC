@@ -348,10 +348,7 @@ namespace OFC.GL4
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             var p = AlignArrayPtr(Vec4size, 4);
-            float[] r = new float[] {   mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W ,        // row major order, 
-                                        mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W ,        // as per https://stackoverflow.com/questions/17717600/confusion-between-c-and-opengl-matrix-order-row-major-vs-column-major
-                                        mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W ,        // which works with vtransform = M.V transforms which is what we uses
-                                        mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W };       // Matrix4 holds it in row order
+            var r = mat.ToFloatArray();
             IntPtr ptr = p.Item1;
 
             while (repeat-- > 0)
@@ -414,7 +411,7 @@ namespace OFC.GL4
             }
         }
 
-        public void Write(float[] a, int count, int sourceoffset=0)     // count in floats, source offset in floats
+        public void Write(float[] a, int count, int sourceoffset = 0)     // count in floats, source offset in floats
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             int size = sizeof(float);
@@ -425,9 +422,16 @@ namespace OFC.GL4
             {
                 var fa = new float[count * 4];
                 for (int i = 0; i < count; i++)      // std140 'orrible
-                    fa[i * 4] = a[i+sourceoffset];
+                    fa[i * 4] = a[i + sourceoffset];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
+        }
+
+        public void Write(int offset, float[] a)                    // write to an arbitary offset from current pos, in bytes. CurrentPtr not changed
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
+            IntPtr p = CurrentPtr + offset;
+            System.Runtime.InteropServices.Marshal.Copy(a, 0, p, a.Length); // number of units
         }
 
         public void WriteCont(float[] a)     // without checking for alignment/stride

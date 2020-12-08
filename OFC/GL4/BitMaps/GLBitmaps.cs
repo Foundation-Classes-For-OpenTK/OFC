@@ -27,14 +27,16 @@ namespace OFC.GL4
 
     public class GLBitmaps : IDisposable
     {
-        public int MipMapLevel { get; set; } = 3;       // set before add..
-
         public bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
-        public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
+        public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
-            int m = Math.Min(GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers), GL4Statics.GetMaxUniformBlockSize() / GLLayoutStandards.Mat4size);
-            this.maxpergroup = Math.Min(m, maxpergroup);
+            int maxdepthpertexture = GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);       // limits the number of textures per 2darray
+            int max = Math.Min(maxdepthpertexture, maxpergroup);        //note RI uses a VertexArray to load the matrix in, so not limited by that (max size of uniform buffer)
+
+            matrixbuffers = new GLSetOfMatrixBufferWithGenerations(items, max);
+
+            matrixbuffers.AddedNewGroup += AddedNewGroup;       // hook up call back to say i've made a group
 
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
@@ -46,6 +48,8 @@ namespace OFC.GL4
             rc.CullFace = cullface;
             rc.DepthTest = depthtest;
             rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+
+            texmipmaplevels = mipmaplevels;
         }
 
 
@@ -77,25 +81,16 @@ namespace OFC.GL4
 
         // add a bitmap, indicate if owned by class or you
         public void Add(object tag,
-                            Bitmap bmp, 
+                            Bitmap bmp,
                             int bmpmipmaplevels,
                             Vector3 worldpos,
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
                             Vector3 rotationradians,        // ignored if rotates are on
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphascale = 0, float alphaend = 0 , 
+                            float alphascale = 0, float alphaend = 0,
                             bool ownbitmap = false
                          )
         {
-            GLBitmapGroup g = groups.Find(x => x.Left>0);      // find one with space..
-
-            if ( g == null )
-            {
-                g = new GLBitmapGroup(items,rc, maxpergroup, MipMapLevel, bitmapsize, maxpergroup);          // no space, make a new one
-                renderlist.Add(shader, g.RenderableItem);
-                groups.Add(g);
-            }
-
             Matrix4 mat = Matrix4.Identity;
             mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
             if (rotatetoviewer == false)                                            // if autorotating, no rotation is allowed. matrix is just scaling/translation
@@ -109,58 +104,82 @@ namespace OFC.GL4
             mat[2, 3] = alphascale;
             mat[3, 3] = alphaend;
 
-            g.Add(tag, bmp, bmpmipmaplevels, ownbitmap, mat);                                        // add entry with matrix
+            var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
+
+            grouptextureslist[gpc.Item1].LoadBitmap(bmp, gpc.Item2, false, bmpmipmaplevels);       // texture does not own them, we may do
+            grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;
+        }
+
+        private void AddedNewGroup( int groupno, GLBuffer matrixbuffer)      // callback due to new group added, we need a texture and a RI
+        {   
+            var texture = new GLTexture2DArray();
+            items.Add(texture);
+            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.MaxPerGroup, texmipmaplevels);
+            grouptextureslist.Add(texture); // need to keep these for later addition
+
+            var rd = new RenderData(texture);
+            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);
+            renderlist.Add(shader, renderableItem);
+            grouprenderlist.Add(renderableItem);
+        }
+
+        private class RenderData : IGLRenderItemData
+        {
+            public RenderData(GLTexture2DArray tex)
+            {
+                texture= tex;
+            }
+
+            public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)     // called per renderable item..
+            {
+                if (texture.Id >= 0)
+                {
+                    if (texture.MipMapAutoGenNeeded)
+                    {
+                        texture.GenMipMapTextures();
+                        texture.MipMapAutoGenNeeded = false;
+                    }
+
+                    texture.Bind(1);
+                }
+            }
+
+            private GLTexture2DArray texture;
         }
 
         public bool Exist(object tag)       // does this tag exist?
         {
-            GLBitmapGroup g = groups.Find(x => x.FindTag(tag) >= 0);
-            return g != null;
+            return matrixbuffers.Exist(tag);
         }
 
         public bool Remove(Object tag)
         {
-            GLBitmapGroup g = groups.Find(x => x.FindTag(tag) >= 0);
-            if (g != null)
-                return g.RemoveAt(g.FindTag(tag));
-            else
-                return false;
+            return matrixbuffers.Remove(tag);
         }
 
         public void RemoveGeneration(int generation = 1)        // all new images get generation 0
         {
-            foreach (var g in groups)
-                g.RemoveGeneration(generation);
+            matrixbuffers.RemoveGeneration(generation);
         }
 
         public void Clear()
         {
-            foreach (var g in groups)
-            {
-                g.Clear();
-            }
+            matrixbuffers.Clear();
         }
 
         public bool SetGenerationIfExist(object tag, int generation = 0)
         {
-            GLBitmapGroup g = groups.Find(x => x.SetGenerationIfExists(tag, generation));      // find first tag, and mark it
-            return g != null;
+            return matrixbuffers.SetGenerationIfExist(tag, generation);
         }
 
         public void IncreaseGeneration()
         {
-            foreach (var g in groups)
-                g.IncreaseGeneration();
+            matrixbuffers.IncreaseGeneration();
         }
 
         public void Dispose()           // you can double dispose.
         {
-            foreach( GLBitmapGroup g in groups)
-            {
-                renderlist.Remove(shader, g.RenderableItem);
-                g.Clear();
-            }
-
+            matrixbuffers.Dispose();
             items.Dispose();
 
             if (textdrawbitmap != null)
@@ -168,9 +187,11 @@ namespace OFC.GL4
         }
 
         private Size bitmapsize;
-        private int maxpergroup;
+        private int texmipmaplevels;
         private GLItemsList items = new GLItemsList();      // we have our own item list, which is disposed when we dispose
-        private List<GLBitmapGroup> groups = new List<GLBitmapGroup>();
+        private GLSetOfMatrixBufferWithGenerations matrixbuffers;
+        private List<GLTexture2DArray> grouptextureslist = new List<GLTexture2DArray>();
+        private List<GLRenderableItem> grouprenderlist = new List<GLRenderableItem>();
         private GLRenderProgramSortedList renderlist;
         private GLRenderControl rc;
         private GLShaderPipeline shader { get; set; }

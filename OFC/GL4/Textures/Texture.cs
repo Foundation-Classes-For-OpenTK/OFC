@@ -32,13 +32,14 @@ namespace OFC.GL4
         public int Width { get; protected set; } = 0;           // W/H is always the width/height of the first bitmap in z=0.
         public int Height { get; protected set; } = 1;
         public int Depth { get; protected set; } = 1;           // Depth is no of bitmaps down for 2darray/3d
-        public int MipMapLevels { get; protected set; } = 1;     // Mip maps levels to support during create
+        public int MipMapLevels { get; protected set; } = 1;    // Mip maps levels of texture
+        public bool MipMapAutoGenNeeded { get; set; } = false;  // set if you load a bitmap with mipmaps < MipMapLevels, you manually clear
 
         public SizedInternalFormat InternalFormat { get; protected set; }       // internal format of stored data in texture unit
 
-        public bool KeepBitmapList { get; set; } = false;       // we keep BMP records if any are owned, or this is set
-        public Bitmap[] BitMaps { get; private set; }           // each bitmap can be owned by this class and disposed of automatically
-        public bool[] OwnBitMaps { get; private set; }
+        public bool KeepBitmapList { get; set; } = false;       // we keep bitmap records if any are owned, or this is set
+        public Bitmap[] BitMaps { get; private set; }           // if keeping a list, bitmap, even if not owned
+        public bool[] OwnBitMaps { get; private set; }          // if bitmap is owned
 
         // normal sampler bind - for sampler2D access etc.
 
@@ -119,6 +120,8 @@ namespace OFC.GL4
 
             System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
                             System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);     // 32 bit words, ARGB format
+
+            MipMapAutoGenNeeded |= bmpmipmaplevels < MipMapLevels;       // ORed in, set flag if you've supplied a bitmap less than mipmaplevels
 
             IntPtr ptr = bmpdata.Scan0;     // its a byte ptr
 

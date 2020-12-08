@@ -59,7 +59,6 @@ namespace OFC.GL4
             if (NotAllocated)
                 AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
 
-
             StartWrite(0, Length);        // the whole schebang
             Write(c.ProjectionModelMatrix);     //0, 64 long
             Write(c.ProjectionMatrix);          //64, 64 long
