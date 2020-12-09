@@ -27,7 +27,7 @@ namespace OFC.GL4
 
     public class GLBitmaps : IDisposable
     {
-        public bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
+        public virtual bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
         public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
@@ -79,8 +79,8 @@ namespace OFC.GL4
             Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:false);
         }
 
-        // add a bitmap, indicate if owned by class or you
-        public void Add(object tag,
+        // add a bitmap, indicate if owned by class or you.  Gives back group no, position in group, total in group
+        public virtual Tuple<int,int,int> Add(object tag,
                             Bitmap bmp,
                             int bmpmipmaplevels,
                             Vector3 worldpos,
@@ -107,7 +107,8 @@ namespace OFC.GL4
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
 
             grouptextureslist[gpc.Item1].LoadBitmap(bmp, gpc.Item2, false, bmpmipmaplevels);       // texture does not own them, we may do
-            grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;
+            grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;   // update instance count to items in group
+            return gpc;
         }
 
         private void AddedNewGroup( int groupno, GLBuffer matrixbuffer)      // callback due to new group added, we need a texture and a RI
@@ -177,7 +178,7 @@ namespace OFC.GL4
             matrixbuffers.IncreaseGeneration();
         }
 
-        public void Dispose()           // you can double dispose.
+        public virtual void Dispose()           // you can double dispose.
         {
             matrixbuffers.Dispose();
             items.Dispose();
@@ -186,15 +187,16 @@ namespace OFC.GL4
                 textdrawbitmap.Dispose();
         }
 
+        protected GLSetOfMatrixBufferWithGenerations matrixbuffers;
+
         private Size bitmapsize;
         private int texmipmaplevels;
         private GLItemsList items = new GLItemsList();      // we have our own item list, which is disposed when we dispose
-        private GLSetOfMatrixBufferWithGenerations matrixbuffers;
         private List<GLTexture2DArray> grouptextureslist = new List<GLTexture2DArray>();
         private List<GLRenderableItem> grouprenderlist = new List<GLRenderableItem>();
         private GLRenderProgramSortedList renderlist;
         private GLRenderControl rc;
-        private GLShaderPipeline shader { get; set; }
+        private GLShaderPipeline shader;
         private Bitmap textdrawbitmap;      // for drawing into alpha text
     }
 }

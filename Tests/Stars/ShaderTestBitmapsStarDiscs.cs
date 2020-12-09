@@ -25,14 +25,14 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
-    public partial class ShaderTestStarDiscs : Form
+    public partial class ShaderTestBitmapsStarDiscs : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
 
-        public ShaderTestStarDiscs()
+        public ShaderTestBitmapsStarDiscs()
         {
             InitializeComponent();
 
@@ -47,9 +47,6 @@ namespace TestOpenTk
         GLItemsList items = new GLItemsList();
 
         // Demonstrate buffer feedback AND geo shader add vertex/dump vertex
-
-
-
 
         protected override void OnLoad(EventArgs e)
         {
@@ -89,56 +86,20 @@ namespace TestOpenTk
                                    );
             }
 
+            using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
             {
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
-                items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
+                Size bitmapsize = new Size(64, 20);
+                float width = 2.5f;
+                Vector3 bannersize = new Vector3(width, 0, 0);
+                Font f = new Font("MS sans serif", 8f);
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 20);      // group 2
+                items.Add(tim);
+                tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 0, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 0, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
+            }                                    
 
-                rObjects.Add(items.Shader("TEX"), "sphere7",
-                        GLRenderableItem.CreateVector4Vector2(items, rt,
-                            GLSphereObjectFactory.CreateTexturedSphereFromTriangles(4, 10.0f),
-                            new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(-30, 0, 0))
-                        ));
-            }
-
-            {
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithObjectTranslation(), new GLPLStarSurfaceFragmentShader()), "STAR");
-
-                GLRenderControl rt = GLRenderControl.Tri();
-
-                rObjects.Add(items.Shader("STAR"), "sun",
-                       GLRenderableItem.CreateVector4(items,
-                               rt,
-                               GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f),
-                               new GLRenderDataTranslationRotation(new Vector3(20, 0, 0)),
-                               ic: 1));
-
-                items.Add( new GLShaderStarCorona(), "CORONA");
-
-                GLRenderControl rq = GLRenderControl.Quads();
-
-                rObjects.Add(items.Shader("CORONA"), GLRenderableItem.CreateVector4(items,
-                                        rq,
-                                        GLShapeObjectFactory.CreateQuad(1f),
-                                        new GLRenderDataTranslationRotation(new Vector3(20, 0, 0), new Vector3(0, 0, 0), 20f, calclookat:true)));
-            }
-
-            {
-                Vector4[] pos = new Vector4[3];
-                pos[0] = new Vector4(-20, 0, 10, 0);
-                pos[1] = new Vector4(0, 0, 10, 0);
-                pos[2] = new Vector4(20, 0, 10, 0);
-
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
-
-                GLRenderControl rt = GLRenderControl.Tri();
-                GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, rt, shape, pos, null, pos.Length, 1);
-
-                var shader = new GLShaderPipeline(new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), new GLPLStarSurfaceFragmentShader());
-                items.Add(shader, "STAR-M2");
-                rObjects.Add(shader, ri);
-            }
 
             {
                 Matrix4[] pos = new Matrix4[3];
@@ -155,7 +116,7 @@ namespace TestOpenTk
                 GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, rt, shape, pos, null, pos.Length, 1);
 
                 var fragshader = new GLPLStarSurfaceFragmentShader();
-                fragshader.Scutoff = 0.3f;
+                fragshader.Scutoff = 0.1f;
 
                 var vertshader = new GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation();
                 vertshader.WorldPositionOffset = new Vector3(0, 10, 0);
@@ -167,9 +128,9 @@ namespace TestOpenTk
 
             OFC.GLStatics.Check();
 
-            GL.Enable(EnableCap.DepthClamp);
         }
 
+        GLBitmapsWithStarObjects tim;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
@@ -192,24 +153,6 @@ namespace TestOpenTk
             float timediv100s = (float)time / 100000.0f;
 
 
-            if (items.Contains("STAR"))
-            {
-                int vid = items.Shader("STAR").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader).Id;
-                ((GLRenderDataTranslationRotation)(rObjects["sun"].RenderData)).RotationDegrees = new Vector3(0, -zeroone100s * 360, 0);
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
-                stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
-                stellarsurfaceshader.TimeDeltaSurface = timediv100s;
-            }
-
-            if (items.Contains("STAR-M2"))
-            {
-                var vid = items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
-                stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
-                stellarsurfaceshader.TimeDeltaSurface = timediv100s;
-            }
-
             if (items.Contains("STAR-M3"))
             {
                 var vid = items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
@@ -219,9 +162,11 @@ namespace TestOpenTk
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }
 
-            if (items.Contains("CORONA"))
+            if ( tim != null )
             {
-                ((GLShaderStarCorona)items.Shader("CORONA")).TimeDelta = (float)time / 100000f;
+                tim.ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
+                tim.TimeDeltaSpots = zeroone100s;
+                tim.TimeDeltaSurface = timediv10s;
             }
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
@@ -230,8 +175,6 @@ namespace TestOpenTk
             rObjects.Render(glwfc.RenderState,gl3dcontroller.MatrixCalc);
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
-
-            //this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance;
             this.Text = //"Freq " + frequency.ToString("#.#########") + " unRadius " + unRadius + " scutoff" + scutoff + " BD " + blackdeepness + " CE " + concentrationequator
             "    Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance;
 
@@ -246,26 +189,6 @@ namespace TestOpenTk
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
             float fact = kb.Shift ? 10 : kb.Alt ? 100 : 1;
-            //if (kb.IsCurrentlyPressed(Keys.F1) != null)
-            //    frequency -= 0.000001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F2) != null)
-            //    frequency += 0.000001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F5) != null)
-            //    unRadius -= 10 * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F6) != null)
-            //    unRadius += 10 * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F7) != null)
-            //    scutoff -= 0.001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F8) != null)
-            //    scutoff += 0.001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F9) != null)
-            //    blackdeepness -= 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F10) != null)
-            //    blackdeepness += 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F11) != null)
-            //    concentrationequator -= 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F12) != null)
-            //    concentrationequator += 0.1f * fact;
         }
     }
 }

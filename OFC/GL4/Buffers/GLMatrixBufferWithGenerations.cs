@@ -33,14 +33,13 @@ namespace OFC.GL4
 
         private class EntryInfo
         {
+            public Object tag;
             public IDisposable data { get; set; }   // only disposed if non null
-            public Object tag { get; set; }      // may be null
             public int generation { get; set; } = int.MaxValue;     // 0 = newest, MaxValue = empty
             public bool IsEmpty { get { return generation == int.MaxValue; } }
         }
 
         private List<EntryInfo> entries = new List<EntryInfo>();
-        private Dictionary<object, int> tagtoentries = new Dictionary<object, int>();
 
         public GLMatrixBufferWithGenerations(GLItemsList items, int groupsize)
         {
@@ -52,9 +51,9 @@ namespace OFC.GL4
         }
 
         // return position added as index. If tag == null, you can't find it again
-        public int Add(object tag, IDisposable data, Matrix4 mat)
+        public int Add(Object tag, IDisposable data, Matrix4 mat)
         {
-            var entry = new EntryInfo() { data = data, tag = tag, generation = 0 };
+            var entry = new EntryInfo() { tag = tag, data = data, generation = 0 };
 
             int pos = Deleted > 0 ? entries.FindIndex(x => x.IsEmpty) : -1;     // find an empty slot if any deleted
 
@@ -70,9 +69,6 @@ namespace OFC.GL4
                 entries[pos] = entry;                               // set empty slot to active
             }
 
-            if (tag != null)
-                tagtoentries[tag] = pos;
-
             //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
             mat[0, 3] = pos;     // store pos of image in stack
 
@@ -82,20 +78,12 @@ namespace OFC.GL4
             return pos;
         }
 
-        public int FindTag(Object tag)
-        {
-            return tagtoentries.TryGetValue(tag, out int index) ? index : -1;
-        }
-
         public bool RemoveAt(int i)
         {
             if (i >= 0 && i < entries.Count)
             {
                 if (entries[i].data != null)           // owned, bitmap will be valid
                     entries[i].data.Dispose();
-
-                if (entries[i].tag != null)
-                    tagtoentries.Remove(entries[i].tag);
 
                 entries[i] = new EntryInfo(); // all will be null/false
 
@@ -111,7 +99,7 @@ namespace OFC.GL4
                 return false;
         }
 
-        public void RemoveGeneration(int generation = 1)        // all over this, is removed
+        public void RemoveGeneration(int generation, Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries)
         {
             Matrix4 zero = Matrix4.Identity;        // set ctrl 1,3 to -1 to indicate cull matrix
             zero[1, 3] = -1;                        // if it did not work, it would appear at (0,0,0)
@@ -121,13 +109,14 @@ namespace OFC.GL4
 
             for (int i = 0; i < entries.Count; i++)
             {
-                if (entries[i].generation >= generation)    // if older.. note invalid ones get generation = int.max
+                var e = entries[i];
+                if (e.generation >= generation)    // if older.. note invalid ones get generation = int.max
                 {
-                    if (entries[i].data != null)           // owned, bitmap will be valid
-                        entries[i].data.Dispose();
+                    if (e.data != null)           // owned, bitmap will be valid
+                        e.data.Dispose();
 
-                    if (entries[i].tag != null)
-                        tagtoentries.Remove(entries[i].tag);
+                    if (e.tag != null)
+                        tagtoentries.Remove(e.tag);
 
                     entries[i] = new EntryInfo(); // all will be null, generation will be int.max
                     MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
@@ -148,8 +137,6 @@ namespace OFC.GL4
                 entries[i] = new EntryInfo(); // all will be null
             }
 
-            tagtoentries = new Dictionary<object, int>();   // start a new list, quickest way
-
             Matrix4 zero = Matrix4.Identity;
             zero[1, 3] = -1;
             MatrixBuffer.StartWrite(0);
@@ -158,16 +145,9 @@ namespace OFC.GL4
             Deleted = entries.Count;
         }
 
-        // mark if exist, leave otherwise
-        public bool SetGenerationIfExists(object tag, int generation = 0)
+        public void SetGeneration(int pos, int generation)
         {
-            if (tagtoentries.TryGetValue(tag, out int index))
-            {
-                entries[index].generation = generation;
-                return true;
-            }
-            else
-                return false;
+            entries[pos].generation = generation;
         }
 
         public void IncreaseGeneration()       // increase all generations
@@ -187,7 +167,6 @@ namespace OFC.GL4
                 }
 
                 entries = null;
-                tagtoentries = null;
             }
         }
     }

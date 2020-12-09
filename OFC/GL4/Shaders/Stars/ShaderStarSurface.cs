@@ -16,8 +16,6 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
-    // point sprite shader based on eye position vs sprite position.  Needs point sprite on and program point size
-
     public class GLPLStarSurfaceFragmentShader : GLShaderPipelineShadersBase
     {
         public string Fragment()

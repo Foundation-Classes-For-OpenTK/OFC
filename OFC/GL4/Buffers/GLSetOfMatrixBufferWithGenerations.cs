@@ -36,6 +36,7 @@ namespace OFC.GL4
             this.items = items;
         }
 
+        // tag can be null, but then it can't be found
         public Tuple<int,int,int> Add(object tag, IDisposable data, Matrix4 mat)        // returning group, pos, total count of group
         {
             var gi = groups.FindIndex(x => x.Left > 0);      // find one with space..
@@ -47,22 +48,27 @@ namespace OFC.GL4
                 AddedNewGroup?.Invoke(gi, groups[gi].MatrixBuffer);
             }
 
-            int pos = groups[gi].Add(tag, data, mat);
+            int pos = groups[gi].Add(tag,data, mat);
+
+            if (tag != null)
+                tagtoentries[tag] = new Tuple<GLMatrixBufferWithGenerations, int>(groups[gi], pos);
 
             return new Tuple<int,int,int>(gi,pos,groups[gi].Count);
         }
 
         public bool Exist(object tag)       // does this tag exist?
         {
-            var g = groups.Find(x => x.FindTag(tag) >= 0);
-            return g != null;
+            return tagtoentries.ContainsKey(tag);
         }
 
         public bool Remove(Object tag)
         {
-            var g = groups.Find(x => x.FindTag(tag) >= 0);
-            if (g != null)
-                return g.RemoveAt(g.FindTag(tag));
+            if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
+            {
+                pos.Item1.RemoveAt(pos.Item2);
+                tagtoentries.Remove(tag);
+                return true;
+            }
             else
                 return false;
         }
@@ -70,7 +76,7 @@ namespace OFC.GL4
         public void RemoveGeneration(int generation = 1)        // all new images get generation 0
         {
             foreach (var g in groups)
-                g.RemoveGeneration(generation);
+                g.RemoveGeneration(generation, tagtoentries);
         }
 
         public void Clear()
@@ -79,12 +85,19 @@ namespace OFC.GL4
             {
                 g.Clear();
             }
+
+            tagtoentries = new Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>>(); // clear all tags
         }
 
         public bool SetGenerationIfExist(object tag, int generation = 0)
         {
-            var g = groups.Find(x => x.SetGenerationIfExists(tag, generation));      // find first tag, and mark it
-            return g != null;
+            if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
+            {
+                pos.Item1.SetGeneration(pos.Item2, generation);
+                return true;
+            }
+            else
+                return false;
         }
 
         public void IncreaseGeneration()
@@ -99,10 +112,14 @@ namespace OFC.GL4
             {
                 g.Dispose();
             }
+
+            tagtoentries = null;
         }
 
         private GLItemsList items;
         private List<GLMatrixBufferWithGenerations> groups = new List<GLMatrixBufferWithGenerations>();
+        private Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries = new Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>>();
+
     }
 }
 

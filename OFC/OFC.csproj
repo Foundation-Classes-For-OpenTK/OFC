@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -98,6 +99,7 @@
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexModelWorld.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexQuads.cs" />
     <Compile Include="GL4\Shaders\PointSprites\ShaderPointSprites.cs" />
+    <Compile Include="GL4\Shaders\Stars\ShaderStarCorona.cs" />
     <Compile Include="GL4\Shaders\Stars\ShaderStarSurface.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />

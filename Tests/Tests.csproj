@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">
       <SubType>Form</SubType>
@@ -129,6 +130,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Stars\ShaderTestBitmapsStarDiscs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Stars\ShaderTestBitmapsStarDiscs.Designer.cs">
+      <DependentUpon>ShaderTestBitmapsStarDiscs.cs</DependentUpon>
+    </Compile>
     <Compile Include="Stencil\TestStencil.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +296,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Stars\ShaderTestBitmapsStarDiscs.resx">
+      <DependentUpon>ShaderTestBitmapsStarDiscs.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Stencil\TestStencil.resx">
       <DependentUpon>TestStencil.cs</DependentUpon>
     </EmbeddedResource>

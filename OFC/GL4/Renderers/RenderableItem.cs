@@ -121,21 +121,22 @@ namespace OFC.GL4
         #region These create a new RI with vertex arrays into buffers, lots of them 
 
         // Vector4, Color4, optional instance data and count
-
         // in attribute 0 and 1 setup vector4 and vector4 colours
         public static GLRenderableItem CreateVector4Color4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Color4[] colours, IGLRenderItemData id = null, int ic = 1)
         {
-            var vb = items.NewBuffer();
-            vb.AllocateBytes(GLBuffer.Vec4size * vectors.Length * 2);
-            vb.Fill(vectors);
+            var vb = items.NewBuffer();                                     // they all follow this pattern, grab a buffer (unless supplied)
+            vb.AllocateBytes(GLBuffer.Vec4size * vectors.Length * 2);       // allocate
+            vb.Fill(vectors);                                               // fill
             vb.Fill(colours, vectors.Length);
 
-            var va = items.NewArray();
-            vb.Bind(va, 0, vb.Positions[0], 16);
-            va.Attribute(0, 0, 4, VertexAttribType.Float);
-            vb.Bind(va, 1, vb.Positions[1], 16);
-            va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            var va = items.NewArray();                                      // vertex array
+            vb.Bind(va, 0, vb.Positions[0], 16);                            // buffer bind to vertex array at bindingpoint 0, bufferpos, stride
+            va.Attribute(0, 0, 4, VertexAttribType.Float);                  // bind bindingpoint 0 to attribute index 0 (in shader), 4 components, float
+
+            vb.Bind(va, 1, vb.Positions[1], 16);                            // buffer bind to vertex array at bindingpoint 1, bufferpos, stride
+            va.Attribute(1, 1, 4, VertexAttribType.Float);                  // bind bindingpoint 1 to attribute index 1 (in shader), 4 components, float
+
+            return new GLRenderableItem(pt, vectors.Length, va, id, ic);    // create new RI
         }
 
         // in 0 set up
@@ -388,6 +389,35 @@ namespace OFC.GL4
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
 
             return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+        }
+
+        // in 0,4-7 set up
+        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, GLBuffer matrix, IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
+        {
+            var vb = items.NewBuffer();
+            vb.AllocateFill(vectors);       // push in model vectors
+
+            var va = items.NewArray();
+            vb.Bind(va, 0, vb.Positions[0], 16);
+            va.Attribute(0, 0, 4, VertexAttribType.Float);      // bp 0 at attrib 0
+
+            matrix.Bind(va, 2, matrix.Positions[0], 64, matrixdivisor);     // use a binding 
+            va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
+
+            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+        }
+
+        // in 0,4-7 set up
+        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, GLRenderControl pt, GLBuffer shape, GLBuffer matrix, int drawcount, IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
+        {
+            var va = items.NewArray();
+            shape.Bind(va, 0, shape.Positions[0], 16);
+            va.Attribute(0, 0, 4, VertexAttribType.Float);      // bp 0 at attrib 0
+
+            matrix.Bind(va, 2, matrix.Positions[0], 64, matrixdivisor);     // use a binding 
+            va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
+
+            return new GLRenderableItem(pt, drawcount, va, id, ic);
         }
 
         // in 4-7 set up
