@@ -35,8 +35,8 @@ namespace OFC.GL4
         {
             public Object tag;
             public IDisposable data { get; set; }   // only disposed if non null
-            public int generation { get; set; } = int.MaxValue;     // 0 = newest, MaxValue = empty
-            public bool IsEmpty { get { return generation == int.MaxValue; } }
+            public uint generation { get; set; } = int.MaxValue;     // 0 = newest, MaxValue = empty
+            public bool empty { get; set; } = true;
         }
 
         private List<EntryInfo> entries = new List<EntryInfo>();
@@ -51,14 +51,15 @@ namespace OFC.GL4
         }
 
         // return position added as index. If tag == null, you can't find it again
-        public int Add(Object tag, IDisposable data, Matrix4 mat)
+        public int Add(Object tag, IDisposable data, Matrix4 mat, uint generation)
         {
-            var entry = new EntryInfo() { tag = tag, data = data, generation = 0 };
+            var entry = new EntryInfo() { tag = tag, data = data, generation = generation, empty = false };
 
-            int pos = Deleted > 0 ? entries.FindIndex(x => x.IsEmpty) : -1;     // find an empty slot if any deleted
+            int pos = Deleted > 0 ? entries.FindIndex(x => x.empty) : -1;     // find an empty slot if any deleted
 
             if (pos == -1)
             {
+                System.Diagnostics.Debug.Assert(Deleted == 0);
                 System.Diagnostics.Debug.Assert(entries.Count < Max);       // the caller should manage not overfilling
                 pos = entries.Count;                                // not found, so make a fresh one at end
                 entries.Add(entry);
@@ -68,8 +69,6 @@ namespace OFC.GL4
                 Deleted--;
                 entries[pos] = entry;                               // set empty slot to active
             }
-
-            System.Diagnostics.Debug.WriteLine("Make " + pos);
 
             //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
             mat[0, 3] = pos;     // store pos of image in stack
@@ -101,9 +100,11 @@ namespace OFC.GL4
                 return false;
         }
 
-        // if keeplist, and its in the list, generation = 0 and kept
-        // else increasegeneration, and remove it if >= removegeneration
-        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration,
+        // if keeplist, and its in the list, generation = currentgeneration and kept
+        // else if <= removegeneration (modulo), remove
+        // return relative index giving the different between the current gen and the maximum generation found
+
+        public uint RemoveGeneration(uint removegeneration, uint currentgeneration,
                                              Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries,
                                              HashSet<object> keeplist = null )
         {
@@ -112,43 +113,51 @@ namespace OFC.GL4
             var fm = zero.ToFloatArray();           // writing in float arrays
 
             bool openedwrite = false;
-            
+            uint oldestgenfound = 0;
+
+            uint removegenerationbelow = removegeneration + 1;      // the +1 allows the modulo check to work
+
+            //System.Diagnostics.Debug.WriteLine("Remove {0} current {1}", removegeneration, currentgeneration);
             for (int i = 0; i < entries.Count; i++)
             {
                 var e = entries[i];
-
-                if (keeplist != null && e.tag != null && keeplist.Contains(e.tag))      // if in keeplist, its gen goes back to zero
+                if (!e.empty)
                 {
-                    e.generation = 0;
-                }
-                else
-                {
-                    e.generation += increasegeneration;     // increase gen
-
-                    if (e.generation >= removegeneration)    // if older.. note invalid ones get generation = int.max
+                    if (keeplist != null && e.tag != null && keeplist.Contains(e.tag))      // if in keeplist, its gen goes back to zero
                     {
-                        if (e.data != null)           // owned, bitmap will be valid
-                            e.data.Dispose();
-
-                        if (e.tag != null)
-                            tagtoentries.Remove(e.tag);
-
-                        entries[i] = new EntryInfo(); // all will be null, generation will be int.max
-
-                        if (!openedwrite)
+                        e.generation = currentgeneration;
+                    }
+                    else
+                    {
+                        if (((e.generation - removegenerationbelow) & 0x80000000) != 0)   // if modulo e.generation<removegenerationbelow
                         {
-                            MatrixBuffer.StartWrite(0, 0, 0);       // map all, keep existing buffer (P3)
-                            openedwrite = true;
-                        }
+                            if (e.data != null)           // owned, bitmap will be valid
+                                e.data.Dispose();
 
-                        MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
-                        Deleted++;
+                            if (e.tag != null)
+                                tagtoentries.Remove(e.tag);
+
+                            entries[i] = new EntryInfo(); // all will be null, generation will be int.max
+
+                            if (!openedwrite)
+                            {
+                                MatrixBuffer.StartWrite(0, 0, 0);       // map all, keep existing buffer (P3)
+                                openedwrite = true;
+                            }
+
+                            MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
+                            Deleted++;
+                        }
+                        else
+                            oldestgenfound = Math.Max(oldestgenfound, currentgeneration - e.generation);        // using modulo to find it
                     }
                 }
             }
 
             if (openedwrite)
                 MatrixBuffer.StopReadWrite();
+
+            return oldestgenfound;
         }
 
         public void Clear()

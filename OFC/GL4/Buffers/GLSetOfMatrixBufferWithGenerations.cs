@@ -30,6 +30,10 @@ namespace OFC.GL4
 
         public int MaxPerGroup { get; private set; }
 
+        public int TagCount { get { return tagtoentries.Count; } }            // number of tags recorded
+
+        public uint CurrentGeneration { get; set; } = 0;                       // to be set on write
+
         public GLSetOfMatrixBufferWithGenerations(GLItemsList items, int groupsize)
         {
             MaxPerGroup = groupsize;
@@ -46,10 +50,10 @@ namespace OFC.GL4
                 gi = groups.Count;
                 groups.Add(new GLMatrixBufferWithGenerations(items, MaxPerGroup));
                 AddedNewGroup?.Invoke(gi, groups[gi].MatrixBuffer);
-                System.Diagnostics.Debug.WriteLine("Make group");
+               // System.Diagnostics.Debug.WriteLine("Make group");
             }
 
-            int pos = groups[gi].Add(tag,data, mat);
+            int pos = groups[gi].Add(tag,data, mat,CurrentGeneration);
 
             if (tag != null)
                 tagtoentries[tag] = new Tuple<GLMatrixBufferWithGenerations, int>(groups[gi], pos);
@@ -74,10 +78,17 @@ namespace OFC.GL4
                 return false;
         }
 
-        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration, HashSet<object> keeplist = null )
+        public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)
         {
+            uint oldestgenfound = 0;
             foreach (var g in groups)
-                g.IncreaseRemoveGeneration(increasegeneration, removegeneration, tagtoentries, keeplist);
+            {
+                uint oldest = g.RemoveGeneration(removegenerationbelow, CurrentGeneration, tagtoentries, keeplist);
+                oldestgenfound = Math.Max(oldestgenfound , oldest);
+            }
+
+            return oldestgenfound;
+               
         }
 
         public void Clear()

@@ -29,6 +29,10 @@ namespace OFC.GL4
     {
         public virtual bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
+        public int TagCount { get { return matrixbuffers.TagCount; } }              // number of tags recorded
+
+        public uint CurrentGeneration { get { return matrixbuffers.CurrentGeneration; } set { matrixbuffers.CurrentGeneration = value; } }
+
         public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
             int maxdepthpertexture = GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);       // limits the number of textures per 2darray
@@ -105,7 +109,7 @@ namespace OFC.GL4
             mat[3, 3] = alphaend;
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
-            System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
+          //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
 
             grouptextureslist[gpc.Item1].LoadBitmap(bmp, gpc.Item2, false, bmpmipmaplevels);       // texture does not own them, we may do
             grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;   // update instance count to items in group
@@ -159,10 +163,9 @@ namespace OFC.GL4
             return matrixbuffers.Remove(tag);
         }
 
-        // set increasegeneration=1, removegeneration = N, removes last generation N or above, keeplist means keep it and reset gen to 0
-        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration,  HashSet<object> keeplist = null )
+        public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)
         {
-            matrixbuffers.IncreaseRemoveGeneration(increasegeneration, removegeneration, keeplist);
+            return matrixbuffers.RemoveGeneration(removegenerationbelow, keeplist);
         }
 
         public void Clear()

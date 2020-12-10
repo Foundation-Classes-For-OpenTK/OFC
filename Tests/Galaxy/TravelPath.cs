@@ -109,11 +109,13 @@ namespace TestOpenTk
                 renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
 
                 rifind.InstanceCount = positionsv4.Length;  // update the find list
-
             }
 
-            HashSet<object> hashset = new HashSet<object>(lastlist);
-            textrenderer.IncreaseRemoveGeneration(1, 1, hashset);           // increase all gen by 1, remove if 1, unless in hashset..
+            // name bitmaps
+
+            HashSet<object> hashset = new HashSet<object>(lastlist);            // so it can find it quickly
+            textrenderer.CurrentGeneration++;                                   // setup for next generation
+            textrenderer.RemoveGeneration(textrenderer.CurrentGeneration - 1, hashset); // and remove all of the previous one which are not in hashset.
 
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())

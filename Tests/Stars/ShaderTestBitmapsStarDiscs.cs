@@ -93,7 +93,8 @@ namespace TestOpenTk
                 Vector3 bannersize = new Vector3(width, 0, 0);
                 Font f = new Font("MS sans serif", 8f);
 
-                tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 20);      // group 2
+                tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 2);      // group 2
+                tim.CurrentGeneration = uint.MaxValue-10;
                 items.Add(tim);
                 tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
                 tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
@@ -106,6 +107,7 @@ namespace TestOpenTk
 
         GLBitmapsWithStarObjects tim;
         int genpos = 0;
+        uint oldestrelgen = 0;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
@@ -166,8 +168,15 @@ namespace TestOpenTk
             if ( kb.HasBeenPressed(Keys.F1))
             {
                 genpos += 3;
-                tim.IncreaseRemoveGeneration(1, 3); // remove gen N
 
+                uint remove = tim.TagCount > 20 ? (tim.CurrentGeneration-oldestrelgen) : (tim.CurrentGeneration - 200);
+
+                tim.CurrentGeneration++;
+                System.Diagnostics.Debug.WriteLine("To make gen " + tim.CurrentGeneration + " last " + oldestrelgen + " remove " + remove + " Tag count " + tim.TagCount);
+                oldestrelgen = tim.RemoveGeneration(remove);
+                System.Diagnostics.Debug.WriteLine("oldest relative " + oldestrelgen);
+
+        
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 {
                     Size bitmapsize = new Size(64, 20);
