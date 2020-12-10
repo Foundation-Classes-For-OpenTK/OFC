@@ -112,7 +112,8 @@ namespace TestOpenTk
 
             }
 
-            textrenderer.IncreaseGeneration();  // all goes to gen 1
+            HashSet<object> hashset = new HashSet<object>(lastlist);
+            textrenderer.IncreaseRemoveGeneration(1, 1, hashset);           // increase all gen by 1, remove if 1, unless in hashset..
 
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())
@@ -120,15 +121,13 @@ namespace TestOpenTk
                 fmt.Alignment = StringAlignment.Center;
                 foreach (var isys in lastlist)
                 {
-                    if (textrenderer.SetGenerationIfExist(isys) == false)        // if does not exist already, add a new one and reduce generation
+                    if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
                         textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
                                 new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphascale: -200, alphaend: 250);
                     }
                 }
             }
-
-            textrenderer.RemoveGeneration(1);    // remove all left marked
 
             fnt.Dispose();
         }

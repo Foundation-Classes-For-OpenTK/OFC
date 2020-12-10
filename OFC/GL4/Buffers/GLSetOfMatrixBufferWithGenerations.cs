@@ -46,6 +46,7 @@ namespace OFC.GL4
                 gi = groups.Count;
                 groups.Add(new GLMatrixBufferWithGenerations(items, MaxPerGroup));
                 AddedNewGroup?.Invoke(gi, groups[gi].MatrixBuffer);
+                System.Diagnostics.Debug.WriteLine("Make group");
             }
 
             int pos = groups[gi].Add(tag,data, mat);
@@ -73,10 +74,10 @@ namespace OFC.GL4
                 return false;
         }
 
-        public void RemoveGeneration(int generation = 1)        // all new images get generation 0
+        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration, HashSet<object> keeplist = null )
         {
             foreach (var g in groups)
-                g.RemoveGeneration(generation, tagtoentries);
+                g.IncreaseRemoveGeneration(increasegeneration, removegeneration, tagtoentries, keeplist);
         }
 
         public void Clear()
@@ -87,23 +88,6 @@ namespace OFC.GL4
             }
 
             tagtoentries = new Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>>(); // clear all tags
-        }
-
-        public bool SetGenerationIfExist(object tag, int generation = 0)
-        {
-            if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
-            {
-                pos.Item1.SetGeneration(pos.Item2, generation);
-                return true;
-            }
-            else
-                return false;
-        }
-
-        public void IncreaseGeneration()
-        {
-            foreach (var g in groups)
-                g.IncreaseGeneration();
         }
 
         public void Dispose()           // you can double dispose.

@@ -95,35 +95,9 @@ namespace TestOpenTk
 
                 tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 20);      // group 2
                 items.Add(tim);
-                tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
-                tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 0, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
-                tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 0, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
-            }                                    
-
-
-            {
-                Matrix4[] pos = new Matrix4[3];
-                pos[0] = Matrix4.CreateTranslation(-30, 0, 30);
-                pos[1] = Matrix4.CreateTranslation(0, 0, 30);
-                pos[2] = Matrix4.CreateTranslation(20, 0, 30);
-
-                pos[1][1,3] = -1;       // test clipping of vertex's from pos 1
-
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
-
-                GLRenderControl rt = GLRenderControl.Tri();
-                rt.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
-                GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, rt, shape, pos, null, pos.Length, 1);
-
-                var fragshader = new GLPLStarSurfaceFragmentShader();
-                fragshader.Scutoff = 0.1f;
-
-                var vertshader = new GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation();
-                vertshader.WorldPositionOffset = new Vector3(0, 10, 0);
-
-                var shader = new GLShaderPipeline(vertshader, fragshader);
-                items.Add(shader, "STAR-M3");
-                rObjects.Add(shader, ri);
+                tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
             }
 
             OFC.GLStatics.Check();
@@ -131,6 +105,7 @@ namespace TestOpenTk
         }
 
         GLBitmapsWithStarObjects tim;
+        int genpos = 0;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
@@ -188,7 +163,22 @@ namespace TestOpenTk
 
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
-            float fact = kb.Shift ? 10 : kb.Alt ? 100 : 1;
+            if ( kb.HasBeenPressed(Keys.F1))
+            {
+                genpos += 3;
+                tim.IncreaseRemoveGeneration(1, 3); // remove gen N
+
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+                {
+                    Size bitmapsize = new Size(64, 20);
+                    float width = 2.5f;
+                    Vector3 bannersize = new Vector3(width, 0, 0);
+                    Font f = new Font("MS sans serif", 8f);
+                    tim.Add("T1-" + genpos, "F" + genpos, f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                    tim.Add("T2" + genpos, "J" + genpos, f, Color.White, Color.Red, new Vector3(0, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
+                    tim.Add("T3" + genpos, "S" + genpos, f, Color.White, Color.Red, new Vector3(10, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
+                }
+            }
         }
     }
 }

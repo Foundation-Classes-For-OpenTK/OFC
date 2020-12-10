@@ -286,27 +286,30 @@ namespace OFC.GL4
 
         enum MapMode { None, Write, Read};
         MapMode mapmode = MapMode.None;
-
-        public void AllocateStartWrite(int datasize)        // update the buffer with an area of updated cache on a write.. (0=all buffer)
+        
+        // allocate and start write on buffer
+        public void AllocateStartWrite(int datasize)        
         {
             AllocateBytes(datasize);
-            StartWrite(0);
+            StartWrite(0,datasize);
         }
 
-        public void StartWrite(int fillpos, int datasize = 0)        // update the buffer with an area of updated cache on a write.. (0=all buffer)
+        // update the buffer with an area of updated cache on a write.. (datasize=0=all buffer).  
+        // Default is bam is to wipe the mapped area. Use 0 in bam not to do this. trap for young players here
+        public void StartWrite(int fillpos, int datasize = 0, BufferAccessMask bam = BufferAccessMask.MapInvalidateRangeBit)
         {
             if (datasize == 0)
                 datasize = Length - fillpos;
 
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos + datasize <= Length); // catch double maps
 
-            CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | BufferAccessMask.MapInvalidateRangeBit);
+            CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bam);
             CurrentPos = fillpos;
             mapmode = MapMode.Write;
             OFC.GLStatics.Check();
         }
 
-        public void StartRead(int fillpos, int datasize = 0)        // update the buffer with an area of updated cache on a write (0=all buffer)
+        public void StartRead(int fillpos, int datasize = 0)        // read the buffer (datasize=0=all buffer)
         {
             if (datasize == 0)
                 datasize = Length - fillpos;
@@ -411,7 +414,7 @@ namespace OFC.GL4
             }
         }
 
-        public void Write(float[] a, int count, int sourceoffset = 0)     // count in floats, source offset in floats
+        public void Write(float[] a, int count, int sourceoffset = 0)     // count in floats units, source offset in floats units
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             int size = sizeof(float);
@@ -536,7 +539,7 @@ namespace OFC.GL4
             Write(i);
         }
 
-        // write an Element draw command to the buffer
+        // write an Indirect Element draw command to the buffer
         // if you use it, MultiDrawCountStride = 20
         public void WriteIndirectElements(int vertexcount, int instancecount = 1, int firstindex = 0, int basevertex = 0,int baseinstance = 0)
         {

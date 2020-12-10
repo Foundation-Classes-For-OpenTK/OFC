@@ -231,7 +231,6 @@ namespace TestOpenTk
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
 
-            //this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance;
             this.Text = //"Freq " + frequency.ToString("#.#########") + " unRadius " + unRadius + " scutoff" + scutoff + " BD " + blackdeepness + " CE " + concentrationequator
             "    Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance;
 
@@ -245,27 +244,6 @@ namespace TestOpenTk
 
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
-            float fact = kb.Shift ? 10 : kb.Alt ? 100 : 1;
-            //if (kb.IsCurrentlyPressed(Keys.F1) != null)
-            //    frequency -= 0.000001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F2) != null)
-            //    frequency += 0.000001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F5) != null)
-            //    unRadius -= 10 * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F6) != null)
-            //    unRadius += 10 * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F7) != null)
-            //    scutoff -= 0.001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F8) != null)
-            //    scutoff += 0.001f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F9) != null)
-            //    blackdeepness -= 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F10) != null)
-            //    blackdeepness += 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F11) != null)
-            //    concentrationequator -= 0.1f * fact;
-            //if (kb.IsCurrentlyPressed(Keys.F12) != null)
-            //    concentrationequator += 0.1f * fact;
         }
     }
 }

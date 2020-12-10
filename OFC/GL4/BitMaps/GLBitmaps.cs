@@ -105,6 +105,7 @@ namespace OFC.GL4
             mat[3, 3] = alphaend;
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
+            System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
 
             grouptextureslist[gpc.Item1].LoadBitmap(bmp, gpc.Item2, false, bmpmipmaplevels);       // texture does not own them, we may do
             grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;   // update instance count to items in group
@@ -158,24 +159,15 @@ namespace OFC.GL4
             return matrixbuffers.Remove(tag);
         }
 
-        public void RemoveGeneration(int generation = 1)        // all new images get generation 0
+        // set increasegeneration=1, removegeneration = N, removes last generation N or above, keeplist means keep it and reset gen to 0
+        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration,  HashSet<object> keeplist = null )
         {
-            matrixbuffers.RemoveGeneration(generation);
+            matrixbuffers.IncreaseRemoveGeneration(increasegeneration, removegeneration, keeplist);
         }
 
         public void Clear()
         {
             matrixbuffers.Clear();
-        }
-
-        public bool SetGenerationIfExist(object tag, int generation = 0)
-        {
-            return matrixbuffers.SetGenerationIfExist(tag, generation);
-        }
-
-        public void IncreaseGeneration()
-        {
-            matrixbuffers.IncreaseGeneration();
         }
 
         public virtual void Dispose()           // you can double dispose.

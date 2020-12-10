@@ -69,6 +69,8 @@ namespace OFC.GL4
                 entries[pos] = entry;                               // set empty slot to active
             }
 
+            System.Diagnostics.Debug.WriteLine("Make " + pos);
+
             //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
             mat[0, 3] = pos;     // store pos of image in stack
 
@@ -99,32 +101,54 @@ namespace OFC.GL4
                 return false;
         }
 
-        public void RemoveGeneration(int generation, Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries)
+        // if keeplist, and its in the list, generation = 0 and kept
+        // else increasegeneration, and remove it if >= removegeneration
+        public void IncreaseRemoveGeneration(int increasegeneration, int removegeneration,
+                                             Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries,
+                                             HashSet<object> keeplist = null )
         {
             Matrix4 zero = Matrix4.Identity;        // set ctrl 1,3 to -1 to indicate cull matrix
             zero[1, 3] = -1;                        // if it did not work, it would appear at (0,0,0)
             var fm = zero.ToFloatArray();           // writing in float arrays
 
-            MatrixBuffer.StartWrite(0);             // open from position 0 in matrix buffer
-
+            bool openedwrite = false;
+            
             for (int i = 0; i < entries.Count; i++)
             {
                 var e = entries[i];
-                if (e.generation >= generation)    // if older.. note invalid ones get generation = int.max
+
+                if (keeplist != null && e.tag != null && keeplist.Contains(e.tag))      // if in keeplist, its gen goes back to zero
                 {
-                    if (e.data != null)           // owned, bitmap will be valid
-                        e.data.Dispose();
+                    e.generation = 0;
+                }
+                else
+                {
+                    e.generation += increasegeneration;     // increase gen
 
-                    if (e.tag != null)
-                        tagtoentries.Remove(e.tag);
+                    if (e.generation >= removegeneration)    // if older.. note invalid ones get generation = int.max
+                    {
+                        if (e.data != null)           // owned, bitmap will be valid
+                            e.data.Dispose();
 
-                    entries[i] = new EntryInfo(); // all will be null, generation will be int.max
-                    MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
-                    Deleted++;
+                        if (e.tag != null)
+                            tagtoentries.Remove(e.tag);
+
+                        entries[i] = new EntryInfo(); // all will be null, generation will be int.max
+
+                        if (!openedwrite)
+                        {
+                            MatrixBuffer.StartWrite(0, 0, 0);       // map all, keep existing buffer (P3)
+                            openedwrite = true;
+                        }
+
+                        MatrixBuffer.Write(i * GLLayoutStandards.Mat4size, fm);
+                        Deleted++;
+                    }
                 }
             }
 
-            MatrixBuffer.StopReadWrite();
+            if (openedwrite)
+                MatrixBuffer.StopReadWrite();
         }
 
         public void Clear()
@@ -143,17 +167,6 @@ namespace OFC.GL4
             MatrixBuffer.Write(zero, entries.Count);
             MatrixBuffer.StopReadWrite();
             Deleted = entries.Count;
-        }
-
-        public void SetGeneration(int pos, int generation)
-        {
-            entries[pos].generation = generation;
-        }
-
-        public void IncreaseGeneration()       // increase all generations
-        {
-            for (int i = 0; i < entries.Count; i++)
-                entries[i].generation++;
         }
 
         public void Dispose()
