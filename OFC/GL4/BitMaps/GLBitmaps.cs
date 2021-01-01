@@ -78,7 +78,7 @@ namespace OFC.GL4
             if (textdrawbitmap == null)
                 textdrawbitmap = new Bitmap(bitmapsize.Width, bitmapsize.Height);
 
-            BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, fore, back, backscale, false, fmt);
+            BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
             Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:false);
         }

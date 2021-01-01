@@ -138,14 +138,14 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnFocusChanged(bool focused, GLBaseControl fromto)
+        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
-            if ( !focused )
+            if ( evt == FocusEvent.Deactive )     // if lost focus
             {
-                if (!IsValid)           // if text box is not valid, go back to the original colour with no chanve event
+                if (!IsValid)           // if text box is not valid, go back to the original colour with no change event
                     ValueNoChange = number;
             }
-            base.OnFocusChanged(focused, fromto);
+            base.OnFocusChanged(evt, fromto);
         }
 
         #endregion

@@ -53,7 +53,7 @@ namespace OFC.GL4.Controls
         {
             checkbox.CheckChanged += checkboxchanged;
             checkbox.BackColor = Color.Transparent;
-            checkbox.AutoCheck = true;
+            checkbox.CheckOnClick = true;
             Add(checkbox);
             updown.ValueChanged += updownchanged;
             updown.BackColor = Color.Transparent;
@@ -83,14 +83,14 @@ namespace OFC.GL4.Controls
 
             // NI versions stops repeated invalidates/layouts
             checkbox.VisibleNI = ShowCheckBox;
-            checkbox.SetLocationSizeNI(location: new Point(2, borderoffset), size: new Size(height, height));
+            checkbox.SetLocationSizeNI(location: new Point(2, borderoffset), bounds: new Size(height, height));
 
             updown.VisibleNI = ShowUpDown;
-            updown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - 2, borderoffset), size: new Size(height, height));
+            updown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - 2, borderoffset), bounds: new Size(height, height));
 
             cal.VisibleNI = false; // tbd cal is turned off since the winform calendar is a control and needs a form to live in.. we don't have a form ready for it
             int ch = ClientHeight * 3 / 5;
-            cal.SetLocationSizeNI(location: new Point(updown.Left - 4 - cal.Width, (ClientHeight / 2 - ch/2)), size: new Size(ch * 20 / 12, ch));
+            cal.SetLocationSizeNI(location: new Point(updown.Left - 4 - cal.Width, (ClientHeight / 2 - ch/2)), bounds: new Size(ch * 20 / 12, ch));
 
             xstart = (showcheckbox ? (checkbox.Right + 2) : 2);
 
@@ -431,21 +431,22 @@ namespace OFC.GL4.Controls
             ValueChanged?.Invoke(this);
         }
 
-        public override void OnFocusChanged(bool focused, GLBaseControl fromto)
+        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
-            base.OnFocusChanged(focused, fromto);
-            System.Diagnostics.Debug.WriteLine("DTP Focus chg {0} {1}", focused, fromto?.Name);
+            base.OnFocusChanged(evt, fromto);
+            System.Diagnostics.Debug.WriteLine("DTP Focus chg {0} {1}", evt, fromto?.Name);
 
-            if (!focused && (fromto != updown && fromto != this))
+            if (evt == FocusEvent.Deactive && (fromto != updown && fromto != this))
             {
                 selectedpart = -1;
                 updown.Enabled = false;
                 Invalidate();
             }
         }
-        public void OnFocusChangedUpdown(Object s, bool focused, GLBaseControl fromto)
+
+        public void OnFocusChangedUpdown(Object s, FocusEvent evt, GLBaseControl fromto)
         {
-            OnFocusChanged(focused, fromto);
+            OnFocusChanged(evt, fromto);
         }
 
         private DateTime datetimevalue = DateTime.Now;

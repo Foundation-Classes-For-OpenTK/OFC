@@ -109,7 +109,7 @@ namespace OFC.GL4.Controls
 
             if (Enabled && thumbenable && !isthumb)
             {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                //g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 using (Pen p2 = new Pen(ArrowColor))
                 {
@@ -154,7 +154,7 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
+         //   g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 
             if (but == mouseover || isthumb)
             {

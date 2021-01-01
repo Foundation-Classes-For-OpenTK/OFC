@@ -36,7 +36,6 @@ namespace TestOpenTk
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
-        Vector4[] boundingbox;
         GLControlDisplay displaycontrol;
 
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,19 +89,7 @@ namespace TestOpenTk
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
-            boundingbox = new Vector4[]
-            {
-                new Vector4(left,-vsize,front,1),
-                new Vector4(left,vsize,front,1),
-                new Vector4(right,vsize,front,1),
-                new Vector4(right,-vsize,front,1),
-
-                new Vector4(left,-vsize,back,1),
-                new Vector4(left,vsize,back,1),
-                new Vector4(right,vsize,back,1),
-                new Vector4(right,-vsize,back,1),
-            };
-
+      
             Vector4[] displaylines = new Vector4[]
             {
                 new Vector4(left,-vsize,front,1),   new Vector4(left,+vsize,front,1),
@@ -223,7 +210,7 @@ namespace TestOpenTk
                     GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 800));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
-                    pform.BackColorGradient = 90;
+                    pform.BackColorGradientDir = 90;
                     pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
 
                     displaycontrol.Add(pform);
@@ -329,7 +316,7 @@ namespace TestOpenTk
                         List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
                         GLComboBox cb1 = new GLComboBox("CB1", new Rectangle(600, 60, 150, 20), i1);
                         cb1.SelectedIndex = 0;
-                        cb1.BackColorGradient = 90;
+                        cb1.BackColorGradientDir = 90;
                         cb1.BackColorGradientAlt = Color.Aqua;
                         cb1.MouseOverBackColor = Color.Blue;
                         cb1.DropDownHeightMaximum = 100;
@@ -403,15 +390,15 @@ namespace TestOpenTk
                         p2.Add(b2);
 
                         GLCheckBox cb1 = new GLCheckBox("CB1", new Rectangle(5, 100, 100, 20), "Check Box 1");
-                        cb1.AutoCheck = cb1.GroupRadioButton = true;
+                        cb1.CheckOnClick = cb1.GroupRadioButton = true;
                         cb1.CheckChanged += (c) => { System.Diagnostics.Debug.WriteLine("Check 1 changed " + c.Name); };
                         p2.Add(cb1);
                         GLCheckBox cb2 = new GLCheckBox("CB1", new Rectangle(5, 130, 100, 20), "Check Box 2");
-                        cb2.AutoCheck = cb2.GroupRadioButton = true;
+                        cb2.CheckOnClick = cb2.GroupRadioButton = true;
                         cb2.CheckChanged += (c) => { System.Diagnostics.Debug.WriteLine("Check 2 changed " + c.Name); };
                         p2.Add(cb2);
                         GLCheckBox cb3 = new GLCheckBox("CB3", new Rectangle(5, 160, 100, 20), "Radio Box 1");
-                        cb3.AutoCheck = true;
+                        cb3.CheckOnClick = true;
                         cb3.Appearance = CheckBoxAppearance.Radio;
                         p2.Add(cb3);
 
@@ -434,6 +421,38 @@ namespace TestOpenTk
                         pform.Add(dtp);
                     }
 
+                    if (true)
+                    {
+                        GLMenuStrip menubar = new GLMenuStrip("Menubar", new Rectangle(0, 600, 350, 24));
+                        menubar.BackColor = Color.Green;
+                        menubar.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;
+                        pform.Add(menubar);
+
+                        // really it needs to be a button.. maybe a GLMenuItem type which is a button remodelled.
+
+                        GLMenuItem l1 = new GLMenuItem("L1", "MenuA");
+                        l1.BackColor = Color.Red;
+                        menubar.Add(l1);
+                        GLMenuItem l2 = new GLMenuItem("L1", "MenuB");
+                        l2.BackColor = Color.Red;
+                        menubar.Add(l2);
+                        GLMenuItem l3 = new GLMenuItem("L1", "MenuC");
+                        l3.BackColor = Color.Red;
+                        menubar.Add(l3);
+                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
                     pform.ResumeLayout();
                 }
 
@@ -443,7 +462,7 @@ namespace TestOpenTk
                     pform2.BackColor = Color.FromArgb(200, Color.Red);
                     pform2.Font = new Font("Ms sans serif", 12);
                     pform2.SuspendLayout();
-                    pform2.BackColorGradient = 90;
+                    pform2.BackColorGradientDir = 90;
                     pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
                     displaycontrol.Add(pform2);
 
@@ -522,7 +541,16 @@ namespace TestOpenTk
                     displaycontrol.Add(tip);
                 }
 
+
+
+
+
+
+
+
                 displaycontrol.ResumeLayout();
+
+
 
             }
 
@@ -557,10 +585,10 @@ namespace TestOpenTk
         {
             GLFormConfigurable c1 = new GLFormConfigurable();
             c1.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
-            c1.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT"));
+            c1.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT") { taborder = 1 });
+            c1.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }) { taborder = 2 });
+            c1.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT") { taborder = 3 });
+            c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { taborder = 4 });
             // c1.Size = new Size(400, 400);
             c1.Init(new Point(200, 200), "Config Form Test");
             c1.Trigger += (cb, en, ctrlname, args) =>

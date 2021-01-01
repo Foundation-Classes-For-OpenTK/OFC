@@ -43,7 +43,7 @@ namespace OFC.GL4.Controls
                 Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
                                  (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
 
-                SetLocationSizeNI(size: s);
+                SetLocationSizeNI(bounds: s);
             }
         }
 
@@ -51,7 +51,7 @@ namespace OFC.GL4.Controls
         {
             if (Text.HasChars())
             {
-                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+               // gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
@@ -61,7 +61,7 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
+               // gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
             }
         }
 

@@ -88,8 +88,10 @@ namespace OFC.GL4.Controls
 
         public int ClientLeftMargin { get { return Margin.Left + Padding.Left + BorderWidth; } }
         public int ClientRightMargin { get { return Margin.Right + Padding.Right + BorderWidth; } }
+        public int ClientWidthMargin { get { return Margin.TotalWidth + Padding.TotalWidth + BorderWidth*2; } }
         public int ClientTopMargin { get { return Margin.Top + Padding.Top + BorderWidth; } }
         public int ClientBottomMargin { get { return Margin.Bottom + Padding.Bottom + BorderWidth; } }
+        public int ClientHeightMargin { get { return Margin.TotalHeight + Padding.TotalHeight + BorderWidth*2; } }
         public int ClientWidth { get { return Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2; } set { SetPos(window.Left, window.Top, value + ClientLeftMargin + ClientRightMargin, window.Height); } }
         public int ClientHeight { get { return Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2; } set { SetPos(window.Left, window.Top, window.Width, value + ClientTopMargin + ClientBottomMargin); } }
         public Size ClientSize { get { return new Size(ClientWidth, ClientHeight); } set { SetPos(window.Left, window.Top, value.Width + ClientLeftMargin + ClientRightMargin, value.Height + ClientTopMargin + ClientBottomMargin); } }
@@ -115,7 +117,7 @@ namespace OFC.GL4.Controls
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
         public Font Font { get { return font ?? parent?.Font ?? DefaultFont; } set { SetFont(value); InvalidateLayout(); } }
         public Color BackColor { get { return backcolor; } set { if (backcolor != value) { backcolor = value; Invalidate(); } } }
-        public int BackColorGradient { get { return backcolorgradient; } set { if (backcolorgradient != value) { backcolorgradient = value; Invalidate(); } } }
+        public int BackColorGradientDir { get { return backcolorgradientdir; } set { if (backcolorgradientdir != value) { backcolorgradientdir = value; Invalidate(); } } }
         public Color BackColorGradientAlt { get { return backcolorgradientalt; } set { if (backcolorgradientalt != value) { backcolorgradientalt = value; Invalidate(); } } }
 
         // other
@@ -169,7 +171,8 @@ namespace OFC.GL4.Controls
         public Action<Object, GLKeyEventArgs> KeyDown { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyPress { get; set; } = null;
-        public Action<Object, bool, GLBaseControl> FocusChanged { get; set; } = null;
+        public enum FocusEvent { Focused, Deactive, ChildFocused, ChildDeactive };
+        public Action<Object, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;
         public Action<Object> FontChanged { get; set; } = null;
         public Action<Object> Resize { get; set; } = null;
         public Action<Object> Moved { get; set; } = null;
@@ -196,6 +199,8 @@ namespace OFC.GL4.Controls
         static public Color DefaultCheckColor = Color.DarkBlue;
         static public Color DefaultErrorColor = Color.OrangeRed;
         static public Color DefaultHighlightColor = Color.Red;
+        static public Color DefaultMenuItemOuterColor = Color.White;
+        static public Color DefaultMenuItemInnerColor = Color.FromArgb(180,215,243);
 
         static public Color DefaultLineSeparColor = Color.Green;
 
@@ -279,43 +284,19 @@ namespace OFC.GL4.Controls
             return new Rectangle(left, top, right - left, bottom - top);
         }
 
-        public GLBaseControl FirstChildYOfType(Type[] types, Func<GLBaseControl, bool> predate = null)        // may be null return, if types=null any type
-        {
-            int miny = int.MaxValue;
-            GLBaseControl ret = null;
-            foreach (var c in childreniz)   // backwards, last z wins
-            {
-                if (c.Visible && c.Top < miny && (types == null || Array.IndexOf(types, c.GetType()) >= 0) && (predate == null || predate(c) == true))
-                {
-                    ret = c;
-                    miny = c.Top;
-                }
-            }
-
-            return ret;
-        }
-
-        public GLBaseControl FindChildWithFocus()
-        {
-            foreach (var c in ControlsZ)
-            {
-                if (c.Focused)
-                    return c;
-            }
-
-            return null;
-        }
-
-        public GLBaseControl FindNextTabChild(int tabno, bool greater = true)
+        public GLBaseControl FindNextTabChild(int tabno)
         {
             GLBaseControl found = null;
+            int mindist = int.MaxValue;
+
             foreach (var c in ControlsZ)
             {
-                if (c.Focusable && c.Visible && c.Enabled && c.TabOrder >= 0)
+                if (c.Focusable && c.Visible && c.Enabled && c.TabOrder > tabno)
                 {
-                    if (greater ? (c.TabOrder > tabno) : (c.TabOrder<tabno))
+                    int dist = c.TabOrder - tabno;
+                    if ( dist < mindist )
                     {
-                        tabno = c.TabOrder;
+                        mindist = dist;
                         found = c;
                     }
                 }
@@ -329,7 +310,7 @@ namespace OFC.GL4.Controls
             if (suspendLayoutSet)
             {
                 needLayout = true;
-                System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
+                //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
             }
             else
             {
@@ -341,13 +322,12 @@ namespace OFC.GL4.Controls
         public void SuspendLayout()
         {
             suspendLayoutSet = true;
-            System.Diagnostics.Debug.WriteLine("Suspend layout on " + Name);
+            //System.Diagnostics.Debug.WriteLine("Suspend layout on " + Name);
         }
 
         public void ResumeLayout()
         {
-            if ( suspendLayoutSet )
-                System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
+            //if ( suspendLayoutSet ) System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
 
             suspendLayoutSet = false;
             if (needLayout)
@@ -357,21 +337,34 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public virtual void Add(GLBaseControl child)
+        public virtual void Add(GLBaseControl child, bool atback = false)
         {
-            System.Diagnostics.Debug.Assert(!childrenz.Contains(child));
+            System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
             child.parent = this;
 
-            int ipos = 0;
-            if (!child.TopMost)
+            child.Hover = false;    // in case been used before, reset some items
+            child.focused = false;
+            child.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
+
+            if (atback)
             {
-                while (ipos < childrenz.Count && childrenz[ipos].TopMost)     // find first place we can insert
-                    ipos++;
+                childrenz.Add(child);
+                childreniz.Insert(0, child);
+            }
+            else
+            {
+                int ipos = 0;
+                if (!child.TopMost)     // add at end of top list.
+                {
+                    while (ipos < childrenz.Count && childrenz[ipos].TopMost)     // find first place we can insert
+                        ipos++;
+                }
+
+                childrenz.Insert(ipos, child);   // in z order.  First is top of z.  insert puts it before existing
+                childreniz.Insert(childreniz.Count - ipos, child);       // in inv z order. Last is top of z.  if ipos=0, at end. if ipos=1, inserted just before end
             }
 
-            childrenz.Insert(ipos, child);   // in z order.  First is top of z.  inser puts it before existing
-            childreniz.Insert(childreniz.Count - ipos, child);       // in inv z order. Last is top of z.  if ipos=0, at end. if ipos=1, inserted just before end
-            CheckZOrder();
+            CheckZOrder();      // verify its okay 
 
             Themer?.Invoke(child);      // added to control, theme it
 
@@ -380,29 +373,31 @@ namespace OFC.GL4.Controls
             InvalidateLayout();        // we are invalidated and layout
         }
 
-        public virtual void Remove(GLBaseControl child)
+        public virtual void Remove(GLBaseControl child, bool dispose = true)
         {
             if (childrenz.Contains(child))
             {
-                RemoveSubControl(child);
+                RemoveSubControl(child,true);
                 Invalidate();
                 PerformLayout();        // reperform layout
             }
         }
 
-        protected virtual void RemoveSubControl(GLBaseControl child)        // recursively go thru children, bottom child first, and remove everything 
+        protected virtual void RemoveSubControl(GLBaseControl child, bool dispose)        // recursively go thru children, bottom child first, and remove everything 
         {
             foreach (var cc in child.childrenz)     // do children of child first
             {
-                RemoveSubControl(cc);
+                RemoveSubControl(cc,dispose);
             }
 
             child.OnControlRemove(this, child);
             OnControlRemove(this,child);
-            System.Diagnostics.Debug.WriteLine("Dispose {0} {1}", child.GetType().Name, child.Name);
+            //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);
             FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
 
-            child.Dispose();
+            if ( dispose )
+                child.Dispose();
+
             child.parent = null;
 
             childrenz.Remove(child);
@@ -417,7 +412,7 @@ namespace OFC.GL4.Controls
 
         public virtual bool BringToFront(GLBaseControl child)   // bring child to front
         {
-            System.Diagnostics.Debug.WriteLine("Bring to front" + child.Name);
+            //System.Diagnostics.Debug.WriteLine("Bring to front" + child.Name);
             int curpos = childrenz.IndexOf(child);
 
             if (curpos>=0)
@@ -500,14 +495,15 @@ namespace OFC.GL4.Controls
         protected Color BackColorNI { set { backcolor = value; } }
         public bool VisibleNI { set { visible = value; } }
 
-        public void SetLocationSizeNI( Point? location = null, Size? size = null, bool clipsize = false)      // use by inheritors only.  Does not invalidate/Layout.
+        // use by inheritors only.  Does not invalidate/Layout.  size in bounds or clientsize
+        public void SetLocationSizeNI( Point? location = null, Size? bounds = null, Size? clientsize = null, bool clipsize = false)      
         {
             Point oldloc = Location;
             Size oldsize = Size;
 
             if (clipsize)
             {
-                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
+                bounds = new Size(Math.Min(Width, bounds.Value.Width), Math.Min(Height, bounds.Value.Height));
             }
 
             if (location.HasValue)
@@ -518,11 +514,18 @@ namespace OFC.GL4.Controls
                     OnMoved();
             }
 
-            if ( size.HasValue )
+            if ( bounds.HasValue )
             {
-                window.Size = size.Value;
+                window.Size = bounds.Value;
 
-                if (oldsize != size.Value)
+                if (oldsize != window.Size)
+                    OnResize();
+            }
+            else if ( clientsize.HasValue )
+            {
+                window.Size = new Size(clientsize.Value.Width + ClientWidthMargin, clientsize.Value.Height + ClientHeightMargin);
+
+                if (oldsize != window.Size)
                     OnResize();
             }
             //System.Diagnostics.Debug.WriteLine("SetPosNI {0}", window);
@@ -736,6 +739,7 @@ namespace OFC.GL4.Controls
 
                 gr = Graphics.FromImage(usebmp);        // get graphics for it
                 gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             }
 
             bool redrawn = false;
@@ -743,7 +747,7 @@ namespace OFC.GL4.Controls
             if (NeedRedraw || forceredraw)          // if we need a redraw, or we are forced to draw by a parent redrawing above us.
             {
                 //System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, 
-                //                          ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
+                                          //ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
 
                 forceredraw = true;             // all children, force redraw       // clear in case need to re-invalidate
                 NeedRedraw = false;             // we have been redrawn
@@ -751,9 +755,10 @@ namespace OFC.GL4.Controls
 
                 gr.SetClip(cliparea);   // set graphics to the clip area so we can draw the background/border
 
-                DrawBack(bounds, gr, BackColor, BackColorGradientAlt, BackColorGradient);
-                DrawBorder(bounds, gr, BorderColor, BorderWidth);
+                //System.Diagnostics.Debug.WriteLine("..PaintBack {0} in ca {1} clip {2}", Name, bounds, cliparea);
+                DrawBack(bounds, gr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
+                DrawBorder(bounds, gr, BorderColor, BorderWidth);
             }
 
             // client area, in terms of last bitmap
@@ -792,6 +797,7 @@ namespace OFC.GL4.Controls
             {
                 gr.SetClip(cliparea);   // set graphics to the clip area
 
+                //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
                 Paint(clientarea, gr); // Paint, nominally in the client area, but you can access the whole of the cliparea which includes the margins
 
                 if (parentgr != null)      // give us a chance of parent paint thru
@@ -825,7 +831,7 @@ namespace OFC.GL4.Controls
         }
 
         // draw back area - override to paint something different
-        protected virtual void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
+        protected virtual void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
         {
             if ( levelbmp != null)                  // if we own a bitmap, reset back to transparent, erasing anything that we drew before
                 gr.Clear(Color.Transparent);       
@@ -835,10 +841,10 @@ namespace OFC.GL4.Controls
                 if ( levelbmp == null )             // if we are a normal control, we need to start from the pixels inside us being transparent
                     gr.Clear(Color.Transparent);    // erasing anything that we drew before, because if we have half alpha in the colour, it will build up
 
-                if (bcgradient != int.MinValue)
+                if (bcgradientdir != int.MinValue)
                 {
                     //System.Diagnostics.Debug.WriteLine("Background " + Name +  " " + bounds + " " + bc + " -> " + bcgradientalt );
-                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(bounds, bc, bcgradientalt, bcgradient))
+                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(bounds, bc, bcgradientalt, bcgradientdir))
                         gr.FillRectangle(b, bounds);       // linear grad brushes do not respect smoothing mode, btw
                 }
                 else
@@ -946,12 +952,12 @@ namespace OFC.GL4.Controls
             KeyPress?.Invoke(this, e);
         }
 
-        public virtual void OnFocusChanged(bool focused, GLBaseControl fromto)      // false, fromto = where it going to
+        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl) 
         {
-            this.focused = focused;
+            this.focused = focused == FocusEvent.Focused;
             if (InvalidateOnFocusChange)
                 Invalidate();
-            FocusChanged?.Invoke(this, focused, fromto);
+            FocusChanged?.Invoke(this, focused, ctrl);
         }
 
         public virtual void OnFontChanged()
@@ -1067,6 +1073,17 @@ namespace OFC.GL4.Controls
             levelbmp = null;
         }
 
+        public void DumpTrees(int l, GLBaseControl prev)
+        {
+            string prefix = "                           ".Substring(0, l);
+            System.Diagnostics.Debug.WriteLine("{0}{1} {2}", prefix, Name, Parent == prev ? "OK" : "Not linked");
+            if (ControlsZ.Count > 0)
+            {
+                foreach (var c in ControlsZ)
+                    c.DumpTrees(l + 2, this);
+            }
+        }
+
         protected bool NeedRedraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
@@ -1080,7 +1097,7 @@ namespace OFC.GL4.Controls
         private float dockpercent { get; set; } = 0;
         private Color backcolor { get; set; } = DefaultControlBackColor;
         private Color backcolorgradientalt { get; set; } = DefaultControlBackColor;
-        private int backcolorgradient { get; set; } = int.MinValue;           // in degrees
+        private int backcolorgradientdir { get; set; } = int.MinValue;           // in degrees
         private Color bordercolor { get; set; } = Color.Transparent;         // Margin - border - padding is common to all controls. Area left is control area to draw in
         private int borderwidth { get; set; } = 0;
         private GL4.Controls.Padding padding { get; set; }

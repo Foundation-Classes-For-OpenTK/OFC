@@ -59,25 +59,34 @@ namespace OFC.GL4.Controls
                 SizeF size = new Size(0, 0);
                 if ( Text.HasChars() )
                     size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
-                if (Image != null)
+
+                if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
                     size = new SizeF(size.Width+Image.Width, Math.Max(Image.Height,(int)(size.Height+0.999)));
 
-                Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
-                                 (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
+                Size s = new Size((int)(size.Width + 0.999) + ClientWidthMargin + 4,
+                                 (int)(size.Height + 0.999) + ClientHeightMargin + 4);
 
-                SetLocationSizeNI(size: s);
+                SetLocationSizeNI(bounds: s);
             }
         }
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
+            if (area.Width < 1 || area.Height < 1)  // and no point drawing any more in the button area if its too small, it will except
+                return;
+            PaintBack(area, gr);
+            PaintButton(area, gr,true);
+        }
+
+        protected void PaintBack(Rectangle backarea, Graphics gr)
+        {
             Color colBack = Color.Empty;
 
-            if ( Enabled == false )
+            if (Enabled == false)
             {
                 colBack = ButtonBackColor.Multiply(DisabledScaling);
             }
-            else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left )
+            else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
             {
                 colBack = MouseDownBackColor;
             }
@@ -90,46 +99,10 @@ namespace OFC.GL4.Controls
                 colBack = ButtonBackColor;
             }
 
-            if (area.Width < 1 || area.Height < 1)  // and no point drawing any more in the button area if its too small, it will except
-                return;
-
-            gr.SmoothingMode = SmoothingMode.None;
-
-            if ( Focused )
-            {
-                using (var p = new Pen(MouseDownBackColor))
-                {
-                    gr.DrawRectangle(p, new Rectangle(area.Left,area.Top,area.Width-1,area.Height-1));
-                    area.Inflate(new Size(-1, -1));
-                }
-            }
-
-            using (var b = new LinearGradientBrush(new Rectangle(area.Left,area.Top-1,area.Width,area.Height+1), colBack, colBack.Multiply(BackColorScaling), 90))
-                gr.FillRectangle(b, area);       // linear grad brushes do not respect smoothing mode, btw
-
-            if (Image != null)
-            {
-                base.DrawImage(Image, area, gr, (Enabled) ? drawnImageAttributesEnabled : drawnImageAttributesDisabled);
-            }
-
-            gr.SmoothingMode = SmoothingMode.AntiAlias;
-
-            if (!string.IsNullOrEmpty(Text))
-            {
-                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                {
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
-                    {
-                        gr.DrawString(this.Text, this.Font, textb, area, fmt);
-                    }
-                }
-            }
-
-            gr.SmoothingMode = SmoothingMode.None;
-
+            using (var b = new LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
+                gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
         }
 
-        
         public override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);

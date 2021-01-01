@@ -20,10 +20,12 @@ namespace OFC
 {
     public static class BitMapHelpers
     {
-        public static void DrawTextCentreIntoBitmap(ref Bitmap img, string text, Font dp, Color c, Color? b = null)
+        public static void DrawTextCentreIntoBitmap(ref Bitmap img, string text, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b = null)
         {
             using (Graphics bgr = Graphics.FromImage(img))
             {
+                bgr.TextRenderingHint = hint;
+
                 if ( b!=null)
                 {
                     Rectangle backarea = new Rectangle(0, 0, img.Width, img.Height);
@@ -33,12 +35,8 @@ namespace OFC
 
                 SizeF sizef = bgr.MeasureString(text, dp);
 
-                bgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
                 using (Brush textb = new SolidBrush(c))
                     bgr.DrawString(text, dp, textb, img.Width / 2 - (int)((sizef.Width + 1) / 2), img.Height / 2 - (int)((sizef.Height + 1) / 2));
-
-                bgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
             }
         }
 
@@ -47,13 +45,15 @@ namespace OFC
         // setting frmt allows you to word wrap etc into a bitmap, maximum of maxsize.  
         // no frmt means a single line across the bitmap unless there are \n in it.
 
-        public static Bitmap DrawTextIntoAutoSizedBitmap(string text, Size maxsize, Font dp, Color c, Color b,
+        public static Bitmap DrawTextIntoAutoSizedBitmap(string text, Size maxsize, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color b,
                                             float backscale = 1.0F, StringFormat frmt = null)
         {
             Bitmap t = new Bitmap(1, 1);
 
             using (Graphics bgr = Graphics.FromImage(t))
             {
+                bgr.TextRenderingHint = hint;
+
                 // if frmt, we measure the string within the maxsize bounding box.
                 SizeF sizef = (frmt != null) ? bgr.MeasureString(text, dp, maxsize, frmt) : bgr.MeasureString(text, dp);
                 //System.Diagnostics.Debug.WriteLine("Bit map auto size " + sizef);
@@ -70,7 +70,7 @@ namespace OFC
                         using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, b, b.Multiply(backscale), 90))
                             dgr.FillRectangle(bb, backarea);
 
-                        dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;   // only worth doing this if we have filled it.. if transparent, antialias does not work
+                        //dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;   // only worth doing this if we have filled it.. if transparent, antialias does not work
                     }
 
                     using (Brush textb = new SolidBrush(c))
@@ -81,8 +81,6 @@ namespace OFC
                             dgr.DrawString(text, dp, textb, 0, 0);
                     }
 
-                    dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
-
                     return img;
                 }
             }
@@ -92,22 +90,22 @@ namespace OFC
         // centretext overrided frmt and just centres it
         // frmt provides full options and draws text into bitmap
 
-        public static Bitmap DrawTextIntoFixedSizeBitmapC(string text, Size size, Font dp, Color c, Color b,
+        public static Bitmap DrawTextIntoFixedSizeBitmapC(string text, Size size, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color b,
                                                     float backscale = 1.0F, bool centertext = false, StringFormat frmt = null)
         {
             Bitmap img = new Bitmap(size.Width, size.Height);
             Color? back = null;
             if (!b.IsFullyTransparent())
                 back = b;
-            return DrawTextIntoFixedSizeBitmap(ref img, text, dp, c, back, backscale, centertext, frmt);
+            return DrawTextIntoFixedSizeBitmap(ref img, text, dp, hint, c, back, backscale, centertext, frmt);
         }
 
-        public static Bitmap DrawTextIntoFixedSizeBitmap(ref Bitmap img, string text,Font dp, Color c, Color? b,
+        public static Bitmap DrawTextIntoFixedSizeBitmap(ref Bitmap img, string text,Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
                                                     float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90 , bool antialias = true)
         { 
             using (Graphics dgr = Graphics.FromImage(img))
             {
-                dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                dgr.TextRenderingHint = hint;
 
                 if (b != null)           
                 {
@@ -121,7 +119,7 @@ namespace OFC
                         using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, b.Value, b.Value.Multiply(backscale), angleback))
                             dgr.FillRectangle(bb, backarea);
 
-                        dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; // only if filled
+                        //dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; // only if filled
                     }
 
                 }
@@ -140,8 +138,6 @@ namespace OFC
                     else
                         dgr.DrawString(text, dp, textb, 0, 0);
                 }
-
-                dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
 
                 return img;
             }
@@ -257,6 +253,7 @@ namespace OFC
             {
                 using (Graphics g = Graphics.FromImage(t))
                 {
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;      // recommendation from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.graphics.measurestring?view=dotnet-plat-ext-5.0
                     if ( fmt != null )
                         return g.MeasureString(text, f, new Size(10000, 10000), fmt);
                     else

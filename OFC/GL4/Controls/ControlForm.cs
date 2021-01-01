@@ -58,7 +58,10 @@ namespace OFC.GL4.Controls
             BorderWidthNI = FormBorderWidth;
             BorderColorNI = DefaultBorderColor;
             text = title;
+            Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
+
+        // tbd implement focus properly.. this is focuable, and on focus, select last child
 
         public GLForm() : this("F?", "", DefaultWindowRectangle)
         {
@@ -81,16 +84,9 @@ namespace OFC.GL4.Controls
 
         public virtual void OnShown()   // only called if top level form
         {
-            GLBaseControl lowest = FindNextTabChild(int.MaxValue, false);      // try the tab order, 0 first
-            if (lowest != null)
-                lowest.SetFocus();
-            else
-            {
-                GLBaseControl firsty = FirstChildYOfType(null, (x) => x.Enabled && x.Focusable);     // focus on highest child
-                if (firsty != null)
-                    firsty.SetFocus();
-            }
-
+            lastchildfocus = FindNextTabChild(-1);      // try the tab order
+            if (lastchildfocus != null)     // if found a focusable child, set it
+                lastchildfocus.SetFocus();
             Shown?.Invoke(this);
         }
 
@@ -135,7 +131,7 @@ namespace OFC.GL4.Controls
 
             Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling);
 
-            gr.SmoothingMode = SmoothingMode.AntiAlias;
+            //gr.SmoothingMode = SmoothingMode.AntiAlias;
 
             if (Text.HasChars())
             {
@@ -163,7 +159,7 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            gr.SmoothingMode = SmoothingMode.None;
+            //gr.SmoothingMode = SmoothingMode.None;
         }
 
         public override void OnMouseDown(GLMouseEventArgs e)
@@ -310,18 +306,35 @@ namespace OFC.GL4.Controls
         public override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyDown(e);
-            if (!e.Handled && TabChangesFocus && e.KeyCode == System.Windows.Forms.Keys.Tab)
+            if (!e.Handled && TabChangesFocus && lastchildfocus != null && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
-                GLBaseControl f = FindChildWithFocus();
-                if ( f != null && f.TabOrder != -1)
+                GLBaseControl next = FindNextTabChild(lastchildfocus.TabOrder);
+                if (next == null)
+                    next = FindNextTabChild(-1);
+                if (next != null)
                 {
-                    GLBaseControl next = FindNextTabChild(f.TabOrder, true);
-                    if (next == null)
-                        next = FindNextTabChild(int.MaxValue, false);
-                    if (next != null)
-                        next.SetFocus();
+                    lastchildfocus = next;
+                    next.SetFocus();
                 }
+
                 e.Handled = true;
+            }
+        }
+
+        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto) // called if we get focus (focused=true) or if child gets focused (focused=false)
+        {
+            if (evt == FocusEvent.ChildFocused)     // need to take a note
+            {
+                System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
+                lastchildfocus = fromto;
+            }
+            else if (evt == FocusEvent.Focused)     // we got focus, hand off to child
+            {
+                if (lastchildfocus != null)
+                {
+                    lastchildfocus.SetFocus();
+                    System.Diagnostics.Debug.WriteLine("Form focus, focus on child");
+                }
             }
         }
 
@@ -336,6 +349,7 @@ namespace OFC.GL4.Controls
         private Rectangle originalwindow;
         private bool cursorindicatingmovement = false;
         private DialogResult dialogResult = DialogResult.None;
+        private GLBaseControl lastchildfocus = null;
 
         #endregion
     }

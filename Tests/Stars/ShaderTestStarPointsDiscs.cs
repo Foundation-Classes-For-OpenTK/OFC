@@ -156,12 +156,12 @@ void main(void)
             {
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
-                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), Color.Yellow, Color.Blue))
+                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
                     items.Add(new GLTexture2D(bmp), "200,100");
                 }
 
-                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("-200,-100", new Size(200, 100), new Font("Arial", 10.0f), Color.Yellow, Color.Blue))
+                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("-200,-100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
                     items.Add(new GLTexture2D(bmp), "-200,-100");
                 }

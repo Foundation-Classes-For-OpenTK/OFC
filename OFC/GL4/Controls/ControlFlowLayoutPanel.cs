@@ -34,14 +34,17 @@ namespace OFC.GL4.Controls
         {
             Dock = type;
             DockPercent = dockpercentage;
-            SetLocationSizeNI(size: sizep);
+            SetLocationSizeNI(bounds: sizep);
         }
 
         public GLFlowLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {
         }
 
-        public enum ControlFlowDirection { Right };
+        public enum ControlFlowDirection { Right, Down };
+
+        public bool FlowInZOrder { get; set; } = true;      // if set, flown in Z order
+        public bool AutoSizeBoth { get; set; } = true;      // if set, autosizes both width and height, else just only one of its width/height dependent on flow direction
 
         public ControlFlowDirection FlowDirection { get { return flowDirection; } set { flowDirection = value; InvalidateLayout(); } }
         public GL4.Controls.Padding FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
@@ -57,8 +60,19 @@ namespace OFC.GL4.Controls
     
             if (AutoSize)       // width stays the same, height changes, width based on what parent says we can have (either our width, or docked width)
             {
-                int maxh = Flow(new Size(parentsize.Width,0), (c, p) => { });
-                SetLocationSizeNI(size: new Size(Width, maxh + ClientBottomMargin + flowPadding.Bottom));
+                var flowsize = Flow(parentsize, (c, p) => { });
+                if (AutoSizeBoth)
+                {
+                    SetLocationSizeNI(bounds: flowsize);
+                }
+                else if (FlowDirection == ControlFlowDirection.Right)
+                {
+                    SetLocationSizeNI(bounds: new Size(Width, flowsize.Height + ClientBottomMargin + flowPadding.Bottom));
+                }
+                else
+                {
+                    SetLocationSizeNI(bounds: new Size(flowsize.Width + ClientRightMargin + flowPadding.Right, Height));
+                }
             }
         }
 
@@ -70,34 +84,54 @@ namespace OFC.GL4.Controls
 
             Flow(ClientSize, (c, p) => 
             {
+                //System.Diagnostics.Debug.WriteLine("Control " + c.Name + " to " + p);
                 c.SetLocationSizeNI(location:p);
                 c.PerformRecursiveLayout();
             });
         }
 
-        private int Flow(Size area, Action<GLBaseControl, Point> action)
+        private Size Flow(Size area, Action<GLBaseControl, Point> action)
         {
             Point flowpos = ClientLocation;
-            int maxh = 0;
-            foreach (GLBaseControl c in ControlsZ)
+            Size max = new Size(0, 0);
+
+            foreach (GLBaseControl c in (FlowInZOrder ? ControlsZ: ControlsIZ))
             {
                 //System.Diagnostics.Debug.WriteLine("flow layout " + c.Name + " " + flowpos + " h " + maxh);
 
-                if (flowpos.X + c.Width + flowPadding.TotalWidth >= area.Width)    // if beyond client right, more down
+                Point pos;
+
+                if (FlowDirection == ControlFlowDirection.Right)
                 {
-                    flowpos = new Point(ClientLeftMargin, maxh);
+                    if (flowpos.X + c.Width + flowPadding.TotalWidth > area.Width)    // if beyond client right, more down
+                    {
+                        flowpos = new Point(ClientLeftMargin, max.Height);
+                    }
+
+                    pos = new Point(flowpos.X + FlowPadding.Left, flowpos.Y + flowPadding.Top);
+
+                    flowpos.X += c.Width + flowPadding.TotalWidth;
+                    max = new Size( Math.Max(max.Width, flowpos.X),
+                                    Math.Max(max.Height, flowpos.Y + c.Height + FlowPadding.TotalHeight));
+                }
+                else
+                {
+                    if ( flowpos.Y + c.Height + flowPadding.TotalHeight > area.Height )
+                    {
+                        flowpos = new Point(max.Width, ClientTopMargin);
+                    }
+
+                    pos = new Point(flowpos.X + FlowPadding.Left, flowpos.Y + flowPadding.Top);
+
+                    flowpos.Y += c.Height + flowPadding.TotalHeight;
+                    max = new Size(Math.Max(max.Width, flowpos.X + c.Width + FlowPadding.TotalWidth),
+                                    Math.Max(max.Height, flowpos.Y));
                 }
 
-                Point pos = new Point(flowpos.X + FlowPadding.Left, flowpos.Y + flowPadding.Top);
-
-                //System.Diagnostics.Debug.WriteLine("Control " + c.Name + " to " + pos);
                 action(c, pos);
-
-                flowpos.X += c.Width + flowPadding.TotalWidth;
-                maxh = Math.Max(maxh, flowpos.Y + c.Height + FlowPadding.TotalHeight);
             }
 
-            return maxh;
+            return max;
         }
     }
 }

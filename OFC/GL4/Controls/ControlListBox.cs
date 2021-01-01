@@ -179,7 +179,7 @@ namespace OFC.GL4.Controls
                 }
                 int fh = (int)Font.GetHeight() + 2;
                 Size sz = new Size((int)max.Width+ScrollBarWidth+8,Math.Min(items*fh+4,DropDownHeightMaximum));
-                SetLocationSizeNI(size: sz);
+                SetLocationSizeNI(bounds: sz);
                 System.Diagnostics.Debug.WriteLine("Autosize list box " + Size);
             }
         }
@@ -254,7 +254,7 @@ namespace OFC.GL4.Controls
                     selectedindexset = false;
                 }
 
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 using (StringFormat f = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.NoWrap })
                 using (Brush textb = new SolidBrush(this.ForeColor))
@@ -295,7 +295,7 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
+               // gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
             }
         }
 

@@ -64,7 +64,7 @@ namespace OFC.GL4.Controls
         public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             var p = parent as GLControlDisplay;     // if attached to control display, its an automatic tool tip
-            if (p != null)                          // unsubscribe, and we can do this even if we did not subsribe in the first place
+            if (p != null )            // unsubscribe, and we can do this even if we did not subsribe in the first place
             {
                 p.GlobalMouseMove -= MouseMoved;
             }

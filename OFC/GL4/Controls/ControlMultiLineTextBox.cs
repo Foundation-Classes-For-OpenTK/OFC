@@ -521,7 +521,7 @@ namespace OFC.GL4.Controls
                 {
                     using (Graphics gr = Graphics.FromImage(bmp))
                     {
-                        gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
+                        gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // recommended default for measuring text
 
                         using (var sfmt = new StringFormat())       // measure where the cursor will be and move startx to make it visible
                         {
@@ -686,11 +686,11 @@ namespace OFC.GL4.Controls
             Finish(invalidate: false, clearmarkers: false, restarttimer: false);        // no need to invalidate again, it will
         }
 
-        public override void OnFocusChanged(bool focused, GLBaseControl fromto)
+        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
-            base.OnFocusChanged(focused, fromto);
+            base.OnFocusChanged(evt, fromto);
 
-            if (focused)
+            if (evt == FocusEvent.Focused)
             {
                 CursorTimerRestart();
                 Invalidate();
@@ -731,6 +731,7 @@ namespace OFC.GL4.Controls
                 bc = BackErrorColor;
                 bcgradientalt = BackErrorColor.Multiply(0.9f);
             }
+
             base.DrawBack(bounds, gr, bc, bcgradientalt, bcgradient);
         }
 
@@ -775,7 +776,7 @@ namespace OFC.GL4.Controls
                     int bottom = usablearea.Bottom;
                     usablearea.Height = Font.Height;        // move the area down the screen progressively
 
-                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
+                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
 
                     while (usablearea.Top < bottom)       // paint each line
                     {
@@ -881,7 +882,7 @@ namespace OFC.GL4.Controls
                         lineno++;
                     }
 
-                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;     // back to system default
+                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;     // back to system default
                 }
             }
         }
@@ -1006,8 +1007,8 @@ namespace OFC.GL4.Controls
             {
                 using (Graphics gr = Graphics.FromImage(b))
                 {
-                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
-
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // recommended default for measuring text
+                                                                                                
                     for (int i = 0; i < s.Length; i++)    // we have to do it one by one, as the query is limited to 32 char ranges
                     {
                         using (var fmt = new StringFormat())

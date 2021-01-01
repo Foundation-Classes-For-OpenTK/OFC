@@ -54,6 +54,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\TestControlsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControlsForm.designer.cs">
+      <DependentUpon>TestControlsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TestControlsMenu.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControlsMenu.designer.cs">
+      <DependentUpon>TestControlsMenu.cs</DependentUpon>
+    </Compile>
     <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">
@@ -256,6 +268,12 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\TestControlsForm.resx">
+      <DependentUpon>TestControlsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TestControlsMenu.resx">
+      <DependentUpon>TestControlsMenu.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Functions\TestFunctions.resx">
       <DependentUpon>TestFunctions.cs</DependentUpon>
     </EmbeddedResource>

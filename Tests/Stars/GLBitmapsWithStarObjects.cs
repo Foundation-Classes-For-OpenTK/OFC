@@ -11,14 +11,15 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
- 
+
+using OFC.GL4;
 using OpenTK;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4
+namespace TestOpenTk
 {
     // Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
     // can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation

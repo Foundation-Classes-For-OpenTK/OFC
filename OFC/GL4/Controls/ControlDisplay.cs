@@ -32,7 +32,6 @@ namespace OFC.GL4.Controls
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
         public Action<GLControlDisplay, GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;     // subscribe to get any focus changes (from old to new, may be null)
-
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;     // subscribe to get any movement changes
 
         // from Control, override the Mouse* and Key* events
@@ -86,19 +85,19 @@ namespace OFC.GL4.Controls
             glwin.SetCursor(t);
         }
 
-        public override void Add(GLBaseControl other)           
+        public override void Add(GLBaseControl other, bool atback = false)           
         {
             System.Diagnostics.Debug.Assert(other is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
             textures[other] = new GLTexture2D();                // we make a texture per top level control to render with
             other.MakeLevelBitmap(Math.Max(1,other.Width),Math.Max(1,other.Height));    // ensure we make a bitmap
-            base.Add(other);
+            base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other)
+        public override void Remove(GLBaseControl other, bool dispose = true)
         {
             if (ControlsZ.Contains(other))
             {
-                base.Remove(other);
+                base.Remove(other, dispose);
                 textures[other].Dispose();
                 textures.Remove(other);
             }
@@ -108,12 +107,12 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Focus to " + newfocus?.Name);
 
-            if (newfocus == currentfocus)
+            if (newfocus == currentfocus)       // no action if the same
                 return true;
 
             if (newfocus != null)
             {
-                if (newfocus.RejectFocus)       // if reject focus change when clicked, abort
+                if (newfocus.RejectFocus)       // if reject focus change when clicked, abort, do not change focus
                     return false;
                 if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
                     newfocus = null;
@@ -121,18 +120,27 @@ namespace OFC.GL4.Controls
 
             GLBaseControl oldfocus = currentfocus;
 
-            GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);
+            GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);   // global invoker
+            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
 
-            if (currentfocus != null)
+            if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
-                currentfocus.OnFocusChanged(false, newfocus);
+                currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
+
+                if (!(currentfocus is GLForm))  // reflect to the form so it knows a child has focus
+                    currentfocus.FindForm()?.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
+
                 currentfocus = null;
             }
             
-            if (newfocus != null)
+            if (newfocus != null)               // if we have a new focus, set and tell it
             {
                 currentfocus = newfocus;
-                currentfocus.OnFocusChanged(true, oldfocus);
+
+                currentfocus.OnFocusChanged(FocusEvent.Focused, oldfocus);
+
+                if (!(currentfocus is GLForm))  // reflect to the form so it knows a child has focus
+                    currentfocus.FindForm()?.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);           
             }
 
             return true;
@@ -217,8 +225,7 @@ namespace OFC.GL4.Controls
 
         public void Render(GLRenderControl currentstate)
         {
-            //System.Diagnostics.Debug.WriteLine("Form redraw start");
-            //DebugWhoWantsRedraw();
+            //System.Diagnostics.Debug.WriteLine("Render");
 
             NeedRedraw = false;
             RequestRender = false;
@@ -261,7 +268,7 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            //System.Diagnostics.Debug.WriteLine("Form redraw end");
+            //System.Diagnostics.Debug.WriteLine("Render Finished");
         }
 
         // called by Control to tell it that a control has been removed
@@ -318,6 +325,7 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseDown(object sender, GLMouseEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("GC Mouse down");
             if (currentmouseover != null)
             {
                 currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
@@ -435,10 +443,14 @@ namespace OFC.GL4.Controls
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
                 SetFocus(currentmouseover);
-                SetControlLocation(ref e, currentmouseover);    // reset location etc
 
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseClick(e);
+                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseClick(e);
+                }
             }
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
@@ -456,10 +468,13 @@ namespace OFC.GL4.Controls
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
                 SetFocus(currentmouseover);
-                SetControlLocation(ref e, currentmouseover);    // reset location etc
+                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
 
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseDoubleClick(e);
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseDoubleClick(e);
+                }
             }
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
@@ -518,9 +533,9 @@ namespace OFC.GL4.Controls
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyUp(e);        // reflect to form
+                    currentfocus.FindForm()?.OnKeyUp(e);            // reflect to form
 
-                if ( !e.Handled)
+                if ( !e.Handled)                                    // send to control
                     currentfocus.OnKeyUp(e);
 
             }
@@ -532,9 +547,9 @@ namespace OFC.GL4.Controls
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyDown(e);        // reflect to form
+                    currentfocus.FindForm()?.OnKeyDown(e);          // reflect to form
 
-                if ( !e.Handled )
+                if ( !e.Handled)                                    // send to control
                     currentfocus.OnKeyDown(e);
 
             }
@@ -545,10 +560,10 @@ namespace OFC.GL4.Controls
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyPress(e);        // reflect to form
+                    currentfocus.FindForm()?.OnKeyPress(e);         // reflect to form
 
                 if ( !e.Handled )
-                    currentfocus.OnKeyPress(e);
+                    currentfocus.OnKeyPress(e);                     // send to control
             }
         }
 
@@ -556,7 +571,7 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Call from glwinform with Resize {0}", glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);                 // reset the matrix calc view port size from the window size
-            SetLocationSizeNI(size: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
+            SetLocationSizeNI(bounds: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
             OnResize();                                                 // let base classes know
             InvalidateLayout();                                         // and we need to invalidate layout
         }

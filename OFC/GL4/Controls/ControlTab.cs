@@ -39,18 +39,18 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public override void Add(GLBaseControl other)
+        public override void Add(GLBaseControl other, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(other is GLTabPage);
             other.Dock = DockingType.Fill;
             other.Visible = false;
-            base.Add(other);
+            base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other)
+        public override void Remove(GLBaseControl other, bool dispose)
         {
             System.Diagnostics.Debug.Assert(other is GLTabPage);
-            base.Remove(other);
+            base.Remove(other,dispose);
         }
 
         Rectangle[] tabrectangles;
@@ -152,8 +152,6 @@ namespace OFC.GL4.Controls
 
             Color tabtextc = (Enabled) ? ((selected) ? ForeColor : TextNotSelectedColor) : TextNotSelectedColor.Multiply(DisabledScaling);
             TabStyle.DrawText(gr, area, selected, tabtextc, text, Font, img);
-
-            gr.SmoothingMode = SmoothingMode.Default;
         }
 
         private void ReselectTab()

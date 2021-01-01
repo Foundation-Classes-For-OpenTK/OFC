@@ -67,7 +67,7 @@ namespace OFC.GL4.Controls
             Size isize = ImageStretch ? box.Size : image.Size;
             Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize,true,true);
 
-            //System.Diagnostics.Debug.WriteLine("Image for " + Name + " " + Enabled + " " + DrawnImageAttributesEnabled);
+            System.Diagnostics.Debug.WriteLine("Image for " + Name + " " + isize + " " + drawarea);
 
             if (imgattr != null)
                 g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, imgattr);

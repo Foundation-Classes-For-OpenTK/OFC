@@ -64,14 +64,14 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void Add(GLBaseControl other)           // we need to override, since we want controls added to the scroll panel not us
+        public override void Add(GLBaseControl other, bool atback = false)           // we need to override, since we want controls added to the scroll panel not us
         {
-            scrollpanel.Add(other);
+            scrollpanel.Add(other, atback);
         }
 
-        public override void Remove(GLBaseControl other)
+        public override void Remove(GLBaseControl other, bool dispose = true)
         {
-            scrollpanel.Remove(other);
+            scrollpanel.Remove(other,dispose);
         }
 
         private GLScrollBar scrollbar;

@@ -30,13 +30,13 @@ namespace OFC.GL4.Controls
 
     public class GLCheckBox : GLButtonTextBase
     {
-        public Action<GLBaseControl> CheckChanged { get; set; } = null;     // not fired by programatically changing CheckState
+        public Action<GLBaseControl> CheckChanged { get; set; } = null;    
 
         public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
         public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
         public bool Checked { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, true); } }
         public bool CheckedNoChangeEvent { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, false); } }
-        public bool AutoCheck { get; set; } = false;            // if true, autocheck on click
+        public bool CheckOnClick { get; set; } = false;            // if true, autocheck on click
         public bool UserCanOnlyCheck { get; set; } = false;            // if true, user can only turn it on
 
         public CheckBoxAppearance Appearance { get { return appearance; } set { appearance = value; Invalidate(); } }
@@ -66,17 +66,16 @@ namespace OFC.GL4.Controls
         {
             BackColorNI = Color.Transparent;
             TextNI = text;
-            AutoCheck = true;
+            CheckOnClick = true;
+            Focusable = true;
+            InvalidateOnFocusChange = true;
         }
 
-        public GLCheckBox(string name, Rectangle location, Image chk, Image unchk) : base(name, location)
+        public GLCheckBox(string name, Rectangle location, Image chk, Image unchk) : this(name, location,"")
         {
-            BackColorNI = Color.Transparent;
-            TextNI = "";
             Image = chk;
             ImageUnchecked = unchk;
             Appearance = CheckBoxAppearance.Button;
-            AutoCheck = true;
         }
 
         public GLCheckBox() : this("CB?", DefaultWindowRectangle, "")
@@ -94,7 +93,7 @@ namespace OFC.GL4.Controls
                 Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
                                  (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
 
-                SetLocationSizeNI(size:s);
+                SetLocationSizeNI(bounds:s);
             }
         }
 
@@ -124,8 +123,6 @@ namespace OFC.GL4.Controls
                 if (hasimages)
                     DrawImage(area, gr);
 
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                     DrawText(area, gr, fmt);
             }
@@ -136,8 +133,7 @@ namespace OFC.GL4.Controls
 
                 int reduce = (int)(tickarea.Height * TickBoxReductionRatio);
                 tickarea.Y += (tickarea.Height - reduce) / 2;
-                tickarea.Height = reduce;
-                tickarea.Width = tickarea.Height;
+                tickarea.Height = tickarea.Width = reduce;
 
                 if (CheckAlign == ContentAlignment.MiddleRight)
                 {
@@ -191,8 +187,6 @@ namespace OFC.GL4.Controls
                         gr.DrawRectangle(third, tickarea);
                 }
 
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
                 using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.FitBlackBox })
                     DrawText(textarea, gr, fmt);
 
@@ -202,30 +196,7 @@ namespace OFC.GL4.Controls
                 }
                 else
                 {
-                    Color c1 = Color.FromArgb(200, CheckColor.Multiply(discaling));
-                    if (CheckState == CheckState.Checked)
-                    {
-                        Point pt1 = new Point(checkarea.X + 2, checkarea.Y + checkarea.Height / 2 - 1);
-                        Point pt2 = new Point(checkarea.X + checkarea.Width / 2 - 1, checkarea.Bottom - 2);
-                        Point pt3 = new Point(checkarea.X + checkarea.Width - 2, checkarea.Y);
-
-                        using (Pen pcheck = new Pen(c1, 2.0F))
-                        {
-                            gr.DrawLine(pcheck, pt1, pt2);
-                            gr.DrawLine(pcheck, pt2, pt3);
-                        }
-                    }
-                    else if (CheckState == CheckState.Indeterminate)
-                    {
-                        Size cb = new Size(checkarea.Width - 5, checkarea.Height - 5);
-                        if (cb.Width > 0 && cb.Height > 0)
-                        {
-                            using (Brush br = new SolidBrush(c1))
-                            {
-                                gr.FillRectangle(br, new Rectangle(new Point(checkarea.X + 2, checkarea.Y + 2), cb));
-                            }
-                        }
-                    }
+                    DrawTick(checkarea, Color.FromArgb(200, CheckColor.Multiply(discaling)), CheckState, gr);
                 }
             }
             else
@@ -241,8 +212,6 @@ namespace OFC.GL4.Controls
                 textarea.Width -= rect.Width;
 
                 Color basecolor = Hover ? MouseOverBackColor : ButtonBackColor;
-
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 using (Brush outer = new SolidBrush(basecolor))
                     gr.FillEllipse(outer, rect);
@@ -283,8 +252,6 @@ namespace OFC.GL4.Controls
                 using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
                     DrawText(textarea, gr, fmt);
             }
-
-            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
         }
 
         private void DrawImage(Rectangle box, Graphics g)
@@ -305,11 +272,20 @@ namespace OFC.GL4.Controls
 
         private void DrawText(Rectangle box, Graphics g, StringFormat fmt)
         {
+            if (Focused)
+            {
+                using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                {
+                    Rectangle fr = box;
+                    fr.Inflate(-1, -1);
+                    g.DrawRectangle(p1, fr);
+                }
+            }
             if (this.Text.HasChars())
             {
                 using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
                 {
-                    if (FontToUse == null || FontToUse.FontFamily != Font.FontFamily || FontToUse.Style != Font.Style)
+                    if (FontToUse == null || FontToUse.FontFamily != Font.FontFamily || FontToUse.Style != Font.Style || FontToUse.SizeInPoints != Font.SizeInPoints)
                         FontToUse = g.GetFontToFitRectangle(this.Text, Font, box, fmt);
 
                     g.DrawString(this.Text, FontToUse, textb, box, fmt);
@@ -320,7 +296,7 @@ namespace OFC.GL4.Controls
         public override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if ( e.Button == GLMouseEventArgs.MouseButtons.Left && AutoCheck && ( !UserCanOnlyCheck || checkstate != CheckState.Checked))
+            if ( e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick && ( !UserCanOnlyCheck || checkstate != CheckState.Checked))
             {
                 SetCheckState(checkstate == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
             }

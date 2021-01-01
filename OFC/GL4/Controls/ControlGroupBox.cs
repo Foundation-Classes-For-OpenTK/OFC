@@ -97,15 +97,15 @@ namespace OFC.GL4.Controls
 
                 if (this.Text.HasChars())
                 { 
-                    gr.SmoothingMode = SmoothingMode.AntiAlias;
+                 //   gr.SmoothingMode = SmoothingMode.AntiAlias;
                     using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
                     {
                         Rectangle titlearea = new Rectangle(bounds.Left+GBXoffset, bounds.Top, twidth, GroupBoxHeight );
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
 
-                    gr.SmoothingMode = SmoothingMode.None;
-                    }
+                  //  gr.SmoothingMode = SmoothingMode.None;
+                 }
             }
         }
     }

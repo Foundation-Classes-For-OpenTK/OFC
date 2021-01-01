@@ -15,12 +15,15 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
     public class GLComboBox : GLForeDisplayBase
     {
         public Action<GLBaseControl> SelectedIndexChanged { get; set; } = null;     // not fired by programatically changing CheckState
+        public Action<GLBaseControl,bool> DropDownStateChanged { get; set; } = null;     
 
         public string Text { get { return dropdownbox.Text; } }
 
@@ -37,6 +40,11 @@ namespace OFC.GL4.Controls
         public Color DropDownBackgroundColor { get { return dropdownbox.BackColor; } set { dropdownbox.BackColor = value; } }
         public Color ItemSeperatorColor { get { return dropdownbox.ItemSeperatorColor; } set { dropdownbox.ItemSeperatorColor = value; } }
 
+        public Color ComboBoxBackColor { get { return comboboxBackColor; } set { comboboxBackColor = value; Invalidate(); } }
+        public float BackColorScaling { get { return backColorScaling; } set { backColorScaling = value; Invalidate(); } }
+
+        public bool InDropDown { get { return dropdownbox.Visible; } }
+
         // scroll bar
         public Color ArrowColor { get { return dropdownbox.ArrowColor; } set { dropdownbox.ArrowColor = value; } }       // of text
         public Color SliderColor { get { return dropdownbox.SliderColor; } set { dropdownbox.SliderColor = value; } }
@@ -52,11 +60,15 @@ namespace OFC.GL4.Controls
         public float ThumbColorScaling { get { return dropdownbox.ThumbColorScaling; } set { dropdownbox.ThumbColorScaling = value; } }
         public float ThumbDrawAngle { get { return dropdownbox.ThumbDrawAngle; } set { dropdownbox.ThumbDrawAngle = value; } }
 
+        private Color comboboxBackColor = DefaultButtonBackColor;
+        private float backColorScaling = 0.5F;
+        
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)
         {
             Items = itms;
             InvalidateOnEnterLeave = true;
             Focusable = true;
+            InvalidateOnFocusChange = true;
             dropdownbox.Visible = false;
             dropdownbox.Name = name + "-Dropdown";
             dropdownbox.SelectedIndexChanged += dropdownchanged;
@@ -71,54 +83,90 @@ namespace OFC.GL4.Controls
         {
         }
 
+        protected override void SizeControl(Size parentsize)
+        {
+            base.SizeControl(parentsize);
+            if (AutoSize)
+            {
+                SizeF size = new Size(80, 24);
+
+                if ( Items != null )
+                {
+                    string longest = Items.Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
+                    if (longest.HasChars())
+                    {
+                        size = BitMapHelpers.MeasureStringInBitmap(longest, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleLeft));
+                        int arrowwidth = Font.ScalePixels(20);
+                        size.Width += arrowwidth + ClientWidthMargin + textspacing*2;
+                        size.Height += ClientHeightMargin + textspacing*2;
+                    }
+                }
+                SetLocationSizeNI(bounds: new Size((int)size.Width,(int)size.Height));
+            }
+        }
+
+        const int textspacing = 2;
+
         protected override void Paint(Rectangle area, Graphics gr)
         {
-            if (Text != null)
+            bool enabled = Enabled && Items.Count > 0;
+            Color bc = enabled && Hover ? MouseOverBackColor : comboboxBackColor;
+
+            using (var b = new LinearGradientBrush(new Rectangle(area.Left, area.Top - 1, area.Width, area.Height + 1), bc, bc.Multiply(BackColorScaling), 90))
+                gr.FillRectangle(b, area);       // linear grad brushes do not respect smoothing mode, btw
+
+            int arrowwidth = Font.ScalePixels(20);
+            Rectangle arrowbox = new Rectangle(area.Right - arrowwidth, area.Y, arrowwidth, area.Height);
+
+            Rectangle textbox = new Rectangle(area.X, area.Y, area.Width - arrowwidth - textspacing, area.Height);
+
+            if ( Focused )
             {
-                bool enabled = Enabled && Items.Count > 0;
+                using (Pen p1 = new Pen(MouseOverBackColor) { DashStyle = DashStyle.Dash })
+                {
+                    Rectangle fr = textbox;
+                    fr.Inflate(-1, -1);
+                    gr.DrawRectangle(p1, fr);
+                }
+            }
 
-                if (enabled && Hover)
-                    DrawBack(area, gr, MouseOverBackColor, MouseOverBackColor.Multiply(0.5f), BackColorGradient);
-              
-                int arrowwidth = Font.ScalePixels(20);
-
-                int texthorzspacing = 1;
-                Rectangle textbox = new Rectangle(area.X, area.Y, area.Width - arrowwidth - 2 * texthorzspacing, area.Height);
-                Rectangle arrowbox = new Rectangle(area.Right - arrowwidth, area.Y, arrowwidth, area.Height);
-
+            if (Text.HasChars())
+            {
+                
                 using (var fmt = new StringFormat())
                 {
                     fmt.Alignment = StringAlignment.Near;
+                    fmt.LineAlignment = StringAlignment.Center;
                     using (Brush textb = new SolidBrush(enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
                     {
                         gr.DrawString(Text, Font, textb, textbox, fmt);
                     }
                 }
+            }
 
-                if (enabled)
+            if (enabled)
+            {
+                int hoffset = arrowbox.Width / 12 + 2;
+                int voffset = arrowbox.Height / 4;
+                Point arrowpt1 = new Point(arrowbox.Left + hoffset, arrowbox.Y + voffset);
+                Point arrowpt2 = new Point(arrowbox.XCenter(), arrowbox.Bottom - voffset);
+                Point arrowpt3 = new Point(arrowbox.Right - hoffset, arrowpt1.Y);
+
+                Point arrowpt1c = new Point(arrowpt1.X, arrowpt2.Y);
+                Point arrowpt2c = new Point(arrowpt2.X, arrowpt1.Y);
+                Point arrowpt3c = new Point(arrowpt3.X, arrowpt2.Y);
+
+                using (Pen p2 = new Pen(ForeColor))
                 {
-                    int hoffset = arrowbox.Width / 12 + 2;
-                    int voffset = arrowbox.Height / 4;
-                    Point arrowpt1 = new Point(arrowbox.Left + hoffset, arrowbox.Y + voffset);
-                    Point arrowpt2 = new Point(arrowbox.XCenter(), arrowbox.Bottom - voffset);
-                    Point arrowpt3 = new Point(arrowbox.Right - hoffset, arrowpt1.Y);
-
-                    Point arrowpt1c = new Point(arrowpt1.X, arrowpt2.Y);
-                    Point arrowpt2c = new Point(arrowpt2.X, arrowpt1.Y);
-                    Point arrowpt3c = new Point(arrowpt3.X, arrowpt2.Y);
-
-                    using (Pen p2 = new Pen(ForeColor))
+                    if (dropdownbox.Visible)
                     {
-                        if (dropdownbox.Visible)
-                        {
-                            gr.DrawLine(p2, arrowpt1c, arrowpt2c);            // the arrow!
-                            gr.DrawLine(p2, arrowpt2c, arrowpt3c);
-                        }
-                        else
-                        {
-                            gr.DrawLine(p2, arrowpt1, arrowpt2);            // the arrow!
-                            gr.DrawLine(p2, arrowpt2, arrowpt3);
-                        }
+                        gr.DrawLine(p2, arrowpt1c, arrowpt2c);            // the arrow!
+                        gr.DrawLine(p2, arrowpt2c, arrowpt3c);
+                    }
+                    else
+                    {
+                        gr.DrawLine(p2, arrowpt1, arrowpt2);            // the arrow!
+                        gr.DrawLine(p2, arrowpt2, arrowpt3);
                     }
                 }
             }
@@ -168,34 +216,40 @@ namespace OFC.GL4.Controls
 
         private void Activate()
         {
-            bool activatable = Enabled && Items.Count > 0 && Parent != null;
+            bool activatable = Enabled && Items.Count > 0;
 
             if (!activatable)
                 return;
 
             dropdownbox.SuspendLayout();
-            dropdownbox.Bounds = new Rectangle(Left, Bottom + 1, Width, Height);
-            dropdownbox.BackColor = BackColor;
+            var p = DisplayControlCoords(false);
+            dropdownbox.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+            dropdownbox.TopMost = true;
+            dropdownbox.BackColor = ComboBoxBackColor;
+            dropdownbox.BackColorGradientAlt = ComboBoxBackColor.Multiply(BackColorScaling);
+            dropdownbox.BackColorGradientDir = 90;
             dropdownbox.AutoSize = true;
             dropdownbox.Font = Font;
             dropdownbox.Visible = true;
             dropdownbox.ResumeLayout();
-            Parent.Add(dropdownbox);
+            FindDisplay().Add(dropdownbox);
+            DropDownStateChanged?.Invoke(this, true);
             dropdownbox.SetFocus();
         }
 
         private void Deactivate()
         {
             dropdownbox.Visible = false;
-            Parent.Remove(dropdownbox);
+            FindDisplay().Remove(dropdownbox);
             SetFocus();
             Invalidate();
+            DropDownStateChanged?.Invoke(this, false);
         }
 
         private void dropdownchanged(GLBaseControl c, int v)
         {
-            OnSelectedIndexChanged();
             Deactivate();
+            OnSelectedIndexChanged();       // order here important, called after action taken
         }
 
         private void dropdownotherkey(GLBaseControl c, GLKeyEventArgs e)
