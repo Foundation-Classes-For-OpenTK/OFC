@@ -14,7 +14,6 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace OFC.GL4.Controls
 {
@@ -54,53 +53,16 @@ namespace OFC.GL4.Controls
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
-            if ( AutoSize )
-            {
-                SizeF size = new Size(0, 0);
-                if ( Text.HasChars() )
-                    size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
-
-                if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
-                    size = new SizeF(size.Width+Image.Width, Math.Max(Image.Height,(int)(size.Height+0.999)));
-
-                Size s = new Size((int)(size.Width + 0.999) + ClientWidthMargin + 4,
-                                 (int)(size.Height + 0.999) + ClientHeightMargin + 4);
-
-                SetLocationSizeNI(bounds: s);
-            }
+            if (AutoSize)
+                ButtonAutoSize(parentsize, new Size(0,0));
         }
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
             if (area.Width < 1 || area.Height < 1)  // and no point drawing any more in the button area if its too small, it will except
                 return;
-            PaintBack(area, gr);
+            PaintButtonBack(area, gr);
             PaintButton(area, gr,true);
-        }
-
-        protected void PaintBack(Rectangle backarea, Graphics gr)
-        {
-            Color colBack = Color.Empty;
-
-            if (Enabled == false)
-            {
-                colBack = ButtonBackColor.Multiply(DisabledScaling);
-            }
-            else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
-            {
-                colBack = MouseDownBackColor;
-            }
-            else if (Hover)
-            {
-                colBack = MouseOverBackColor;
-            }
-            else
-            {
-                colBack = ButtonBackColor;
-            }
-
-            using (var b = new LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
-                gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
         }
 
         public override void OnMouseClick(GLMouseEventArgs e)

@@ -12,7 +12,9 @@
  * governing permissions and limitations under the License.
  */
 
+using System;
 using System.Drawing;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -53,6 +55,31 @@ namespace OFC.GL4.Controls
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
+        protected void PaintButtonBack(Rectangle backarea, Graphics gr)
+        {
+            Color colBack = Color.Empty;
+
+            if (Enabled == false)
+            {
+                colBack = ButtonBackColor.Multiply(DisabledScaling);
+            }
+            else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
+            {
+                colBack = MouseDownBackColor;
+            }
+            else if (Hover)
+            {
+                colBack = MouseOverBackColor;
+            }
+            else
+            {
+                colBack = ButtonBackColor;
+            }
+
+            using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
+                gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
+        }
+
         protected void PaintButton(Rectangle buttonarea, Graphics gr, bool paintimage)
         {
             if (Focused && ShowFocusBox)
@@ -81,36 +108,20 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk,  Graphics gr)
+        protected void ButtonAutoSize(Size parentsize, Size extra )     // call if autosize as button
         {
-            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            if (chk == CheckState.Checked)
-            {
-                Point pt1 = new Point(checkarea.X + 2, checkarea.Y + checkarea.Height / 2 - 1);
-                Point pt2 = new Point(checkarea.X + checkarea.Width / 2 - 1, checkarea.Bottom - 2);
-                Point pt3 = new Point(checkarea.X + checkarea.Width - 2, checkarea.Y);
+            SizeF size = new Size(0, 0);
+            if (Text.HasChars())
+                size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
 
-                using (Pen pcheck = new Pen(c1, 2.0F))
-                {
-                    gr.DrawLine(pcheck, pt1, pt2);
-                    gr.DrawLine(pcheck, pt2, pt3);
-                }
-            }
-            else if (chk == CheckState.Indeterminate)
-            {
-                Size cb = new Size(checkarea.Width - 5, checkarea.Height - 5);
-                if (cb.Width > 0 && cb.Height > 0)
-                {
-                    using (Brush br = new SolidBrush(c1))
-                    {
-                        gr.FillRectangle(br, new Rectangle(new Point(checkarea.X + 2, checkarea.Y + 2), cb));
-                    }
-                }
-            }
+            if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
+                size = new SizeF(size.Width + Image.Width, Math.Max(Image.Height, (int)(size.Height + 0.999)));
 
-            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
+            Size s = new Size((int)(size.Width + 0.999 + extra.Width) + ClientWidthMargin + 4,
+                             (int)(size.Height + 0.999 + extra.Height) + ClientHeightMargin + 4);
+
+            SetLocationSizeNI(bounds: s);
         }
-
 
     }
 

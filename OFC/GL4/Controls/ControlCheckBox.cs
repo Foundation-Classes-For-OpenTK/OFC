@@ -19,33 +19,11 @@ using System.Linq;
 
 namespace OFC.GL4.Controls
 {
-    public enum CheckBoxAppearance
+    public class GLCheckBox : GLCheckBoxBase
     {
-        Normal = 0,
-        Button = 1,
-        Radio = 2,
-    }
-
-    public enum CheckState { Unchecked, Checked, Indeterminate };
-
-    public class GLCheckBox : GLButtonTextBase
-    {
-        public Action<GLBaseControl> CheckChanged { get; set; } = null;    
-
-        public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
-        public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
-        public bool Checked { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, true); } }
-        public bool CheckedNoChangeEvent { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, false); } }
-        public bool CheckOnClick { get; set; } = false;            // if true, autocheck on click
-        public bool UserCanOnlyCheck { get; set; } = false;            // if true, user can only turn it on
-
         public CheckBoxAppearance Appearance { get { return appearance; } set { appearance = value; Invalidate(); } }
 
         // Fore (text), ButtonBack, MouseOverBackColor, MouseDownBackColor from inherited class
-        private Color CheckBoxInnerColor { get { return checkBoxInnerColor; } set { checkBoxInnerColor = value; Invalidate(); } } 
-        private Color CheckColor { get { return checkColor; } set { checkColor = value; Invalidate(); } }
-
-        public bool GroupRadioButton { get; set; } = false;     // if true, on check, turn off all other CheckBox of parents
 
         public ContentAlignment CheckAlign { get { return checkalign; } set { checkalign = value; Invalidate(); } }     // appearance Normal only
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
@@ -86,15 +64,8 @@ namespace OFC.GL4.Controls
         {
             base.SizeControl(parentsize);
 
-            if ( AutoSize )
-            {
-                SizeF size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
-                
-                Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
-                                 (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
-
-                SetLocationSizeNI(bounds:s);
-            }
+            if (AutoSize)
+                CheckBoxAutoSize(parentsize);
         }
 
         protected override void Paint(Rectangle area, Graphics gr)
@@ -293,48 +264,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
-        {
-            base.OnMouseClick(e);
-            if ( e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick && ( !UserCanOnlyCheck || checkstate != CheckState.Checked))
-            {
-                SetCheckState(checkstate == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
-            }
-        }
 
-        private void SetCheckState(CheckState value, bool firechange)
-        {
-            if (checkstate != value)
-            {
-                checkstate = value;
-
-                if (GroupRadioButton && Parent != null && checkstate == CheckState.Checked)
-                {
-                    foreach (GLCheckBox c in Parent.ControlsZ.OfType<GLCheckBox>())
-                    {
-                        if (c != this && c.GroupRadioButton == true && c.checkstate != CheckState.Unchecked)    // if not us, in a group, and not unchecked
-                        {
-                            c.checkstate = CheckState.Unchecked;        // set directly
-                            if ( firechange)
-                                c.OnCheckChanged();                         // fire change
-                            c.Invalidate();
-                        }
-                    }
-                }
-
-                if ( firechange )
-                    OnCheckChanged();   // fire change on us
-
-                Invalidate();
-            }
-        }
-
-        protected virtual void OnCheckChanged()
-        {
-            CheckChanged?.Invoke(this);
-        }
-
-        private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
         private GL4.Controls.CheckBoxAppearance appearance { get; set; } = CheckBoxAppearance.Normal;
         private ContentAlignment checkalign { get; set; } = ContentAlignment.MiddleCenter;
 
@@ -342,8 +272,6 @@ namespace OFC.GL4.Controls
         private Image imageIndeterminate { get; set; } = null;           // optional for intermediate
         private System.Drawing.Imaging.ImageAttributes drawnImageAttributesUnchecked = null;         // if unchecked image does not exist, use this for image scaling
 
-        private Color checkBoxInnerColor { get; set; } = DefaultCheckBoxInnerColor;    // Normal only inner colour
-        private Color checkColor { get; set; } = DefaultCheckColor;         // Button - back colour when checked, Normal - check colour
 
     }
 }

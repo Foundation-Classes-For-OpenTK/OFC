@@ -15,34 +15,23 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace OFC.GL4.Controls
 {
-    public class GLMenuItem : GLButton
+    public class GLMenuItem : GLCheckBoxBase        // its a mash up of a button and a check box
     {
         public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
-            // note GLButton setup of Padding=2
             BorderWidthNI = 0;      
             Text = text;
             ShowFocusBox = false;
             ImageStretch = true;        // to make sure that menu items are normally sized by text not by image
+            Focusable = true;
         }
 
         public int IconTickAreaWidth { get; set; } = 0;            // zero for off
 
-        public Action<GLBaseControl> CheckChanged { get; set; } = null;    
-
-        public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
-        public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
-        public bool Checked { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, true); } }
-        public bool CheckedNoChangeEvent { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, false); } }
-        public bool CheckOnClick { get; set; } = false;            // if true, autocheck on click
-
         private Color CheckBoxOuterColor { get { return checkBoxOuterColor; } set { checkBoxOuterColor = value; Invalidate(); } }
-        private Color CheckBoxInnerColor { get { return checkBoxInnerColor; } set { checkBoxInnerColor = value; Invalidate(); } }
-        private Color CheckColor { get { return checkColor; } set { checkColor = value; Invalidate(); } }
 
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
 
@@ -51,10 +40,9 @@ namespace OFC.GL4.Controls
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
-            if (AutoSize && IconTickAreaWidth>0)
+            if (AutoSize)
             {
-                SetLocationSizeNI(bounds: new Size(Width + IconTickAreaWidth, Height));
-                System.Diagnostics.Debug.WriteLine("Menu {0} size {1}", Name, Size);
+                ButtonAutoSize(parentsize, new Size(IconTickAreaWidth,0));
             }
         }
 
@@ -67,7 +55,7 @@ namespace OFC.GL4.Controls
                 butarea.X += IconTickAreaWidth;
             }
 
-            base.PaintBack(area, gr);
+            base.PaintButtonBack(area, gr);
 
            //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
 
@@ -104,31 +92,17 @@ namespace OFC.GL4.Controls
             }
         }
 
-        private void SetCheckState(CheckState value, bool firechange)
-        {
-            if (checkstate != value)
-            {
-                checkstate = value;
-
-                if (firechange)
-                    OnCheckChanged();   // fire change on us
-
-                Invalidate();
-            }
-        }
-
-        protected virtual void OnCheckChanged()
-        {
-            CheckChanged?.Invoke(this);
-        }
+        public Action<GLBaseControl, GLMouseEventArgs> Click { get; set; } = null;
 
         public override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if (e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick )
-            {
-                SetCheckState(checkstate == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
-            }
+            OnClick(e);
+        }
+
+        public virtual void OnClick(GLMouseEventArgs e)
+        {
+            Click?.Invoke(this, e);
         }
 
         private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
