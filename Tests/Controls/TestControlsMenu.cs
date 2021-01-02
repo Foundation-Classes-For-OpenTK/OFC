@@ -166,8 +166,6 @@ namespace TestOpenTk
                         GLMenuStrip menubar = new GLMenuStrip("Menubar", new Rectangle(0, 0, 500, 24));
                         menubar.Font = new Font("Euro Caps", 12);
                         menubar.Dock = DockingType.Top;
-                        menubar.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;
-
 
                         GLMenuItem l1 = new GLMenuItem("A", "MenuA");
                         menubar.Add(l1);
@@ -184,9 +182,9 @@ namespace TestOpenTk
                         GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-1");
                         GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                         l1a3.CheckOnClick = true;
-                     
+
                         GLComboBox l1a4 = new GLComboBox("A-1-4", new Rectangle(0, 0, 0, 0), new List<string>() { "one", "two", "three" });
-                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a4, l1a1, l1a2, l1a3};
+                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a4, l1a1, l1a2, l1a3 };
 
                         GLMenuItem l2 = new GLMenuItem("B", "MenuB");
                         menubar.Add(l2);
@@ -204,6 +202,37 @@ namespace TestOpenTk
 
                     pform.ResumeLayout();
                 }
+
+                {
+                    GLMenuStrip cm = new GLMenuStrip("CM1");
+                    cm.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
+                    GLMenuItem cm1 = new GLMenuItem("A-1-1", "Menu-1");
+                    GLMenuItem cm2 = new GLMenuItem("A-1-2", "Menu-2");
+                    cm2.CheckOnClick = true;
+                    GLMenuItem cm3 = new GLMenuItem("A-1-2", "Menu-3");
+
+                    GLMenuItem l1a1 = new GLMenuItem("A-1-1", "MenuA-1-1");
+                    l1a1.CheckOnClick = true;
+                    GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-1");
+                    GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
+                    l1a3.CheckOnClick = true;
+                    cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
+
+                    cm.Add(cm1);
+                    cm.Add(cm2);
+                    cm.Add(cm3);
+
+                    displaycontrol.MouseClick += (s, ev) =>
+                    {
+                        if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
+                        {
+                            cm.OpenAsContextMenu(displaycontrol,ev.ScreenCoord);
+                        }
+                    };
+                }
+
+
+
 
                 displaycontrol.ResumeLayout();
             }

@@ -310,7 +310,7 @@ namespace OFC.GL4.Controls
             if (suspendLayoutSet)
             {
                 needLayout = true;
-                //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
+                System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
             }
             else
             {
@@ -342,9 +342,7 @@ namespace OFC.GL4.Controls
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
             child.parent = this;
 
-            child.Hover = false;    // in case been used before, reset some items
-            child.focused = false;
-            child.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
+            child.ClearFlagsDown();       // in case of reuse, clear all temp flags as child is added
 
             if (atback)
             {
@@ -373,25 +371,46 @@ namespace OFC.GL4.Controls
             InvalidateLayout();        // we are invalidated and layout
         }
 
-        public virtual void Remove(GLBaseControl child, bool dispose = true)
+        public virtual void AddItems(IEnumerable<GLBaseControl> list)
+        {
+            SuspendLayout();
+            foreach (var i in list)
+                Add(i);
+            ResumeLayout();
+        }
+
+        public virtual void Remove(GLBaseControl child)     // remove is normal, the closes down the child and all its children
         {
             if (childrenz.Contains(child))
             {
-                RemoveSubControl(child,true);
+                RemoveSubControl(child, true, true);
                 Invalidate();
                 PerformLayout();        // reperform layout
             }
         }
 
-        protected virtual void RemoveSubControl(GLBaseControl child, bool dispose)        // recursively go thru children, bottom child first, and remove everything 
+        public virtual void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected
         {
-            foreach (var cc in child.childrenz)     // do children of child first
+            if (childrenz.Contains(child))
             {
-                RemoveSubControl(cc,dispose);
+                RemoveSubControl(child, false, false);
+                Invalidate();
+                PerformLayout();        // reperform layout
+            }
+        }
+
+        protected virtual void RemoveSubControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
+        {
+            if (removechildren)
+            {
+                foreach (var cc in child.childrenz)     // do children of child first
+                {
+                    RemoveSubControl(cc, dispose, removechildren);
+                }
             }
 
             child.OnControlRemove(this, child);
-            OnControlRemove(this,child);
+            OnControlRemove(this, child);
             //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);
             FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
 
@@ -882,7 +901,7 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseEnter(GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location);
+            //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location + " " + InvalidateOnEnterLeave);
             MouseEnter?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
@@ -1065,6 +1084,15 @@ namespace OFC.GL4.Controls
                 if (c.font == null)     // if child does not override font..
                     PropergateFontChanged(c);
             }
+        }
+
+        private void ClearFlagsDown()       // ensure this and its children have all flags cleared to default
+        {
+            Hover = false;
+            focused = false;
+            MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
+            foreach (var c in ControlsZ)
+                c.ClearFlagsDown();
         }
 
         public virtual void Dispose()

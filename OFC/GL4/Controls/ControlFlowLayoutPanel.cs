@@ -60,7 +60,7 @@ namespace OFC.GL4.Controls
     
             if (AutoSize)       // width stays the same, height changes, width based on what parent says we can have (either our width, or docked width)
             {
-                var flowsize = Flow(parentsize, (c, p) => { });
+                var flowsize = Flow(parentsize, false, (c, p) => { });
                 if (AutoSizeBoth)
                 {
                     SetLocationSizeNI(bounds: flowsize);
@@ -82,7 +82,7 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Flow Laying out " + Name + " In client size " + ClientSize);
 
-            Flow(ClientSize, (c, p) => 
+            Flow(ClientSize, true, (c, p) => 
             {
                 //System.Diagnostics.Debug.WriteLine("Control " + c.Name + " to " + p);
                 c.SetLocationSizeNI(location:p);
@@ -90,7 +90,7 @@ namespace OFC.GL4.Controls
             });
         }
 
-        private Size Flow(Size area, Action<GLBaseControl, Point> action)
+        private Size Flow(Size area, bool usearea, Action<GLBaseControl, Point> action)
         {
             Point flowpos = ClientLocation;
             Size max = new Size(0, 0);
@@ -103,7 +103,7 @@ namespace OFC.GL4.Controls
 
                 if (FlowDirection == ControlFlowDirection.Right)
                 {
-                    if (flowpos.X + c.Width + flowPadding.TotalWidth > area.Width)    // if beyond client right, more down
+                    if (usearea && flowpos.X + c.Width + flowPadding.TotalWidth > area.Width)    // if beyond client right, more down
                     {
                         flowpos = new Point(ClientLeftMargin, max.Height);
                     }
@@ -116,7 +116,7 @@ namespace OFC.GL4.Controls
                 }
                 else
                 {
-                    if ( flowpos.Y + c.Height + flowPadding.TotalHeight > area.Height )
+                    if ( usearea && flowpos.Y + c.Height + flowPadding.TotalHeight > area.Height )
                     {
                         flowpos = new Point(max.Width, ClientTopMargin);
                     }

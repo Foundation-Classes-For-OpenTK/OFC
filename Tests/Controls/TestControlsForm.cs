@@ -199,9 +199,7 @@ namespace TestOpenTk
                     pform.ResumeLayout();
                 }
 
-                 displaycontrol.ResumeLayout();
-
-
+                displaycontrol.ResumeLayout();
 
             }
 

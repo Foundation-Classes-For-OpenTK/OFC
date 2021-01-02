@@ -69,9 +69,9 @@ namespace OFC.GL4.Controls
             scrollpanel.Add(other, atback);
         }
 
-        public override void Remove(GLBaseControl other, bool dispose = true)
+        public override void Remove(GLBaseControl other)
         {
-            scrollpanel.Remove(other,dispose);
+            scrollpanel.Remove(other);
         }
 
         private GLScrollBar scrollbar;

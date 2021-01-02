@@ -47,10 +47,10 @@ namespace OFC.GL4.Controls
             base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other, bool dispose)
+        public override void Remove(GLBaseControl other)
         {
             System.Diagnostics.Debug.Assert(other is GLTabPage);
-            base.Remove(other,dispose);
+            base.Remove(other);
         }
 
         Rectangle[] tabrectangles;

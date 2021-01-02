@@ -32,6 +32,7 @@ namespace OFC.GL4.Controls
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
         public Action<GLControlDisplay, GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;     // subscribe to get any focus changes (from old to new, may be null)
+        public Action<GLControlDisplay, GLBaseControl, GLMouseEventArgs> GlobalMouseClick{ get; set; } = null;     // subscribe to get any clicks
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;     // subscribe to get any movement changes
 
         // from Control, override the Mouse* and Key* events
@@ -93,11 +94,11 @@ namespace OFC.GL4.Controls
             base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other, bool dispose = true)
+        public override void Remove(GLBaseControl other)
         {
             if (ControlsZ.Contains(other))
             {
-                base.Remove(other, dispose);
+                base.Remove(other);
                 textures[other].Dispose();
                 textures.Remove(other);
             }
@@ -359,6 +360,7 @@ namespace OFC.GL4.Controls
 
             if (c != currentmouseover)      // if different, either going active or inactive
             {
+                System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
                 mousedowninitialcontrol = null;
 
                 if (currentmouseover != null)   // for current, its a leave
@@ -448,6 +450,7 @@ namespace OFC.GL4.Controls
                 {
                     SetControlLocation(ref e, currentmouseover);    // reset location etc
 
+                    GlobalMouseClick?.Invoke(this, currentmouseover, e);
                     if (currentmouseover.Enabled)
                         currentmouseover.OnMouseClick(e);
                 }
@@ -455,6 +458,8 @@ namespace OFC.GL4.Controls
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
                 SetFocus(this);
+
+                GlobalMouseClick?.Invoke(this, null, e);
 
                 if (this.Enabled)
                     this.OnMouseClick(e);
