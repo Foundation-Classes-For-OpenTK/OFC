@@ -65,8 +65,6 @@ namespace OFC.GL4.Controls
             using (Brush b = new LinearGradientBrush(sarealower, pcdown, pcdown.Multiply(BackColorScaling), 270))
                 gr.FillRectangle(b, drawlower);
 
-            //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
             Color pencolorup = Enabled ? (mousedown == MouseOver.MouseOverUp ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor) : ForeColor.Multiply(DisabledScaling);
             Color pencolordown = Enabled ? (mousedown == MouseOver.MouseOverDown ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor) : ForeColor.Multiply(DisabledScaling);
 
@@ -95,9 +93,6 @@ namespace OFC.GL4.Controls
                 gr.DrawLine(p, arrowpt2d, arrowpt3d);
 
             }
-
-            //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
-
         }
 
         public override void OnMouseMove(GLMouseEventArgs eventargs)

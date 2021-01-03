@@ -61,6 +61,9 @@ namespace OFC.GL4.Controls
             if (AutoSize)       // width stays the same, height changes, width based on what parent says we can have (either our width, or docked width)
             {
                 var flowsize = Flow(parentsize, false, (c, p) => { });
+                if (flowsize.IsEmpty)
+                    flowsize = DefaultWindowRectangle.Size;     // emergency min for no controls
+
                 if (AutoSizeBoth)
                 {
                     SetLocationSizeNI(bounds: flowsize);
@@ -101,31 +104,37 @@ namespace OFC.GL4.Controls
 
                 Point pos;
 
+                int controlwidth = c.Width + c.FlowOffsetPosition.X;        // including any flow offsets
+                int controlheight = c.Height + c.FlowOffsetPosition.Y;
+                //System.Diagnostics.Debug.WriteLine("Flow {0} {1} {2} {3}", c.Name, controlwidth, controlheight, FlowOffsetPosition);
+
                 if (FlowDirection == ControlFlowDirection.Right)
                 {
-                    if (usearea && flowpos.X + c.Width + flowPadding.TotalWidth > area.Width)    // if beyond client right, more down
+                    if (usearea && flowpos.X + controlwidth + flowPadding.TotalWidth > area.Width)    // if beyond client right, more down
                     {
                         flowpos = new Point(ClientLeftMargin, max.Height);
                     }
 
-                    pos = new Point(flowpos.X + FlowPadding.Left, flowpos.Y + flowPadding.Top);
+                    pos = new Point(flowpos.X + flowPadding.Left + c.FlowOffsetPosition.X, flowpos.Y + flowPadding.Top + c.FlowOffsetPosition.Y);
 
-                    flowpos.X += c.Width + flowPadding.TotalWidth;
-                    max = new Size( Math.Max(max.Width, flowpos.X),
-                                    Math.Max(max.Height, flowpos.Y + c.Height + FlowPadding.TotalHeight));
+                    flowpos.X += controlwidth + flowPadding.TotalWidth;                 // move x right
+                    int y = flowpos.Y + controlheight + flowPadding.TotalHeight;        // calculate bottom of control
+
+                    max = new Size(Math.Max(max.Width, flowpos.X), Math.Max(max.Height, y));
                 }
                 else
                 {
-                    if ( usearea && flowpos.Y + c.Height + flowPadding.TotalHeight > area.Height )
+                    if ( usearea && flowpos.Y + controlheight + flowPadding.TotalHeight > area.Height )
                     {
                         flowpos = new Point(max.Width, ClientTopMargin);
                     }
 
-                    pos = new Point(flowpos.X + FlowPadding.Left, flowpos.Y + flowPadding.Top);
+                    pos = new Point(flowpos.X + flowPadding.Left + c.FlowOffsetPosition.X, flowpos.Y + flowPadding.Top + c.FlowOffsetPosition.Y);
 
-                    flowpos.Y += c.Height + flowPadding.TotalHeight;
-                    max = new Size(Math.Max(max.Width, flowpos.X + c.Width + FlowPadding.TotalWidth),
-                                    Math.Max(max.Height, flowpos.Y));
+                    flowpos.Y += controlheight + flowPadding.TotalHeight;
+                    int x = flowpos.X + controlwidth + flowPadding.TotalWidth;
+
+                    max = new Size(Math.Max(max.Width, x),  Math.Max(max.Height, flowpos.Y));
                 }
 
                 action(c, pos);

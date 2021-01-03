@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 namespace OFC.GL4.Controls
 {
@@ -29,9 +30,8 @@ namespace OFC.GL4.Controls
             Focusable = true;
         }
 
+        public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
         public int IconTickAreaWidth { get; set; } = 0;            // zero for off
-
-        private Color CheckBoxOuterColor { get { return checkBoxOuterColor; } set { checkBoxOuterColor = value; Invalidate(); } }
 
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
 
@@ -46,6 +46,11 @@ namespace OFC.GL4.Controls
             }
         }
 
+        protected override void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
+        {
+            base.DrawBack(bounds, gr, bc, bcgradientalt, bcgradient);
+        }
+
         protected override void Paint(Rectangle area, Graphics gr)
         {
             Rectangle butarea = area;
@@ -53,11 +58,25 @@ namespace OFC.GL4.Controls
             {
                 butarea.Width -= IconTickAreaWidth;
                 butarea.X += IconTickAreaWidth;
+                Color back = PaintButtonBackColor();
+                if ( back == BackColor )
+                {
+                    using (Brush br = new SolidBrush(IconStripBackColor))
+                    {
+                        gr.FillRectangle(br, new Rectangle(area.Left, area.Top, IconTickAreaWidth, area.Height));
+                    }
+
+                    base.PaintButtonBack(butarea, gr, back);
+                }
+                else
+                    base.PaintButtonBack(area, gr, back);
+            }
+            else
+            {
+                base.PaintButtonBack(area, gr, PaintButtonBackColor());
             }
 
-            base.PaintButtonBack(area, gr);
-
-           //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
+            //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
 
             base.PaintButton(butarea, gr, false);       // don't paint the image
 
@@ -69,12 +88,13 @@ namespace OFC.GL4.Controls
 
                 if (CheckState != CheckState.Unchecked)
                 {
-                    Color checkboxbasecolour = CheckBoxOuterColor.Multiply(discaling); //(Enabled && Hover) ? MouseOverBackColor : 
+                    Color checkboxbordercolour = CheckBoxBorderColor.Multiply(discaling); //(Enabled && Hover) ? MouseOverBackColor : 
+                    Color backcolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
 
-                    using (Brush inner = new SolidBrush(CheckBoxInnerColor))
-                        gr.FillRectangle(inner, tickarea);      
+                    using (Brush inner = new System.Drawing.Drawing2D.LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
+                        gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
 
-                    using (Pen outer = new Pen(checkboxbasecolour))     // paint over to ensure good boundary
+                    using (Pen outer = new Pen(checkboxbordercolour))     // paint over to ensure good boundary
                         gr.DrawRectangle(outer, tickarea);
                 }
 
@@ -106,9 +126,7 @@ namespace OFC.GL4.Controls
         }
 
         private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
-        private Color checkBoxInnerColor { get; set; } = DefaultMenuItemInnerColor;
-        private Color checkBoxOuterColor { get; set; } = DefaultMenuItemOuterColor;
-        private Color checkColor { get; set; } = DefaultCheckColor;         // Button - back colour when checked, Normal - check colour
+        private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
     }
 
 }

@@ -40,7 +40,6 @@ namespace OFC.GL4.Controls
                 if (!textpresent)
                     pos = new Point(borderrect.X + borderrect.Width / 2 - icon.Width / 2, borderrect.Y + borderrect.Height / 2 - icon.Height / 2);
 
-                gr.SmoothingMode = SmoothingMode.Default;
                 gr.DrawImage(icon, pos);
                 borderrect.X += icon.Width + off / 2;
                 borderrect.Width -= icon.Width + off / 2;
@@ -48,8 +47,6 @@ namespace OFC.GL4.Controls
 
             if (textpresent)
             {
-                //gr.SmoothingMode = SmoothingMode.AntiAlias;
-
                 using (StringFormat f = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 using (Brush textb = new SolidBrush(color))
                     gr.DrawString(text, ft, textb, borderrect, f);
@@ -81,7 +78,6 @@ namespace OFC.GL4.Controls
             border.AddLine(borderrect.X, borderrect.Y, xfar, borderrect.Y);
             border.AddLine(xfar, borderrect.Y, xfar, yfar+1);
 
-           // gr.SmoothingMode = SmoothingMode.Default;
             using (Brush b = new System.Drawing.Drawing2D.LinearGradientBrush(borderrect, color1, color2, 90))
                 gr.FillPath(b, fill);
             using (Pen p = new Pen(coloroutline, 1.0F))
@@ -115,12 +111,8 @@ namespace OFC.GL4.Controls
             fill.AddArc(xfar - radius * 2, borderrect.Y, radius * 2, radius * 2, 270, 90);
             fill.AddLine(xfar, borderrect.Y-radius*2, xfar, yfar+1 );
 
-         //   gr.SmoothingMode = SmoothingMode.Default;
-
             using (Brush b = new System.Drawing.Drawing2D.LinearGradientBrush(borderrect, color1, color2, 90))
                 gr.FillPath(b, fill);
-
-         //   gr.SmoothingMode = SmoothingMode.AntiAlias;
 
             using (Pen p = new Pen(coloroutline, 1.0F))
                 gr.DrawPath(p, border);
@@ -149,12 +141,8 @@ namespace OFC.GL4.Controls
             fill.AddLine(borderrect.X + shift, ytop, xfar, ytop);
             fill.AddLine(xfar, ytop, xfar + shift, ybot+1 );
 
-            gr.SmoothingMode = SmoothingMode.Default;
-
             using (Brush b = new System.Drawing.Drawing2D.LinearGradientBrush(borderrect, color1, color2, 90))
                 gr.FillPath(b, fill);
-
-            //gr.SmoothingMode = SmoothingMode.AntiAlias;
 
             using (Pen p = new Pen(coloroutline, 1.0F))
                 gr.DrawPath(p, border);

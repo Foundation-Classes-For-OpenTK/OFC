@@ -59,7 +59,7 @@
     <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
-    <Compile Include="GL4\Controls\ControlBaseCheckBoxBase.cs" />
+    <Compile Include="GL4\Controls\ControlBaseCheckBox.cs" />
     <Compile Include="GL4\Controls\ControlMenuItem.cs" />
     <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />

@@ -28,6 +28,7 @@ namespace OFC.GL4.Controls
 
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text.  Set to Color.Empty for no override
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }    // Set Color.Empty for no override
+        public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
 
         public GLMenuStrip(string name, Rectangle location) : base(name, location)
         {
@@ -106,7 +107,6 @@ namespace OFC.GL4.Controls
                     mi.MouseEnter += MenuItemEnter;
                     mi.MouseLeave += MenuItemLeave;
 
-                    mi.Padding = new Padding(2);
 
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
@@ -130,7 +130,7 @@ namespace OFC.GL4.Controls
 
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
-                        child.Margin = new Margin(iconareawidth + 2, 0, 0, 0);      // compensate for padding MI
+                        child.FlowOffsetPosition = new Point(iconareawidth, 0);
                     }
 
                 }
@@ -340,10 +340,26 @@ namespace OFC.GL4.Controls
             OpenItem(gotomenuitem);
         }
 
+        protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
+        {
+            base.DrawBack(area, gr, bc, bcgradientalt, bcgradient);
+
+            if (FlowDirection == ControlFlowDirection.Down)
+            {
+                //IconStripBackColor = Color.Red;
+                using (Brush br = new SolidBrush(IconStripBackColor))
+                {
+                    int iconareawidth = Font.ScalePixels(24);
+                    gr.FillRectangle(br, new Rectangle(area.Left, area.Top, iconareawidth, area.Height));
+                }
+            }
+        }
+
         #endregion
 
         private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
         private Color foreColor { get; set; } = DefaultControlForeColor;
+        private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
 
         private GLMenuStrip submenu = null;      // submenu opened
         private GLMenuItem submenumi = null;     // menu item which opened sub menu

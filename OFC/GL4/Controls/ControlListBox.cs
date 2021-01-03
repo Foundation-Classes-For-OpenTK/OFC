@@ -217,7 +217,7 @@ namespace OFC.GL4.Controls
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
-           // System.Diagnostics.Debug.WriteLine("Paint List box");
+            // System.Diagnostics.Debug.WriteLine("Paint List box");
             if (items != null && items.Count > 0)
             {
                 Rectangle ca = ClientRectangle;
@@ -242,19 +242,17 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                if ( selectedindexset )     // we set the selected index, move to this and set focus to it, make sure its displayed
+                if (selectedindexset)     // we set the selected index, move to this and set focus to it, make sure its displayed
                 {
                     focusindex = SelectedIndex;
 
                     if (firstindex >= focusindex)       // must display focusindex
                         firstindex = focusindex;
-                    else  if ( focusindex >= firstindex + displayableitems ) // if too far back..
+                    else if (focusindex >= firstindex + displayableitems) // if too far back..
                         firstindex = focusindex - displayableitems - 1;
 
                     selectedindexset = false;
                 }
-
-                //gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 using (StringFormat f = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.NoWrap })
                 using (Brush textb = new SolidBrush(this.ForeColor))
@@ -294,8 +292,6 @@ namespace OFC.GL4.Controls
                         offset++;
                     }
                 }
-
-               // gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
             }
         }
 

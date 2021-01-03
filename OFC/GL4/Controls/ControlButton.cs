@@ -61,7 +61,7 @@ namespace OFC.GL4.Controls
         {
             if (area.Width < 1 || area.Height < 1)  // and no point drawing any more in the button area if its too small, it will except
                 return;
-            PaintButtonBack(area, gr);
+            PaintButtonBack(area, gr, PaintButtonBackColor());
             PaintButton(area, gr,true);
         }
 

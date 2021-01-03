@@ -39,6 +39,7 @@ namespace OFC.GL4.Controls
         public bool GroupRadioButton { get; set; } = false;     // if true, on check, turn off all other CheckBox of parents
         public bool UserCanOnlyCheck { get; set; } = false;            // if true, user can only turn it on
 
+        public Color CheckBoxBorderColor { get { return checkBoxBorderColor; } set { checkBoxBorderColor = value; Invalidate(); } }
         public Color CheckBoxInnerColor { get { return checkBoxInnerColor; } set { checkBoxInnerColor = value; Invalidate(); } }
         public Color CheckColor { get { return checkColor; } set { checkColor = value; Invalidate(); } }
 
@@ -83,7 +84,7 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.Default;
+            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
         }
 
         protected void SetCheckState(CheckState value, bool firechange)
@@ -128,6 +129,7 @@ namespace OFC.GL4.Controls
         }
 
         private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
+        private Color checkBoxBorderColor { get; set; } = DefaultCheckBoxBorderColor;
         private Color checkBoxInnerColor { get; set; } = DefaultCheckBoxInnerColor;    // Normal only inner colour
         private Color checkColor { get; set; } = DefaultCheckColor;         // Button - back colour when checked, Normal - check colour
 

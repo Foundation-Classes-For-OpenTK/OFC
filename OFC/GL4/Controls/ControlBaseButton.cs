@@ -55,27 +55,24 @@ namespace OFC.GL4.Controls
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
-        protected void PaintButtonBack(Rectangle backarea, Graphics gr)
+        protected Color PaintButtonBackColor()
         {
             Color colBack = Color.Empty;
 
             if (Enabled == false)
-            {
                 colBack = ButtonBackColor.Multiply(DisabledScaling);
-            }
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
-            {
                 colBack = MouseDownBackColor;
-            }
             else if (Hover)
-            {
                 colBack = MouseOverBackColor;
-            }
             else
-            {
                 colBack = ButtonBackColor;
-            }
 
+            return colBack;
+        }
+
+        protected void PaintButtonBack(Rectangle backarea, Graphics gr, Color colBack)
+        {
             using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
                 gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
         }

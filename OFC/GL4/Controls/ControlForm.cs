@@ -131,11 +131,8 @@ namespace OFC.GL4.Controls
 
             Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling);
 
-            //gr.SmoothingMode = SmoothingMode.AntiAlias;
-
             if (Text.HasChars())
             {
-
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
                     using (Brush textb = new SolidBrush(c))
@@ -158,8 +155,6 @@ namespace OFC.GL4.Controls
                     gr.DrawLine(p, new Point(closearea.Left, closearea.Bottom), new Point(closearea.Right, closearea.Top));
                 }
             }
-
-            //gr.SmoothingMode = SmoothingMode.None;
         }
 
         public override void OnMouseDown(GLMouseEventArgs e)

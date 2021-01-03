@@ -119,11 +119,11 @@ namespace OFC.GL4.Controls
 
                 float discaling = Enabled ? 1.0f : DisabledScaling;
 
-                Color checkboxbasecolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
+                Color backcolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
 
                 if (!hasimages)      // draw the over box of the checkbox if no images
                 {
-                    using (Pen outer = new Pen(checkboxbasecolour))
+                    using (Pen outer = new Pen(backcolour))
                         gr.DrawRectangle(outer, tickarea);
                 }
 
@@ -146,15 +146,15 @@ namespace OFC.GL4.Controls
                 }
                 else
                 {                                   // in no image, we draw a set of boxes
-                    using (Pen second = new Pen(CheckBoxInnerColor.Multiply(discaling), 1F))
+                    using (Pen second = new Pen(CheckBoxBorderColor.Multiply(discaling), 1F))
                         gr.DrawRectangle(second, tickarea);
 
                     tickarea.Inflate(-1, -1);
 
-                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), checkboxbasecolour, 225))
+                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
                         gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
 
-                    using (Pen third = new Pen(checkboxbasecolour.Multiply(discaling), 1F))
+                    using (Pen third = new Pen(backcolour.Multiply(discaling), 1F))
                         gr.DrawRectangle(third, tickarea);
                 }
 

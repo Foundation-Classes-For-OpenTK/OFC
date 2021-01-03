@@ -151,6 +151,8 @@ namespace OFC.GL4.Controls
 
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
+        public Point FlowOffsetPosition { get; set; } = Point.Empty;        // optionally offset this control from its flow position by this value
+
         // control lists
 
         public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
@@ -195,12 +197,12 @@ namespace OFC.GL4.Controls
         static public Color DefaultButtonBorderColor = Color.FromArgb(100, 100, 100);
         static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
         static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultCheckBoxBorderColor = Color.White;
         static public Color DefaultCheckBoxInnerColor = Color.Wheat;
+        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(160, 160, 160);
         static public Color DefaultCheckColor = Color.DarkBlue;
         static public Color DefaultErrorColor = Color.OrangeRed;
         static public Color DefaultHighlightColor = Color.Red;
-        static public Color DefaultMenuItemOuterColor = Color.White;
-        static public Color DefaultMenuItemInnerColor = Color.FromArgb(180,215,243);
 
         static public Color DefaultLineSeparColor = Color.Green;
 
@@ -833,14 +835,14 @@ namespace OFC.GL4.Controls
         }
 
         // draw border area, override to draw something different
-        protected virtual void DrawBorder(Rectangle bounds, Graphics gr, Color bc, float bw)
+        protected virtual void DrawBorder(Rectangle area, Graphics gr, Color bc, float bw)
         {
             if (bw > 0)
             {
-                Rectangle rectarea = new Rectangle(bounds.Left + Margin.Left,
-                                                bounds.Top + Margin.Top,
-                                                bounds.Width - Margin.TotalWidth - 1,
-                                                bounds.Height - Margin.TotalHeight - 1);
+                Rectangle rectarea = new Rectangle(area.Left + Margin.Left,
+                                                area.Top + Margin.Top,
+                                                area.Width - Margin.TotalWidth - 1,
+                                                area.Height - Margin.TotalHeight - 1);
 
                 using (var p = new Pen(bc, bw))
                 {
@@ -850,7 +852,7 @@ namespace OFC.GL4.Controls
         }
 
         // draw back area - override to paint something different
-        protected virtual void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
+        protected virtual void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
         {
             if ( levelbmp != null)                  // if we own a bitmap, reset back to transparent, erasing anything that we drew before
                 gr.Clear(Color.Transparent);       
@@ -863,14 +865,14 @@ namespace OFC.GL4.Controls
                 if (bcgradientdir != int.MinValue)
                 {
                     //System.Diagnostics.Debug.WriteLine("Background " + Name +  " " + bounds + " " + bc + " -> " + bcgradientalt );
-                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(bounds, bc, bcgradientalt, bcgradientdir))
-                        gr.FillRectangle(b, bounds);       // linear grad brushes do not respect smoothing mode, btw
+                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(area, bc, bcgradientalt, bcgradientdir))
+                        gr.FillRectangle(b, area);       // linear grad brushes do not respect smoothing mode, btw
                 }
                 else
                 {
                     //System.Diagnostics.Debug.WriteLine("Background " + Name + " " + bounds + " " + backcolor);
                     using (Brush b = new SolidBrush(bc))     // always fill, so we get back to start
-                        gr.FillRectangle(b, bounds);
+                        gr.FillRectangle(b, area);
                 }
             }
         }
