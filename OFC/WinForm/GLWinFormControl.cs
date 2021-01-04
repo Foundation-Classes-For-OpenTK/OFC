@@ -123,7 +123,8 @@ namespace OFC.WinForm
 
         private void Gl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)    // all keys are for us
         {
-            if ( e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Up || e.KeyCode == Keys.Down )
+            //System.Diagnostics.Debug.WriteLine("Preview KD " + e.KeyCode);
+            if ( e.KeyCode == Keys.Left || e.KeyCode == Keys.Right || e.KeyCode == Keys.Up || e.KeyCode == Keys.Down || e.KeyCode ==Keys.Tab )
                 e.IsInputKey = true;
         }
 
@@ -212,6 +213,7 @@ namespace OFC.WinForm
 
         private void Gc_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)      
         {
+            //System.Diagnostics.Debug.WriteLine("GLWIN KD " + e.KeyCode);
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
             KeyDown?.Invoke(this, ka);
         }

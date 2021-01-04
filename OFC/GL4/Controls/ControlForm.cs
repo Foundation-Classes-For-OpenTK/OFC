@@ -301,11 +301,13 @@ namespace OFC.GL4.Controls
         public override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyDown(e);
+            //System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
             if (!e.Handled && TabChangesFocus && lastchildfocus != null && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
-                GLBaseControl next = FindNextTabChild(lastchildfocus.TabOrder);
+                bool forward = e.Shift == false;
+                GLBaseControl next = FindNextTabChild(lastchildfocus.TabOrder,forward);
                 if (next == null)
-                    next = FindNextTabChild(-1);
+                    next = FindNextTabChild(forward ?-1 : int.MaxValue,forward);
                 if (next != null)
                 {
                     lastchildfocus = next;
@@ -320,8 +322,11 @@ namespace OFC.GL4.Controls
         {
             if (evt == FocusEvent.ChildFocused)     // need to take a note
             {
-                System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
-                lastchildfocus = fromto;
+                if (ControlsZ.Contains(fromto))
+                {
+                    System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
+                    lastchildfocus = fromto;
+                }
             }
             else if (evt == FocusEvent.Focused)     // we got focus, hand off to child
             {

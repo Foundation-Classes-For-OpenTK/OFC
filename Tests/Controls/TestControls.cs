@@ -404,7 +404,7 @@ namespace TestOpenTk
 
                         GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(5, 190, 26, 26));
                         p2.Add(upc1);
-                        upc1.ValueChanged += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe.Delta);
+                        upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
 
 
                         GLLabel lb1 = new GLLabel("Lab1", new Rectangle(5, 220, 0, 0), "Hello");

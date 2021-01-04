@@ -1074,9 +1074,17 @@ namespace OFC.GL4.Controls
         {
             base.OnMouseWheel(e);
             if (e.Delta < 0)
+            {
                 FirstDisplayedLine += 1;
+                if (vertscroller != null)
+                    vertscroller.Value = FirstDisplayedLine;
+            }
             else
+            {
                 FirstDisplayedLine -= 1;
+                if (vertscroller != null)
+                    vertscroller.Value = FirstDisplayedLine;
+            }
         }
 
 
@@ -1097,7 +1105,7 @@ namespace OFC.GL4.Controls
                     horzscroller.Dock = DockingType.Bottom;
                     horzscroller.Visible = true;
                     horzscroller.RejectFocus = true;
-                    horzscroller.Scroll += HorzScroll;
+                    horzscroller.Scroll += (bc2,sa2) => { FirstDisplayedCharacter = sa2.NewValue; };
                     Add(horzscroller);
                     Invalidate();
                 }
@@ -1124,7 +1132,7 @@ namespace OFC.GL4.Controls
                     vertscroller.Dock = DockingType.Right;
                     vertscroller.Visible = NumberOfLines > CurrentDisplayableLines;
                     vertscroller.RejectFocus = true;
-                    vertscroller.Scroll += VertScroll;
+                    vertscroller.Scroll += (bc1,sa1) => { FirstDisplayedLine = sa1.NewValue; };
                     Add(vertscroller);
                     Invalidate();
                 }
@@ -1143,16 +1151,6 @@ namespace OFC.GL4.Controls
                 horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
             if (vertscroller?.Visible ?? false)
                 vertscroller.Padding = new Padding(0, 0, 0, horz ? ScrollBarWidth : 0);
-        }
-
-        private void VertScroll(GLBaseControl bc, ScrollEventArgs sa)
-        {
-            FirstDisplayedLine = sa.NewValue;
-        }
-        private void HorzScroll(GLBaseControl bc, ScrollEventArgs sa)
-        {
-            FirstDisplayedCharacter = sa.NewValue;
-
         }
 
         #endregion

@@ -50,7 +50,7 @@ namespace OFC.GL4.Controls
         protected void CheckBoxAutoSize(Size parentsize)        // autosize for a check box display type
         {
             SizeF size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
-
+            size = new SizeF(Math.Max(size.Width, 16), Math.Max(size.Height, 16));
             Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
                              (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
 
@@ -122,7 +122,16 @@ namespace OFC.GL4.Controls
         public override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
         {
             base.OnMouseClick(e);
-            if (e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
+            if (e.Handled == false && e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
+            {
+                SetCheckState(CheckState == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
+            }
+        }
+
+        public override void OnKeyPress(GLKeyEventArgs e)
+        {
+            base.OnKeyPress(e);
+            if (e.Handled == false && e.KeyChar == 13)
             {
                 SetCheckState(CheckState == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
             }

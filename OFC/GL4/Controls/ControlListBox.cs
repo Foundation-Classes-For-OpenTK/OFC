@@ -33,15 +33,21 @@ namespace OFC.GL4.Controls
         public string SelectedItem { get { return selectedIndex>=0 ? Items[selectedIndex] : null; } set { SetSelectedItem(value); } }
         public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { SetSelectedIndex(value); } }
 
+        // if set, no half lines shown
         public bool FitToItemsHeight { get { return fitToItemsHeight; } set { fitToItemsHeight = value; Invalidate(); } }
+
+        // if set, images fit to items
         public bool FitImagesToItemHeight { get { return fitImagesToItemHeight; } set { fitImagesToItemHeight = value; Invalidate(); } }
 
         public int DisplayableItems { get { return displayableitems; } }            // not valid until first layout
 
         public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; InvalidateLayoutParent(); } }
 
+        public Color SelectedItemBackColor { get { return selectedItemBackColor; } set { selectedItemBackColor = value; Invalidate(); } }
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
         public Color ItemSeperatorColor { get { return itemSeperatorColor; } set { itemSeperatorColor = value; Invalidate(); } }
+
+        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
 
         // scroll bar
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
@@ -79,6 +85,8 @@ namespace OFC.GL4.Controls
         {
             items = texts;
             Focusable = true;
+            InvalidateOnFocusChange = true;
+            InvalidateOnEnterLeave = true;
             scrollbar = new GLScrollBar();
             scrollbar.Name = "GLLSB";
             scrollbar.Dock = DockingType.Right;
@@ -144,6 +152,7 @@ namespace OFC.GL4.Controls
             {
                 selectedIndex = focusindex;
                 OnSelectedIndexChanged();
+                Invalidate();
                 return true;
             }
             else
@@ -200,6 +209,9 @@ namespace OFC.GL4.Controls
 
                 displayableitems = ClientRectangle.Height / itemheight;            // number of items to display
 
+                if (!FitToItemsHeight && (ClientRectangle.Height % itemheight) > 4) // if we have space for a partial row, and are allowed, increase lines
+                    displayableitems++;
+
                 if (items > 0 && displayableitems > items)
                     displayableitems = items;
 
@@ -217,13 +229,17 @@ namespace OFC.GL4.Controls
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
+            if (itemheight < 1)     // can't paint yet
+                return;
+
+            gr.SetClip(area);   // normally we can do the whole area including border, we don't want to
+
+            Rectangle itemarea = new Rectangle(area.Left, area.Top, ClientRectangle.Width - (scrollbar.Visible ? scrollbar.Width : 0), ClientRectangle.Height);     // total width area
+            itemarea.Height = itemheight;
+
             // System.Diagnostics.Debug.WriteLine("Paint List box");
             if (items != null && items.Count > 0)
             {
-                Rectangle ca = ClientRectangle;
-                Rectangle itemarea = new Rectangle(area.Left, area.Top, ca.Width - (scrollbar.Visible ? scrollbar.Width : 0), ca.Height);     // total width area
-                itemarea.Height = itemheight;
-
                 Rectangle textarea = itemarea;      // where we draw text
                 Rectangle imagearea = itemarea;     // where we draw the images
 
@@ -256,17 +272,30 @@ namespace OFC.GL4.Controls
 
                 using (StringFormat f = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.NoWrap })
                 using (Brush textb = new SolidBrush(this.ForeColor))
-                using (Brush highlight = new SolidBrush(MouseOverBackColor))
                 {
                     int offset = 0;
+                    int indextodrawfocusbox = focusindex < 0 ? firstindex : focusindex;
 
                     foreach (string s in items)
-                    {   // if not fitting to items height, 
-                        if (offset >= firstindex && offset < firstindex + displayableitems + (FitToItemsHeight ? 0 : 1))
+                    {
+                        if (offset >= firstindex && offset < firstindex + displayableitems) // + (FitToItemsHeight ? 0 : 1))
                         {
-                            if (offset == focusindex)
+                            if (offset == focusindex && Hover)
                             {
-                                gr.FillRectangle(highlight, itemarea);
+                                using (Brush highlight = new SolidBrush(MouseOverBackColor))
+                                    gr.FillRectangle(highlight, itemarea);
+                            }
+                            else if (offset == selectedIndex)
+                            {
+                                using (Brush highlight = new SolidBrush(SelectedItemBackColor))
+                                    gr.FillRectangle(highlight, itemarea);
+                            }
+
+                            if (ShowFocusBox && Focused && offset == indextodrawfocusbox)
+                            {
+                                Color b = selectedIndex == offset ? MouseOverBackColor : SelectedItemBackColor;
+                                using (Pen p1 = new Pen(b) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                                    gr.DrawRectangle(p1, itemarea);
                             }
 
                             if (images != null && offset < images.Count)
@@ -291,6 +320,14 @@ namespace OFC.GL4.Controls
 
                         offset++;
                     }
+                }
+            }
+            else
+            {
+                if (ShowFocusBox && Focused )
+                {
+                    using (Pen p1 = new Pen(MouseOverBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                        gr.DrawRectangle(p1, itemarea);
                 }
             }
         }
@@ -378,11 +415,15 @@ namespace OFC.GL4.Controls
                 if (items != null && itemheight > 0)  // may not have been set yet
                 {
                     int y = e.Location.Y;
-                    int index = (y / itemheight) + firstindex;
-                    if (index < items.Count)
+                    int index = (y / itemheight);
+                    if (index < displayableitems)
                     {
-                        focusindex = index;
-                        Invalidate();
+                        index += firstindex;
+                        if (index < items.Count)
+                        {
+                            focusindex = index;
+                            Invalidate();
+                        }
                     }
                 }
             }
@@ -431,6 +472,7 @@ namespace OFC.GL4.Controls
         private bool fitToItemsHeight { get; set; } = true;              // if set, move the border to integer of item height.
         private bool fitImagesToItemHeight { get; set; } = false;        // if set images scaled to fit within item height
         private float gradientColorScaling = 0.5F;
+        private Color selectedItemBackColor { get; set; } = DefaultMouseDownButtonColor;
         private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
         private Color itemSeperatorColor { get; set; } = DefaultLineSeparColor;
         private GLScrollBar scrollbar;
@@ -444,6 +486,7 @@ namespace OFC.GL4.Controls
         private int focusindex = -1;
         private bool selectedindexset = false;
         private int dropDownHeightMaximum = 400;
+        private bool showfocusbox = true;
 
     }
 }

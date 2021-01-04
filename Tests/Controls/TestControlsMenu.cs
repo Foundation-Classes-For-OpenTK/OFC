@@ -154,7 +154,7 @@ namespace TestOpenTk
 
                 if (testform1)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Control 2 demonstration", new Rectangle(10, 10, 600, 200));
+                    GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
                     pform.BackColorGradientDir = 90;

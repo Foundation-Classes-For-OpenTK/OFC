@@ -20,7 +20,7 @@ namespace OFC.GL4.Controls
 {
     public class GLUpDownControl: GLButtonBase
     {
-        public Action<GLBaseControl, GLMouseEventArgs> ValueChanged { get; set; } = null;           // Delta holds the direction
+        public Action<GLBaseControl, int> Clicked { get; set; } = null;           // int holds the direction
 
         public float MouseSelectedColorScaling { get { return mouseSelectedColorScaling; } set { mouseSelectedColorScaling = value; Invalidate(); } }
         public int UpDownInitialDelay { get; set; } = 500;
@@ -29,6 +29,7 @@ namespace OFC.GL4.Controls
         public GLUpDownControl(string name, Rectangle location) : base(name, location)
         {
             Focusable = true;
+            InvalidateOnFocusChange = true;
             repeattimer.Tick += RepeatClick;
             BackColor = DefaultButtonBackColor;
         }
@@ -40,28 +41,38 @@ namespace OFC.GL4.Controls
         public override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
-            int halfway = ClientRectangle.Height / 2 - 1;
-            upperbuttonarea = new Rectangle(1, 0, ClientRectangle.Width - 2, halfway);
-            lowerbuttonarea = new Rectangle(1, halfway + 2, ClientRectangle.Width - 2, halfway);
         }
 
         // called after the background of the panel has been drawn - so it will be clear to write.
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
-            Color pcup = (Enabled) ? ((mousedown == MouseOver.MouseOverUp) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverUp) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
-            Color pcdown = (Enabled) ? ((mousedown == MouseOver.MouseOverDown) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverDown) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
+            if (ShowFocusBox)
+            {
+                if (Focused)
+                {
+                    using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    {
+                        gr.DrawRectangle(p, new Rectangle(area.Left, area.Top, area.Width - 1, area.Height - 1));
+                    }
+                }
+                area.Inflate(-1, -1);
+            }
 
-            Rectangle drawupper = new Rectangle(area.Left + upperbuttonarea.Left, area.Top + upperbuttonarea.Top, upperbuttonarea.Width, upperbuttonarea.Height);  // seems to make it paint better
-            Rectangle drawlower = new Rectangle(area.Left + lowerbuttonarea.Left, area.Top + lowerbuttonarea.Top, lowerbuttonarea.Width, lowerbuttonarea.Height);  // seems to make it paint better
+            int halfway = area.Height / 2;
+
+            Rectangle drawupper = new Rectangle(area.Left , area.Top, area.Width, halfway-1);  
+            Rectangle drawlower = new Rectangle(area.Left , area.Top + halfway, area.Width, halfway-1);  
             Rectangle sareaupper = drawupper;
             sareaupper.Height++;
             Rectangle sarealower = drawlower;
             sarealower.Height++;
 
+            Color pcup = (Enabled) ? ((mousedown == MouseOver.MouseOverUp) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverUp) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
             using (Brush b = new LinearGradientBrush(sareaupper, pcup, pcup.Multiply(BackColorScaling), 90))
                 gr.FillRectangle(b, drawupper);
 
+            Color pcdown = (Enabled) ? ((mousedown == MouseOver.MouseOverDown) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverDown) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
             using (Brush b = new LinearGradientBrush(sarealower, pcdown, pcdown.Multiply(BackColorScaling), 270))
                 gr.FillRectangle(b, drawlower);
 
@@ -101,15 +112,16 @@ namespace OFC.GL4.Controls
 
             if (!eventargs.Handled)
             {
-                if (upperbuttonarea.Contains(eventargs.Location))
-                {
+                int halfway = ClientRectangle.Height / 2;
+                if ( eventargs.Location.Y < halfway)
+                { 
                     if (mouseover != MouseOver.MouseOverUp)
                     {
                         mouseover = MouseOver.MouseOverUp;
                         Invalidate();
                     }
                 }
-                else if (lowerbuttonarea.Contains(eventargs.Location))
+                else if (eventargs.Location.Y > halfway)
                 {
                     if (mouseover != MouseOver.MouseOverDown)
                     {
@@ -139,21 +151,20 @@ namespace OFC.GL4.Controls
 
             if (!mevent.Handled)
             {
-                if (upperbuttonarea.Contains(mevent.Location))
+                int halfway = ClientRectangle.Height / 2;
+                if (mevent.Location.Y < halfway)
                 {
                     mousedown = MouseOver.MouseOverUp;
                     Invalidate();
-                    mevent.Delta = 1;
-                    OnValueChanged(mevent);
-                    StartRepeatClick(mevent);
+                    OnClicked(1);
+                    StartRepeatClick(1);
                 }
-                else if (lowerbuttonarea.Contains(mevent.Location))
+                else if (mevent.Location.Y > halfway)
                 {
                     mousedown = MouseOver.MouseOverDown;
                     Invalidate();
-                    mevent.Delta = -1;
-                    OnValueChanged(mevent);
-                    StartRepeatClick(mevent);
+                    OnClicked(-1);
+                    StartRepeatClick(-1);
                 }
             }
         }
@@ -166,33 +177,51 @@ namespace OFC.GL4.Controls
             Invalidate();
         }
 
-        protected virtual void OnValueChanged(GLMouseEventArgs e)
+        protected virtual void OnClicked(int dir)
         {
-            ValueChanged?.Invoke(this,e);
+            Clicked?.Invoke(this,dir);
         }
 
-        private void StartRepeatClick(GLMouseEventArgs e)
+        private void StartRepeatClick(int dir)
         {
             if (!repeattimer.Running)
             {
-                savedmevent = e;
+                saveddir = dir;
                 repeattimer.Start(UpDownInitialDelay, UpDownRepeatRate);
             }
         }
 
         private void RepeatClick(Timers.Timer t, long timeout)
         {
-            OnValueChanged(savedmevent);
+            OnClicked(saveddir);
         }
+
+        // tbd animate this, maybe also button click..
+        public override void OnKeyDown(GLKeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (!e.Handled)
+            {
+                //System.Diagnostics.Debug.WriteLine("KDown " + Name + " " + e.KeyCode);
+
+                if (e.KeyCode == System.Windows.Forms.Keys.Up)
+                {
+                    OnClicked(1);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.Down)
+                {
+                    OnClicked(-1);
+                }
+            }
+        }
+
 
         enum MouseOver { MouseOverUp, MouseOverDown, MouseOverNone };
         private MouseOver mouseover = MouseOver.MouseOverNone;
         private MouseOver mousedown = MouseOver.MouseOverNone;
-        private Rectangle upperbuttonarea;
-        private Rectangle lowerbuttonarea;
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
         private OFC.Timers.Timer repeattimer = new Timers.Timer();
-        private GLMouseEventArgs savedmevent;
+        private int saveddir;
 
 
     }

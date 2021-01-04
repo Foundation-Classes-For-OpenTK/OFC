@@ -33,11 +33,9 @@ namespace OFC.GL4.Controls
 
         public Action<GLControlDisplay, GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;     // subscribe to get any focus changes (from old to new, may be null)
         public Action<GLControlDisplay, GLBaseControl, GLMouseEventArgs> GlobalMouseClick{ get; set; } = null;     // subscribe to get any clicks
-        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;     // subscribe to get any movement changes
+        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;   // subscribe to get any movement changes
 
-        // from Control, override the Mouse* and Key* events
-
-        public new Action<Object> Paint { get; set; } = null;                   //override to get a paint event
+        public new Action<Object> Paint { get; set; } = null;                   // override to get a paint event
 
         public GLMatrixCalc MatrixCalc { get; set; }
 
@@ -104,7 +102,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public bool SetFocus(GLBaseControl newfocus)    // null to clear focus
+        public bool SetFocus(GLBaseControl newfocus)    // null to clear focus, true if focus taken
         {
             //System.Diagnostics.Debug.WriteLine("Focus to " + newfocus?.Name);
 
@@ -122,14 +120,14 @@ namespace OFC.GL4.Controls
             GLBaseControl oldfocus = currentfocus;
 
             GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);   // global invoker
-            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
+           // System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
                 currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
 
-                if (!(currentfocus is GLForm))  // reflect to the form so it knows a child has focus
-                    currentfocus.FindForm()?.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
+                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // push up the list to the top
+                    c.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
 
                 currentfocus = null;
             }
@@ -140,8 +138,8 @@ namespace OFC.GL4.Controls
 
                 currentfocus.OnFocusChanged(FocusEvent.Focused, oldfocus);
 
-                if (!(currentfocus is GLForm))  // reflect to the form so it knows a child has focus
-                    currentfocus.FindForm()?.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);           
+                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // push up the list to the top
+                    c.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);
             }
 
             return true;
@@ -282,7 +280,6 @@ namespace OFC.GL4.Controls
                 currentmouseover = null;
         }
 
-
         #endregion
 
         #region UI - called from wincontrol - due to windows sending events- translate to control
@@ -326,7 +323,7 @@ namespace OFC.GL4.Controls
 
         private void Gc_MouseDown(object sender, GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("GC Mouse down");
+           // System.Diagnostics.Debug.WriteLine("GC Mouse down");
             if (currentmouseover != null)
             {
                 currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
@@ -360,7 +357,7 @@ namespace OFC.GL4.Controls
 
             if (c != currentmouseover)      // if different, either going active or inactive
             {
-                System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
+               // System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
                 mousedowninitialcontrol = null;
 
                 if (currentmouseover != null)   // for current, its a leave
@@ -444,6 +441,8 @@ namespace OFC.GL4.Controls
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
+                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
+
                 SetFocus(currentmouseover);
 
                 if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
@@ -457,7 +456,7 @@ namespace OFC.GL4.Controls
             }
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
-                SetFocus(this);
+                SetFocus(null); // should this not be null? Check tbd, it as prev this
 
                 GlobalMouseClick?.Invoke(this, null, e);
 
@@ -472,7 +471,10 @@ namespace OFC.GL4.Controls
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
+                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
+
                 SetFocus(currentmouseover);
+
                 if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
                 {
                     SetControlLocation(ref e, currentmouseover);    // reset location etc
@@ -483,7 +485,7 @@ namespace OFC.GL4.Controls
             }
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
-                SetFocus(this);
+                SetFocus(null);
 
                 if (this.Enabled)
                     this.OnMouseDoubleClick(e);
@@ -548,7 +550,7 @@ namespace OFC.GL4.Controls
 
         private void Gc_KeyDown(object sender, GLKeyEventArgs e)
         {
-        //    System.Diagnostics.Debug.WriteLine("Control keydown on " + currentfocus?.Name);
+            //System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))

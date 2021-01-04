@@ -154,16 +154,18 @@ namespace TestOpenTk
 
                 if (testform1)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Control 2 demonstration", new Rectangle(10, 10, 600, 400));
+                    GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(10, 10, 600, 800));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
                     pform.BackColorGradientDir = 90;
                     pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
                     displaycontrol.Add(pform);
 
+                    int taborder = 0;
+
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 5, 80, 40), "Button 1");
                     b1.Margin = new Margin(5);
-                    b1.TabOrder = 1;
+                    b1.TabOrder = taborder++;
                     b1.Padding = new OFC.GL4.Controls.Padding(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
@@ -171,7 +173,7 @@ namespace TestOpenTk
 
                     GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Button 2");
                     b2.Image = Properties.Resources.ImportSphere;
-                    b2.TabOrder = 2;
+                    b2.TabOrder = taborder++;
                     b2.ImageAlign = ContentAlignment.MiddleLeft;
                     b2.TextAlign = ContentAlignment.MiddleRight;
                     b2.Click += (c, ev) => { MsgDialog(); };
@@ -179,22 +181,72 @@ namespace TestOpenTk
                     pform.Add(b2);
 
                     GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
-                    cb1.Margin = new Margin(16, 0, 16, 0);
-                    cb1.TabOrder = 3;
-
+                    cb1.Margin = new Margin(16, 8, 16, 8);
+                    cb1.TabOrder = taborder++;
                     pform.Add(cb1);
+
                     GLCheckBox chk1 = new GLCheckBox("Checkbox", new Rectangle(0, 150, 0, 0), "CheckBox 1");
                     chk1.Margin = new Margin(16, 0, 0, 0);
-                    chk1.TabOrder = 4;
+                    chk1.TabOrder = taborder++;
                     pform.Add(chk1);
-                    GLCheckBox chk2 = new GLCheckBox("Checkbox", new Rectangle(200, 150, 0, 0), "CheckBox 2");
+                    GLCheckBox chk2 = new GLCheckBox("Checkbox", new Rectangle(100, 150, 0, 0), "CheckBox 2");
                     chk2.Appearance = CheckBoxAppearance.Radio;
-                    chk2.TabOrder = 5;
+                    chk2.TabOrder = taborder++;
                     pform.Add(chk2);
-                    GLCheckBox chk3 = new GLCheckBox("Checkbox", new Rectangle(400, 150, 0, 0), "CheckBox 2");
+                    GLCheckBox chk3 = new GLCheckBox("Checkbox", new Rectangle(200, 150, 0, 0), "CheckBox 3");
                     chk3.Appearance = CheckBoxAppearance.Button;
-                    chk3.TabOrder = 6;
+                    chk3.TabOrder = taborder++;
                     pform.Add(chk3);
+                    GLCheckBox chk4 = new GLCheckBox("Checkbox", new Rectangle(300, 150, 0, 0), "");
+                    chk4.TabOrder = taborder++;
+                    pform.Add(chk4);
+                    GLCheckBox chk5 = new GLCheckBox("Checkbox", new Rectangle(400, 150, 0, 0), "");
+                    chk5.Appearance = CheckBoxAppearance.Radio;
+                    chk5.TabOrder = taborder++;
+                    pform.Add(chk5);
+
+                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
+                    dtp.Font = new Font("Ms Sans Serif", 11);
+                    dtp.ShowCheckBox = dtp.ShowCalendar = true;
+                    dtp.ShowUpDown = true;
+                    dtp.TabOrder = taborder++;
+                    pform.Add(dtp);
+
+                    List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
+                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
+                    lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                    lb1.Font = new Font("Microsoft Sans Serif", 12f);
+                    lb1.TabOrder = taborder++;
+                    //lb1.FitToItemsHeight = false;
+                    pform.Add(lb1);
+                    lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
+
+                    {
+                        string l = "";
+                        for (int i = 0; i < 20; i++)
+                        {
+                            string s = string.Format("Line " + i);
+                            if (i == 5)
+                                s += "And a much much longer Line which should break the width";
+                            l += s + "\r\n";
+                        }
+                        l += "trail ";
+                        // l = "";
+
+                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
+                        mtb.Font = new Font("Ms Sans Serif", 14);
+                        mtb.LineColor = Color.Green;
+                        mtb.EnableVerticalScrollBar = true;
+                        mtb.EnableHorizontalScrollBar = true;
+                        mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                        mtb.TabOrder = taborder++;
+                        pform.Add(mtb);
+                    }
+
+                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 500 , 26, 46));
+                    upc1.TabOrder = taborder++;
+                    pform.Add(upc1);
+                    upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
 
                     pform.ResumeLayout();
                 }

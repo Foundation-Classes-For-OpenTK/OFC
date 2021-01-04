@@ -26,6 +26,8 @@ namespace OFC.GL4.Controls
         public Color MouseDownBackColor { get { return mouseDownBackColor; } set { mouseDownBackColor = value; Invalidate(); } }
         public float BackColorScaling { get { return backColorScaling; } set { backColorScaling = value; Invalidate(); } }
 
+        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
+
         public GLButtonBase(string name, Rectangle window) : base(name, window)
         {
             InvalidateOnEnterLeave = true;
@@ -37,6 +39,7 @@ namespace OFC.GL4.Controls
         private Color mouseDownBackColor { get; set; } = DefaultMouseDownButtonColor;
         private Color foreColor { get; set; } = DefaultControlForeColor;
         private float backColorScaling = 0.5F;
+        private bool showfocusbox = true;
 
     }
 
@@ -44,7 +47,6 @@ namespace OFC.GL4.Controls
     {
         public string Text { get { return text; } set { text = value; Invalidate(); } }
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
-        public bool ShowFocusBox { get; set; } = true;
 
         public GLButtonTextBase(string name, Rectangle window) : base(name, window)
         {
@@ -79,13 +81,16 @@ namespace OFC.GL4.Controls
 
         protected void PaintButton(Rectangle buttonarea, Graphics gr, bool paintimage)
         {
-            if (Focused && ShowFocusBox)
+            if (ShowFocusBox)
             {
-                using (var p = new Pen(MouseDownBackColor))
+                if (Focused)
                 {
-                    gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));
-                    buttonarea.Inflate(new Size(-1, -1));
+                    using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    {
+                        gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));
+                    }
                 }
+                buttonarea.Inflate(new Size(-1, -1));
             }
 
             if (Image != null && paintimage)

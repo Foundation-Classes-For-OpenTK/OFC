@@ -107,11 +107,13 @@ namespace OFC.GL4.Controls
         // toggle controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
         public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
+
+        // Focus
         public virtual bool Focused { get { return focused; } }
         public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
         public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
         public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
-
+        
         // colour font
 
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
@@ -185,7 +187,7 @@ namespace OFC.GL4.Controls
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
 
-        static public Color DefaultFormBackColor = Color.White;
+        static public Color DefaultFormBackColor = Color.FromArgb(255,255,255);
         static public Color DefaultFormTextColor = Color.Black;
         static public Color DefaultControlBackColor = Color.Gray;
         static public Color DefaultControlForeColor = Color.White;
@@ -286,20 +288,25 @@ namespace OFC.GL4.Controls
             return new Rectangle(left, top, right - left, bottom - top);
         }
 
-        public GLBaseControl FindNextTabChild(int tabno)
+        public GLBaseControl FindNextTabChild(int tabno, bool forward = true)
         {
             GLBaseControl found = null;
             int mindist = int.MaxValue;
 
             foreach (var c in ControlsZ)
             {
-                if (c.Focusable && c.Visible && c.Enabled && c.TabOrder > tabno)
+                if (c.Focusable && c.Visible && c.Enabled )
                 {
                     int dist = c.TabOrder - tabno;
-                    if ( dist < mindist )
+
+                    if (forward ? dist > 0 : dist < 0)
                     {
-                        mindist = dist;
-                        found = c;
+                        dist = Math.Abs(dist);
+                        if (dist < mindist)
+                        {
+                            mindist = dist;
+                            found = c;
+                        }
                     }
                 }
             }
@@ -381,7 +388,7 @@ namespace OFC.GL4.Controls
             ResumeLayout();
         }
 
-        public virtual void Remove(GLBaseControl child)     // remove is normal, the closes down the child and all its children
+        public virtual void Remove(GLBaseControl child)     // remove is normal, the closes down and disposes of the child and all its children
         {
             if (childrenz.Contains(child))
             {
@@ -391,7 +398,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public virtual void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected
+        public virtual void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from us
         {
             if (childrenz.Contains(child))
             {
@@ -431,7 +438,7 @@ namespace OFC.GL4.Controls
             return Parent?.BringToFront(this) ?? true;
         }
 
-        public virtual bool BringToFront(GLBaseControl child)   // bring child to front
+        public virtual bool BringToFront(GLBaseControl child)   // bring child to front, true if already in front
         {
             //System.Diagnostics.Debug.WriteLine("Bring to front" + child.Name);
             int curpos = childrenz.IndexOf(child);
@@ -485,6 +492,7 @@ namespace OFC.GL4.Controls
                 System.Diagnostics.Debug.Assert(c == childreniz[pos--]);
             }
         }
+
 
         #endregion
 
@@ -579,6 +587,20 @@ namespace OFC.GL4.Controls
             }
 
             return this;
+        }
+
+        public virtual bool ThisOrChildrenFocused()
+        {
+            if (focused)
+                return true;
+
+            foreach ( var c in ControlsZ)
+            {
+                if (c.ThisOrChildrenFocused())
+                    return true;
+            }
+
+            return false;
         }
 
         #endregion

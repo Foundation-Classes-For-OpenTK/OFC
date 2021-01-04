@@ -50,6 +50,7 @@ namespace OFC
         public Point Location { get; set; }             // offset within control (similar to Location in winforms)
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
         public AreaType Area { get; set; }
+        public bool WasFocusedAtClick { get; set; }     // if set, it was focused on click, valid for Click only
     }
 
     public class GLKeyEventArgs     // class so passed by ref

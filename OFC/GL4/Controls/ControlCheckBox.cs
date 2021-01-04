@@ -94,8 +94,11 @@ namespace OFC.GL4.Controls
                 if (hasimages)
                     DrawImage(area, gr);
 
-                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                    DrawText(area, gr, fmt);
+                if (Text.HasChars())
+                {
+                    using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                        DrawText(area, gr, fmt);
+                }
             }
             else if ( Appearance == CheckBoxAppearance.Normal )
             {
@@ -115,6 +118,19 @@ namespace OFC.GL4.Controls
                 {
                     textarea.X += tickarea.Width;
                     textarea.Width -= tickarea.Width;
+                }
+
+                if (!Text.HasChars() && ShowFocusBox)       // normally, text has focus box, but if there are none, surround box
+                {
+                    if (Focused)
+                    {
+                        using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                        {
+                            gr.DrawRectangle(p1, tickarea);
+                        }
+                    }
+
+                    tickarea.Inflate(-1, -1);
                 }
 
                 float discaling = Enabled ? 1.0f : DisabledScaling;
@@ -158,8 +174,11 @@ namespace OFC.GL4.Controls
                         gr.DrawRectangle(third, tickarea);
                 }
 
-                using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.FitBlackBox })
-                    DrawText(textarea, gr, fmt);
+                if (Text.HasChars())
+                {
+                    using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.FitBlackBox })
+                        DrawText(textarea, gr, fmt);
+                }
 
                 if (hasimages)
                 {
@@ -171,57 +190,73 @@ namespace OFC.GL4.Controls
                 }
             }
             else
-            {
-                Rectangle rect = area;
+            {                                                       // RADIO
+                Rectangle tickarea = area;
 
-                rect.Height -= 6;
-                rect.Y += 2;
-                rect.Width = rect.Height;
+                tickarea.Height -= 6;
+                tickarea.Y += 2;
+                tickarea.Width = tickarea.Height;
 
                 Rectangle textarea = area;
-                textarea.X += rect.Width;
-                textarea.Width -= rect.Width;
+                textarea.X += tickarea.Width;
+                textarea.Width -= tickarea.Width;
+
+                if (!Text.HasChars() && ShowFocusBox)       // normally, text has focus box, but if there are none, surround box
+                {
+                    if (Focused)
+                    {
+                        using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                        {
+                            gr.DrawRectangle(p1, tickarea);
+                        }
+                    }
+
+                    tickarea.Inflate(-1, -1);
+                }
 
                 Color basecolor = Hover ? MouseOverBackColor : ButtonBackColor;
 
                 using (Brush outer = new SolidBrush(basecolor))
-                    gr.FillEllipse(outer, rect);
+                    gr.FillEllipse(outer, tickarea);
 
-                rect.Inflate(-1, -1);
+                tickarea.Inflate(-1, -1);
 
                 if (Enabled)
                 {
                     using (Brush second = new SolidBrush(CheckBoxInnerColor))
-                        gr.FillEllipse(second, rect);
+                        gr.FillEllipse(second, tickarea);
 
-                    rect.Inflate(-1, -1);
+                    tickarea.Inflate(-1, -1);
 
-                    using (Brush inner = new LinearGradientBrush(rect, CheckBoxInnerColor, basecolor, 225))
-                        gr.FillEllipse(inner, rect);      // fill slightly over size to make sure all pixels are painted
+                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor, basecolor, 225))
+                        gr.FillEllipse(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
                 }
                 else
                 {
                     using (Brush disabled = new SolidBrush(CheckBoxInnerColor))
                     {
-                        gr.FillEllipse(disabled, rect);
+                        gr.FillEllipse(disabled, tickarea);
                     }
                 }
 
-                rect.Inflate(-1, -1);
+                tickarea.Inflate(-1, -1);
 
                 if (Checked)
                 {
                     Color c1 = Color.FromArgb(255, CheckColor);
 
-                    using (Brush inner = new LinearGradientBrush(rect, CheckBoxInnerColor, c1, 45))
-                        gr.FillEllipse(inner, rect);      // fill slightly over size to make sure all pixels are painted
+                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor, c1, 45))
+                        gr.FillEllipse(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
 
                     using (Pen ring = new Pen(CheckColor))
-                        gr.DrawEllipse(ring, rect);
+                        gr.DrawEllipse(ring, tickarea);
                 }
 
-                using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
-                    DrawText(textarea, gr, fmt);
+                if (Text.HasChars())
+                {
+                    using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
+                        DrawText(textarea, gr, fmt);
+                }
             }
         }
 
@@ -243,7 +278,7 @@ namespace OFC.GL4.Controls
 
         private void DrawText(Rectangle box, Graphics g, StringFormat fmt)
         {
-            if (Focused)
+            if (Focused && ShowFocusBox)
             {
                 using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
                 {
