@@ -94,7 +94,8 @@ namespace OFC.Timers
 
                     Timer t = timerlist.Values[0];      // get the timer
 
-                    timerlist.RemoveAt(timerlist.IndexOfValue(t));  // remove from list
+                    //System.Diagnostics.Debug.WriteLine("Remove timer " );
+                    timerlist.RemoveAt(0);          // remove from list, must be first
 
                     t.Tick?.Invoke(t, mastertimer.ElapsedMilliseconds);   // fire event
 
@@ -102,6 +103,8 @@ namespace OFC.Timers
                     {
                         timerlist.Add(tickout + t.recurringtickdelta, t);     // add back to list
                     }
+                    else
+                        t.Running = false;              // timer expired, not running
                 }
             }
         }

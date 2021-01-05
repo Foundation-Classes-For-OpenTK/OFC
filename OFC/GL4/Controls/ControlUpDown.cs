@@ -1,4 +1,5 @@
 ﻿/*
+ * 
  * Copyright 2019-2020 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -29,21 +30,20 @@ namespace OFC.GL4.Controls
         public GLUpDownControl(string name, Rectangle location) : base(name, location)
         {
             Focusable = true;
+
             InvalidateOnFocusChange = true;
+            InvalidateOnEnterLeave = true;
+            InvalidateOnMouseDownUp = true;
+            InvalidateOnMouseMove = true;
+
             repeattimer.Tick += RepeatClick;
+            amitimer.Tick += AmiTick;
             BackColor = DefaultButtonBackColor;
         }
 
         public GLUpDownControl() : this("UD?", DefaultWindowRectangle)
         {
         }
-
-        public override void PerformRecursiveLayout()
-        {
-            base.PerformRecursiveLayout();
-        }
-
-        // called after the background of the panel has been drawn - so it will be clear to write.
 
         protected override void Paint(Rectangle area, Graphics gr)
         {
@@ -59,7 +59,9 @@ namespace OFC.GL4.Controls
                 area.Inflate(-1, -1);
             }
 
+            Point mrel = CurrentMousePosition(true);        // get this relative to client rectangle
             int halfway = area.Height / 2;
+            bool inbottomhalf = mrel.Y > halfway;
 
             Rectangle drawupper = new Rectangle(area.Left , area.Top, area.Width, halfway-1);  
             Rectangle drawlower = new Rectangle(area.Left , area.Top + halfway, area.Width, halfway-1);  
@@ -68,16 +70,33 @@ namespace OFC.GL4.Controls
             Rectangle sarealower = drawlower;
             sarealower.Height++;
 
-            Color pcup = (Enabled) ? ((mousedown == MouseOver.MouseOverUp) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverUp) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
+            Color pcup, pcdown, pencolorup, pencolordown;
+            pcup = pcdown = Enabled ? BackColor : BackColor.Multiply(DisabledScaling);
+            pencolordown = pencolorup = Enabled ? ForeColor : ForeColor.Multiply(DisabledScaling);
+
+            System.Diagnostics.Debug.WriteLine("Ami running" + amitimer.Running);
+            if ( Enabled && (Hover || amitimer.Running) )
+            {
+                bool mbd = MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left || amitimer.Running;
+                Color back = mbd ? MouseDownBackColor : MouseOverBackColor;
+                Color fore = mbd ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor;
+                if (amitimer.Running ? (saveddir==-1) : inbottomhalf)           // if ami, we use savedir, else mouse pos
+                {
+                    pcdown = back;
+                    pencolordown = fore;
+                }
+                else
+                {
+                    pcup = back;
+                    pencolorup = fore; 
+                }
+            }
+
             using (Brush b = new LinearGradientBrush(sareaupper, pcup, pcup.Multiply(BackColorScaling), 90))
                 gr.FillRectangle(b, drawupper);
 
-            Color pcdown = (Enabled) ? ((mousedown == MouseOver.MouseOverDown) ? MouseDownBackColor : ((mouseover == MouseOver.MouseOverDown) ? MouseOverBackColor : this.BackColor)) : this.BackColor.Multiply(DisabledScaling);
             using (Brush b = new LinearGradientBrush(sarealower, pcdown, pcdown.Multiply(BackColorScaling), 270))
                 gr.FillRectangle(b, drawlower);
-
-            Color pencolorup = Enabled ? (mousedown == MouseOver.MouseOverUp ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor) : ForeColor.Multiply(DisabledScaling);
-            Color pencolordown = Enabled ? (mousedown == MouseOver.MouseOverDown ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor) : ForeColor.Multiply(DisabledScaling);
 
             using (Pen p = new Pen(pencolorup))
             {
@@ -106,75 +125,26 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs eventargs)
+        public override void OnMouseDown(GLMouseEventArgs e)
         {
-            base.OnMouseMove(eventargs);
-
-            if (!eventargs.Handled)
+            base.OnMouseDown(e);
+            if ( !e.Handled)
             {
                 int halfway = ClientRectangle.Height / 2;
-                if ( eventargs.Location.Y < halfway)
-                { 
-                    if (mouseover != MouseOver.MouseOverUp)
-                    {
-                        mouseover = MouseOver.MouseOverUp;
-                        Invalidate();
-                    }
-                }
-                else if (eventargs.Location.Y > halfway)
+                int dir = e.Location.Y > halfway ? -1 : 1;
+                OnClicked(dir);
+                if (!repeattimer.Running)
                 {
-                    if (mouseover != MouseOver.MouseOverDown)
-                    {
-                        mouseover = MouseOver.MouseOverDown;
-                        Invalidate();
-                    }
-                }
-                else if (mouseover != MouseOver.MouseOverNone)
-                {
-                    mouseover = MouseOver.MouseOverNone;
-                    Invalidate();
+                    saveddir = dir;
+                    repeattimer.Start(UpDownInitialDelay, UpDownRepeatRate);
                 }
             }
         }
 
-        public override void OnMouseLeave(GLMouseEventArgs e)
+        public override void OnMouseUp(GLMouseEventArgs e)
         {
-            base.OnMouseLeave(e);
-            mouseover = MouseOver.MouseOverNone;
-            mousedown = MouseOver.MouseOverNone;
-            Invalidate();
-        }
-
-        public override void OnMouseDown(GLMouseEventArgs mevent)
-        {
-            base.OnMouseDown(mevent);
-
-            if (!mevent.Handled)
-            {
-                int halfway = ClientRectangle.Height / 2;
-                if (mevent.Location.Y < halfway)
-                {
-                    mousedown = MouseOver.MouseOverUp;
-                    Invalidate();
-                    OnClicked(1);
-                    StartRepeatClick(1);
-                }
-                else if (mevent.Location.Y > halfway)
-                {
-                    mousedown = MouseOver.MouseOverDown;
-                    Invalidate();
-                    OnClicked(-1);
-                    StartRepeatClick(-1);
-                }
-            }
-        }
-
-        public override void OnMouseUp(GLMouseEventArgs mevent)
-        {
-            base.OnMouseUp(mevent);
-            mousedown = MouseOver.MouseOverNone;
+            base.OnMouseUp(e);
             repeattimer.Stop();
-            Invalidate();
         }
 
         protected virtual void OnClicked(int dir)
@@ -182,18 +152,15 @@ namespace OFC.GL4.Controls
             Clicked?.Invoke(this,dir);
         }
 
-        private void StartRepeatClick(int dir)
-        {
-            if (!repeattimer.Running)
-            {
-                saveddir = dir;
-                repeattimer.Start(UpDownInitialDelay, UpDownRepeatRate);
-            }
-        }
-
         private void RepeatClick(Timers.Timer t, long timeout)
         {
             OnClicked(saveddir);
+        }
+
+        private void AmiTick(Timers.Timer t, long timeout)
+        {
+            //System.Diagnostics.Debug.WriteLine("Ami stop");
+            Invalidate();       // make it repaint without it being amimated
         }
 
         // tbd animate this, maybe also button click..
@@ -206,24 +173,27 @@ namespace OFC.GL4.Controls
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
+                    saveddir = 1;
                     OnClicked(1);
                 }
                 else if (e.KeyCode == System.Windows.Forms.Keys.Down)
                 {
+                    saveddir = -1;
                     OnClicked(-1);
                 }
+
+                //System.Diagnostics.Debug.WriteLine("Ami start");
+                amitimer.Start(100);
+                Invalidate();
             }
         }
 
 
         enum MouseOver { MouseOverUp, MouseOverDown, MouseOverNone };
-        private MouseOver mouseover = MouseOver.MouseOverNone;
-        private MouseOver mousedown = MouseOver.MouseOverNone;
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
         private OFC.Timers.Timer repeattimer = new Timers.Timer();
+        private OFC.Timers.Timer amitimer = new Timers.Timer();
         private int saveddir;
-
-
     }
 }
 

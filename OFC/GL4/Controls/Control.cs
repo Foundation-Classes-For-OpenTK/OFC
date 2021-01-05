@@ -104,6 +104,10 @@ namespace OFC.GL4.Controls
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
         public Margin DockingMargin { get { return dockingmargin; } set { if (dockingmargin != value) { dockingmargin = value; InvalidateLayout(); } } }
 
+        // Autosize
+
+        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
+
         // toggle controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
         public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
@@ -122,38 +126,43 @@ namespace OFC.GL4.Controls
         public int BackColorGradientDir { get { return backcolorgradientdir; } set { if (backcolorgradientdir != value) { backcolorgradientdir = value; Invalidate(); } } }
         public Color BackColorGradientAlt { get { return backcolorgradientalt; } set { if (backcolorgradientalt != value) { backcolorgradientalt = value; Invalidate(); } } }
 
-        // other
-
+        // heirarchy
         public GLBaseControl Parent { get { return parent; } }
         public GLControlDisplay FindDisplay() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplay(); }
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
-        // properties
-
+        // tooltips
         public string ToolTipText { get; set; } = null;
 
-        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
-
+        // Table layout
         public int Row { get { return row; } set { row = value; InvalidateLayoutParent(); } }       // for table layouts
         public int Column { get { return column; } set { column = value; InvalidateLayoutParent(); } } // for table layouts
 
+        // Flow layout
+        public Point FlowOffsetPosition { get; set; } = Point.Empty;        // optionally offset this control from its flow position by this value
+
+        // Auto Invalidate
         public bool InvalidateOnEnterLeave { get; set; } = false;       // if set, invalidate on enter/leave to force a redraw
+        public bool InvalidateOnMouseMove { get; set; } = false;        // if set, invalidate on mouse move in control
         public bool InvalidateOnMouseDownUp { get; set; } = false;      // if set, invalidate on mouse button down/up to force a redraw
         public bool InvalidateOnFocusChange { get; set; } = false;      // if set, invalidate on focus change
 
-        public bool Hover { get; set; } = false;            // mouse is over control
+        // State for use during drawing
+        public bool Hover { get; set; } = false;                        // mouse is over control
         public GLMouseEventArgs.MouseButtons MouseButtonsDown { get; set; } // set if mouse buttons down over control
 
+        // Bitmap
         public Bitmap LevelBitmap { get { return levelbmp; } }  // return level bitmap, null if does not have a level bitmap 
 
+        // User properties
         public Object Tag { get; set; }                         // control tag, user controlled
 
+        // Tabs
         public int TabOrder { get; set; } = -1;                 // set, the lowest tab order wins the form focus
 
+        // Others
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
-
-        public Point FlowOffsetPosition { get; set; } = Point.Empty;        // optionally offset this control from its flow position by this value
 
         // control lists
 
@@ -244,7 +253,8 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public Point DisplayControlCoords(bool clienttopleft)       // return in display co-ord terms either the bounds top left or the client rectangle top left
+        // return in display co-ord (within window) terms either the bounds top left or the client rectangle top left
+        public Point DisplayControlCoords(bool clienttopleft)       
         {
             Point p = Location;     // Left/Top of bounding box
             GLBaseControl b = this;
@@ -264,9 +274,15 @@ namespace OFC.GL4.Controls
         public Point ScreenCoords(bool clienttopleft)           // return in windows screen co-ords the top left of the selected control
         {
             Point p = DisplayControlCoords(clienttopleft);
-            GLControlDisplay d = FindDisplay();
-            Rectangle sp = d.ClientScreenPos;
+            var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
             return new Point(p.X + sp.Left, p.Y + sp.Top);
+        }
+
+        public Point CurrentMousePosition(bool clienttopleft)              // relative to client rectangle or to bounds
+        {
+            Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
+            Point p = ScreenCoords(clienttopleft);
+            return new Point(mp.X - p.X, mp.Y - p.Y);
         }
 
         public Rectangle ChildArea()
@@ -943,11 +959,13 @@ namespace OFC.GL4.Controls
 
         public virtual void OnMouseDown(GLMouseEventArgs e)
         {
-           // System.Diagnostics.Debug.WriteLine("down " + Name + " " + e.Location +" " + e.Button);
+            //System.Diagnostics.Debug.WriteLine("down " + Name + " " + e.Location + " " + e.Button + " " + MouseButtonsDown);
             MouseDown?.Invoke(this, e);
 
             if (InvalidateOnMouseDownUp)
+            {
                 Invalidate();
+            }
         }
 
         public virtual void OnMouseClick(GLMouseEventArgs e)
@@ -966,6 +984,9 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Over " + Name + " " + e.Location);
             MouseMove?.Invoke(this, e);
+
+            if (InvalidateOnMouseMove)
+                Invalidate();
         }
 
         public virtual void OnMouseWheel(GLMouseEventArgs e)

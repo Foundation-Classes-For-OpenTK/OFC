@@ -46,8 +46,8 @@ namespace OFC
         // Set by displaycontrol if over a control
 
         public bool Control { get; private set; }       // the control its within
-        public Point ControlLocation { get; set; }      // the control location in screen coords.  Available to OnXXXevents etc
-        public Point Location { get; set; }             // offset within control (similar to Location in winforms)
+        public Point ControlClientLocation { get; set; }    // the client area top left in screen coords
+        public Point Location { get; set; }             // offset within control ClientRectangle (similar to Location in winforms)
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
         public AreaType Area { get; set; }
         public bool WasFocusedAtClick { get; set; }     // if set, it was focused on click, valid for Click only
@@ -108,6 +108,7 @@ namespace OFC
 
         void Invalidate();
         Rectangle ClientScreenPos { get; }
+        Point MouseScreenPosition { get; }
         int Width { get; }
         int Height { get; }
         Size Size { get; }

@@ -29,6 +29,8 @@ namespace OFC.GL4.Controls
 
         public bool RequestRender { get; set; } = false;
 
+        public Point MouseScreenPosition { get { return glwin.MouseScreenPosition; } }
+
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
         public Action<GLControlDisplay, GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;     // subscribe to get any focus changes (from old to new, may be null)
@@ -514,9 +516,9 @@ namespace OFC.GL4.Controls
 
         private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
         {
-            e.ControlLocation = cur.DisplayControlCoords(true);     // position of control in screencoords
-            e.Location = new Point(e.ScreenCoord.X - e.ControlLocation.X, e.ScreenCoord.Y - e.ControlLocation.Y);
-            //System.Diagnostics.Debug.WriteLine("WLoc {0} SLoc {1} Control {2} cloc {3} offset {4}", e.WindowLocation, e.ScreenCoord, cur.Name, e.ControlLocation, e.Location);
+            e.ControlClientLocation = cur.DisplayControlCoords(true);     // position of control in screencoords
+            e.Location = new Point(e.ScreenCoord.X - e.ControlClientLocation.X, e.ScreenCoord.Y - e.ControlClientLocation.Y);
+           // System.Diagnostics.Debug.WriteLine("WLoc {0} VLoc {1} SLoc{2} CLoc {3} Loc {4} Control {5}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, e.ControlClientLocation, e.Location, cur.Name);
 
             if (e.Location.X < 0)
                 e.Area = GLMouseEventArgs.AreaType.Left;

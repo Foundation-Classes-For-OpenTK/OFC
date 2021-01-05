@@ -50,6 +50,7 @@ namespace OFC.WinForm
         public Size Size { get { return glControl.Size; } }
         public bool Focused { get { return glControl.Focused; } }
         public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
+        public Point MouseScreenPosition { get { return Control.MousePosition; } }
         public GL4.GLRenderControl RenderState { get; set; } = null;
         public bool MakeCurrentOnPaint { get; set; } = false;           // set if using multiple opengl in one thread
         public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;    // what buffers to clear

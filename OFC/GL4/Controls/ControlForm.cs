@@ -165,7 +165,7 @@ namespace OFC.GL4.Controls
             {
                 if (!OverClose(e))
                 {
-                    capturelocation = new Point(e.ControlLocation.X + e.Location.X, e.ControlLocation.Y + e.Location.Y);    // absolute screen location of capture
+                    capturelocation = new Point(e.ControlClientLocation.X + e.Location.X, e.ControlClientLocation.Y + e.Location.Y);    // absolute screen location of capture
                     originalwindow = Bounds;
                     captured = e.Area;
                 }
@@ -181,7 +181,7 @@ namespace OFC.GL4.Controls
                 //System.Diagnostics.Debug.WriteLine("Form drag " + e.Location +" " +  e.Area);
                 if (captured != GLMouseEventArgs.AreaType.Client)
                 {
-                    Point curscrlocation = new Point(e.ControlLocation.X + e.Location.X, e.ControlLocation.Y + e.Location.Y);
+                    Point curscrlocation = new Point(e.ControlClientLocation.X + e.Location.X, e.ControlClientLocation.Y + e.Location.Y);
                     Point capturedelta = new Point(curscrlocation.X - capturelocation.X, curscrlocation.Y - capturelocation.Y);
                     //System.Diagnostics.Debug.WriteLine("***************************");
                     //System.Diagnostics.Debug.WriteLine("Form " + captured + " " + e.Location + " " + capturelocation + " " + capturedelta);

@@ -710,7 +710,7 @@ namespace OFC.GL4.Controls
 
         private void CursorTimerRestart()
         {
-            if (FlashingCursor)
+            if (FlashingCursor && Focused)
                 cursortimer.Start(1000, 500);
 
             cursorshowing = true;
