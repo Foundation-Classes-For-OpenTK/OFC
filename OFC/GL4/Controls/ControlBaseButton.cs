@@ -57,7 +57,7 @@ namespace OFC.GL4.Controls
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
-        protected Color PaintButtonBackColor()
+        protected Color PaintButtonBackColor(bool lockhighlight = false, bool disablehoverhighlight = false)
         {
             Color colBack = Color.Empty;
 
@@ -65,7 +65,7 @@ namespace OFC.GL4.Controls
                 colBack = ButtonBackColor.Multiply(DisabledScaling);
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
                 colBack = MouseDownBackColor;
-            else if (Hover)
+            else if (lockhighlight || (Hover && !disablehoverhighlight))
                 colBack = MouseOverBackColor;
             else
                 colBack = ButtonBackColor;

@@ -335,7 +335,7 @@ namespace OFC.GL4.Controls
             if (suspendLayoutSet)
             {
                 needLayout = true;
-                System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
+                //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
             }
             else
             {
@@ -1016,7 +1016,7 @@ namespace OFC.GL4.Controls
             KeyPress?.Invoke(this, e);
         }
 
-        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl) 
+        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)
         {
             this.focused = focused == FocusEvent.Focused;
             if (InvalidateOnFocusChange)

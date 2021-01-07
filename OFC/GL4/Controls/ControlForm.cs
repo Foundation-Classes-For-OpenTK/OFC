@@ -324,7 +324,7 @@ namespace OFC.GL4.Controls
             {
                 if (ControlsZ.Contains(fromto))
                 {
-                    System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
+                    //System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
                     lastchildfocus = fromto;
                 }
             }
@@ -333,7 +333,7 @@ namespace OFC.GL4.Controls
                 if (lastchildfocus != null)
                 {
                     lastchildfocus.SetFocus();
-                    System.Diagnostics.Debug.WriteLine("Form focus, focus on child");
+                    //System.Diagnostics.Debug.WriteLine("Form focus, focus on child");
                 }
             }
         }

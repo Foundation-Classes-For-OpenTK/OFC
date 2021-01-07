@@ -45,6 +45,8 @@ namespace OFC.GL4.Controls
 
         public bool InDropDown { get { return dropdownbox.Visible; } }
 
+        public bool DisableChangeKeys { get; set; } = false;            // stop responding to up/down/left/right directly. Return still works
+
         // scroll bar
         public Color ArrowColor { get { return dropdownbox.ArrowColor; } set { dropdownbox.ArrowColor = value; } }       // of text
         public Color SliderColor { get { return dropdownbox.SliderColor; } set { dropdownbox.SliderColor = value; } }
@@ -132,7 +134,6 @@ namespace OFC.GL4.Controls
 
             if (Text.HasChars())
             {
-                
                 using (var fmt = new StringFormat())
                 {
                     fmt.Alignment = StringAlignment.Near;
@@ -190,26 +191,23 @@ namespace OFC.GL4.Controls
 
             if ( !e.Handled && Items.Count>0)
             { 
-                if (SelectedIndex < 0)
-                    SelectedIndex = 0;
-
-                if (e.Alt && (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Down))
+                if (!DisableChangeKeys && (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Left))
+                {
+                    if (SelectedIndex == -1)
+                        SelectedIndex = 0;
+                    else if (SelectedIndex > 0)
+                        SelectedIndex = SelectedIndex - 1;
+                }
+                else if (!DisableChangeKeys && (e.KeyCode == System.Windows.Forms.Keys.Down || e.KeyCode == System.Windows.Forms.Keys.Right))
+                {
+                    if (SelectedIndex == -1)
+                        SelectedIndex = 0;
+                    else if (SelectedIndex < Items.Count - 1)
+                        SelectedIndex = SelectedIndex + 1;
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.Return)
                 {
                     Activate();
-                }
-                else if (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Left)
-                {
-                    if (SelectedIndex > 0)
-                    {
-                        SelectedIndex = SelectedIndex - 1;
-                    }
-                }
-                else if (e.KeyCode == System.Windows.Forms.Keys.Down || e.KeyCode == System.Windows.Forms.Keys.Right)
-                {
-                    if (SelectedIndex < Items.Count - 1)
-                    {
-                        SelectedIndex = SelectedIndex + 1;
-                    }
                 }
             }
         }
@@ -231,7 +229,7 @@ namespace OFC.GL4.Controls
             dropdownbox.AutoSize = true;
             dropdownbox.Font = Font;
             dropdownbox.Visible = true;
-            dropdownbox.ShowFocusBox = false;
+            dropdownbox.ShowFocusBox = true;
             dropdownbox.ResumeLayout();
             FindDisplay().Add(dropdownbox);
             DropDownStateChanged?.Invoke(this, true);

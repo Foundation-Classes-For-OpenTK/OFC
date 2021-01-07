@@ -16,11 +16,14 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
     public class GLMenuStrip : GLFlowLayoutPanel
     {
+        #region Init
+
         public Action<GLMenuItem> SubmenuOpened = null;         // SubMenu opening, called if a top level menu
         public Action<GLMenuItem> SubmenuClosed = null;         // SubMenu closing, called if a top level menu
 
@@ -36,6 +39,8 @@ namespace OFC.GL4.Controls
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
             timer.Tick += Timeout;
             FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;
+
+  InvalidateOnFocusChange = true;
         }
 
         public GLMenuStrip(string name = "Menu?") : this(name, DefaultWindowRectangle)
@@ -59,7 +64,7 @@ namespace OFC.GL4.Controls
         // you can double call and the previous one is closed
         public void OpenAsContextMenu(GLBaseControl parent, Point coord)        
         {
-            System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
+            //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             if ( Parent != null )                   
                 Parent.Detach(this);
             openedascontextmenu = true;
@@ -67,7 +72,167 @@ namespace OFC.GL4.Controls
             AutoSize = true;
             TopMost = true;
             parent.Add(this);
+            SetFocus();
         }
+
+        #endregion  
+
+        #region Menu Openers
+
+        private bool Select(int index, bool focusto)     // select this item, optionally transfer focus to it
+        {
+            if ( submenu != null )      // if submenu is activated..
+            {
+                if (index == selected)  // if already selected, its open
+                    return true;
+
+                CloseSubMenus();        // close any current ones
+            }
+
+            if (index >= 0 && index < ControlsIZ.Count )
+            {
+                var mi = ControlsIZ[index] as GLMenuItem;
+
+                //System.Diagnostics.Debug.WriteLine("Selected " + index + " in " + Name);
+
+                if (mi != null && mi.SubMenuItems != null)      // actually a submenu..
+                {
+                    Point p = this.DisplayControlCoords(false);
+
+                    if (FlowDirection == ControlFlowDirection.Right)       // pick co-ords based on flow
+                    {
+                        p.X += mi.Left - this.ClientLeftMargin;
+                        p.Y += this.Height;
+                    }
+                    else
+                    {
+                        p.X += this.Width;
+                        p.Y += mi.Top;
+                    }
+
+                    submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
+                    submenu.SuspendLayout();
+
+                    //System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name);
+
+                    submenu.Font = Font;
+                    submenu.ForeColor = this.ForeColor;
+                    submenu.BackColor = this.BackColor;
+                    submenu.MouseOverBackColor = this.MouseOverBackColor;
+                    submenu.FlowDirection = ControlFlowDirection.Down;
+                    submenu.AutoSize = true;
+                    submenu.parentmenu = this;
+                    submenu.TopMost = true;
+
+                    submenu.AddItems(mi.SubMenuItems);
+                    submenu.SetSelected(-1);                                    // release all items for hover highlighting
+
+                    submenu.ResumeLayout();
+
+                    FindDisplay().Add(submenu);
+
+                    SetSelected(index);                                         // set selected thus fixing highlight on this one
+
+                    GetTopLevelMenu().SubmenuOpened?.Invoke(mi);                // call, allowing configuration of the submenu
+
+                    if (focusto)                                                // used to transfer focus to submenu.  Note submenu with focus has up/down keys
+                    {
+                        submenu.SetFocus();
+                    }
+                    else
+                        SetFocus();                                             // else ensure we have the focus, in case due to keyboard hit
+
+                    return true;
+                }
+                else 
+                {
+                    SetSelected(index);                     // not a menu or other, select it
+                    if (mi == null)
+                    {
+                        ControlsIZ[index].SetFocus();       // not a menu item, it gets focus.
+                    }
+                    return true;
+                }
+            }
+            else
+                return false;
+        }
+
+        public void Move(int dir)                           // move highlight left/up or right/down, or just highlight first (0)
+        {
+            int newpos = selected + dir;
+            newpos = newpos.Range(0, ControlsIZ.Count - 1);
+            //System.Diagnostics.Debug.WriteLine("Move Highlighted {0} > {1} ", selected, newpos);
+            Select(newpos, FlowDirection == ControlFlowDirection.Right);
+        }
+
+        public void ActivateSelected()                  // activate, either selected or hoverover item
+        {
+            if (submenu != null)                        // if a submenu is up, activate always transfers to it
+            {
+                submenu.SetFocus();                     // it becomes the focus
+                submenu.Move(0);                        // autoselect first item
+            }
+            else
+            {
+                int clickon = selected >= 0 ? selected : mousehovered;      // prefer selected..
+
+                if (clickon >= 0)   // if valid, click it
+                {
+                    GLMenuItem mi = ControlsIZ[clickon] as GLMenuItem;
+                    if (mi != null)
+                    {
+                        if (mi.SubMenuItems != null)        // it may be closed up, due to going down, then backspacing, so click on it, transfer focus
+                        {
+                            Select(clickon, true);
+                        }
+                        else
+                        {
+                            //System.Diagnostics.Debug.WriteLine("Activate {0} {1}", mi.Name, clickon);
+                            GetTopLevelMenu().CloseMenus();
+                            mi.OnClick();
+                        }
+                    }
+                    else
+                    {
+                        //System.Diagnostics.Debug.WriteLine("Not MI");
+                    }
+                }
+            }
+        }
+
+        public GLMenuStrip GetTopLevelMenu()
+        {
+            GLMenuStrip m = this;
+            while (m.parentmenu != null)
+                m = m.parentmenu;
+            return m;
+        }
+
+        public void CloseMenus()        // all menus close down
+        {
+            //System.Diagnostics.Debug.WriteLine("Close menus" + Name);
+            CloseSubMenus();
+            SetSelected(-1);
+            if (openedascontextmenu)
+            {
+                Parent.Detach(this);
+            }
+        }
+
+        public void CloseSubMenus()     // all submenus shut down
+        {
+            if (submenu != null)
+            {
+                submenu.CloseSubMenus();    // close child submenus first
+                submenu.Close();
+                GetTopLevelMenu().SubmenuClosed?.Invoke(ControlsIZ[selected] as GLMenuItem);                 // call, allowing configuration of the submenu
+                submenu = null;
+                SetFocus();
+            }
+        }
+
+        #endregion
 
         #region Implementation
 
@@ -107,7 +272,6 @@ namespace OFC.GL4.Controls
                     mi.MouseEnter += MenuItemEnter;
                     mi.MouseLeave += MenuItemLeave;
 
-
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
                         mi.IconTickAreaWidth = iconareawidth;
@@ -120,6 +284,7 @@ namespace OFC.GL4.Controls
                     {
                         cb.DropDownStateChanged += DropDownChild;
                         cb.SelectedIndexChanged += ComboBoxSelectedIndex;
+                        cb.DisableChangeKeys = true;
                     }
 
                     var chbox = child as GLCheckBox;
@@ -132,6 +297,8 @@ namespace OFC.GL4.Controls
                     {
                         child.FlowOffsetPosition = new Point(iconareawidth, 0);
                     }
+
+                    child.KeyDown += NonMIKeyDown;
 
                 }
 
@@ -173,21 +340,14 @@ namespace OFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
-        public GLMenuStrip GetTopLevelMenu()
-        {
-            GLMenuStrip m = this;
-            while (m.parentmenu != null)
-                m = m.parentmenu;
-            return m;
-        }
 
         // hooked only to primary top level parent menu
         private void GMouseClick(GLControlDisplay disp, GLBaseControl item, GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("G Mouse clickFocus {0}, {1}, {2}", item?.GetType()?.Name, e.Button ,e.ScreenCoord);
+            //System.Diagnostics.Debug.WriteLine("G Mouse clickFocus {0}, {1}, {2}", item?.GetType()?.Name, e.Button ,e.ScreenCoord);
             if (comboboxchilddropdown == false && (item == null || !IsThisOrChildControl(item)))     // not a drop down, not a child of our tree
             {
-                GetTopLevelMenu().CloseSubMenusAndUsIfCM();
+                GetTopLevelMenu().CloseMenus();
             }
         }
 
@@ -209,105 +369,49 @@ namespace OFC.GL4.Controls
             var chbox = child as GLCheckBox;
             if (chbox.CheckOnClick)
             {
-                GetTopLevelMenu().CloseSubMenusAndUsIfCM();
+                GetTopLevelMenu().CloseMenus();
             }
         }
 
         private void ComboBoxSelectedIndex(GLBaseControl bc)    // hook, selecting an item closes the menus
         {
-            GetTopLevelMenu().CloseSubMenusAndUsIfCM();
+            GetTopLevelMenu().CloseMenus();
         }
 
-        private void MenuItemClicked(GLBaseControl c, GLMouseEventArgs e)
+        protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
         {
-            System.Diagnostics.Debug.Assert(Parent != null);        // double check we are not on a zombie control, due to the add/remove stuff
+            //base.DrawBack(area, gr, Focused ? Color.Green : Color.White , bcgradientalt, bcgradient); // for debugging
+            base.DrawBack(area, gr, bc , bcgradientalt, bcgradient);
 
-            var mi = c as GLMenuItem;
-            if (mi != null)               // menu items are handled by us
+            if (FlowDirection == ControlFlowDirection.Down)
             {
-                if (mi.SubMenuItems != null)
+                using (Brush br = new SolidBrush(IconStripBackColor))
                 {
-                    OpenItem(mi);
-                }
-                else
-                {
-                    GetTopLevelMenu().CloseSubMenusAndUsIfCM();
+                    int iconareawidth = Font.ScalePixels(24);
+                    gr.FillRectangle(br, new Rectangle(area.Left, area.Top, iconareawidth, area.Height));
                 }
             }
         }
 
-        private void OpenItem(GLMenuItem mi)     // open this item 
+        private void SetSelected(int sel)       // select item, or -1 select none
         {
-            if (submenumi != mi)      // don't double open
+            selected = sel;
+
+            for (int i = 0; i < ControlsIZ.Count; i++)
             {
-                CloseSubMenus();        // close any current ones
-
-                if (mi.SubMenuItems != null)
+                var c = ControlsIZ[i] as GLMenuItem;
+                if (c != null)
                 {
-                    Point p = this.DisplayControlCoords(false);
-
-                    if (FlowDirection == ControlFlowDirection.Right)       // pick co-ords based on flow
-                    {
-                        p.X += mi.Left - this.ClientLeftMargin;
-                        p.Y += this.Height;
-                    }
-                    else
-                    {
-                        p.X += this.Width;
-                        p.Y += mi.Top;
-                    }
-
-                    submenu = new GLMenuStrip(Name + "." + (Environment.TickCount % 100), new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
-                    submenu.SuspendLayout();
-
-                    submenu.Font = Font;
-                    submenu.ForeColor = this.ForeColor;
-                    submenu.BackColor = this.BackColor;
-                    submenu.MouseOverBackColor = this.MouseOverBackColor;
-                    submenu.FlowDirection = ControlFlowDirection.Down;
-                    submenu.AutoSize = true;
-                    submenu.parentmenu = this;
-                    submenu.TopMost = true;
-
-                    submenu.AddItems(mi.SubMenuItems);
-
-                    submenu.ResumeLayout();
-
-                    FindDisplay().Add(submenu);
-
-                    submenumi = mi;
-
-                    GetTopLevelMenu().SubmenuOpened?.Invoke(mi);                 // call, allowing configuration of the submenu
+                    c.Highlighted = selected == i;
+                    c.DisableHoverHighlight = selected != -1;
+                    //System.Diagnostics.Debug.WriteLine("  Item {0} {1} {2}", c.Name, c.Highlighted, c.DisableHoverHighlight);
                 }
             }
         }
 
-        private void CloseSubMenusAndUsIfCM()
+        private void Close()
         {
-            System.Diagnostics.Debug.WriteLine("Close menus and us " + Name);
-            CloseSubMenus();
-            if (openedascontextmenu)
-            {
-                Parent.Detach(this);
-            }
-        }
-
-        private void CloseSubMenus()
-        {
-            System.Diagnostics.Debug.WriteLine("Close menus " + Name);
-            if (submenu != null)
-            {
-                submenu.CloseSubMenus();    // close child submenus first
-                submenu.CloseMenu();
-                GetTopLevelMenu().SubmenuClosed?.Invoke(submenumi);                 // call, allowing configuration of the submenu
-                submenu = null;
-                submenumi = null;
-            }
-        }
-
-        private void CloseMenu()
-        {
-            System.Diagnostics.Debug.WriteLine("Close menu " + Name);
+            //System.Diagnostics.Debug.WriteLine("Close menu " + Name);
             SuspendLayout();
             List<GLBaseControl> todelete = new List<GLBaseControl>(ControlsZ);
             foreach (var c in todelete)
@@ -319,40 +423,108 @@ namespace OFC.GL4.Controls
             Parent.Remove(this);
         }
 
-        public void MenuItemEnter(object c, GLMouseEventArgs e)
-        {
-            var mi = c as GLMenuItem;
+        #endregion
 
-            if (mi != null && mi != submenumi)       // if on a menu item but not the open opened (if submenumi = null then that also counts)
+        #region UI
+
+        private void MenuItemClicked(GLBaseControl c)
+        {
+            System.Diagnostics.Debug.Assert(Parent != null);        // double check we are not on a zombie control, due to the add/remove stuff
+
+            var mi = c as GLMenuItem;
+            if (mi != null)                             // menu items are handled by us
             {
-                gotomenuitem = mi;                          // we indicate to change to this one, even if it does not have a submenu
-                timer.Start(submenu != null ? 250 : 500);        // slower if opening a new sublayer
+                if (mi.SubMenuItems != null)
+                {
+                    Select(ControlsIZ.IndexOf(mi), FlowDirection == ControlFlowDirection.Right);
+                }
+                else
+                {
+                    GetTopLevelMenu().CloseMenus();
+                }
             }
+        }
+
+        public void MenuItemEnter(object c, GLMouseEventArgs e)     
+        {
+            GLBaseControl b = c as GLBaseControl;
+            mousehovered = ControlsIZ.IndexOf(b);       // when we move the mouse, the selected is discarded, and mousehover takes over
+            SetSelected(-1);
+
+            GLMenuItem mi = ControlsIZ[mousehovered] as GLMenuItem; // if its a menu item, lets do a timer to autoopen
+            if (mi != null )
+                timer.Start(250);
         }
 
         public void MenuItemLeave(object c, GLMouseEventArgs e)
         {
             timer.Stop();
+            mousehovered = -1;
         }
 
         public void Timeout(OFC.Timers.Timer t, long tick)
         {
-            OpenItem(gotomenuitem);
+            Select(mousehovered,FlowDirection==ControlFlowDirection.Right);        // if we are a flow right menu, focus changes to below
         }
 
-        protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
+        public override void OnKeyDown(GLKeyEventArgs e)
         {
-            base.DrawBack(area, gr, bc, bcgradientalt, bcgradient);
+            base.OnKeyPress(e);
+            //System.Diagnostics.Debug.WriteLine("Keydown in {0} {1}", Name, e.KeyCode);
 
-            if (FlowDirection == ControlFlowDirection.Down)
+            if (e.KeyCode == System.Windows.Forms.Keys.Left)
             {
-                //IconStripBackColor = Color.Red;
-                using (Brush br = new SolidBrush(IconStripBackColor))
-                {
-                    int iconareawidth = Font.ScalePixels(24);
-                    gr.FillRectangle(br, new Rectangle(area.Left, area.Top, iconareawidth, area.Height));
-                }
+                if (FlowDirection == ControlFlowDirection.Right)                // if we are in a flow right menu, its a negative to us
+                    Move(-1);
+                else if (parentmenu?.FlowDirection == ControlFlowDirection.Right)   // else see if the parent is flow right..
+                    parentmenu.Move(-1);
             }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Right)
+            {
+                if (FlowDirection == ControlFlowDirection.Right)
+                    Move(1);
+                else if (parentmenu?.FlowDirection == ControlFlowDirection.Right)
+                    parentmenu.Move(1);
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Up)
+            {
+                if (FlowDirection == ControlFlowDirection.Down)
+                    Move(-1);
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Down)
+            {
+                if (FlowDirection == ControlFlowDirection.Down)
+                    Move(1);
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Return)
+            {
+                ActivateSelected();
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Back)
+            {
+                if (parentmenu?.FlowDirection != ControlFlowDirection.Right)        // if in a up/down, it means close this menu from parent
+                    parentmenu?.CloseSubMenus();
+                else
+                    parentmenu?.CloseMenus();
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Escape)     // full shut down
+            {
+                GetTopLevelMenu().CloseMenus();
+            }
+
+        }
+
+        public void NonMIKeyDown(object o, GLKeyEventArgs e)
+        {
+            if (e.KeyCode == System.Windows.Forms.Keys.Up)
+            {
+                Move(-1);
+            }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Down)
+            {
+                Move(1);
+            }
+
         }
 
         #endregion
@@ -361,17 +533,18 @@ namespace OFC.GL4.Controls
         private Color foreColor { get; set; } = DefaultControlForeColor;
         private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
 
-        private GLMenuStrip submenu = null;      // submenu opened
-        private GLMenuItem submenumi = null;     // menu item which opened sub menu
-        private GLMenuStrip parentmenu = null;   // parent menu, null for top level menu
+        private int selected = -1;              // open which is highlighted/open
+        private int mousehovered = -1;          // if over a menu item
 
-        private GLMenuItem gotomenuitem = null; // set for timer to go to new menu item
+        private GLMenuStrip submenu = null;     // submenu which is opened
+        private GLMenuStrip parentmenu = null;  // parent menu, null for top level menu
 
         private OFC.Timers.Timer timer = new Timers.Timer();
 
         private bool comboboxchilddropdown = false;     // only used in top level menu
 
         private bool openedascontextmenu = false;
+
     }
 }
 

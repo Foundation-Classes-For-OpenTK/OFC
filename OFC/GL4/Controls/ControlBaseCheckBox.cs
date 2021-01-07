@@ -30,6 +30,7 @@ namespace OFC.GL4.Controls
     public abstract class GLCheckBoxBase : GLButtonTextBase
     {
         public Action<GLBaseControl> CheckChanged { get; set; } = null;
+        public Action<GLBaseControl> Click { get; set; } = null;
 
         public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
         public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
@@ -122,10 +123,18 @@ namespace OFC.GL4.Controls
         public override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
         {
             base.OnMouseClick(e);
-            if (e.Handled == false && e.Button == GLMouseEventArgs.MouseButtons.Left && CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
+            if ( !e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Left)
+                OnClick();
+        }
+
+        public virtual void OnClick()
+        {
+            if ( CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
             {
                 SetCheckState(CheckState == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
             }
+
+            Click?.Invoke(this);
         }
 
         public override void OnKeyPress(GLKeyEventArgs e)
@@ -133,7 +142,7 @@ namespace OFC.GL4.Controls
             base.OnKeyPress(e);
             if (e.Handled == false && e.KeyChar == 13)
             {
-                SetCheckState(CheckState == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
+                OnClick();
             }
         }
 

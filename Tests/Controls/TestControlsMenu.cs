@@ -167,7 +167,7 @@ namespace TestOpenTk
                         menubar.Font = new Font("Euro Caps", 12);
                         menubar.Dock = DockingType.Top;
 
-                        GLMenuItem l1 = new GLMenuItem("A", "MenuA");
+                        GLMenuItem l1 = new GLMenuItem("MI-0A", "MenuA");
                         menubar.Add(l1);
 
                         GLMenuItem l1a = new GLMenuItem("A-1", "MenuA-1");
@@ -179,22 +179,27 @@ namespace TestOpenTk
                         l1.SubMenuItems = new List<GLBaseControl>() { l1a, l1b, l1c };
 
                         GLMenuItem l1a1 = new GLMenuItem("A-1-1", "MenuA-1-1");
-                        GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-1");
+                        GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-2");
+
+                        GLMenuItem l1a21 = new GLMenuItem("A-1-2-1", "MenuA-1-2-1");
+                        GLMenuItem l1a22 = new GLMenuItem("A-1-2-2", "MenuA-1-2-2");
+                        l1a2.SubMenuItems = new List<GLBaseControl>() { l1a21, l1a22 };
+
                         GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                         l1a3.CheckOnClick = true;
 
                         GLComboBox l1a4 = new GLComboBox("A-1-4", new Rectangle(0, 0, 0, 0), new List<string>() { "one", "two", "three" });
-                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a4, l1a1, l1a2, l1a3 };
+                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2 ,l1a3, l1a4 };
 
-                        GLMenuItem l2 = new GLMenuItem("B", "MenuB");
+                        GLMenuItem l2 = new GLMenuItem("MI-0B", "MenuB");
                         menubar.Add(l2);
 
                         GLMenuItem l2a = new GLMenuItem("B-1", "MenuB-1");
-                        l2a.Click += (s,ea1) => { System.Diagnostics.Debug.WriteLine("Clicked Menu " + s.Name); };
+                        l2a.Click += (s) => { System.Diagnostics.Debug.WriteLine("Clicked Menu " + s.Name); };
                         GLMenuItem l2b = new GLMenuItem("B-2", "MenuB-2");
                         l2.SubMenuItems = new List<GLBaseControl>() { l2a, l2b };
 
-                        GLMenuItem l3 = new GLMenuItem("C", "MenuC");
+                        GLMenuItem l3 = new GLMenuItem("MI-0C", "MenuC");
                         menubar.Add(l3);
 
                         pform.Add(menubar);
@@ -206,15 +211,15 @@ namespace TestOpenTk
                 {
                     GLMenuStrip cm = new GLMenuStrip("CM1");
                     cm.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
-                    GLMenuItem cm1 = new GLMenuItem("A-1-1", "Menu-1");
-                    GLMenuItem cm2 = new GLMenuItem("A-1-2", "Menu-2");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
-                    GLMenuItem cm3 = new GLMenuItem("A-1-2", "Menu-3");
+                    GLMenuItem cm3 = new GLMenuItem("CM1C", "Menu-3");
 
-                    GLMenuItem l1a1 = new GLMenuItem("A-1-1", "MenuA-1-1");
+                    GLMenuItem l1a1 = new GLMenuItem("CM1C-1", "Menu-1-1");
                     l1a1.CheckOnClick = true;
-                    GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-1");
-                    GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
+                    GLMenuItem l1a2 = new GLMenuItem("CM1C-2", "MenuA-1-2");
+                    GLCheckBox l1a3 = new GLCheckBox("CM1C-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                     l1a3.CheckOnClick = true;
                     cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
 
@@ -230,8 +235,6 @@ namespace TestOpenTk
                         }
                     };
                 }
-
-
 
 
                 displaycontrol.ResumeLayout();

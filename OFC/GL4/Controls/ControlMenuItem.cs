@@ -12,10 +12,8 @@
  * governing permissions and limitations under the License.
  */
 
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace OFC.GL4.Controls
 {
@@ -27,13 +25,17 @@ namespace OFC.GL4.Controls
             Text = text;
             ShowFocusBox = false;
             ImageStretch = true;        // to make sure that menu items are normally sized by text not by image
-            Focusable = true;
+            RejectFocus = true;         // MenuStrips always get focus, MI do not
+            Focusable = false;
         }
 
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
         public int IconTickAreaWidth { get; set; } = 0;            // zero for off
 
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
+
+        public bool Highlighted { get { return highlighted; } set { highlighted = value; Invalidate(); } } // if set, lock as highlighted
+        public bool DisableHoverHighlight { get { return disablehoverhighlighted; } set { disablehoverhighlighted = value; Invalidate(); } } // if set, lock as highlighted
 
         public List<GLBaseControl> SubMenuItems { get; set; } = null;
 
@@ -54,11 +56,13 @@ namespace OFC.GL4.Controls
         protected override void Paint(Rectangle area, Graphics gr)
         {
             Rectangle butarea = area;
+
+            Color back = PaintButtonBackColor(Highlighted, DisableHoverHighlight);
+
             if (IconTickAreaWidth > 0)
             {
                 butarea.Width -= IconTickAreaWidth;
                 butarea.X += IconTickAreaWidth;
-                Color back = PaintButtonBackColor();
                 if ( back == BackColor )
                 {
                     using (Brush br = new SolidBrush(IconStripBackColor))
@@ -73,7 +77,7 @@ namespace OFC.GL4.Controls
             }
             else
             {
-                base.PaintButtonBack(area, gr, PaintButtonBackColor());
+                base.PaintButtonBack(area, gr, back);
             }
 
             //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
@@ -112,21 +116,10 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public Action<GLBaseControl, GLMouseEventArgs> Click { get; set; } = null;
-
-        public override void OnMouseClick(GLMouseEventArgs e)
-        {
-            base.OnMouseClick(e);
-            OnClick(e);
-        }
-
-        public virtual void OnClick(GLMouseEventArgs e)
-        {
-            Click?.Invoke(this, e);
-        }
-
         private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
         private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
+        private bool highlighted { get; set; } = false;
+        private bool disablehoverhighlighted { get; set; } = false;
     }
 
 }

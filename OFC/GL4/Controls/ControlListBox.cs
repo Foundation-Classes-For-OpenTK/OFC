@@ -434,7 +434,7 @@ namespace OFC.GL4.Controls
             base.OnKeyDown(e);
             if (!e.Handled)
             {
-                //System.Diagnostics.Debug.WriteLine("KDown " + Name + " " + e.KeyCode);
+                System.Diagnostics.Debug.WriteLine("LB KDown " + Name + " " + e.KeyCode);
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {

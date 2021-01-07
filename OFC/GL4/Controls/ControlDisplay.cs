@@ -106,8 +106,6 @@ namespace OFC.GL4.Controls
 
         public bool SetFocus(GLBaseControl newfocus)    // null to clear focus, true if focus taken
         {
-            //System.Diagnostics.Debug.WriteLine("Focus to " + newfocus?.Name);
-
             if (newfocus == currentfocus)       // no action if the same
                 return true;
 
@@ -122,14 +120,18 @@ namespace OFC.GL4.Controls
             GLBaseControl oldfocus = currentfocus;
 
             GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);   // global invoker
-           // System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
+            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
                 currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
 
-                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // push up the list to the top
+                for( var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
+                {
                     c.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
+                    if (c is GLForm)
+                        break;
+                }
 
                 currentfocus = null;
             }
@@ -140,8 +142,12 @@ namespace OFC.GL4.Controls
 
                 currentfocus.OnFocusChanged(FocusEvent.Focused, oldfocus);
 
-                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // push up the list to the top
+                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
+                {
                     c.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);
+                    if (c is GLForm)
+                        break;
+                }
             }
 
             return true;
@@ -552,7 +558,7 @@ namespace OFC.GL4.Controls
 
         private void Gc_KeyDown(object sender, GLKeyEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
+            System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))
