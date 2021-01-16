@@ -48,6 +48,7 @@ namespace OFC.GL4.Controls
         public Color ItemSeperatorColor { get { return itemSeperatorColor; } set { itemSeperatorColor = value; Invalidate(); } }
 
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
+        public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }
 
         // scroll bar
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
@@ -285,7 +286,7 @@ namespace OFC.GL4.Controls
                                 using (Brush highlight = new SolidBrush(MouseOverBackColor))
                                     gr.FillRectangle(highlight, itemarea);
                             }
-                            else if (offset == selectedIndex)
+                            else if (offset == selectedIndex && HighlightSelectedItem)
                             {
                                 using (Brush highlight = new SolidBrush(SelectedItemBackColor))
                                     gr.FillRectangle(highlight, itemarea);
@@ -487,6 +488,7 @@ namespace OFC.GL4.Controls
         private bool selectedindexset = false;
         private int dropDownHeightMaximum = 400;
         private bool showfocusbox = true;
+        private bool highlightSelectedItem = true;
 
     }
 }

@@ -230,6 +230,7 @@ namespace OFC.GL4.Controls
             dropdownbox.Font = Font;
             dropdownbox.Visible = true;
             dropdownbox.ShowFocusBox = true;
+            dropdownbox.HighlightSelectedItem = false;
             dropdownbox.ResumeLayout();
             FindDisplay().Add(dropdownbox);
             DropDownStateChanged?.Invoke(this, true);

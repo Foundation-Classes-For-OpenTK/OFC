@@ -15,8 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -38,9 +36,7 @@ namespace OFC.GL4.Controls
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
             timer.Tick += Timeout;
-            FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;
-
-  InvalidateOnFocusChange = true;
+            FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;   // default is left-right menu
         }
 
         public GLMenuStrip(string name = "Menu?") : this(name, DefaultWindowRectangle)
@@ -136,9 +132,7 @@ namespace OFC.GL4.Controls
                     GetTopLevelMenu().SubmenuOpened?.Invoke(mi);                // call, allowing configuration of the submenu
 
                     if (focusto)                                                // used to transfer focus to submenu.  Note submenu with focus has up/down keys
-                    {
                         submenu.SetFocus();
-                    }
                     else
                         SetFocus();                                             // else ensure we have the focus, in case due to keyboard hit
 
@@ -498,7 +492,10 @@ namespace OFC.GL4.Controls
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Return)
             {
-                ActivateSelected();
+                if (FlowDirection == ControlFlowDirection.Right && selected == -1)      // if menu bar, and unselected, its like a right
+                    Move(1);
+                else
+                    ActivateSelected();
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Back)
             {

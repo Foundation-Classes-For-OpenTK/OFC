@@ -285,7 +285,7 @@ namespace OFC.GL4.Controls
             return new Point(mp.X - p.X, mp.Y - p.Y);
         }
 
-        public Rectangle ChildArea()
+        public Rectangle ChildArea()            // area used by children controls
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
 
@@ -304,7 +304,8 @@ namespace OFC.GL4.Controls
             return new Rectangle(left, top, right - left, bottom - top);
         }
 
-        public GLBaseControl FindNextTabChild(int tabno, bool forward = true)
+        // next tab, from tabno, either forward or back
+        public GLBaseControl FindNextTabChild(int tabno, bool forward = true)       
         {
             GLBaseControl found = null;
             int mindist = int.MaxValue;
