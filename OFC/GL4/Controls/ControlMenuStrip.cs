@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -273,27 +274,12 @@ namespace OFC.GL4.Controls
                 }
                 else
                 {
-                    var cb = child as GLComboBox;
-                    if (cb != null)
-                    {
-                        cb.DropDownStateChanged += DropDownChild;
-                        cb.SelectedIndexChanged += ComboBoxSelectedIndex;
-                        cb.DisableChangeKeys = true;
-                    }
-
-                    var chbox = child as GLCheckBox;
-                    if (chbox != null)
-                    {
-                        chbox.CheckChanged += CheckBoxChanged;
-                    }
-
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
                         child.FlowOffsetPosition = new Point(iconareawidth, 0);
                     }
 
                     child.KeyDown += NonMIKeyDown;
-
                 }
 
                 child.ResumeLayout();
@@ -317,18 +303,9 @@ namespace OFC.GL4.Controls
                 mi.MouseEnter -= MenuItemEnter;
                 mi.MouseLeave -= MenuItemLeave;
             }
-
-            var cb = child as GLComboBox;
-            if (cb != null)
+            else
             {
-                cb.DropDownStateChanged -= DropDownChild;
-                cb.SelectedIndexChanged -= ComboBoxSelectedIndex;
-            }
-
-            var chbox = child as GLCheckBox;
-            if (chbox != null)
-            {
-                chbox.CheckChanged -= CheckBoxChanged;
+                child.KeyDown -= NonMIKeyDown;
             }
 
             base.OnControlRemove(parent, child);
@@ -339,7 +316,7 @@ namespace OFC.GL4.Controls
         private void GMouseClick(GLControlDisplay disp, GLBaseControl item, GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("G Mouse clickFocus {0}, {1}, {2}", item?.GetType()?.Name, e.Button ,e.ScreenCoord);
-            if (comboboxchilddropdown == false && (item == null || !IsThisOrChildControl(item)))     // not a drop down, not a child of our tree
+            if (item == null || !IsThisOrChildControl(item))     // not a drop down, not a child of our tree
             {
                 GetTopLevelMenu().CloseMenus();
             }
@@ -347,29 +324,13 @@ namespace OFC.GL4.Controls
 
         private bool IsThisOrChildControl(GLBaseControl to)        // find out if to is this or a child in the tree
         {
-            if (to == this || ControlsIZ.Contains(to))
+//            System.Diagnostics.Debug.WriteLine("control is " + to.Name + " creator is " + to.Creator.Name);
+  //          foreach (GLBaseControl b in ControlsIZ) System.Diagnostics.Debug.WriteLine("{0} from {1}", b.Name, b.Creator.Name);
+
+            if (to == this || ControlsIZ.Contains(to) || ControlsIZ.Where(x=>to.Creator==x).Count()>0)
                 return true;
             else
                 return submenu != null ? submenu.IsThisOrChildControl(to) : false;      // check out submenus
-        }
-
-        private void DropDownChild(GLBaseControl cb, bool state)
-        {
-            GetTopLevelMenu().comboboxchilddropdown = state;    // need to tell top level menu, which GFocusChanged is called on, its combo boxed
-        }
-
-        private void CheckBoxChanged(GLBaseControl child)       // hook check changed on checkbox, if autocheck, close menus
-        {
-            var chbox = child as GLCheckBox;
-            if (chbox.CheckOnClick)
-            {
-                GetTopLevelMenu().CloseMenus();
-            }
-        }
-
-        private void ComboBoxSelectedIndex(GLBaseControl bc)    // hook, selecting an item closes the menus
-        {
-            GetTopLevelMenu().CloseMenus();
         }
 
         protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
@@ -537,8 +498,6 @@ namespace OFC.GL4.Controls
         private GLMenuStrip parentmenu = null;  // parent menu, null for top level menu
 
         private OFC.Timers.Timer timer = new Timers.Timer();
-
-        private bool comboboxchilddropdown = false;     // only used in top level menu
 
         private bool openedascontextmenu = false;
 

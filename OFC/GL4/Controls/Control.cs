@@ -132,6 +132,8 @@ namespace OFC.GL4.Controls
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
+        public GLBaseControl Creator { get { return creator; } set { creator = value; } } // normally the same as parent, unless required to be different
+
         // tooltips
         public string ToolTipText { get; set; } = null;
 
@@ -366,7 +368,7 @@ namespace OFC.GL4.Controls
         public virtual void Add(GLBaseControl child, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
-            child.parent = this;
+            child.parent = child.creator = this;
 
             child.ClearFlagsDown();       // in case of reuse, clear all temp flags as child is added
 
@@ -443,7 +445,7 @@ namespace OFC.GL4.Controls
             if ( dispose )
                 child.Dispose();
 
-            child.parent = null;
+            child.parent = child.creator = null;
 
             childrenz.Remove(child);
             childreniz.Remove(child);
@@ -608,7 +610,7 @@ namespace OFC.GL4.Controls
 
         public virtual bool ThisOrChildrenFocused()
         {
-            if (focused)
+            if (Focused)
                 return true;
 
             foreach ( var c in ControlsZ)
@@ -1185,7 +1187,8 @@ namespace OFC.GL4.Controls
         private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
         private bool topMost { get; set; } = false;              // if set, always force to top
 
-        private GLBaseControl parent { get; set; } = null;       // its parent, null if top of top
+        private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
+        private GLBaseControl creator { get; set; } = null;       // its creator, normally its parent.
 
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();

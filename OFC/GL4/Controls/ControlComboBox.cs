@@ -72,7 +72,6 @@ namespace OFC.GL4.Controls
             Focusable = true;
             InvalidateOnFocusChange = true;
             dropdownbox.Visible = false;
-            dropdownbox.Name = name + "-Dropdown";
             dropdownbox.SelectedIndexChanged += dropdownchanged;
             dropdownbox.OtherKeyPressed += dropdownotherkey;
         }
@@ -222,6 +221,7 @@ namespace OFC.GL4.Controls
             dropdownbox.SuspendLayout();
             var p = DisplayControlCoords(false);
             dropdownbox.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+            dropdownbox.Name = Name + "-Dropdown";
             dropdownbox.TopMost = true;
             dropdownbox.BackColor = ComboBoxBackColor;
             dropdownbox.BackColorGradientAlt = ComboBoxBackColor.Multiply(BackColorScaling);
@@ -232,7 +232,8 @@ namespace OFC.GL4.Controls
             dropdownbox.ShowFocusBox = true;
             dropdownbox.HighlightSelectedItem = false;
             dropdownbox.ResumeLayout();
-            FindDisplay().Add(dropdownbox);
+            FindDisplay().Add(dropdownbox);             // attach to display, not us, so it shows over everything
+            dropdownbox.Creator = this;     // associate drop down with ComboBox.
             DropDownStateChanged?.Invoke(this, true);
             dropdownbox.SetFocus();
         }

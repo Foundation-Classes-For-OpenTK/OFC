@@ -187,8 +187,11 @@ namespace TestOpenTk
 
                         GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                         l1a3.CheckOnClick = true;
+                        l1a3.CheckChanged += (bc) => { menubar.CloseMenus(); };     // need to associate check changed with closing menus - optional
 
                         GLComboBox l1a4 = new GLComboBox("A-1-4", new Rectangle(0, 0, 0, 0), new List<string>() { "one", "two", "three" });
+                        l1a4.SelectedIndexChanged += (c) => { menubar.CloseMenus(); };
+                        l1a4.DisableChangeKeys = true;
                         l1a.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2 ,l1a3, l1a4 };
 
                         GLMenuItem l2 = new GLMenuItem("MI-0B", "MenuB");
