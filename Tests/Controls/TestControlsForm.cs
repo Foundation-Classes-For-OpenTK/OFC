@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using OFC.GL4.Controls;
 using System.Linq;
+using System.Globalization;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -247,6 +248,12 @@ namespace TestOpenTk
                     upc1.TabOrder = taborder++;
                     pform.Add(upc1);
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
+
+                    GLCalendar cal = new GLCalendar("Cal", new Rectangle(0, 550, 300, 200));
+                    cal.TabOrder = taborder++;
+                    //cal.Culture = CultureInfo.GetCultureInfo("es");
+                    cal.Font = new Font("Arial", 12);
+                    pform.Add(cal);
 
                     pform.ResumeLayout();
                 }

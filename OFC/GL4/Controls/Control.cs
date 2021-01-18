@@ -116,6 +116,7 @@ namespace OFC.GL4.Controls
         public virtual bool Focused { get { return focused; } }
         public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
         public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
+        public virtual bool GiveFocusToParent { get { return givefocustoparent; } set { givefocustoparent= value; } }    // if set, focus is passed to parent if present, and it does not reject it
         public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
         
         // colour font
@@ -708,55 +709,59 @@ namespace OFC.GL4.Controls
             }
             else if (docktype >= DockingType.Bottom)
             {
-                if (docktype == DockingType.Bottom)
+                if (docktype == DockingType.Bottom)     // only if we just the whole of the bottom do we modify areaout
+                {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockedheight - dockingmargin.Bottom, parentarea.Width - dockingmargin.TotalWidth, dockedheight);
+                    areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalWidth);
+                }
                 else if (docktype == DockingType.BottomCentre)
                     window = new Rectangle(parentarea.Left + parentarea.Width / 2 - wl / 2, parentarea.Bottom - dockedheight - dockingmargin.Bottom, wl, dockedheight);
                 else if (docktype == DockingType.BottomLeft)
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockedheight - dockingmargin.Bottom, wl, dockedheight);
                 else // bottomright
                     window = new Rectangle(parentarea.Right - dockingmargin.Right - wl, parentarea.Bottom - dockedheight - dockingmargin.Bottom, wl, dockedheight);
-
-                areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalWidth);
             }
             else if (docktype >= DockingType.Top)
             {
                 if (docktype == DockingType.Top)
+                {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, parentarea.Width - dockingmargin.TotalWidth, dockedheight);
+                    areaout = new Rectangle(parentarea.Left, parentarea.Top + dockedheight + dockingmargin.TotalHeight, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalHeight);
+                }
                 else if (docktype == DockingType.TopCenter)
                     window = new Rectangle(parentarea.Left + parentarea.Width / 2 - wl / 2, parentarea.Top + dockingmargin.Top, wl, dockedheight);
                 else if (docktype == DockingType.TopLeft)
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, wl, dockedheight);
                 else // topright
                     window = new Rectangle(parentarea.Right - dockingmargin.Right - wl, parentarea.Top + dockingmargin.Top, wl, dockedheight);
-
-                areaout = new Rectangle(parentarea.Left, parentarea.Top + dockedheight + dockingmargin.TotalHeight, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalHeight);
             }
             else if (docktype >= DockingType.Right)
             {
                 if (docktype == DockingType.Right)
+                {
                     window = new Rectangle(parentarea.Right - dockedwidth - dockingmargin.Right, parentarea.Top + dockingmargin.Top, dockedwidth, parentarea.Height - dockingmargin.TotalHeight);
+                    areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width - window.Width - dockingmargin.TotalWidth, parentarea.Height);
+                }
                 else if (docktype == DockingType.RightCenter)
                     window = new Rectangle(parentarea.Right - dockedwidth - dockingmargin.Right, parentarea.Top + parentarea.Height / 2 - hl / 2, dockedwidth, hl);
                 else if (docktype == DockingType.RightTop)
                     window = new Rectangle(parentarea.Right - dockedwidth - dockingmargin.Right, parentarea.Top + dockingmargin.Top, dockedwidth, hl);
                 else // rightbottom
                     window = new Rectangle(parentarea.Right - dockedwidth - dockingmargin.Right, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
-
-                areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width - window.Width - dockingmargin.TotalWidth, parentarea.Height);
             }
             else // must be left!
             {
                 if (docktype == DockingType.Left)
+                {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, dockedwidth, parentarea.Height - dockingmargin.TotalHeight);
+                    areaout = new Rectangle(parentarea.Left + dockedwidth + dockingmargin.TotalWidth, parentarea.Top, parentarea.Width - dockedwidth - dockingmargin.TotalWidth, parentarea.Height);
+                }
                 else if (docktype == DockingType.LeftCenter)
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + parentarea.Height / 2 - hl / 2, dockedwidth, hl);
                 else if (docktype == DockingType.LeftTop)
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, dockedwidth, hl);
                 else  // leftbottom
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
-
-                areaout = new Rectangle(parentarea.Left + dockedwidth + dockingmargin.TotalWidth, parentarea.Top, parentarea.Width - dockedwidth - dockingmargin.TotalWidth, parentarea.Height);
             }
 
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
@@ -1185,6 +1190,7 @@ namespace OFC.GL4.Controls
         private bool focused { get; set; } = false;
         private bool focusable { get; set; } = false;       // if true, clicking on it gets focus.  If not true, clincking on it set focus to null, unless next is set
         private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
+        private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
         private bool topMost { get; set; } = false;              // if set, always force to top
 
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl

@@ -111,6 +111,8 @@ namespace OFC.GL4.Controls
 
             if (newfocus != null)
             {
+                if (newfocus.GiveFocusToParent && newfocus.Parent != null && newfocus.Parent.RejectFocus == false)
+                    newfocus = newfocus.Parent;     // see if we want to give it to parent
                 if (newfocus.RejectFocus)       // if reject focus change when clicked, abort, do not change focus
                     return false;
                 if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus

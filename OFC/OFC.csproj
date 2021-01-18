@@ -60,6 +60,7 @@
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
     <Compile Include="GL4\Controls\ControlBaseCheckBox.cs" />
+    <Compile Include="GL4\Controls\ControlCalendar.cs" />
     <Compile Include="GL4\Controls\ControlMenuItem.cs" />
     <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />
@@ -151,6 +152,11 @@
     <Compile Include="GL4\BasicTypes\GLVertexArray.cs" />
     <Compile Include="GL\GLClasses.cs" />
     <Compile Include="GL4\BasicTypes\GL4Statics.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="WinForm\GLWinFormControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -170,11 +176,6 @@
     <Compile Include="BaseUtils\LineReader.cs" />
     <Compile Include="BaseUtils\NativeMethods.cs" />
     <Compile Include="BaseUtils\NumberObjectExtensions.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Utils\Polygon.cs" />
     <Compile Include="BaseUtils\ResourceHelpers.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
@@ -205,6 +206,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="GL4\Shaders\Base\PlanShaders.txt" />
+    <None Include="Resources\Up.png" />
+    <None Include="Resources\Right.png" />
+    <None Include="Resources\Left.png" />
+    <None Include="Resources\Calendar111.png" />
+    <None Include="Resources\Calendar11.png" />
+    <None Include="Resources\Calendar1.png" />
     <None Include="Resources\Calendar.png" />
   </ItemGroup>
   <ItemGroup />

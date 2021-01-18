@@ -45,9 +45,9 @@ namespace OFC.GL4.Controls
 
         public Color SelectedColor { get { return selectedColor; } set { selectedColor = value; Invalidate(); } }
 
-        public GLCheckBox CheckBox = new GLCheckBox();              // access for setting colours
-        public GLUpDownControl UpDown = new GLUpDownControl();
-        public GLImage Calendar = new GLImage();
+        public GLCheckBox CheckBox { get; set; } = new GLCheckBox();              // access for setting colours
+        public GLUpDownControl UpDown { get; set; } = new GLUpDownControl();
+        public GLImage Calendar { get; set; } = new GLImage();
 
         public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
         {
