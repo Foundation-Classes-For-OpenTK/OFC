@@ -45,8 +45,9 @@ namespace OFC.GL4.Controls
         {
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
+            Rectangle area = ClientRectangle;
             if (ShowFocusBox)
             {
                 if (Focused)

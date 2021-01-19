@@ -63,7 +63,7 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             string titletext = "";
             string[] titles = null;
@@ -71,7 +71,6 @@ namespace OFC.GL4.Controls
             int curselectedoffset = 0;
             int focuspos = 0;
             DateTime timenow = DateTime.Now;
-
 
             if (mode == Mode.Day)
             {
@@ -123,10 +122,10 @@ namespace OFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleCenter))
                 {
-                    Rectangle titlearea = new Rectangle(area.Left, area.Top + margin, area.Width, Font.Height);
+                    Rectangle titlearea = new Rectangle(0, margin, ClientWidth, Font.Height);
                     gr.DrawString(titletext, this.Font, textb, titlearea, fmt);
 
-                    int vpos = area.Top + ButLeft.Height + margin;
+                    int vpos = ButLeft.Height + margin;
 
                     int cellwidth = (Width - margin * 2) / gridxacross;
                     gridxleft = (Width - cellwidth * gridxacross) / 2;
@@ -139,8 +138,8 @@ namespace OFC.GL4.Controls
                         vpos+= Font.Height + margin;
                     }
 
-                    gridystart = vpos - area.Top;       // offset pixels
-                    int cellheight = (area.Bottom - vpos) / gridydown;
+                    gridystart = vpos;       // offset pixels
+                    int cellheight = (ClientHeight- vpos) / gridydown;
 
                     if (hoveredpos >= 0)
                         hoveredpos = HoveringOver(hoverpoint);
@@ -154,7 +153,7 @@ namespace OFC.GL4.Controls
                             xoff = 0;
                         }
 
-                        Rectangle butarea = new Rectangle(xoff++ * cellwidth + gridxleft + area.Left, vpos, cellwidth, cellheight);
+                        Rectangle butarea = new Rectangle(xoff++ * cellwidth + gridxleft , vpos, cellwidth, cellheight);
                         Rectangle focusrect = butarea;
 
                         if (i == curdateoffset)

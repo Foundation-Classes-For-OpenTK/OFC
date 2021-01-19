@@ -116,14 +116,14 @@ namespace OFC.GL4.Controls
 
         // called after the background of the panel has been drawn - so it will be clear to write.
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             int i = 0;
             foreach( var c in ControlsOrderAdded.OfType<GLTabPage>())
             {
                 if (i != seltab)
                 {
-                    DrawTab(gr, new Rectangle(area.Left + tabrectangles[i].Left, area.Top + tabrectangles[i].Top, tabrectangles[i].Width, tabrectangles[i].Height),
+                    DrawTab(gr, new Rectangle(tabrectangles[i].Left, tabrectangles[i].Top, tabrectangles[i].Width, tabrectangles[i].Height),
                             c.Text, null, false, mouseover == i);
                 }
                 i++;
@@ -132,7 +132,7 @@ namespace OFC.GL4.Controls
             if (seltab >= 0 && seltab < ControlsOrderAdded.Count)
             {
                 var c = ControlsOrderAdded[seltab] as GLTabPage;
-                DrawTab(gr, new Rectangle(area.Left + tabrectangles[seltab].Left, area.Top + tabrectangles[seltab].Top, tabrectangles[seltab].Width, tabrectangles[seltab].Height),
+                DrawTab(gr, new Rectangle(tabrectangles[seltab].Left, tabrectangles[seltab].Top, tabrectangles[seltab].Width, tabrectangles[seltab].Height),
                         c.Text, null, true, mouseover == seltab);
             }
 

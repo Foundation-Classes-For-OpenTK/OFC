@@ -155,7 +155,7 @@ namespace TestOpenTk
 
                 if (testform1)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(10, 10, 600, 800));
+                    GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(100, 100, 600, 800));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
                     pform.BackColorGradientDir = 90;
@@ -171,6 +171,7 @@ namespace TestOpenTk
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
                     pform.Add(b1);
+                   // displaycontrol.Add(b1);
 
                     GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Button 2");
                     b2.Image = Properties.Resources.ImportSphere;
@@ -210,6 +211,7 @@ namespace TestOpenTk
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = dtp.ShowCalendar = true;
                     dtp.ShowUpDown = true;
+                    //dtp.Culture = CultureInfo.GetCultureInfo("es");
                     dtp.TabOrder = taborder++;
                     pform.Add(dtp);
 
@@ -244,7 +246,7 @@ namespace TestOpenTk
                         pform.Add(mtb);
                     }
 
-                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 500 , 26, 46));
+                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 500, 26, 46));
                     upc1.TabOrder = taborder++;
                     pform.Add(upc1);
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);

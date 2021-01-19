@@ -26,6 +26,8 @@ namespace OFC.GL4.Controls
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
 
+        public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+
         public enum DateTimePickerFormat
         {
             Long = 1,
@@ -92,8 +94,8 @@ namespace OFC.GL4.Controls
             UpDown.VisibleNI = ShowUpDown;
             UpDown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - 2, borderoffset), bounds: new Size(height, height));
 
-            Calendar.VisibleNI = false; // tbd cal is turned off since the winform calendar is a control and needs a form to live in.. we don't have a form ready for it
             int ch = ClientHeight * 3 / 5;
+            Calendar.VisibleNI = ShowCalendar;
             Calendar.SetLocationSizeNI(location: new Point(UpDown.Left - 4 - Calendar.Width, (ClientHeight / 2 - ch/2)), bounds: new Size(ch * 20 / 12, ch));
 
             partsstartx = (showcheckbox ? (CheckBox.Right + 2) : 2);
@@ -103,23 +105,28 @@ namespace OFC.GL4.Controls
 
         // called after the background of the panel has been drawn - so it will be clear to write.
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
-            using (Brush textb = new SolidBrush(this.ForeColor))
+            using (var fmt = new StringFormat() { Alignment = StringAlignment.Center })
             {
-                for (int i = 0; i < partlist.Count; i++)
+                using (Brush textb = new SolidBrush(this.ForeColor))
                 {
-                    Parts p = partlist[i];
-
-                    string t = (p.ptype == PartsTypes.Text) ? p.maxstring : datetimevalue.ToString(p.format);
-
-                    if (i == selectedpart && ThisOrChildrenFocused())
+                    for (int i = 0; i < partlist.Count; i++)
                     {
-                        using (Brush br = new SolidBrush(this.SelectedColor))
-                            gr.FillRectangle(br, new Rectangle(area.Left + p.xpos + partsstartx, area.Y, p.endx - p.xpos, area.Height));
-                    }
+                        Parts p = partlist[i];
 
-                    gr.DrawString(t, this.Font, textb, new Point(area.Left + p.xpos + partsstartx, area.Y + 2));
+                        string t = (p.ptype == PartsTypes.Text) ? p.maxstring : datetimevalue.ToString(p.format, Culture);
+
+                        if (i == selectedpart && ThisOrChildrenFocused())
+                        {
+                            using (Brush br = new SolidBrush(this.SelectedColor))
+                                gr.FillRectangle(br, new Rectangle(p.xpos + partsstartx, 0, p.endx - p.xpos, ClientHeight));
+                        }
+
+                        int ymarg = (ClientHeight - Font.Height) / 2;
+                        Rectangle r = new Rectangle(p.xpos + partsstartx, ymarg, p.endx - p.xpos, ClientHeight - ymarg);
+                        gr.DrawString(t, this.Font, textb, r, fmt);
+                    }
                 }
             }
         }
@@ -226,11 +233,11 @@ namespace OFC.GL4.Controls
         {
             format = f;
             if (format == DateTimePickerFormat.Long)
-                customformat = CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern.Trim();
+                customformat = Culture.DateTimeFormat.LongDatePattern.Trim();
             else if (format == DateTimePickerFormat.Short)
-                customformat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.Trim();
+                customformat = Culture.DateTimeFormat.ShortDatePattern.Trim();
             else if (format == DateTimePickerFormat.Time)
-                customformat = CultureInfo.CurrentCulture.DateTimeFormat.LongTimePattern.Trim();
+                customformat = Culture.DateTimeFormat.LongTimePattern.Trim();
 
             RecalculatePartsList();
         }
@@ -264,17 +271,17 @@ namespace OFC.GL4.Controls
                             fmt = (index < fmt.Length) ? fmt.Substring(index + 1) : "";
                         }
                         else if (fmt.StartsWith("dddd"))
-                            p = Make(ref fmt, 4, PartsTypes.DayName, Maxlengthof(CultureInfo.CurrentCulture.DateTimeFormat.DayNames));
+                            p = Make(ref fmt, 4, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.DayNames));
                         else if (fmt.StartsWith("ddd"))
-                            p = Make(ref fmt, 3, PartsTypes.DayName, Maxlengthof(CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedDayNames));
+                            p = Make(ref fmt, 3, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.AbbreviatedDayNames));
                         else if (fmt.StartsWith("dd"))
                             p = Make(ref fmt, 2, PartsTypes.Day, "99");
                         else if (fmt.StartsWith("d"))
                             p = Make(ref fmt, 1, PartsTypes.Day, "99");
                         else if (fmt.StartsWith("MMMM"))
-                            p = Make(ref fmt, 4, PartsTypes.Month, Maxlengthof(CultureInfo.CurrentCulture.DateTimeFormat.MonthNames));
+                            p = Make(ref fmt, 4, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.MonthNames));
                         else if (fmt.StartsWith("MMM"))
-                            p = Make(ref fmt, 3, PartsTypes.Month, Maxlengthof(CultureInfo.CurrentCulture.DateTimeFormat.AbbreviatedMonthNames));
+                            p = Make(ref fmt, 3, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.AbbreviatedMonthNames));
                         else if (fmt.StartsWith("MM"))
                             p = Make(ref fmt, 2, PartsTypes.Month, "99");
                         else if (fmt.StartsWith("M"))

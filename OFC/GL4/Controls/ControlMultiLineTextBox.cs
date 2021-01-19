@@ -752,12 +752,12 @@ namespace OFC.GL4.Controls
             return usablearea;
         }
 
-        protected override void Paint(Rectangle clientarea, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             if (displaystartx < 0)      // no paint if not set up
                 return;
 
-            Rectangle usablearea = UsableAreaForText(clientarea);
+            Rectangle usablearea = UsableAreaForText(ClientRectangle);
             gr.SetClip(usablearea);     // so we don't paint outside of this
 
             using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))

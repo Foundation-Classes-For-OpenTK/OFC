@@ -69,14 +69,14 @@ namespace OFC.GL4.Controls
         { 
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             using (Brush br = new SolidBrush(this.SliderColor))
-                gr.FillRectangle(br, new Rectangle(area.Left + sliderarea.Left, area.Top + sliderarea.Top, sliderarea.Width, sliderarea.Height));
+                gr.FillRectangle(br, new Rectangle(sliderarea.Left, sliderarea.Top, sliderarea.Width, sliderarea.Height));
 
-            DrawButton(gr, new Rectangle(area.Left + decreasebuttonarea.Left, area.Top + decreasebuttonarea.Top,decreasebuttonarea.Width,decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
-            DrawButton(gr, new Rectangle(area.Left + increasebuttonarea.Left, area.Top + increasebuttonarea.Top, increasebuttonarea.Width, increasebuttonarea.Height), MouseOver.MouseOverIncrease);
-            DrawButton(gr, new Rectangle(area.Left + thumbbuttonarea.Left, area.Top + thumbbuttonarea.Top, thumbbuttonarea.Width, thumbbuttonarea.Height), MouseOver.MouseOverThumb);
+            DrawButton(gr, new Rectangle(decreasebuttonarea.Left, decreasebuttonarea.Top,decreasebuttonarea.Width,decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
+            DrawButton(gr, new Rectangle(increasebuttonarea.Left, increasebuttonarea.Top, increasebuttonarea.Width, increasebuttonarea.Height), MouseOver.MouseOverIncrease);
+            DrawButton(gr, new Rectangle(thumbbuttonarea.Left, thumbbuttonarea.Top, thumbbuttonarea.Width, thumbbuttonarea.Height), MouseOver.MouseOverThumb);
         }
 
         private void DrawButton(Graphics g, Rectangle rect, MouseOver but)

@@ -228,14 +228,14 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             if (itemheight < 1)     // can't paint yet
                 return;
 
-            gr.SetClip(area);   // normally we can do the whole area including border, we don't want to
+            gr.SetClip(ClientRectangle);   // normally we can do the whole area including border, we don't want to
 
-            Rectangle itemarea = new Rectangle(area.Left, area.Top, ClientRectangle.Width - (scrollbar.Visible ? scrollbar.Width : 0), ClientRectangle.Height);     // total width area
+            Rectangle itemarea = new Rectangle(0, 0, ClientRectangle.Width - (scrollbar.Visible ? scrollbar.Width : 0), ClientRectangle.Height);     // total width area
             itemarea.Height = itemheight;
 
             // System.Diagnostics.Debug.WriteLine("Paint List box");

@@ -62,13 +62,13 @@ namespace OFC.GL4.Controls
         {
             Invalidate();
         }
-        protected override void DrawBorder(Rectangle bounds, Graphics gr, Color bc, float bw)      // normal override, you can overdraw border if required.
+        protected override void DrawBorder(Graphics gr, Color bc, float bw)      // normal override, you can overdraw border if required.
         {
             int topoffset = this.Text.HasChars() ? (Margin.Top * 3 / 8 ) : GBMargins;
-            Rectangle rectarea = new Rectangle(bounds.Left + Margin.Left,
-                                bounds.Top + topoffset,
-                                bounds.Width - Margin.TotalWidth - 1,
-                                bounds.Height - Margin.Bottom- topoffset - 1);
+            Rectangle rectarea = new Rectangle(Margin.Left,
+                                topoffset,
+                                Width - Margin.TotalWidth - 1,
+                                Height - Margin.Bottom- topoffset - 1);
 
             //System.Diagnostics.Debug.WriteLine("Bounds {0} rectarea {1}", bounds, rectarea);
 
@@ -99,7 +99,7 @@ namespace OFC.GL4.Controls
                 { 
                     using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
                     {
-                        Rectangle titlearea = new Rectangle(bounds.Left+GBXoffset, bounds.Top, twidth, GroupBoxHeight );
+                        Rectangle titlearea = new Rectangle(GBXoffset, 0, twidth, GroupBoxHeight );
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
 

@@ -125,9 +125,9 @@ namespace OFC.GL4.Controls
             base.PerformRecursiveLayout();
         }
 
-        protected override void DrawBorder(Rectangle bounds, Graphics gr, Color bc, float bw)     
+        protected override void DrawBorder(Graphics gr, Color bc, float bw)     
         {
-            base.DrawBorder(bounds, gr, bc, bw);    // draw basic border
+            base.DrawBorder(gr, bc, bw);    // draw basic border
 
             Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling);
 
@@ -137,7 +137,7 @@ namespace OFC.GL4.Controls
                 {
                     using (Brush textb = new SolidBrush(c))
                     {
-                        Rectangle titlearea = new Rectangle(bounds.Left, bounds.Top, bounds.Width, TitleBarHeight);
+                        Rectangle titlearea = new Rectangle(0,0, Width, TitleBarHeight);
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
                 }
@@ -146,7 +146,7 @@ namespace OFC.GL4.Controls
 
             if ( ShowClose )
             {
-                Rectangle closearea = new Rectangle(bounds.Right- TitleBarHeight, bounds.Top, TitleBarHeight, TitleBarHeight);
+                Rectangle closearea = new Rectangle(Width- TitleBarHeight, 0, TitleBarHeight, TitleBarHeight);
                 closearea.Inflate(new Size(-5,-5));
 
                 using (Pen p = new Pen(c))

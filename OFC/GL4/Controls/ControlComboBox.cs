@@ -108,18 +108,18 @@ namespace OFC.GL4.Controls
 
         const int textspacing = 2;
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             bool enabled = Enabled && Items.Count > 0;
             Color bc = enabled && Hover ? MouseOverBackColor : comboboxBackColor;
 
-            using (var b = new LinearGradientBrush(new Rectangle(area.Left, area.Top - 1, area.Width, area.Height + 1), bc, bc.Multiply(BackColorScaling), 90))
-                gr.FillRectangle(b, area);       // linear grad brushes do not respect smoothing mode, btw
+            using (var b = new LinearGradientBrush(new Rectangle(0, -1, ClientWidth, ClientHeight + 1), bc, bc.Multiply(BackColorScaling), 90))
+                gr.FillRectangle(b, ClientRectangle);       // linear grad brushes do not respect smoothing mode, btw
 
             int arrowwidth = Font.ScalePixels(20);
-            Rectangle arrowbox = new Rectangle(area.Right - arrowwidth, area.Y, arrowwidth, area.Height);
+            Rectangle arrowbox = new Rectangle(ClientWidth - arrowwidth, 0, arrowwidth, ClientHeight);
 
-            Rectangle textbox = new Rectangle(area.X, area.Y, area.Width - arrowwidth - textspacing, area.Height);
+            Rectangle textbox = new Rectangle(0, 0, ClientWidth - arrowwidth - textspacing, ClientHeight);
 
             if ( Focused )
             {

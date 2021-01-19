@@ -47,21 +47,17 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             if (Text.HasChars())
             {
-               // gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
-
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
                     using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
                     {
-                        gr.DrawString(this.Text, this.Font, textb, area, fmt);
+                        gr.DrawString(this.Text, this.Font, textb, ClientRectangle, fmt);
                     }
                 }
-
-               // gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
             }
         }
 

@@ -57,12 +57,12 @@ namespace OFC.GL4.Controls
                 ButtonAutoSize(parentsize, new Size(0,0));
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
-            if (area.Width < 1 || area.Height < 1)  // and no point drawing any more in the button area if its too small, it will except
+            if (ClientWidth < 1 || ClientHeight<1)
                 return;
-            PaintButtonBack(area, gr, PaintButtonBackColor());
-            PaintButton(area, gr,true);
+            PaintButtonBack(ClientRectangle, gr, PaintButtonBackColor());
+            PaintButton(ClientRectangle, gr,true);
         }
 
         public override void OnMouseClick(GLMouseEventArgs e)

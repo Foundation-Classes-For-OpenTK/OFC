@@ -73,16 +73,16 @@ namespace OFC.GL4.Controls
         public int Bottom { get { return window.Bottom; } set { SetPos(window.Left, window.Top, window.Width, value - window.Top); } }
         public int Width { get { return window.Width; } set { SetPos(window.Left, window.Top, value, window.Height); } }
         public int Height { get { return window.Height; } set { SetPos(window.Left, window.Top, window.Width, value); } }
-        public Point Location { get { return new Point(window.Left, window.Top); } set { SetLocation(value.X, value.Y); } }
+        public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y,window.Width,window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
 
         // padding/margin and border control
 
-        public GL4.Controls.Padding Padding { get { return padding; } set { if (padding != value) { padding = value; InvalidateLayout(); } } }
-        public GL4.Controls.Margin Margin { get { return margin; } set { if (margin != value) { margin = value; InvalidateLayout(); } } }
-        public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; InvalidateLayout(); }
+        public GL4.Controls.Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public GL4.Controls.Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
         public Color BorderColor { get { return bordercolor; } set { if (bordercolor != value) { bordercolor = value; Invalidate(); } } }
-        public int BorderWidth { get { return borderwidth; } set { if (borderwidth != value) { borderwidth = value; InvalidateLayout(); } } }
+        public int BorderWidth { get { return borderwidth; } set { if (borderwidth != value) { borderwidth = value; CalcClientRectangle(); InvalidateLayout(); } } }
 
         // this is the client area, inside the margin/padding/border
 
@@ -92,11 +92,11 @@ namespace OFC.GL4.Controls
         public int ClientTopMargin { get { return Margin.Top + Padding.Top + BorderWidth; } }
         public int ClientBottomMargin { get { return Margin.Bottom + Padding.Bottom + BorderWidth; } }
         public int ClientHeightMargin { get { return Margin.TotalHeight + Padding.TotalHeight + BorderWidth*2; } }
-        public int ClientWidth { get { return Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2; } set { SetPos(window.Left, window.Top, value + ClientLeftMargin + ClientRightMargin, window.Height); } }
-        public int ClientHeight { get { return Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2; } set { SetPos(window.Left, window.Top, window.Width, value + ClientTopMargin + ClientBottomMargin); } }
-        public Size ClientSize { get { return new Size(ClientWidth, ClientHeight); } set { SetPos(window.Left, window.Top, value.Width + ClientLeftMargin + ClientRightMargin, value.Height + ClientTopMargin + ClientBottomMargin); } }
+        public int ClientWidth { get { return ClientRectangle.Width ; } set { SetPos(window.Left, window.Top, value + ClientLeftMargin + ClientRightMargin, window.Height); } }
+        public int ClientHeight { get { return ClientRectangle.Height; } set { SetPos(window.Left, window.Top, window.Width, value + ClientTopMargin + ClientBottomMargin); } }
+        public Size ClientSize { get { return ClientRectangle.Size; } set { SetPos(window.Left, window.Top, value.Width + ClientLeftMargin + ClientRightMargin, value.Height + ClientTopMargin + ClientBottomMargin); } }
         public Point ClientLocation { get { return new Point(ClientLeftMargin, ClientTopMargin); } }
-        public Rectangle ClientRectangle { get { return new Rectangle(0, 0, ClientWidth, ClientHeight); } }
+        public Rectangle ClientRectangle { get; private set; }
 
         // docking control
 
@@ -529,6 +529,7 @@ namespace OFC.GL4.Controls
             }
 
             this.window = location;
+            CalcClientRectangle();
         }
 
         static protected readonly Rectangle DefaultWindowRectangle = new Rectangle(0, 0, 10, 10);
@@ -764,6 +765,8 @@ namespace OFC.GL4.Controls
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
             }
 
+            CalcClientRectangle(); // ensure client rectangle tracks window
+
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
 
             CheckBitmapAfterLayout();       // check bitmap, virtual as inheritors may need to override this, make sure bitmap is the same width/height as ours
@@ -821,11 +824,13 @@ namespace OFC.GL4.Controls
                 redrawn = true;                 // and signal up we have been redrawn
 
                 gr.SetClip(cliparea);   // set graphics to the clip area so we can draw the background/border
+                gr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
                 //System.Diagnostics.Debug.WriteLine("..PaintBack {0} in ca {1} clip {2}", Name, bounds, cliparea);
-                DrawBack(bounds, gr, BackColor, BackColorGradientAlt, BackColorGradientDir);
+                DrawBack(new Rectangle(0,0,Width,Height), gr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
-                DrawBorder(bounds, gr, BorderColor, BorderWidth);
+                DrawBorder(gr, BorderColor, BorderWidth);
+                gr.ResetTransform();
             }
 
             // client area, in terms of last bitmap
@@ -862,10 +867,14 @@ namespace OFC.GL4.Controls
 
             if ( forceredraw)       // will be set if NeedRedrawn or forceredrawn
             {
+                //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
                 gr.SetClip(cliparea);   // set graphics to the clip area
 
-                //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
-                Paint(clientarea, gr); // Paint, nominally in the client area, but you can access the whole of the cliparea which includes the margins
+                gr.TranslateTransform(clientarea.X, clientarea.Y);   // move to client 0,0
+
+                Paint(gr);
+
+                gr.ResetTransform();
 
                 if (parentgr != null)      // give us a chance of parent paint thru
                 {
@@ -881,14 +890,14 @@ namespace OFC.GL4.Controls
         }
 
         // draw border area, override to draw something different
-        protected virtual void DrawBorder(Rectangle area, Graphics gr, Color bc, float bw)
+        protected virtual void DrawBorder(Graphics gr, Color bc, float bw)
         {
             if (bw > 0)
             {
-                Rectangle rectarea = new Rectangle(area.Left + Margin.Left,
-                                                area.Top + Margin.Top,
-                                                area.Width - Margin.TotalWidth - 1,
-                                                area.Height - Margin.TotalHeight - 1);
+                Rectangle rectarea = new Rectangle(Margin.Left,
+                                                Margin.Top,
+                                                Width - Margin.TotalWidth - 1,
+                                                Height - Margin.TotalHeight - 1);
 
                 using (var p = new Pen(bc, bw))
                 {
@@ -923,10 +932,9 @@ namespace OFC.GL4.Controls
             }
         }
 
-        
-        protected virtual void Paint(Rectangle area, Graphics gr)      // normal override, you can overdraw border if required.
+        protected virtual void Paint(Graphics gr)                   // normal override
         {
-            //System.Diagnostics.Debug.WriteLine("Paint {0} to {1}", Name, area);
+            //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
         }
 
         protected virtual void PaintParent(Rectangle parentarea, Graphics parentgr) // only called if you've defined a bitmap yourself, 
@@ -1062,20 +1070,32 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-        // set location - allowing override of invalidate behaviour
+        // Set Position, causing an invalidation layout at parent level
 
-        private void SetLocation(int left, int top)
+        private void SetPos(int left, int top, int width, int height)
         {
-            Rectangle w = new Rectangle(left, top, Width, Height);
-            if (w != window)
+            Rectangle w = new Rectangle(left, top, width, height);
+
+            if (w != window)        // if changed
             {
+                bool resized = w.Size != window.Size;
+                bool moved = w.Location != window.Location;
+
                 window = w;
 
-                OnMoved();
+                if ( resized) 
+                    CalcClientRectangle();
 
-                if ( (Parent?.ChildLocationChanged(this) ?? false) == false)     // give a class a chance to move windows in a different manner than causing a bit repaint/invalidate
+                if (moved)
+                    OnMoved();
+
+                if (resized)
+                    OnResize();
+
+                if (resized || (Parent?.InvalidateDueToLocationChange(this) ?? true) == true )   // if resized, or we invalidate due to location change
                 {
                     NeedRedraw = true;      // we need a redraw
+                   // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
                     parent?.Invalidate();   // parent is invalidated as well, and the whole form needs reendering
                     parent?.PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
                 }
@@ -1084,36 +1104,15 @@ namespace OFC.GL4.Controls
 
         // normally a location changed (left,top) means a invalidate of parent and re-layout. But for top level windows under GLDisplayControl
         // we don't need to lay them out as they are top level GL objects and we just need to move the texture co-ords
-        // this bit does that - allows the top level parent to not have to invalidate if it returns true
-        protected virtual bool ChildLocationChanged(GLBaseControl child)
+        // this bit does that - allows the top level parent to not have to invalidate if it returns false. Default is true, must invalidate
+        protected virtual bool InvalidateDueToLocationChange(GLBaseControl child)
         {
-            return false;
+            return true;
         }
 
-        // Set Position, causing an invalidation layout at parent level
-
-        private void SetPos(int left, int top, int width, int height) // change window rectangle, with layout
+        private void CalcClientRectangle()       // client rectangle calc
         {
-            Rectangle w = new Rectangle(left, top, width, height);
-
-            if (w != window)        // if changed
-            {
-                bool resized = w.Size != window.Size;
-                bool moved = w.Location != window.Location;
-                window = w;
-
-                if (moved)
-                    OnMoved();
-
-                if (resized)
-                    OnResize();
-
-                NeedRedraw = true;      // we need a redraw
-                //System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
-                parent?.Invalidate();   // parent is invalidated as well, and the whole form needs reendering
-
-                parent?.PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
-            }
+            ClientRectangle = new Rectangle(0, 0, Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2, Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2);
         }
 
         private void SetEnabled(bool v)

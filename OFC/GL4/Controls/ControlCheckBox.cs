@@ -68,7 +68,7 @@ namespace OFC.GL4.Controls
                 CheckBoxAutoSize(parentsize);
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             bool hasimages = Image != null;
 
@@ -76,7 +76,7 @@ namespace OFC.GL4.Controls
             {
                 if (Enabled)
                 {
-                    Rectangle marea = area;
+                    Rectangle marea = ClientRectangle;
                     marea.Inflate(-2, -2);
 
                     if (Hover)
@@ -92,18 +92,18 @@ namespace OFC.GL4.Controls
                 }
 
                 if (hasimages)
-                    DrawImage(area, gr);
+                    DrawImage(ClientRectangle, gr);
 
                 if (Text.HasChars())
                 {
                     using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                        DrawText(area, gr, fmt);
+                        DrawText(ClientRectangle, gr, fmt);
                 }
             }
             else if ( Appearance == CheckBoxAppearance.Normal )
             {
-                Rectangle tickarea = area;
-                Rectangle textarea = area;
+                Rectangle tickarea = ClientRectangle;
+                Rectangle textarea = ClientRectangle;
 
                 int reduce = (int)(tickarea.Height * TickBoxReductionRatio);
                 tickarea.Y += (tickarea.Height - reduce) / 2;
@@ -111,7 +111,7 @@ namespace OFC.GL4.Controls
 
                 if (CheckAlign == ContentAlignment.MiddleRight)
                 {
-                    tickarea.X = area.Width - tickarea.Width;
+                    tickarea.X = ClientWidth - tickarea.Width;
                     textarea.Width -= tickarea.Width;
                 }
                 else
@@ -191,13 +191,13 @@ namespace OFC.GL4.Controls
             }
             else
             {                                                       // RADIO
-                Rectangle tickarea = area;
+                Rectangle tickarea = ClientRectangle;
 
                 tickarea.Height -= 6;
                 tickarea.Y += 2;
                 tickarea.Width = tickarea.Height;
 
-                Rectangle textarea = area;
+                Rectangle textarea = ClientRectangle;
                 textarea.X += tickarea.Width;
                 textarea.Width -= tickarea.Width;
 

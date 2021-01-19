@@ -37,15 +37,15 @@ namespace OFC.GL4.Controls
         {
         }
 
-        protected override void Paint(Rectangle area, Graphics gr)
+        protected override void Paint(Graphics gr)
         {
             using (Brush br = new SolidBrush(ForeColor))
             {
                 System.Diagnostics.Debug.WriteLine("Tooltip paint " + tiptext);
                 if (StringFormat != null)
-                    gr.DrawString(tiptext, Font, br, area,StringFormat);
+                    gr.DrawString(tiptext, Font, br, ClientRectangle,StringFormat);
                 else
-                    gr.DrawString(tiptext, Font, br, area);
+                    gr.DrawString(tiptext, Font, br, ClientRectangle);
             }
         }
 

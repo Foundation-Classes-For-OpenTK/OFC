@@ -173,10 +173,11 @@ namespace OFC.GL4.Controls
         }
 
         // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
-        protected override bool ChildLocationChanged(GLBaseControl child)
+        protected override bool InvalidateDueToLocationChange(GLBaseControl child)
         {
+            //System.Diagnostics.Debug.WriteLine("Control display location change");
             UpdateVertexTexturePositions(false);
-            return true;
+            return false;
         }
 
         private void UpdateVertexTexturePositions(bool updatetextures)        // update vertexes, maybe update textures

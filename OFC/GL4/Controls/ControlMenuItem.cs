@@ -48,14 +48,9 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected override void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
+        protected override void Paint(Graphics gr)
         {
-            base.DrawBack(bounds, gr, bc, bcgradientalt, bcgradient);
-        }
-
-        protected override void Paint(Rectangle area, Graphics gr)
-        {
-            Rectangle butarea = area;
+            Rectangle butarea = ClientRectangle;
 
             Color back = PaintButtonBackColor(Highlighted, DisableHoverHighlight);
 
@@ -67,17 +62,17 @@ namespace OFC.GL4.Controls
                 {
                     using (Brush br = new SolidBrush(IconStripBackColor))
                     {
-                        gr.FillRectangle(br, new Rectangle(area.Left, area.Top, IconTickAreaWidth, area.Height));
+                        gr.FillRectangle(br, new Rectangle(0,0, IconTickAreaWidth, ClientHeight));
                     }
 
                     base.PaintButtonBack(butarea, gr, back);
                 }
                 else
-                    base.PaintButtonBack(area, gr, back);
+                    base.PaintButtonBack(ClientRectangle, gr, back);
             }
             else
             {
-                base.PaintButtonBack(area, gr, back);
+                base.PaintButtonBack(ClientRectangle, gr, back);
             }
 
             //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
@@ -87,7 +82,7 @@ namespace OFC.GL4.Controls
             if ( IconTickAreaWidth > 0 )
             {
                 int reduce = (int)(IconTickAreaWidth * TickBoxReductionRatio);
-                Rectangle tickarea = new Rectangle(area.X + (IconTickAreaWidth - reduce) / 2, area.Y + (area.Height - reduce) / 2, reduce, reduce);
+                Rectangle tickarea = new Rectangle((IconTickAreaWidth - reduce) / 2, (ClientHeight - reduce) / 2, reduce, reduce);
                 float discaling = Enabled ? 1.0f : DisabledScaling;
 
                 if (CheckState != CheckState.Unchecked)
