@@ -12,9 +12,11 @@
  * governing permissions and limitations under the License.
  */
 
+using BaseUtils;
 using System;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -23,6 +25,7 @@ namespace OFC.GL4.Controls
     public class GLCalendar : GLButtonBase
     {
         public Action<GLBaseControl> ValueChanged { get; set; } = null;   // Not fired by programatic Value
+        public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
 
@@ -62,6 +65,18 @@ namespace OFC.GL4.Controls
         }
 
         #region Implementation
+
+        protected override void SizeControl(Size parentsize)
+        {
+            base.SizeControl(parentsize);
+            if (AutoSize)
+            {
+                string daynames = string.Join("xx", Culture.DateTimeFormat.AbbreviatedDayNames);        // by far the largest horz width, two xx allow for extra space around each name
+                int width = (int)BitMapHelpers.MeasureStringInBitmap(daynames, Font).Width;
+                int height = 9 * Font.Height;       // 9 seems to give the right proportions
+                SetLocationSizeNI(size: new Size(width,height));
+            }
+        }
 
         protected override void Paint(Graphics gr)
         {
@@ -122,10 +137,12 @@ namespace OFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleCenter))
                 {
+                    int margin = Font.Height / 4;
+
                     Rectangle titlearea = new Rectangle(0, margin, ClientWidth, Font.Height);
                     gr.DrawString(titletext, this.Font, textb, titlearea, fmt);
 
-                    int vpos = ButLeft.Height + margin;
+                    int vpos = ButLeft.Height + margin*2;
 
                     int cellwidth = (Width - margin * 2) / gridxacross;
                     gridxleft = (Width - cellwidth * gridxacross) / 2;
@@ -135,7 +152,7 @@ namespace OFC.GL4.Controls
                         for (int i = 0; i < titles.Length; i++)
                             gr.DrawString(titles[i], this.Font, textb, new Rectangle(i * cellwidth + gridxleft, vpos, cellwidth, Font.Height), fmt);
 
-                        vpos+= Font.Height + margin;
+                        vpos+= Font.Height;
                     }
 
                     gridystart = vpos;       // offset pixels
@@ -200,22 +217,22 @@ namespace OFC.GL4.Controls
         private void GoLeft(GLBaseControl c, GLMouseEventArgs e)
         {
             if (mode == Mode.Day)
-                datetimecursor = datetimecursor.AddMonths(-1);
+                datetimecursor = datetimecursor.SafeAddMonths(-1);
             else if (mode == Mode.Month)
-                datetimecursor = datetimecursor.AddYears(-1);
+                datetimecursor = datetimecursor.SafeAddYears(-1);
             else if (mode == Mode.Decade)
-                datetimecursor = datetimecursor.AddYears(-10);
+                datetimecursor = datetimecursor.SafeAddYears(-10);
             Invalidate();
         }
 
         private void GoRight(GLBaseControl c, GLMouseEventArgs e)
         {
             if (mode == Mode.Day)
-                datetimecursor = datetimecursor.AddMonths(1);
+                datetimecursor = datetimecursor.SafeAddMonths(1);
             else if (mode == Mode.Month)
-                datetimecursor = datetimecursor.AddYears(1);
+                datetimecursor = datetimecursor.SafeAddYears(1);
             else if (mode == Mode.Decade)
-                datetimecursor = datetimecursor.AddYears(10);
+                datetimecursor = datetimecursor.SafeAddYears(10);
             Invalidate();
         }
 
@@ -270,6 +287,18 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public override void OnMouseWheel(GLMouseEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            if (!e.Handled)
+            {
+                if (e.Delta < 0)
+                    GoRight(null, null);
+                else
+                    GoLeft(null, null);
+            }
+        }
+
         public override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -281,11 +310,11 @@ namespace OFC.GL4.Controls
                         mode = mode -1;
                 }
                 else if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddDays(7);
+                    datetimecursor = datetimecursor.SafeAddDays(7);
                 else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddMonths(4);
+                    datetimecursor = datetimecursor.SafeAddMonths(4);
                 else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(4);
+                    datetimecursor = datetimecursor.SafeAddYears(4);
                 Invalidate();
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Up)
@@ -296,59 +325,56 @@ namespace OFC.GL4.Controls
                         mode = mode + 1;
                 }
                 else if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddDays(-7);
+                    datetimecursor = datetimecursor.SafeAddDays(-7);
                 else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddMonths(-4);
+                    datetimecursor = datetimecursor.SafeAddMonths(-4);
                 else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(-4);
+                    datetimecursor = datetimecursor.SafeAddYears(-4);
                 Invalidate();
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Left)
             {
                 if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddDays(-1);
+                    datetimecursor = datetimecursor.SafeAddDays(-1);
                 else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddMonths(-1);
+                    datetimecursor = datetimecursor.SafeAddMonths(-1);
                 else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(-1);
+                    datetimecursor = datetimecursor.SafeAddYears(-1);
                 Invalidate();
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Right)
             {
                 if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddDays(1);
+                    datetimecursor = datetimecursor.SafeAddDays(1);
                 else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddMonths(1);
+                    datetimecursor = datetimecursor.SafeAddMonths(1);
                 else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(1);
+                    datetimecursor = datetimecursor.SafeAddYears(1);
                 Invalidate();
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.PageUp)
             {
-                if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddMonths(-1);
-                else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddYears(-1);
-                else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(-10);
-                Invalidate();
+                GoLeft(null, null);
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.PageDown)
             {
-                if (mode == Mode.Day)
-                    datetimecursor = datetimecursor.AddMonths(1);
-                else if (mode == Mode.Month)
-                    datetimecursor = datetimecursor.AddYears(1);
-                else if (mode == Mode.Decade)
-                    datetimecursor = datetimecursor.AddYears(10);
-                Invalidate();
+                GoRight(null, null);
             }
             else if (e.KeyCode == System.Windows.Forms.Keys.Return)
             {
                 ClickOn(-1);
             }
+            else if (e.KeyCode == System.Windows.Forms.Keys.Delete || e.KeyCode == System.Windows.Forms.Keys.Escape || e.KeyCode == System.Windows.Forms.Keys.Back)
+            {
+                OnOtherKeyPressed(e);
+            }
 
             System.Diagnostics.Debug.WriteLine("Date time now " + datetimecursor.ToLongDateString());
+        }
+
+        protected virtual void OnOtherKeyPressed(GLKeyEventArgs e)
+        {
+            OtherKeyPressed?.Invoke(this, e);
         }
 
         // we have selected and entry, either the datetimecursor time (index=-1) or one of the index ones (mouse click)
@@ -370,20 +396,27 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            if (mode != Mode.Day)
-                mode = mode - 1;
-
             datetimevalue = datetimecursor;
             System.Diagnostics.Debug.WriteLine("Date value now " + datetimevalue.ToLongDateString());
 
-            ValueChanged?.Invoke(this);
+            if (mode != Mode.Day)
+                mode = mode - 1;
+            else
+                OnValueChanged();
 
             Invalidate();
         }
 
+        protected virtual void OnValueChanged()
+        {
+            ValueChanged?.Invoke(this);
+        }
+
+
         private int HoveringOver(Point p)
         {
-           // System.Diagnostics.Debug.WriteLine("{0} {1}  {2}", p, gridystart, gridxleft);
+            // System.Diagnostics.Debug.WriteLine("{0} {1}  {2}", p, gridystart, gridxleft);
+            int margin = Font.Height / 4;
             int cellwidth = (Width - margin * 2) / gridxacross;     // x 
             int cellheight = (Height - gridystart) / gridydown;
 
@@ -415,7 +448,6 @@ namespace OFC.GL4.Controls
         private int gridystart = 0;     // offset pixels in Y
         private Point hoverpoint = Point.Empty;     // save position to recalc
         private int hoveredpos = -1;    // save index to prevent too many updates
-        private const int margin = 4;
 
         #endregion
     }

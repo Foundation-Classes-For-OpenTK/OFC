@@ -105,7 +105,7 @@ namespace OFC.GL4.Controls
                                 else
                                 {
                                     System.Diagnostics.Debug.WriteLine("Top Left layout " + c.Name + " " + cellarea);
-                                    c.SetLocationSizeNI(location:cellarea.Location, bounds:cellarea.Size, clipsize:true);
+                                    c.SetLocationSizeNI(location:cellarea.Location, size:cellarea.Size, clipsize:true);
                                 }
 
                                 c.PerformRecursiveLayout();

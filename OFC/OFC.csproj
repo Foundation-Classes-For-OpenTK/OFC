@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseUtils\DateObjectExtensions.cs" />
     <Compile Include="BaseUtils\FileHelpers.cs" />
     <Compile Include="BaseUtils\StringObjectExtensionsLists.cs" />
     <Compile Include="BaseUtils\Timers.cs" />

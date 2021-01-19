@@ -54,7 +54,7 @@ namespace OFC.GL4.Controls
         {
             Dock = type;
             DockPercent = dockpercentage;
-            SetLocationSizeNI(bounds: sizep);
+            SetLocationSizeNI(size: sizep);
         }
 
         // call to pop up the context menu, parent is normally displaycontrol
@@ -327,7 +327,7 @@ namespace OFC.GL4.Controls
 //            System.Diagnostics.Debug.WriteLine("control is " + to.Name + " creator is " + to.Creator.Name);
   //          foreach (GLBaseControl b in ControlsIZ) System.Diagnostics.Debug.WriteLine("{0} from {1}", b.Name, b.Creator.Name);
 
-            if (to == this || ControlsIZ.Contains(to) || ControlsIZ.Where(x=>to.Creator==x).Count()>0)
+            if (to == this || ControlsIZ.Contains(to) || ControlsIZ.Any(x=>to.Creator==x))
                 return true;
             else
                 return submenu != null ? submenu.IsThisOrChildControl(to) : false;      // check out submenus

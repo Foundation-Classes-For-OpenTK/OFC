@@ -74,8 +74,10 @@ namespace OFC.GL4.Controls
             Color pcup, pcdown, pencolorup, pencolordown;
             pcup = pcdown = Enabled ? BackColor : BackColor.Multiply(DisabledScaling);
             pencolordown = pencolorup = Enabled ? ForeColor : ForeColor.Multiply(DisabledScaling);
+            // System.Diagnostics.Debug.WriteLine("Colours " + pcup + " " + pencolordown);
 
-            System.Diagnostics.Debug.WriteLine("Ami running" + amitimer.Running);
+            //System.Diagnostics.Debug.WriteLine("Ami running" + amitimer.Running);
+
             if ( Enabled && (Hover || amitimer.Running) )
             {
                 bool mbd = MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left || amitimer.Running;

@@ -55,7 +55,7 @@ namespace OFC.GL4.Controls
             Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
                              (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
 
-            SetLocationSizeNI(bounds: s);
+            SetLocationSizeNI(size: s);
         }
 
         protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk, Graphics gr)

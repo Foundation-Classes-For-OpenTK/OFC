@@ -12,10 +12,12 @@
  * governing permissions and limitations under the License.
  */
 
+using BaseUtils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -23,6 +25,7 @@ namespace OFC.GL4.Controls
     {
         public Action<GLBaseControl> CheckChanged { get; set; } = null;   // not fired by programatic Checked  
         public Action<GLBaseControl> ValueChanged { get; set; } = null;   // Not fired by programatic Value
+        public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
 
@@ -39,9 +42,9 @@ namespace OFC.GL4.Controls
         public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  RecalculatePartsList(); InvalidateLayout(); } }
         public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }
 
-        public bool ShowUpDown { get { return showupdown; } set { showupdown = value; InvalidateLayout(); } }
-        public bool ShowCheckBox { get { return showcheckbox; } set { showcheckbox = value; InvalidateLayout(); } }
-        public bool ShowCalendar { get { return showcalendar; } set { showcalendar = value; InvalidateLayout(); } }
+        public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
+        public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
+        public bool ShowCalendar { get { return CalendarSelect.Visible; } set { CalendarSelect.Visible = value; InvalidateLayout(); } }
 
         public bool Checked { get { return CheckBox.Checked; } set { CheckBox.Checked = value; } }
 
@@ -49,26 +52,39 @@ namespace OFC.GL4.Controls
 
         public GLCheckBox CheckBox { get; set; } = new GLCheckBox();              // access for setting colours
         public GLUpDownControl UpDown { get; set; } = new GLUpDownControl();
-        public GLImage Calendar { get; set; } = new GLImage();
+        public GLButton CalendarSelect { get; set; } = new GLButton();
+        public GLCalendar Calendar { get; set; } = new GLCalendar();
+
+        public bool InCalendar { get { return Calendar.Visible; } }
 
         public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
         {
-            CheckBox.CheckChanged += checkboxchanged;
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
             CheckBox.KeyDown += OnKeyFromChild;
+            CheckBox.CheckChanged += checkboxchanged;
+            CheckBox.MouseDown += (o1, e1) => { selectedpart = -1; Invalidate(); };
             Add(CheckBox);
+
             UpDown.Clicked += updownchanged;
             UpDown.BackColor = Color.Transparent;
-            UpDown.Enabled = false;
             UpDown.ShowFocusBox = false;
             UpDown.KeyDown += OnKeyFromChild;
+            UpDown.GiveFocusToParent = true;
             Add(UpDown);
-            Calendar.Image = Properties.Resources.Calendar;
-            Calendar.BackColor = Color.Transparent;
-            Calendar.ImageStretch = true;
-            Calendar.MouseDown += calclicked;
-            Add(Calendar);
+
+            CalendarSelect.Image = Properties.Resources.Calendar;
+            CalendarSelect.BackColor = Color.Transparent;
+            CalendarSelect.ImageStretch = true;
+            CalendarSelect.MouseClick += calclicked;
+            CalendarSelect.GiveFocusToParent = true;
+            Add(CalendarSelect);
+
+            Calendar.Visible = false;
+            Calendar.ValueChanged += calselected;
+            Calendar.OtherKeyPressed += calotherkey;
+            Calendar.AutoSize = true;
+
             Focusable = true;
             InvalidateOnFocusChange = true;
         }
@@ -83,22 +99,17 @@ namespace OFC.GL4.Controls
         {
             base.PerformRecursiveLayout();
 
-            int borderoffset = 0;
-            int height = ClientHeight - 2;
+            int borderoffset = 2;
+            int height = ClientHeight - 4;
 
             // NI versions stops repeated invalidates/layouts
-            CheckBox.VisibleNI = ShowCheckBox;
-            CheckBox.SetLocationSizeNI(location: new Point(2, borderoffset), bounds: new Size(height, height));
-            CheckBox.MouseDown += (o1, e1) => { selectedpart = -1; Invalidate(); };
+            CheckBox.SetLocationSizeNI(location: new Point(borderoffset, borderoffset), size: new Size(height, height));
+            UpDown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - borderoffset, borderoffset), size: new Size(height, height));
 
-            UpDown.VisibleNI = ShowUpDown;
-            UpDown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - 2, borderoffset), bounds: new Size(height, height));
+            CalendarSelect.VisibleNI = ShowCalendar;
+            CalendarSelect.SetLocationSizeNI(location: new Point(UpDown.Left - borderoffset - CalendarSelect.Width, (ClientHeight / 2 - height/2)), size: new Size(height * 20 / 12, height));
 
-            int ch = ClientHeight * 3 / 5;
-            Calendar.VisibleNI = ShowCalendar;
-            Calendar.SetLocationSizeNI(location: new Point(UpDown.Left - 4 - Calendar.Width, (ClientHeight / 2 - ch/2)), bounds: new Size(ch * 20 / 12, ch));
-
-            partsstartx = (showcheckbox ? (CheckBox.Right + 2) : 2);
+            partsstartx = (CheckBox.Visible ? (CheckBox.Right + borderoffset) : borderoffset);
 
             RecalculatePartsList();   // cause anything might have changed, like fonts
         }
@@ -164,6 +175,18 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public override void OnMouseWheel(GLMouseEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            if (!e.Handled)
+            {
+                if (e.Delta < 0)
+                    ProcessUpDown(1);
+                else
+                    ProcessUpDown(-1);
+            }
+        }
+
         private void OnKeyFromChild(object c, GLKeyEventArgs e)
         {
             OnKeyDown(e);
@@ -220,6 +243,11 @@ namespace OFC.GL4.Controls
                         keybuffer += (char)((e.KeyCode - System.Windows.Forms.Keys.D0) + '0');
                         TryConvertString(keybuffer);
                     }
+                }
+                else if ( e.KeyCode == System.Windows.Forms.Keys.C)
+                {
+                    if (!InCalendar)
+                        Activate();
                 }
             }
         }
@@ -343,13 +371,7 @@ namespace OFC.GL4.Controls
 
         private string Maxlengthof(string[] a)
         {
-            string m = "";
-            for (int i = 0; i < a.Length; i++)
-            {
-                if (a[i].Length > m.Length)
-                    m = a[i];
-            }
-            return m;
+            return a.Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
         }
 
         #endregion
@@ -362,19 +384,19 @@ namespace OFC.GL4.Controls
             {
                 Parts p = partlist[selectedpart];
                 if (p.ptype == PartsTypes.Day)
-                    datetimevalue = datetimevalue.AddDays(dir);
+                    datetimevalue = datetimevalue.SafeAddDays(dir);
                 else if (p.ptype == PartsTypes.Month)
-                    datetimevalue = datetimevalue.AddMonths(dir);
+                    datetimevalue = datetimevalue.SafeAddMonths(dir);
                 else if (p.ptype == PartsTypes.Year)
-                    datetimevalue = datetimevalue.AddYears(dir);
+                    datetimevalue = datetimevalue.SafeAddYears(dir);
                 else if (p.ptype == PartsTypes.Hours)
-                    datetimevalue = datetimevalue.AddHours(dir);
+                    datetimevalue = datetimevalue.SafeAddHours(dir);
                 else if (p.ptype == PartsTypes.Mins)
-                    datetimevalue = datetimevalue.AddMinutes(dir);
+                    datetimevalue = datetimevalue.SafeAddMinutes(dir);
                 else if (p.ptype == PartsTypes.Seconds)
-                    datetimevalue = datetimevalue.AddSeconds(dir);
+                    datetimevalue = datetimevalue.SafeAddSeconds(dir);
                 else if (p.ptype == PartsTypes.AmPm)
-                    datetimevalue = datetimevalue.AddHours((datetimevalue.Hour >= 12) ? -12 : 12);
+                    datetimevalue = datetimevalue.SafeAddHours((datetimevalue.Hour >= 12) ? -12 : 12);
                 else
                     return;
 
@@ -432,11 +454,6 @@ namespace OFC.GL4.Controls
                 ProcessUpDown(-1);
         }
 
-        private void calclicked(Object b, GLMouseEventArgs e)
-        { 
-            // tbd
-        }
-
         protected virtual void OnCheckBoxChanged()
         {
             CheckChanged?.Invoke(this);
@@ -447,29 +464,65 @@ namespace OFC.GL4.Controls
             ValueChanged?.Invoke(this);
         }
 
-        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
+        private void calclicked(Object b, GLMouseEventArgs e)
         {
-            base.OnFocusChanged(evt, fromto);
-            System.Diagnostics.Debug.WriteLine("DTP Focus chg {0} {1}", evt, fromto?.Name);
+            Activate();
+        }
 
-            if (evt == FocusEvent.Focused || evt == FocusEvent.ChildFocused)        // if us, or a child focused, enable the up/down and make sure checkbox is the focus if selected
+        private void calselected(GLBaseControl c)
+        {
+            Deactivate();
+            datetimevalue = Calendar.Value;
+            Invalidate();
+            OnValueChanged();
+        }
+
+        private void calotherkey(GLBaseControl c, GLKeyEventArgs e)
+        {
+            if (e.KeyCode == System.Windows.Forms.Keys.Escape)
             {
-                UpDown.Enabled = true;
-                if (selectedpart == -1)
-                    CheckBox.SetFocus();
-            }
-            else if ( fromto != this && fromto != CheckBox && fromto != UpDown )
-            {
-                UpDown.Enabled = false;
+                Deactivate();
             }
         }
+
+        private void Activate()
+        {
+            if (!InCalendar)
+            {
+                Calendar.SuspendLayout();
+                var p = DisplayControlCoords(false);
+                Calendar.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, 200, 200);     // autosizes
+                Calendar.Name = Name + "-Cal";
+                Calendar.TopMost = true;
+                Calendar.Font = Font;
+                Calendar.Visible = true;
+                Calendar.Value = datetimevalue;
+                Calendar.ResumeLayout();
+                FindDisplay().Add(Calendar);             // attach to display, not us, so it shows over everything
+                Calendar.Creator = this;     // associate calendar drop down with this
+                Calendar.SetFocus();
+                DropDownStateChanged?.Invoke(this, true);
+            }
+        }
+
+        private void Deactivate(bool takefocus = true)
+        {
+            if (InCalendar)
+            {
+                FindDisplay().Remove(Calendar);
+                Calendar.Visible = false;
+                if ( takefocus)
+                    SetFocus();
+                Invalidate();
+                DropDownStateChanged?.Invoke(this, false);
+            }
+        }
+
+
 
         private DateTime datetimevalue = DateTime.Now;
         private DateTimePickerFormat format = DateTimePickerFormat.Long;
         private string customformat = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern;
-        private bool showupdown = false;
-        private bool showcheckbox = false;
-        private bool showcalendar = false;
 
         enum PartsTypes { Text, DayName, Day, Month, Year, Hours, Mins, Seconds, AmPm }
         class Parts

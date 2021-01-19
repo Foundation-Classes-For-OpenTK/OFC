@@ -23,7 +23,7 @@ namespace OFC.GL4.Controls
     public class GLComboBox : GLForeDisplayBase
     {
         public Action<GLBaseControl> SelectedIndexChanged { get; set; } = null;     // not fired by programatically changing CheckState
-        public Action<GLBaseControl,bool> DropDownStateChanged { get; set; } = null;     
+        public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
         public string Text { get { return dropdownbox.Text; } }
 
@@ -102,7 +102,7 @@ namespace OFC.GL4.Controls
                         size.Height += ClientHeightMargin + textspacing*2;
                     }
                 }
-                SetLocationSizeNI(bounds: new Size((int)size.Width,(int)size.Height));
+                SetLocationSizeNI(size: new Size((int)size.Width,(int)size.Height));
             }
         }
 
@@ -213,38 +213,41 @@ namespace OFC.GL4.Controls
 
         private void Activate()
         {
-            bool activatable = Enabled && Items.Count > 0;
+            bool activatable = Enabled && Items.Count > 0 && !InDropDown;
 
-            if (!activatable)
-                return;
-
-            dropdownbox.SuspendLayout();
-            var p = DisplayControlCoords(false);
-            dropdownbox.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
-            dropdownbox.Name = Name + "-Dropdown";
-            dropdownbox.TopMost = true;
-            dropdownbox.BackColor = ComboBoxBackColor;
-            dropdownbox.BackColorGradientAlt = ComboBoxBackColor.Multiply(BackColorScaling);
-            dropdownbox.BackColorGradientDir = 90;
-            dropdownbox.AutoSize = true;
-            dropdownbox.Font = Font;
-            dropdownbox.Visible = true;
-            dropdownbox.ShowFocusBox = true;
-            dropdownbox.HighlightSelectedItem = false;
-            dropdownbox.ResumeLayout();
-            FindDisplay().Add(dropdownbox);             // attach to display, not us, so it shows over everything
-            dropdownbox.Creator = this;     // associate drop down with ComboBox.
-            DropDownStateChanged?.Invoke(this, true);
-            dropdownbox.SetFocus();
+            if (activatable)
+            {
+                dropdownbox.SuspendLayout();
+                var p = DisplayControlCoords(false);
+                dropdownbox.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+                dropdownbox.Name = Name + "-Dropdown";
+                dropdownbox.TopMost = true;
+                dropdownbox.BackColor = ComboBoxBackColor;
+                dropdownbox.BackColorGradientAlt = ComboBoxBackColor.Multiply(BackColorScaling);
+                dropdownbox.BackColorGradientDir = 90;
+                dropdownbox.AutoSize = true;
+                dropdownbox.Font = Font;
+                dropdownbox.Visible = true;
+                dropdownbox.ShowFocusBox = true;
+                dropdownbox.HighlightSelectedItem = false;
+                dropdownbox.ResumeLayout();
+                FindDisplay().Add(dropdownbox);             // attach to display, not us, so it shows over everything
+                dropdownbox.Creator = this;     // associate drop down with ComboBox.
+                DropDownStateChanged?.Invoke(this, true);
+                dropdownbox.SetFocus();
+            }
         }
 
         private void Deactivate()
         {
-            dropdownbox.Visible = false;
-            FindDisplay().Remove(dropdownbox);
-            SetFocus();
-            Invalidate();
-            DropDownStateChanged?.Invoke(this, false);
+            if (InDropDown)
+            {
+                FindDisplay().Remove(dropdownbox);
+                dropdownbox.Visible = false;
+                SetFocus();
+                Invalidate();
+                DropDownStateChanged?.Invoke(this, false);
+            }
         }
 
         private void dropdownchanged(GLBaseControl c, int v)
@@ -264,6 +267,16 @@ namespace OFC.GL4.Controls
         protected virtual void OnSelectedIndexChanged()
         {
             SelectedIndexChanged?.Invoke(this);
+        }
+
+        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
+        {
+            if ( child == this && InDropDown)
+            {
+                FindDisplay().Remove(dropdownbox);
+            }
+
+            base.OnControlRemove(parent, child);
         }
 
         private GLListBox dropdownbox = new GLListBox();

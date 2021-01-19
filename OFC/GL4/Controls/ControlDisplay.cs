@@ -113,8 +113,10 @@ namespace OFC.GL4.Controls
             {
                 if (newfocus.GiveFocusToParent && newfocus.Parent != null && newfocus.Parent.RejectFocus == false)
                     newfocus = newfocus.Parent;     // see if we want to give it to parent
+
                 if (newfocus.RejectFocus)       // if reject focus change when clicked, abort, do not change focus
                     return false;
+
                 if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
                     newfocus = null;
             }
@@ -122,7 +124,7 @@ namespace OFC.GL4.Controls
             GLBaseControl oldfocus = currentfocus;
 
             GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);   // global invoker
-            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
+//            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
@@ -589,7 +591,7 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Call from glwinform with Resize {0}", glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);                 // reset the matrix calc view port size from the window size
-            SetLocationSizeNI(bounds: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
+            SetLocationSizeNI(size: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
             OnResize();                                                 // let base classes know
             InvalidateLayout();                                         // and we need to invalidate layout
         }

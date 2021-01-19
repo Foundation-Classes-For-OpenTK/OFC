@@ -187,7 +187,10 @@ namespace OFC.GL4.Controls
         public Action<Object, GLKeyEventArgs> KeyDown { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyPress { get; set; } = null;
-        public enum FocusEvent { Focused, Deactive, ChildFocused, ChildDeactive };
+        public enum FocusEvent { Focused,   // OnFocusChange - you get the old focus
+                                Deactive,   // you get the new one focused
+                                ChildFocused,   // you get the new one focused
+                                ChildDeactive }; // you get the new one focused
         public Action<Object, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;
         public Action<Object> FontChanged { get; set; } = null;
         public Action<Object> Resize { get; set; } = null;
@@ -546,14 +549,14 @@ namespace OFC.GL4.Controls
         public bool VisibleNI { set { visible = value; } }
 
         // use by inheritors only.  Does not invalidate/Layout.  size in bounds or clientsize
-        public void SetLocationSizeNI( Point? location = null, Size? bounds = null, Size? clientsize = null, bool clipsize = false)      
+        public void SetLocationSizeNI( Point? location = null, Size? size = null, Size? clientsize = null, bool clipsize = false)      
         {
             Point oldloc = Location;
             Size oldsize = Size;
 
             if (clipsize)
             {
-                bounds = new Size(Math.Min(Width, bounds.Value.Width), Math.Min(Height, bounds.Value.Height));
+                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
             }
 
             if (location.HasValue)
@@ -564,9 +567,9 @@ namespace OFC.GL4.Controls
                     OnMoved();
             }
 
-            if ( bounds.HasValue )
+            if ( size.HasValue )
             {
-                window.Size = bounds.Value;
+                window.Size = size.Value;
 
                 if (oldsize != window.Size)
                     OnResize();

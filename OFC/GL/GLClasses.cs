@@ -66,7 +66,7 @@ namespace OFC
 
         public GLKeyEventArgs(bool a, bool c, bool s, Keys kc, int kv, Keys mod)
         {
-            Alt = a; Control = c; Shift = s; KeyCode = kc; KeyValue = kv; Modifiers = mod; Handled = false; KeyChar = '0';
+            Alt = a; Control = c; Shift = s; KeyCode = kc; KeyValue = kv; Modifiers = mod; Handled = false; KeyChar = '\0';
         }
         public GLKeyEventArgs(char key)
         {

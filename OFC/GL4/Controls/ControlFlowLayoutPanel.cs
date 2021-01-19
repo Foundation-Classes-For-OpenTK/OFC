@@ -34,7 +34,7 @@ namespace OFC.GL4.Controls
         {
             Dock = type;
             DockPercent = dockpercentage;
-            SetLocationSizeNI(bounds: sizep);
+            SetLocationSizeNI(size: sizep);
         }
 
         public GLFlowLayoutPanel() : this("TLP?",DefaultWindowRectangle)
@@ -66,15 +66,15 @@ namespace OFC.GL4.Controls
 
                 if (AutoSizeBoth)
                 {
-                    SetLocationSizeNI(bounds: flowsize);
+                    SetLocationSizeNI(size: flowsize);
                 }
                 else if (FlowDirection == ControlFlowDirection.Right)
                 {
-                    SetLocationSizeNI(bounds: new Size(Width, flowsize.Height + ClientBottomMargin + flowPadding.Bottom));
+                    SetLocationSizeNI(size: new Size(Width, flowsize.Height + ClientBottomMargin + flowPadding.Bottom));
                 }
                 else
                 {
-                    SetLocationSizeNI(bounds: new Size(flowsize.Width + ClientRightMargin + flowPadding.Right, Height));
+                    SetLocationSizeNI(size: new Size(flowsize.Width + ClientRightMargin + flowPadding.Right, Height));
                 }
             }
         }

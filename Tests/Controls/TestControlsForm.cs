@@ -254,7 +254,8 @@ namespace TestOpenTk
                     GLCalendar cal = new GLCalendar("Cal", new Rectangle(0, 550, 300, 200));
                     cal.TabOrder = taborder++;
                     //cal.Culture = CultureInfo.GetCultureInfo("es");
-                    cal.Font = new Font("Arial", 12);
+                    cal.AutoSize = true;
+                    cal.Font = new Font("Arial", 20);
                     pform.Add(cal);
 
                     pform.ResumeLayout();
