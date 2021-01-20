@@ -93,6 +93,19 @@ namespace OFC.GL4.Controls
         {
         }
 
+        public override void OnDisplayControlAdd(GLControlDisplay c) // called when attached to DC
+        {
+            base.OnDisplayControlAdd(c);
+            c.GlobalMouseClick += (d, c1, e) => { System.Diagnostics.Debug.WriteLine("DTP clicked"); };
+        }
+
+        public override void OnDisplayControlRemove(GLControlDisplay c) // called when control has a display control handle and it is removed from play
+        {
+            base.OnDisplayControlRemove(c);
+            System.Diagnostics.Debug.WriteLine("removed from GCD");
+        }
+
+
         #region Layout paint
 
         public override void PerformRecursiveLayout()
@@ -498,7 +511,7 @@ namespace OFC.GL4.Controls
                 Calendar.Visible = true;
                 Calendar.Value = datetimevalue;
                 Calendar.ResumeLayout();
-                FindDisplay().Add(Calendar);             // attach to display, not us, so it shows over everything
+                DisplayControl.Add(Calendar);             // attach to display, not us, so it shows over everything
                 Calendar.Creator = this;     // associate calendar drop down with this
                 Calendar.SetFocus();
                 DropDownStateChanged?.Invoke(this, true);
@@ -509,7 +522,7 @@ namespace OFC.GL4.Controls
         {
             if (InCalendar)
             {
-                FindDisplay().Remove(Calendar);
+                DisplayControl.Remove(Calendar);
                 Calendar.Visible = false;
                 if ( takefocus)
                     SetFocus();

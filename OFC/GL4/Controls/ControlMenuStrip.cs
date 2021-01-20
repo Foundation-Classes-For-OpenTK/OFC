@@ -126,7 +126,7 @@ namespace OFC.GL4.Controls
 
                     submenu.ResumeLayout();
 
-                    FindDisplay().Add(submenu);
+                    DisplayControl.Add(submenu);
 
                     SetSelected(index);                                         // set selected thus fixing highlight on this one
 
@@ -239,7 +239,7 @@ namespace OFC.GL4.Controls
             // and we are a top level menu. Submenus don't need to hook this as well.
             if (parent != this && parentmenu == null)
             {
-                FindDisplay().GlobalMouseClick += GMouseClick;
+                DisplayControl.GlobalMouseClick += GMouseClick;
             }
 
             if (parent is GLMenuStrip)      // note we get called when the GLMenuStrip is added to the display, we don't want that call
@@ -293,7 +293,7 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("On control remove {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
             if (parent != this && parentmenu == null)       // unhook GFC from top level menu
             {
-                FindDisplay().GlobalMouseClick -= GMouseClick;
+                DisplayControl.GlobalMouseClick -= GMouseClick;
             }
 
             var mi = child as GLMenuItem;

@@ -202,9 +202,8 @@ namespace OFC.GL4.Controls
                     }
                     else if (captured == GLMouseEventArgs.AreaType.Top)
                     {
-                        GLControlDisplay d = FindDisplay();
                         if (originalwindow.Top + capturedelta.Y >= 0 &&
-                            originalwindow.Left + capturedelta.X + 16 < d.Width &&
+                            originalwindow.Left + capturedelta.X + 16 < DisplayControl.Width &&
                             originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
                         {
                             Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
@@ -233,27 +232,27 @@ namespace OFC.GL4.Controls
                 {
                     if (e.Area == GLMouseEventArgs.AreaType.Left || e.Area == GLMouseEventArgs.AreaType.Right)
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.EW);
+                        DisplayControl?.SetCursor(GLCursorType.EW);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.Move);
+                        DisplayControl?.SetCursor(GLCursorType.Move);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.NS);
+                        DisplayControl?.SetCursor(GLCursorType.NS);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.NWSE);
+                        DisplayControl?.SetCursor(GLCursorType.NWSE);
                         cursorindicatingmovement = true;
                     }
                     else if ( cursorindicatingmovement )
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.Normal);
+                        DisplayControl?.SetCursor(GLCursorType.Normal);
                         cursorindicatingmovement = false;
                     }
                 }
@@ -267,9 +266,9 @@ namespace OFC.GL4.Controls
 
             if (captured != GLMouseEventArgs.AreaType.Client)
             {
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
+                DisplayControl?.SetCursor(GLCursorType.Normal);
                 captured = GLMouseEventArgs.AreaType.Client;
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
+                DisplayControl?.SetCursor(GLCursorType.Normal);
             }
         }
 
@@ -279,7 +278,7 @@ namespace OFC.GL4.Controls
 
             if (cursorindicatingmovement)
             {
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
+                DisplayControl?.SetCursor(GLCursorType.Normal);
                 cursorindicatingmovement = false;
             }
         }

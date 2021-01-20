@@ -93,9 +93,7 @@ namespace OFC.GL4.Controls
 
         private void MouseMoved(GLMouseEventArgs e)
         {
-            GLControlDisplay disp = FindDisplay();
-
-            GLBaseControl ctrl = disp.FindControlOver(e.ScreenCoord);
+            GLBaseControl ctrl = DisplayControl.FindControlOver(e.ScreenCoord);
 
             if (mouseover != ctrl)        // moved into new control or out of it
             {

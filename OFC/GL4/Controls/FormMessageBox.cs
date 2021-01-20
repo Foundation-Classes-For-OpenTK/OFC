@@ -108,7 +108,7 @@ namespace OFC.GL4.Controls
                 }
             };
 
-            c.FindDisplay().Add(c1);
+            c.DisplayControl.Add(c1);
         }
 
         private void FormCallBack(GLForm p, DialogResult r)

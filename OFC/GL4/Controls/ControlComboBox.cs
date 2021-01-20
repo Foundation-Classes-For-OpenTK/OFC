@@ -231,7 +231,7 @@ namespace OFC.GL4.Controls
                 dropdownbox.ShowFocusBox = true;
                 dropdownbox.HighlightSelectedItem = false;
                 dropdownbox.ResumeLayout();
-                FindDisplay().Add(dropdownbox);             // attach to display, not us, so it shows over everything
+                DisplayControl.Add(dropdownbox);             // attach to display, not us, so it shows over everything
                 dropdownbox.Creator = this;     // associate drop down with ComboBox.
                 DropDownStateChanged?.Invoke(this, true);
                 dropdownbox.SetFocus();
@@ -242,7 +242,7 @@ namespace OFC.GL4.Controls
         {
             if (InDropDown)
             {
-                FindDisplay().Remove(dropdownbox);
+                DisplayControl.Remove(dropdownbox);
                 dropdownbox.Visible = false;
                 SetFocus();
                 Invalidate();
@@ -273,7 +273,7 @@ namespace OFC.GL4.Controls
         {
             if ( child == this && InDropDown)
             {
-                FindDisplay().Remove(dropdownbox);
+                DisplayControl.Remove(dropdownbox);
             }
 
             base.OnControlRemove(parent, child);

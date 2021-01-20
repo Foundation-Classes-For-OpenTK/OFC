@@ -117,7 +117,7 @@ namespace OFC.GL4.Controls
         public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
         public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
         public virtual bool GiveFocusToParent { get { return givefocustoparent; } set { givefocustoparent= value; } }    // if set, focus is passed to parent if present, and it does not reject it
-        public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
+        public virtual bool SetFocus() { return DisplayControl?.SetFocus(this) ?? false; }
         
         // colour font
 
@@ -129,7 +129,8 @@ namespace OFC.GL4.Controls
 
         // heirarchy
         public GLBaseControl Parent { get { return parent; } }
-        public GLControlDisplay FindDisplay() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplay(); }
+        public GLControlDisplay DisplayControl { get; set; }        // set when chain is attached to display control
+        public GLControlDisplay FindDisplayXX() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplayXX(); }
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
@@ -234,9 +235,8 @@ namespace OFC.GL4.Controls
                 Parent?.Invalidate();
             }
 
-            var f = FindDisplay();                  // set the display to request render
-            if (f != null)
-                f.RequestRender = true;
+            if (DisplayControl != null)
+                DisplayControl.RequestRender = true;
         }
 
         public void InvalidateLayout()
@@ -250,9 +250,8 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
             if (parent != null)
             {
-                var f = FindDisplay();
-                if (f != null)
-                    f.RequestRender = true;
+                if (DisplayControl != null)
+                    DisplayControl.RequestRender = true;
                 //System.Diagnostics.Debug.WriteLine(".. Redraw and layout on " + Parent.Name);
                 parent.NeedRedraw = true;
                 parent.PerformLayout();
@@ -280,13 +279,13 @@ namespace OFC.GL4.Controls
         public Point ScreenCoords(bool clienttopleft)           // return in windows screen co-ords the top left of the selected control
         {
             Point p = DisplayControlCoords(clienttopleft);
-            var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
+            var sp = DisplayControl?.ClientScreenPos ?? Rectangle.Empty;
             return new Point(p.X + sp.Left, p.Y + sp.Top);
         }
 
         public Point CurrentMousePosition(bool clienttopleft)              // relative to client rectangle or to bounds
         {
-            Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
+            Point mp = DisplayControl?.MouseScreenPosition ?? Point.Empty;
             Point p = ScreenCoords(clienttopleft);
             return new Point(mp.X - p.X, mp.Y - p.Y);
         }
@@ -398,6 +397,9 @@ namespace OFC.GL4.Controls
 
             Themer?.Invoke(child);      // added to control, theme it
 
+            if (DisplayControl != null)     // if adding to a control already attached to the display control chain, tell child
+                child.OnDisplayControlAdd(DisplayControl);
+
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout();        // we are invalidated and layout
@@ -441,15 +443,19 @@ namespace OFC.GL4.Controls
                 }
             }
 
+            if (child.DisplayControl != null)
+                child.OnDisplayControlRemove(child.DisplayControl);
+
             child.OnControlRemove(this, child);
             OnControlRemove(this, child);
             //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);
-            FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
+            DisplayControl?.ControlRemoved(child);   // display may be pointing to it
 
             if ( dispose )
                 child.Dispose();
 
             child.parent = child.creator = null;
+            child.DisplayControl = null;
 
             childrenz.Remove(child);
             childreniz.Remove(child);
@@ -798,6 +804,8 @@ namespace OFC.GL4.Controls
 
         public virtual bool Redraw(Bitmap usebmp, Rectangle bounds, Rectangle cliparea, Graphics gr, bool forceredraw)
         {
+            System.Diagnostics.Debug.Assert(DisplayControl != null);    // checking its there
+
             Graphics parentgr = null;                           // if we changed level bmp, we need to give the control the opportunity
             Rectangle parentarea = bounds;                      // to paint thru its level bmp to the parent bmp
 
@@ -1043,6 +1051,12 @@ namespace OFC.GL4.Controls
             FocusChanged?.Invoke(this, focused, ctrl);
         }
 
+        public virtual void GlobalFocusChanged(GLBaseControl from, GLBaseControl to)
+        {
+            foreach(var c in ControlsZ)
+                c.GlobalFocusChanged(from,to);
+        }
+
         public virtual void OnFontChanged()
         {
             FontChanged?.Invoke(this);
@@ -1063,9 +1077,20 @@ namespace OFC.GL4.Controls
             ControlAdd?.Invoke(parent, child);
         }
 
-        public virtual void OnControlRemove(GLBaseControl parent, GLBaseControl child) // fired to both the parent and child
+        public virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
         {
-            ControlRemove?.Invoke(parent, child);
+            ControlRemove?.Invoke(parent, ctrlbeingremoved);
+        }
+
+        public virtual void OnDisplayControlAdd(GLControlDisplay c)     // fired when control chain has attached to the top left display control
+        {
+            DisplayControl = c;
+            foreach (var ctrl in ControlsIZ)
+                ctrl.OnDisplayControlAdd(c);
+        }
+
+        public virtual void OnDisplayControlRemove(GLControlDisplay c)  // and when it leaves it.
+        {
         }
 
         #endregion

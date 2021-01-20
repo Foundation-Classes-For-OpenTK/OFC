@@ -33,7 +33,6 @@ namespace OFC.GL4.Controls
 
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
-        public Action<GLControlDisplay, GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;     // subscribe to get any focus changes (from old to new, may be null)
         public Action<GLControlDisplay, GLBaseControl, GLMouseEventArgs> GlobalMouseClick{ get; set; } = null;     // subscribe to get any clicks
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;   // subscribe to get any movement changes
 
@@ -77,6 +76,8 @@ namespace OFC.GL4.Controls
             glwin.KeyPress += Gc_KeyPress;
             glwin.Resize += Gc_Resize;
             glwin.Paint += Gc_Paint;
+
+            DisplayControl = this;
         }
 
         public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }  
@@ -123,7 +124,9 @@ namespace OFC.GL4.Controls
 
             GLBaseControl oldfocus = currentfocus;
 
-            GlobalFocusChanged?.Invoke(this, oldfocus, newfocus);   // global invoker
+            foreach (var ctrl in ControlsZ)
+                ctrl.GlobalFocusChanged(oldfocus,currentfocus);
+
 //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
