@@ -164,6 +164,7 @@ namespace TestOpenTk
                     if (true)
                     {
                         GLMenuStrip menubar = new GLMenuStrip("Menubar", new Rectangle(0, 0, 500, 24));
+                        //menubar.AutoOpenItems = false;
                         menubar.Font = new Font("Euro Caps", 12);
                         menubar.Dock = DockingType.Top;
 
@@ -192,7 +193,7 @@ namespace TestOpenTk
                         GLComboBox l1a4 = new GLComboBox("A-1-4", new Rectangle(0, 0, 0, 0), new List<string>() { "one", "two", "three" });
                         l1a4.SelectedIndexChanged += (c) => { menubar.CloseMenus(); };
                         l1a4.DisableChangeKeys = true;
-                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2 ,l1a3, l1a4 };
+                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3, l1a4 };
 
                         GLMenuItem l2 = new GLMenuItem("MI-0B", "MenuB");
                         menubar.Add(l2);
@@ -211,6 +212,7 @@ namespace TestOpenTk
                     pform.ResumeLayout();
                 }
 
+                if ( false)
                 {
                     GLMenuStrip cm = new GLMenuStrip("CM1");
                     cm.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;

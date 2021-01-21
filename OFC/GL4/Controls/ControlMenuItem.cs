@@ -21,7 +21,7 @@ namespace OFC.GL4.Controls
     {
         public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
-            BorderWidthNI = 0;      
+            SetNI(borderwidth: 0);
             Text = text;
             ShowFocusBox = false;
             ImageStretch = true;        // to make sure that menu items are normally sized by text not by image

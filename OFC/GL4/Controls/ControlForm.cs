@@ -53,15 +53,11 @@ namespace OFC.GL4.Controls
         {
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
-            PaddingNI = new Padding(FormPadding);
-            MarginNI = new Margin(FormMargins);
-            BorderWidthNI = FormBorderWidth;
+            SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins), borderwidth: FormBorderWidth);
             BorderColorNI = DefaultBorderColor;
             text = title;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
-
-        // tbd implement focus properly.. this is focuable, and on focus, select last child
 
         public GLForm() : this("F?", "", DefaultWindowRectangle)
         {
@@ -76,7 +72,7 @@ namespace OFC.GL4.Controls
             if ( !e.Handled )
             {
                 OnClosed();
-                Parent?.Remove(this);
+                Remove(this);
             }
         }
 
@@ -117,10 +113,10 @@ namespace OFC.GL4.Controls
 
         public override void PerformRecursiveLayout()
         {
-            if (text.HasChars())
-                MarginNI = new Margin(Margin.Left, TitleBarHeight + FormMargins * 2, Margin.Right, Margin.Bottom);
-            else
-                MarginNI = new Margin(Margin.Left, FormMargins, Margin.Right, Margin.Bottom);
+            Margin m = text.HasChars() ? new Margin(Margin.Left, TitleBarHeight + FormMargins * 2, Margin.Right, Margin.Bottom) : 
+                            new Margin(Margin.Left, FormMargins, Margin.Right, Margin.Bottom);
+
+            SetNI(margin: m);
 
             base.PerformRecursiveLayout();
         }
@@ -203,7 +199,7 @@ namespace OFC.GL4.Controls
                     else if (captured == GLMouseEventArgs.AreaType.Top)
                     {
                         if (originalwindow.Top + capturedelta.Y >= 0 &&
-                            originalwindow.Left + capturedelta.X + 16 < DisplayControl.Width &&
+                            originalwindow.Left + capturedelta.X + 16 < FindDisplay().Width &&
                             originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
                         {
                             Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
@@ -232,27 +228,27 @@ namespace OFC.GL4.Controls
                 {
                     if (e.Area == GLMouseEventArgs.AreaType.Left || e.Area == GLMouseEventArgs.AreaType.Right)
                     {
-                        DisplayControl?.SetCursor(GLCursorType.EW);
+                        FindDisplay()?.SetCursor(GLCursorType.EW);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
                     {
-                        DisplayControl?.SetCursor(GLCursorType.Move);
+                        FindDisplay()?.SetCursor(GLCursorType.Move);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
-                        DisplayControl?.SetCursor(GLCursorType.NS);
+                        FindDisplay()?.SetCursor(GLCursorType.NS);
                         cursorindicatingmovement = true;
                     }
                     else if (e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
-                        DisplayControl?.SetCursor(GLCursorType.NWSE);
+                        FindDisplay()?.SetCursor(GLCursorType.NWSE);
                         cursorindicatingmovement = true;
                     }
                     else if ( cursorindicatingmovement )
                     {
-                        DisplayControl?.SetCursor(GLCursorType.Normal);
+                        FindDisplay()?.SetCursor(GLCursorType.Normal);
                         cursorindicatingmovement = false;
                     }
                 }
@@ -266,9 +262,9 @@ namespace OFC.GL4.Controls
 
             if (captured != GLMouseEventArgs.AreaType.Client)
             {
-                DisplayControl?.SetCursor(GLCursorType.Normal);
+                FindDisplay()?.SetCursor(GLCursorType.Normal);
                 captured = GLMouseEventArgs.AreaType.Client;
-                DisplayControl?.SetCursor(GLCursorType.Normal);
+                FindDisplay()?.SetCursor(GLCursorType.Normal);
             }
         }
 
@@ -278,7 +274,7 @@ namespace OFC.GL4.Controls
 
             if (cursorindicatingmovement)
             {
-                DisplayControl?.SetCursor(GLCursorType.Normal);
+                FindDisplay()?.SetCursor(GLCursorType.Normal);
                 cursorindicatingmovement = false;
             }
         }

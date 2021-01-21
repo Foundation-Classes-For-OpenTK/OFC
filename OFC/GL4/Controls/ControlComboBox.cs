@@ -84,6 +84,13 @@ namespace OFC.GL4.Controls
         {
         }
 
+        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
+        {
+            if (child == this && InDropDown)        // if its dropped, it need removing
+                Remove(dropdownbox);
+            base.OnControlRemove(parent, child);
+        }
+
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -102,7 +109,7 @@ namespace OFC.GL4.Controls
                         size.Height += ClientHeightMargin + textspacing*2;
                     }
                 }
-                SetLocationSizeNI(size: new Size((int)size.Width,(int)size.Height));
+                SetNI(size: new Size((int)size.Width,(int)size.Height));
             }
         }
 
@@ -211,6 +218,14 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        {
+            base.OnGlobalMouseClick(ctrl, e);   // do heirarchy before we mess with it
+
+            if (InDropDown && (ctrl == null || !dropdownbox.IsThisOrChildOf(ctrl)))        // if its not part of dropdown, close it
+                Deactivate();
+        }
+
         private void Activate()
         {
             bool activatable = Enabled && Items.Count > 0 && !InDropDown;
@@ -231,7 +246,7 @@ namespace OFC.GL4.Controls
                 dropdownbox.ShowFocusBox = true;
                 dropdownbox.HighlightSelectedItem = false;
                 dropdownbox.ResumeLayout();
-                DisplayControl.Add(dropdownbox);             // attach to display, not us, so it shows over everything
+                AddToDesktop(dropdownbox);             // attach to display, not us, so it shows over everything
                 dropdownbox.Creator = this;     // associate drop down with ComboBox.
                 DropDownStateChanged?.Invoke(this, true);
                 dropdownbox.SetFocus();
@@ -242,7 +257,7 @@ namespace OFC.GL4.Controls
         {
             if (InDropDown)
             {
-                DisplayControl.Remove(dropdownbox);
+                Remove(dropdownbox);
                 dropdownbox.Visible = false;
                 SetFocus();
                 Invalidate();
@@ -269,15 +284,6 @@ namespace OFC.GL4.Controls
             SelectedIndexChanged?.Invoke(this);
         }
 
-        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
-        {
-            if ( child == this && InDropDown)
-            {
-                DisplayControl.Remove(dropdownbox);
-            }
-
-            base.OnControlRemove(parent, child);
-        }
 
         private GLListBox dropdownbox = new GLListBox();
 

@@ -37,7 +37,7 @@ namespace OFC.GL4.Controls
         {
             Dock = type;
             DockPercent = dockpercentage;
-            SetLocationSizeNI(size: sizep);
+            SetNI(size: sizep);
         }
     }
 }

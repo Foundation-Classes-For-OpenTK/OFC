@@ -93,18 +93,12 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public override void OnDisplayControlAdd(GLControlDisplay c) // called when attached to DC
+        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)     // ensure calendar is removed, since its not directly attached
         {
-            base.OnDisplayControlAdd(c);
-            c.GlobalMouseClick += (d, c1, e) => { System.Diagnostics.Debug.WriteLine("DTP clicked"); };
+            if (child == this && InCalendar)
+                Remove(Calendar);
+            base.OnControlRemove(parent, child);
         }
-
-        public override void OnDisplayControlRemove(GLControlDisplay c) // called when control has a display control handle and it is removed from play
-        {
-            base.OnDisplayControlRemove(c);
-            System.Diagnostics.Debug.WriteLine("removed from GCD");
-        }
-
 
         #region Layout paint
 
@@ -116,11 +110,11 @@ namespace OFC.GL4.Controls
             int height = ClientHeight - 4;
 
             // NI versions stops repeated invalidates/layouts
-            CheckBox.SetLocationSizeNI(location: new Point(borderoffset, borderoffset), size: new Size(height, height));
-            UpDown.SetLocationSizeNI(location: new Point(ClientRectangle.Width - height - borderoffset, borderoffset), size: new Size(height, height));
+            CheckBox.SetNI(location: new Point(borderoffset, borderoffset), size: new Size(height, height));
+            UpDown.SetNI(location: new Point(ClientRectangle.Width - height - borderoffset, borderoffset), size: new Size(height, height));
 
-            CalendarSelect.VisibleNI = ShowCalendar;
-            CalendarSelect.SetLocationSizeNI(location: new Point(UpDown.Left - borderoffset - CalendarSelect.Width, (ClientHeight / 2 - height/2)), size: new Size(height * 20 / 12, height));
+            CalendarSelect.Visible = ShowCalendar;
+            CalendarSelect.SetNI(location: new Point(UpDown.Left - borderoffset - CalendarSelect.Width, (ClientHeight / 2 - height/2)), size: new Size(height * 20 / 12, height));
 
             partsstartx = (CheckBox.Visible ? (CheckBox.Right + borderoffset) : borderoffset);
 
@@ -141,7 +135,7 @@ namespace OFC.GL4.Controls
 
                         string t = (p.ptype == PartsTypes.Text) ? p.maxstring : datetimevalue.ToString(p.format, Culture);
 
-                        if (i == selectedpart && ThisOrChildrenFocused())
+                        if (i == selectedpart && IsThisOrChildrenFocused())
                         {
                             using (Brush br = new SolidBrush(this.SelectedColor))
                                 gr.FillRectangle(br, new Rectangle(p.xpos + partsstartx, 0, p.endx - p.xpos, ClientHeight));
@@ -265,6 +259,93 @@ namespace OFC.GL4.Controls
             }
         }
 
+        private void checkboxchanged(GLBaseControl b)
+        {
+            OnCheckBoxChanged();
+        }
+
+        private void updownchanged(GLBaseControl b, int dir)
+        {
+            System.Diagnostics.Debug.WriteLine("Up down");
+            if (dir > 0)
+                ProcessUpDown(1);
+            else
+                ProcessUpDown(-1);
+        }
+
+        protected virtual void OnCheckBoxChanged()
+        {
+            CheckChanged?.Invoke(this);
+        }
+
+        protected virtual void OnValueChanged()
+        {
+            ValueChanged?.Invoke(this);
+        }
+
+        #region Calendar
+
+        private void calclicked(Object b, GLMouseEventArgs e)       // clicked button
+        {
+            Activate();
+        }
+
+        private void calselected(GLBaseControl c)                   // cal date selected
+        {
+            Deactivate();
+            datetimevalue = Calendar.Value;
+            Invalidate();
+            OnValueChanged();
+        }
+
+        private void calotherkey(GLBaseControl c, GLKeyEventArgs e) // another cal key hit
+        {
+            if (e.KeyCode == System.Windows.Forms.Keys.Escape)
+            {
+                Deactivate();
+            }
+        }
+
+        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        {
+            base.OnGlobalMouseClick(ctrl, e);   // do heirachy before we mess with it
+
+            if (InCalendar && (ctrl == null || !Calendar.IsThisOrChildOf(ctrl)))        // if its not part of calendar, close it
+                Deactivate();
+        }
+
+        private void Activate()     // turn on
+        {
+            if (!InCalendar)
+            {
+                Calendar.SuspendLayout();
+                var p = DisplayControlCoords(false);
+                Calendar.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, 200, 200);     // autosizes
+                Calendar.Name = Name + "-Cal";
+                Calendar.TopMost = true;
+                Calendar.Font = Font;
+                Calendar.Visible = true;
+                Calendar.Value = datetimevalue;
+                Calendar.ResumeLayout();
+                AddToDesktop(Calendar);             // attach to display, not us, so it shows over everything
+                Calendar.Creator = this;     // associate calendar drop down with this
+                Calendar.SetFocus();
+                DropDownStateChanged?.Invoke(this, true);
+            }
+        }
+
+        private void Deactivate(bool takefocus = true)  // turn off
+        {
+            if (InCalendar)
+            {
+                Remove(Calendar);
+                Calendar.Visible = false;
+                if ( takefocus)
+                    SetFocus();
+                Invalidate();
+                DropDownStateChanged?.Invoke(this, false);
+            }
+        }
 
         #endregion
 
@@ -286,7 +367,7 @@ namespace OFC.GL4.Controls
         private void RecalculatePartsList()
         {
             if (Font == null)
-                return; 
+                return;
             //System.Diagnostics.Debug.WriteLine(Name + " Format " + customformat);
             partlist.Clear();
 
@@ -387,10 +468,6 @@ namespace OFC.GL4.Controls
             return a.Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
         }
 
-        #endregion
-
-        #region Implementation
-
         private void ProcessUpDown(int dir)
         {
             if (selectedpart != -1)
@@ -453,85 +530,8 @@ namespace OFC.GL4.Controls
             }
         }
 
-        private void checkboxchanged(GLBaseControl b)
-        {
-            OnCheckBoxChanged();
-        }
 
-        private void updownchanged(GLBaseControl b, int dir)
-        {
-            System.Diagnostics.Debug.WriteLine("Up down");
-            if (dir > 0)
-                ProcessUpDown(1);
-            else
-                ProcessUpDown(-1);
-        }
-
-        protected virtual void OnCheckBoxChanged()
-        {
-            CheckChanged?.Invoke(this);
-        }
-
-        protected virtual void OnValueChanged()
-        {
-            ValueChanged?.Invoke(this);
-        }
-
-        private void calclicked(Object b, GLMouseEventArgs e)
-        {
-            Activate();
-        }
-
-        private void calselected(GLBaseControl c)
-        {
-            Deactivate();
-            datetimevalue = Calendar.Value;
-            Invalidate();
-            OnValueChanged();
-        }
-
-        private void calotherkey(GLBaseControl c, GLKeyEventArgs e)
-        {
-            if (e.KeyCode == System.Windows.Forms.Keys.Escape)
-            {
-                Deactivate();
-            }
-        }
-
-        private void Activate()
-        {
-            if (!InCalendar)
-            {
-                Calendar.SuspendLayout();
-                var p = DisplayControlCoords(false);
-                Calendar.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, 200, 200);     // autosizes
-                Calendar.Name = Name + "-Cal";
-                Calendar.TopMost = true;
-                Calendar.Font = Font;
-                Calendar.Visible = true;
-                Calendar.Value = datetimevalue;
-                Calendar.ResumeLayout();
-                DisplayControl.Add(Calendar);             // attach to display, not us, so it shows over everything
-                Calendar.Creator = this;     // associate calendar drop down with this
-                Calendar.SetFocus();
-                DropDownStateChanged?.Invoke(this, true);
-            }
-        }
-
-        private void Deactivate(bool takefocus = true)
-        {
-            if (InCalendar)
-            {
-                DisplayControl.Remove(Calendar);
-                Calendar.Visible = false;
-                if ( takefocus)
-                    SetFocus();
-                Invalidate();
-                DropDownStateChanged?.Invoke(this, false);
-            }
-        }
-
-
+        #endregion
 
         private DateTime datetimevalue = DateTime.Now;
         private DateTimePickerFormat format = DateTimePickerFormat.Long;

@@ -166,7 +166,6 @@ namespace OFC.GL4.Controls
             Invalidate();       // make it repaint without it being amimated
         }
 
-        // tbd animate this, maybe also button click..
         public override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);

@@ -255,7 +255,7 @@ namespace TestOpenTk
                     cal.TabOrder = taborder++;
                     //cal.Culture = CultureInfo.GetCultureInfo("es");
                     cal.AutoSize = true;
-                    cal.Font = new Font("Arial", 20);
+                    cal.Font = new Font("Arial", 10);
                     pform.Add(cal);
 
                     pform.ResumeLayout();

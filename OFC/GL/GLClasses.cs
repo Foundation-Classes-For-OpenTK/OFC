@@ -41,9 +41,9 @@ namespace OFC
         // Set by displaycontrol
 
         public Point ViewportLocation { get; set; }     // View port location
-        public Point ScreenCoord { get; set; }          // moved to screen coord space (takes into account viewport and screen coord scaling). Available via GlobalMouseMove
+        public Point ScreenCoord { get; set; }          // moved to screen coord space (takes into account viewport and screen coord scaling).
 
-        // Set by displaycontrol if over a control
+        // Set by displaycontrol if over a control.  Tell by Control != null
 
         public bool Control { get; private set; }       // the control its within
         public Point ControlClientLocation { get; set; }    // the client area top left in screen coords

@@ -163,7 +163,7 @@ namespace OFC.GL4.Controls
                 ListBox.Visible = true;
 
                 if ( ListBox.Parent == null )
-                    DisplayControl.Add(ListBox);
+                    AddToDesktop(ListBox);
             }
         }
 

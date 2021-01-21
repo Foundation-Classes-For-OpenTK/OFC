@@ -40,7 +40,6 @@ namespace OFC.GL4.Controls
         public new string Name { get { return base.Name; } set { base.Name = value; scrollbar.Name = base.Name + "-SB"; scrollpanel.Name = base.Name + "-SP"; } }
         public override List<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
         public override List<GLBaseControl> ControlsIZ { get { return scrollpanel.ControlsIZ; } }      // read only
-        public override List<GLBaseControl> ControlsOrderAdded { get { return scrollpanel.ControlsIZ; } }      // read only
 
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
@@ -63,15 +62,9 @@ namespace OFC.GL4.Controls
         {
         }
 
-
         public override void Add(GLBaseControl other, bool atback = false)           // we need to override, since we want controls added to the scroll panel not us
         {
             scrollpanel.Add(other, atback);
-        }
-
-        public override void Remove(GLBaseControl other)
-        {
-            scrollpanel.Remove(other);
         }
 
         private GLScrollBar scrollbar;

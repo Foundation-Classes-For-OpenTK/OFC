@@ -28,8 +28,8 @@ namespace OFC.GL4.Controls
         public GLToolTip(string name, Color? backcolour = null) : base(name, DefaultWindowRectangle)
         {
             BackColor = backcolour.HasValue ? backcolour.Value : DefaultControlBackColor;
+            SetNI(padding: new Padding(3));
             VisibleNI = false;
-            PaddingNI = new Padding(3);
             timer.Tick += TimeOut;
         }
 
@@ -57,7 +57,7 @@ namespace OFC.GL4.Controls
             var p = parent as GLControlDisplay;     // if attached to control display, its an automatic tool tip
             if (p != null && AutomaticDelay>0)      // only if auto delay is on
             {
-                p.GlobalMouseMove += MouseMoved;
+              // tbd change to timer..  p.GlobalMouseMove += MouseMoved;
             }
         }
 
@@ -66,7 +66,7 @@ namespace OFC.GL4.Controls
             var p = parent as GLControlDisplay;     // if attached to control display, its an automatic tool tip
             if (p != null )            // unsubscribe, and we can do this even if we did not subsribe in the first place
             {
-                p.GlobalMouseMove -= MouseMoved;
+                // tbd change to timer.. p.GlobalMouseMove -= MouseMoved;
             }
 
             base.OnControlRemove(parent, child);
@@ -93,7 +93,7 @@ namespace OFC.GL4.Controls
 
         private void MouseMoved(GLMouseEventArgs e)
         {
-            GLBaseControl ctrl = DisplayControl.FindControlOver(e.ScreenCoord);
+            GLBaseControl ctrl = FindDisplay().FindControlOver(e.ScreenCoord);
 
             if (mouseover != ctrl)        // moved into new control or out of it
             {

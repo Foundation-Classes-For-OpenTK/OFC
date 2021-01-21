@@ -47,12 +47,6 @@ namespace OFC.GL4.Controls
             base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other)
-        {
-            System.Diagnostics.Debug.Assert(other is GLTabPage);
-            base.Remove(other);
-        }
-
         Rectangle[] tabrectangles;
 
         const int botmargin = 4;
@@ -74,7 +68,7 @@ namespace OFC.GL4.Controls
                 Point p = new Point(0, 0);
 
                 int r = 0;
-                foreach( var cb in ControlsOrderAdded)
+                foreach( var cb in ControlsIZ)
                 {
                     var c = cb as GLTabPage;
 
@@ -119,7 +113,7 @@ namespace OFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             int i = 0;
-            foreach( var c in ControlsOrderAdded.OfType<GLTabPage>())
+            foreach( var c in ControlsIZ.OfType<GLTabPage>())
             {
                 if (i != seltab)
                 {
@@ -129,9 +123,9 @@ namespace OFC.GL4.Controls
                 i++;
             }
 
-            if (seltab >= 0 && seltab < ControlsOrderAdded.Count)
+            if (seltab >= 0 && seltab < ControlsIZ.Count)
             {
-                var c = ControlsOrderAdded[seltab] as GLTabPage;
+                var c = ControlsIZ[seltab] as GLTabPage;
                 DrawTab(gr, new Rectangle(tabrectangles[seltab].Left, tabrectangles[seltab].Top, tabrectangles[seltab].Width, tabrectangles[seltab].Height),
                         c.Text, null, true, mouseover == seltab);
             }
@@ -156,13 +150,15 @@ namespace OFC.GL4.Controls
 
         private void ReselectTab()
         {
+            SuspendLayout();
             int i = 0;
-            foreach (var c in ControlsOrderAdded)     // first is last one entered
+            foreach (var c in ControlsIZ)     // first is last one entered
             {
-                c.VisibleNI = seltab == i;
+                c.Visible = seltab == i;        // this will request parent layout, which is blocked by suspend layout
                 i++;
             }
 
+            ResumeLayout();
             Invalidate();
         }
 
@@ -175,7 +171,7 @@ namespace OFC.GL4.Controls
             mouseover = -1;
             if (tabrectangles != null)
             {
-                for( int i = 0; i < ControlsOrderAdded.Count; i++ )
+                for( int i = 0; i < ControlsIZ.Count; i++ )
                 {
                     if (tabrectangles[i].Contains(e.Location))
                     {

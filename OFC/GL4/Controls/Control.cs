@@ -64,7 +64,7 @@ namespace OFC.GL4.Controls
         public string Name { get; set; } = "?";
 
         // bounds of the window - include all margin/padding/borders/
-        // co-ords are in offsets from 0,0 being the parent top left corner.
+        // co-ords are in offsets from 0,0 being the parent top left corner. See also Set()
 
         public Rectangle Bounds { get { return window; } set { SetPos(value.Left, value.Top, value.Width, value.Height); } }
         public int Left { get { return window.Left; } set { SetPos(value, window.Top, window.Width, window.Height); } }
@@ -117,7 +117,7 @@ namespace OFC.GL4.Controls
         public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
         public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
         public virtual bool GiveFocusToParent { get { return givefocustoparent; } set { givefocustoparent= value; } }    // if set, focus is passed to parent if present, and it does not reject it
-        public virtual bool SetFocus() { return DisplayControl?.SetFocus(this) ?? false; }
+        public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
         
         // colour font
 
@@ -129,8 +129,7 @@ namespace OFC.GL4.Controls
 
         // heirarchy
         public GLBaseControl Parent { get { return parent; } }
-        public GLControlDisplay DisplayControl { get; set; }        // set when chain is attached to display control
-        public GLControlDisplay FindDisplayXX() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplayXX(); }
+        public GLControlDisplay FindDisplay() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplay(); }
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
@@ -171,7 +170,6 @@ namespace OFC.GL4.Controls
         // control lists
 
         public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
-        public virtual List<GLBaseControl> ControlsOrderAdded { get { return childreniz; } }      // in order added
         public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }          // read only, in zorder, so 0 = first layout last painted
         public GLBaseControl this[string s] { get { return ControlsZ.Find((x)=>x.Name == s); } }    // null if not
 
@@ -192,12 +190,15 @@ namespace OFC.GL4.Controls
                                 Deactive,   // you get the new one focused
                                 ChildFocused,   // you get the new one focused
                                 ChildDeactive }; // you get the new one focused
-        public Action<Object, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;
+        public Action<Object, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;     // send to control gaining/losing focus, and to its parents
         public Action<Object> FontChanged { get; set; } = null;
         public Action<Object> Resize { get; set; } = null;
         public Action<Object> Moved { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlAdd { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlRemove { get; set; } = null;
+
+        public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change
+        public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
 
         // default color schemes and sizes
 
@@ -235,8 +236,7 @@ namespace OFC.GL4.Controls
                 Parent?.Invalidate();
             }
 
-            if (DisplayControl != null)
-                DisplayControl.RequestRender = true;
+            FindDisplay()?.ReRender();
         }
 
         public void InvalidateLayout()
@@ -250,8 +250,7 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
             if (parent != null)
             {
-                if (DisplayControl != null)
-                    DisplayControl.RequestRender = true;
+                FindDisplay()?.ReRender();
                 //System.Diagnostics.Debug.WriteLine(".. Redraw and layout on " + Parent.Name);
                 parent.NeedRedraw = true;
                 parent.PerformLayout();
@@ -279,13 +278,13 @@ namespace OFC.GL4.Controls
         public Point ScreenCoords(bool clienttopleft)           // return in windows screen co-ords the top left of the selected control
         {
             Point p = DisplayControlCoords(clienttopleft);
-            var sp = DisplayControl?.ClientScreenPos ?? Rectangle.Empty;
+            var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
             return new Point(p.X + sp.Left, p.Y + sp.Top);
         }
 
         public Point CurrentMousePosition(bool clienttopleft)              // relative to client rectangle or to bounds
         {
-            Point mp = DisplayControl?.MouseScreenPosition ?? Point.Empty;
+            Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
             Point p = ScreenCoords(clienttopleft);
             return new Point(mp.X - p.X, mp.Y - p.Y);
         }
@@ -307,6 +306,30 @@ namespace OFC.GL4.Controls
             }
 
             return new Rectangle(left, top, right - left, bottom - top);
+        }
+
+        public bool IsThisOrChildOf(GLBaseControl ctrl)         // ctrl us, or one of our children?
+        {
+            if (ctrl == this)
+                return true;
+            foreach( var c in ControlsZ)
+            {
+                if (c.IsThisOrChildOf(ctrl))
+                    return true;
+            }
+            return false;
+        }
+
+        public virtual bool IsThisOrChildrenFocused()
+        {
+            if (Focused)
+                return true;
+            foreach (var c in ControlsZ)
+            {
+                if (c.IsThisOrChildrenFocused())
+                    return true;
+            }
+            return false;
         }
 
         // next tab, from tabno, either forward or back
@@ -368,6 +391,18 @@ namespace OFC.GL4.Controls
             }
         }
 
+        public virtual bool AddToDesktop(GLBaseControl child, bool atback = false)
+        {
+            var f = FindDisplay();
+            if (f != null)
+            {
+                f.Add(child, atback);
+                return true;
+            }
+            else
+                return false;
+        }
+
         public virtual void Add(GLBaseControl child, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
@@ -397,9 +432,6 @@ namespace OFC.GL4.Controls
 
             Themer?.Invoke(child);      // added to control, theme it
 
-            if (DisplayControl != null)     // if adding to a control already attached to the display control chain, tell child
-                child.OnDisplayControlAdd(DisplayControl);
-
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout();        // we are invalidated and layout
@@ -413,53 +445,24 @@ namespace OFC.GL4.Controls
             ResumeLayout();
         }
 
-        public virtual void Remove(GLBaseControl child)     // remove is normal, the closes down and disposes of the child and all its children
-        {
-            if (childrenz.Contains(child))
+        public static void Remove(GLBaseControl child)     // remove is normal, the closes down and disposes of the child and all its children
+        {                                                  
+            if (child.Parent != null) // if attached
             {
-                RemoveSubControl(child, true, true);
-                Invalidate();
-                PerformLayout();        // reperform layout
+                GLBaseControl parent = child.Parent;
+                parent.RemoveControl(child, true, true);
+                parent.InvalidateLayout();
             }
         }
 
-        public virtual void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from us
+        public static void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from us
         {
-            if (childrenz.Contains(child))
+            if (child.Parent != null) // if attached
             {
-                RemoveSubControl(child, false, false);
-                Invalidate();
-                PerformLayout();        // reperform layout
+                GLBaseControl parent = child.Parent;
+                parent.RemoveControl(child, false, false);
+                parent.InvalidateLayout();
             }
-        }
-
-        protected virtual void RemoveSubControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
-        {
-            if (removechildren)
-            {
-                foreach (var cc in child.childrenz)     // do children of child first
-                {
-                    RemoveSubControl(cc, dispose, removechildren);
-                }
-            }
-
-            if (child.DisplayControl != null)
-                child.OnDisplayControlRemove(child.DisplayControl);
-
-            child.OnControlRemove(this, child);
-            OnControlRemove(this, child);
-            //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);
-            DisplayControl?.ControlRemoved(child);   // display may be pointing to it
-
-            if ( dispose )
-                child.Dispose();
-
-            child.parent = child.creator = null;
-            child.DisplayControl = null;
-
-            childrenz.Remove(child);
-            childreniz.Remove(child);
-            CheckZOrder();
         }
 
         public virtual bool BringToFront()      // bring to the front, true if it was at the front
@@ -512,16 +515,69 @@ namespace OFC.GL4.Controls
             }
         }
 
-        [System.Diagnostics.Conditional("DEBUG")]
-        private void CheckZOrder()
+        // p = co-coords (form if called from DisplayControl), finds including margin/padding/border area, so inside bounds
+        public GLBaseControl FindControlOver(Point relativecoords)
         {
-            int pos = childreniz.Count - 1;
-            foreach( var c in childrenz)
+            //  System.Diagnostics.Debug.WriteLine("Find " + Name + " "  + relativecoords + " in " + Bounds + " " + ClientLeftMargin + " " + ClientTopMargin);
+
+            if (relativecoords.X < Left || relativecoords.X > Right || relativecoords.Y < Top || relativecoords.Y > Bottom)
+                return null;
+
+            foreach (GLBaseControl c in childrenz)       // in Z order
             {
-                System.Diagnostics.Debug.Assert(c == childreniz[pos--]);
+                if (c.Visible)      // must be visible to be found..
+                {
+                    var r = c.FindControlOver(new Point(relativecoords.X - Left - ClientLeftMargin, relativecoords.Y - Top - ClientTopMargin));   // find, converting co-ords into child co-ords
+                    if (r != null)
+                        return r;
+                }
             }
+
+            return this;
         }
 
+        // Set multiple items at once.  Default is to invalidate it
+        public void Set(Point? location = null,
+                   Size? size = null,           // size in bounds or clientsize
+                   Size? clientsize = null,
+                   Margin? margin = null,
+                   Padding? padding = null,
+                   int? borderwidth = null,
+                   bool clipsizetobounds = false,
+                   bool invalidate = true)
+        {
+            Point oldloc = Location;
+            Size oldsize = Size;
+
+            if (clipsizetobounds)
+            {
+                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
+            }
+
+            if (margin != null)
+                this.margin = margin.Value;
+            if (padding != null)
+                this.padding = padding.Value;
+            if (borderwidth != null)
+                this.borderwidth = borderwidth.Value;
+            if (location.HasValue)
+                window.Location = location.Value;
+            if (size.HasValue)
+                window.Size = size.Value;
+            else if (clientsize.HasValue)
+                window.Size = new Size(clientsize.Value.Width + ClientWidthMargin, clientsize.Value.Height + ClientHeightMargin);
+
+            CalcClientRectangle();
+
+            if (window.Location != oldloc)
+                OnMoved();
+
+            if (oldsize != window.Size)
+                OnResize();
+
+            if (invalidate)
+                Parent?.InvalidateLayout();
+        }
 
         #endregion
 
@@ -547,90 +603,46 @@ namespace OFC.GL4.Controls
 
         // these change without invalidation or layout - for constructors of inheritors or for Layout/SizeControl overrides
 
-        protected GL4.Controls.Margin MarginNI { set { margin = value; } }
-        protected GL4.Controls.Padding PaddingNI { set { padding = value; } }
-        protected int BorderWidthNI { set { borderwidth = value; } }
         protected Color BorderColorNI { set { bordercolor = value; } }
         protected Color BackColorNI { set { backcolor = value; } }
-        public bool VisibleNI { set { visible = value; } }
-
-        // use by inheritors only.  Does not invalidate/Layout.  size in bounds or clientsize
-        public void SetLocationSizeNI( Point? location = null, Size? size = null, Size? clientsize = null, bool clipsize = false)      
+        protected bool VisibleNI { set { visible = value; } }
+        public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
+                            int? borderwidth = null, bool clipsizetobounds = false)
         {
-            Point oldloc = Location;
-            Size oldsize = Size;
-
-            if (clipsize)
-            {
-                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
-            }
-
-            if (location.HasValue)
-            {
-                window.Location = location.Value;
-
-                if (window.Location != oldloc)
-                    OnMoved();
-            }
-
-            if ( size.HasValue )
-            {
-                window.Size = size.Value;
-
-                if (oldsize != window.Size)
-                    OnResize();
-            }
-            else if ( clientsize.HasValue )
-            {
-                window.Size = new Size(clientsize.Value.Width + ClientWidthMargin, clientsize.Value.Height + ClientHeightMargin);
-
-                if (oldsize != window.Size)
-                    OnResize();
-            }
-            //System.Diagnostics.Debug.WriteLine("SetPosNI {0}", window);
+            Set(location, size, clientsize, margin, padding, borderwidth, clipsizetobounds, false);
         }
 
-        public void MakeLevelBitmap(int width , int height)
+        protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
+        {
+            if (removechildren)
+            {
+                foreach (var cc in child.childrenz)     // do children of child first
+                {
+                    RemoveControl(cc, dispose, removechildren);
+                }
+            }
+
+            child.OnControlRemove(this, child);
+            OnControlRemove(this, child);
+            //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);
+            FindDisplay()?.ControlRemoved(child);   // display may be pointing to it
+
+            if (dispose)
+                child.Dispose();
+
+            child.parent = child.creator = null;
+
+            childrenz.Remove(child);
+            childreniz.Remove(child);
+            CheckZOrder();
+        }
+
+        public void MakeLevelBitmap(int width , int height)     // top level controls, bitmap for
         {
             levelbmp?.Dispose();
             levelbmp = null;
             if (width > 0 && height > 0)
                 levelbmp = new Bitmap(width, height);
-        }
-
-        // p = co-coords (form if called from DisplayControl), finds including margin/padding/border area, so inside bounds
-        public GLBaseControl FindControlOver(Point relativecoords)       
-        {
-            //  System.Diagnostics.Debug.WriteLine("Find " + Name + " "  + relativecoords + " in " + Bounds + " " + ClientLeftMargin + " " + ClientTopMargin);
-
-            if (relativecoords.X < Left || relativecoords.X > Right || relativecoords.Y < Top || relativecoords.Y > Bottom)     
-                return null;
-
-            foreach (GLBaseControl c in childrenz)       // in Z order
-            {
-                if (c.Visible)      // must be visible to be found..
-                {
-                    var r = c.FindControlOver(new Point(relativecoords.X - Left - ClientLeftMargin, relativecoords.Y - Top - ClientTopMargin));   // find, converting co-ords into child co-ords
-                    if (r != null)
-                        return r;
-                }
-            }
-
-            return this;
-        }
-
-        public virtual bool ThisOrChildrenFocused()
-        {
-            if (Focused)
-                return true;
-
-            foreach ( var c in ControlsZ)
-            {
-                if (c.ThisOrChildrenFocused())
-                    return true;
-            }
-
-            return false;
         }
 
         #endregion
@@ -804,8 +816,6 @@ namespace OFC.GL4.Controls
 
         public virtual bool Redraw(Bitmap usebmp, Rectangle bounds, Rectangle cliparea, Graphics gr, bool forceredraw)
         {
-            System.Diagnostics.Debug.Assert(DisplayControl != null);    // checking its there
-
             Graphics parentgr = null;                           // if we changed level bmp, we need to give the control the opportunity
             Rectangle parentarea = bounds;                      // to paint thru its level bmp to the parent bmp
 
@@ -1022,28 +1032,22 @@ namespace OFC.GL4.Controls
             MouseWheel?.Invoke(this, e);
         }
 
-        public delegate void KeyFunc(GLKeyEventArgs e);
-        public void CallKeyFunction(KeyFunc f, GLKeyEventArgs e)
-        {
-            f.Invoke(e);
-        }
-
-        public virtual void OnKeyDown(GLKeyEventArgs e)
+        public virtual void OnKeyDown(GLKeyEventArgs e)     // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyDown?.Invoke(this, e);
         }
 
-        public virtual void OnKeyUp(GLKeyEventArgs e)
+        public virtual void OnKeyUp(GLKeyEventArgs e)       // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyUp?.Invoke(this, e);
         }
 
-        public virtual void OnKeyPress(GLKeyEventArgs e)
+        public virtual void OnKeyPress(GLKeyEventArgs e)    // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyPress?.Invoke(this, e);
         }
 
-        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)
+        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)  // focused elements or parents up to GLForm gets this as well
         {
             this.focused = focused == FocusEvent.Focused;
             if (InvalidateOnFocusChange)
@@ -1051,10 +1055,20 @@ namespace OFC.GL4.Controls
             FocusChanged?.Invoke(this, focused, ctrl);
         }
 
-        public virtual void GlobalFocusChanged(GLBaseControl from, GLBaseControl to)
+        public virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
         {
-            foreach(var c in ControlsZ)
-                c.GlobalFocusChanged(from,to);
+            GlobalFocusChanged?.Invoke(from, to);
+            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            foreach (var c in list)
+                c.OnGlobalFocusChanged(from, to);
+        }
+
+        public virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        {
+            GlobalMouseClick?.Invoke(ctrl,e);
+            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            foreach (var c in list)
+                c.OnGlobalMouseClick(ctrl, e);
         }
 
         public virtual void OnFontChanged()
@@ -1080,17 +1094,6 @@ namespace OFC.GL4.Controls
         public virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
         {
             ControlRemove?.Invoke(parent, ctrlbeingremoved);
-        }
-
-        public virtual void OnDisplayControlAdd(GLControlDisplay c)     // fired when control chain has attached to the top left display control
-        {
-            DisplayControl = c;
-            foreach (var ctrl in ControlsIZ)
-                ctrl.OnDisplayControlAdd(c);
-        }
-
-        public virtual void OnDisplayControlRemove(GLControlDisplay c)  // and when it leaves it.
-        {
         }
 
         #endregion
@@ -1163,6 +1166,16 @@ namespace OFC.GL4.Controls
             {
                 if (c.font == null)     // if child does not override font..
                     PropergateFontChanged(c);
+            }
+        }
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        private void CheckZOrder()
+        {
+            int pos = childreniz.Count - 1;
+            foreach (var c in childrenz)
+            {
+                System.Diagnostics.Debug.Assert(c == childreniz[pos--]);
             }
         }
 

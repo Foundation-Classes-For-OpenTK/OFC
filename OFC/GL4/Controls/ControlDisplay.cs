@@ -28,13 +28,11 @@ namespace OFC.GL4.Controls
         #region Public IF
 
         public bool RequestRender { get; set; } = false;
+        public void ReRender() { RequestRender = true; }
 
         public Point MouseScreenPosition { get { return glwin.MouseScreenPosition; } }
 
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
-
-        public Action<GLControlDisplay, GLBaseControl, GLMouseEventArgs> GlobalMouseClick{ get; set; } = null;     // subscribe to get any clicks
-        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; } = null;   // subscribe to get any movement changes
 
         public new Action<Object> Paint { get; set; } = null;                   // override to get a paint event
 
@@ -76,8 +74,6 @@ namespace OFC.GL4.Controls
             glwin.KeyPress += Gc_KeyPress;
             glwin.Resize += Gc_Resize;
             glwin.Paint += Gc_Paint;
-
-            DisplayControl = this;
         }
 
         public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }  
@@ -95,13 +91,13 @@ namespace OFC.GL4.Controls
             base.Add(other,atback);
         }
 
-        public override void Remove(GLBaseControl other)
+        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {
-            if (ControlsZ.Contains(other))
+            if (ControlsZ.Contains(child))
             {
-                base.Remove(other);
-                textures[other].Dispose();
-                textures.Remove(other);
+                base.RemoveControl(child,dispose,removechildren);
+                textures[child].Dispose();
+                textures.Remove(child);
             }
         }
 
@@ -124,10 +120,9 @@ namespace OFC.GL4.Controls
 
             GLBaseControl oldfocus = currentfocus;
 
-            foreach (var ctrl in ControlsZ)
-                ctrl.GlobalFocusChanged(oldfocus,currentfocus);
+            OnGlobalFocusChanged(oldfocus,currentfocus);
 
-//            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
+            //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
@@ -367,34 +362,32 @@ namespace OFC.GL4.Controls
             SetViewScreenCoord(ref e);
             //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
 
-            GlobalMouseMove?.Invoke(e);         // feed global mouse move - coords are form coords
-
-            GLBaseControl c = FindControlOver(e.ScreenCoord);
+            GLBaseControl c = FindControlOver(e.ScreenCoord); // overcontrol ,or over display, or maybe outside display
 
             if (c != currentmouseover)      // if different, either going active or inactive
             {
                // System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
                 mousedowninitialcontrol = null;
 
-                if (currentmouseover != null)   // for current, its a leave
+                if (currentmouseover != null)   // for current, its a leave or its a drag..
                 {
                     SetControlLocation(ref e, currentmouseover);
 
                     if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
                     {
-                        if (currentmouseover.Enabled)
+                        if (currentmouseover.Enabled)       // and send to control if enabled
                             currentmouseover.OnMouseMove(e);
 
                         return;
                     }
 
-                    currentmouseover.Hover = false;
+                    currentmouseover.Hover = false;     // we are leaving this one
 
                     if (currentmouseover.Enabled)
                         currentmouseover.OnMouseLeave(e);
                 }
 
-                currentmouseover = c;
+                currentmouseover = c;   // change to new value
 
                 if (currentmouseover != null)       // now, are we going over a new one?
                 {
@@ -402,7 +395,7 @@ namespace OFC.GL4.Controls
 
                     currentmouseover.Hover = true;
 
-                    if (currentmouseover.Enabled)
+                    if (currentmouseover.Enabled)       // and send to control if enabled
                         currentmouseover.OnMouseEnter(e);
                 }
                 else
@@ -465,19 +458,17 @@ namespace OFC.GL4.Controls
                 {
                     SetControlLocation(ref e, currentmouseover);    // reset location etc
 
-                    GlobalMouseClick?.Invoke(this, currentmouseover, e);
+                    OnGlobalMouseClick(currentmouseover, e);
+
                     if (currentmouseover.Enabled)
                         currentmouseover.OnMouseClick(e);
                 }
             }
             else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
             {
-                SetFocus(null); // should this not be null? Check tbd, it as prev this
-
-                GlobalMouseClick?.Invoke(this, null, e);
-
-                if (this.Enabled)
-                    this.OnMouseClick(e);
+                SetFocus(null); 
+                OnGlobalMouseClick(null, e);
+                this.OnMouseClick(e);
             }
         }
 
@@ -594,7 +585,7 @@ namespace OFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Call from glwinform with Resize {0}", glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);                 // reset the matrix calc view port size from the window size
-            SetLocationSizeNI(size: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
+            SetNI(size: MatrixCalc.ScreenCoordMax);         // calls onresize, so subscribers can see resize as well
             OnResize();                                                 // let base classes know
             InvalidateLayout();                                         // and we need to invalidate layout
         }

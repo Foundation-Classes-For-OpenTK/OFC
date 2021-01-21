@@ -27,9 +27,7 @@ namespace OFC.GL4.Controls
 
         public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
         {
-            PaddingNI = new Padding(GBPadding);
-            MarginNI = new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins);
-            BorderWidthNI = GBBorderWidth;
+            SetNI(padding: new Padding(GBPadding), margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
             BorderColorNI = DefaultBorderColor;
             text = title;
         }
@@ -55,7 +53,7 @@ namespace OFC.GL4.Controls
         public override void OnFontChanged()
         {
             base.OnFontChanged();
-            MarginNI = new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins);
+            SetNI(margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins));
         }
 
         protected override void TextValueChanged()      // called by upper class to say i've changed the text.

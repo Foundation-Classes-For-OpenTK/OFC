@@ -55,13 +55,13 @@ namespace TestOpenTk
 
             GLBaseControl.Themer = Theme;
 
-            //map.displaycontrol.GlobalFocusChanged += (i, from, to) =>       // intercept global focus changes to close menu if required
-            //{
-            //    if (to== map.displaycontrol && map.displaycontrol["FormMenu"] != null )
-            //    {
-            //        ((GLForm)map.displaycontrol["FormMenu"]).Close();
-            //    }
-            //};
+            map.displaycontrol.GlobalFocusChanged += (from, to) =>
+            {
+                if (to == map.displaycontrol && map.displaycontrol["FormMenu"] != null)
+                {
+                    ((GLForm)map.displaycontrol["FormMenu"]).Close();
+                }
+            };
         }
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it

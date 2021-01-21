@@ -32,6 +32,8 @@ namespace OFC.GL4.Controls
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }    // Set Color.Empty for no override
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
 
+        public bool AutoOpenItems { get; set; } = true;     // open after a delay
+
         public GLMenuStrip(string name, Rectangle location) : base(name, location)
         {
             FlowInZOrder = false;
@@ -54,7 +56,7 @@ namespace OFC.GL4.Controls
         {
             Dock = type;
             DockPercent = dockpercentage;
-            SetLocationSizeNI(size: sizep);
+            SetNI(size: sizep);
         }
 
         // call to pop up the context menu, parent is normally displaycontrol
@@ -62,8 +64,7 @@ namespace OFC.GL4.Controls
         public void OpenAsContextMenu(GLBaseControl parent, Point coord)        
         {
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
-            if ( Parent != null )                   
-                Parent.Detach(this);
+            Detach(this);
             openedascontextmenu = true;
             Location = coord;
             AutoSize = true;
@@ -118,6 +119,7 @@ namespace OFC.GL4.Controls
                     submenu.MouseOverBackColor = this.MouseOverBackColor;
                     submenu.FlowDirection = ControlFlowDirection.Down;
                     submenu.AutoSize = true;
+                    submenu.AutoOpenItems = AutoOpenItems;
                     submenu.parentmenu = this;
                     submenu.TopMost = true;
 
@@ -126,7 +128,7 @@ namespace OFC.GL4.Controls
 
                     submenu.ResumeLayout();
 
-                    DisplayControl.Add(submenu);
+                    AddToDesktop(submenu);
 
                     SetSelected(index);                                         // set selected thus fixing highlight on this one
 
@@ -211,7 +213,7 @@ namespace OFC.GL4.Controls
             SetSelected(-1);
             if (openedascontextmenu)
             {
-                Parent.Detach(this);
+                Detach(this);
             }
         }
 
@@ -234,13 +236,6 @@ namespace OFC.GL4.Controls
         public override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control add {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
-
-            // we only add if we are not getting the parent OnControlAdd call, which you can tell because parent=this if it is that
-            // and we are a top level menu. Submenus don't need to hook this as well.
-            if (parent != this && parentmenu == null)
-            {
-                DisplayControl.GlobalMouseClick += GMouseClick;
-            }
 
             if (parent is GLMenuStrip)      // note we get called when the GLMenuStrip is added to the display, we don't want that call
             {
@@ -291,10 +286,6 @@ namespace OFC.GL4.Controls
         public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control remove {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
-            if (parent != this && parentmenu == null)       // unhook GFC from top level menu
-            {
-                DisplayControl.GlobalMouseClick -= GMouseClick;
-            }
 
             var mi = child as GLMenuItem;
             if (mi != null)                     // make sure we unhook!  this caught me out.
@@ -311,12 +302,11 @@ namespace OFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
-
-        // hooked only to primary top level parent menu
-        private void GMouseClick(GLControlDisplay disp, GLBaseControl item, GLMouseEventArgs e)
+        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("G Mouse clickFocus {0}, {1}, {2}", item?.GetType()?.Name, e.Button ,e.ScreenCoord);
-            if (item == null || !IsThisOrChildControl(item))     // not a drop down, not a child of our tree
+            base.OnGlobalMouseClick(ctrl, e);
+
+            if (ctrl == null || !IsThisOrChildControl(ctrl))     // not a drop down, not a child of our tree
             {
                 GetTopLevelMenu().CloseMenus();
             }
@@ -375,7 +365,7 @@ namespace OFC.GL4.Controls
             }
 
             ResumeLayout();
-            Parent.Remove(this);
+            Remove(this);
         }
 
         #endregion
@@ -407,7 +397,7 @@ namespace OFC.GL4.Controls
             SetSelected(-1);
 
             GLMenuItem mi = ControlsIZ[mousehovered] as GLMenuItem; // if its a menu item, lets do a timer to autoopen
-            if (mi != null )
+            if (mi != null && AutoOpenItems)
                 timer.Start(250);
         }
 

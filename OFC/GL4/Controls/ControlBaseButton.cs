@@ -122,7 +122,7 @@ namespace OFC.GL4.Controls
             Size s = new Size((int)(size.Width + 0.999 + extra.Width) + ClientWidthMargin + 4,
                              (int)(size.Height + 0.999 + extra.Height) + ClientHeightMargin + 4);
 
-            SetLocationSizeNI(size: s);
+            SetNI(size: s);
         }
 
     }

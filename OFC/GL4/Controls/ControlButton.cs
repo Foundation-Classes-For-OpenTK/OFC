@@ -26,8 +26,7 @@ namespace OFC.GL4.Controls
 
         public GLButton(string name, Rectangle location) : base(name, location)
         {
-            PaddingNI = new Padding(2);       // standard format, a border with a pad of 1
-            BorderWidthNI = 1;
+            SetNI(padding: new Padding(2), borderwidth: 1);
             BorderColorNI = DefaultButtonBorderColor;
             BackColorNI = DefaultButtonBorderBackColor;
             Focusable = true;
