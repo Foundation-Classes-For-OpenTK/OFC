@@ -120,7 +120,7 @@ namespace OFC.GL4.Controls
             CheckChanged?.Invoke(this);
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
+        protected override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
         {
             base.OnMouseClick(e);
             if ( !e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Left)
@@ -137,7 +137,7 @@ namespace OFC.GL4.Controls
             Click?.Invoke(this);
         }
 
-        public override void OnKeyPress(GLKeyEventArgs e)
+        protected override void OnKeyPress(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);
             if (e.Handled == false && e.KeyChar == 13)

@@ -50,7 +50,7 @@ namespace OFC.GL4.Controls
 
         public int GroupBoxHeight { get { return (Font?.ScalePixels(20) ?? 20) + GBMargins * 2; } }
 
-        public override void OnFontChanged()
+        protected override void OnFontChanged()
         {
             base.OnFontChanged();
             SetNI(margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins));

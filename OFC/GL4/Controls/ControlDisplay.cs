@@ -38,6 +38,8 @@ namespace OFC.GL4.Controls
 
         public GLMatrixCalc MatrixCalc { get; set; }
 
+        public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }
+
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc) : base("displaycontrol", new Rectangle(0, 0, mc.ScreenCoordMax.Width, mc.ScreenCoordMax.Height))
         {
             glwin = win;
@@ -76,8 +78,6 @@ namespace OFC.GL4.Controls
             glwin.Paint += Gc_Paint;
         }
 
-        public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }  
-        
         public void SetCursor(GLCursorType t)
         {
             glwin.SetCursor(t);
@@ -89,70 +89,6 @@ namespace OFC.GL4.Controls
             textures[other] = new GLTexture2D();                // we make a texture per top level control to render with
             other.MakeLevelBitmap(Math.Max(1,other.Width),Math.Max(1,other.Height));    // ensure we make a bitmap
             base.Add(other,atback);
-        }
-
-        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
-        {
-            if (ControlsZ.Contains(child))
-            {
-                base.RemoveControl(child,dispose,removechildren);
-                textures[child].Dispose();
-                textures.Remove(child);
-            }
-        }
-
-        public bool SetFocus(GLBaseControl newfocus)    // null to clear focus, true if focus taken
-        {
-            if (newfocus == currentfocus)       // no action if the same
-                return true;
-
-            if (newfocus != null)
-            {
-                if (newfocus.GiveFocusToParent && newfocus.Parent != null && newfocus.Parent.RejectFocus == false)
-                    newfocus = newfocus.Parent;     // see if we want to give it to parent
-
-                if (newfocus.RejectFocus)       // if reject focus change when clicked, abort, do not change focus
-                    return false;
-
-                if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
-                    newfocus = null;
-            }
-
-            GLBaseControl oldfocus = currentfocus;
-
-            OnGlobalFocusChanged(oldfocus,currentfocus);
-
-            //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
-
-            if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
-            {
-                currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
-
-                for( var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
-                {
-                    c.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
-                    if (c is GLForm)
-                        break;
-                }
-
-                currentfocus = null;
-            }
-            
-            if (newfocus != null)               // if we have a new focus, set and tell it
-            {
-                currentfocus = newfocus;
-
-                currentfocus.OnFocusChanged(FocusEvent.Focused, oldfocus);
-
-                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
-                {
-                    c.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);
-                    if (c is GLForm)
-                        break;
-                }
-            }
-
-            return true;
         }
 
         public override void PerformRecursiveLayout()
@@ -170,65 +106,6 @@ namespace OFC.GL4.Controls
             }
             else
                 return true;
-        }
-
-        // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
-        protected override bool InvalidateDueToLocationChange(GLBaseControl child)
-        {
-            //System.Diagnostics.Debug.WriteLine("Control display location change");
-            UpdateVertexTexturePositions(false);
-            return false;
-        }
-
-        private void UpdateVertexTexturePositions(bool updatetextures)        // update vertexes, maybe update textures
-        {
-            if (ControlsZ.Count > 0)            // may end up with nothing to draw, in which case, don't update anything
-            {
-                vertexes.AllocateBytes(ControlsZ.Count * sizeof(float) * vertexesperentry * 4);
-                vertexes.StartWrite(0, vertexes.Length);
-
-                float z = 0.0001f;      // we place it in clip space at a z near 0
-                int visible = 0;
-
-                List<IGLTexture> tlist = new List<IGLTexture>();
-
-                foreach (var c in ControlsIZ)       // we paint in IZ order, and we set the Z (bigger is more in the back) from a notional 0.1 to 0 so the depth test works
-                {
-                    if (c.Visible)  // must be visible to be added to vlist
-                    {
-                        float[] a = new float[] {       c.Left, c.Top, z, 1,
-                                                        c.Left, c.Bottom , z, 1,
-                                                        c.Right, c.Top, z, 1,
-                                                        c.Right, c.Bottom , z, 1,
-                                                 };
-                        vertexes.Write(a);
-                        z -= 0.0000001f;
-                        visible++;
-
-                        if (updatetextures)
-                        {
-                            if (textures[c].Id == -1 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
-                            {
-                                textures[c].CreateOrUpdateTexture(c.Width, c.Height);   // and make a texture, this will dispose of the old one 
-                            }
-
-                            tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
-                        }
-                    }
-                }
-
-                vertexes.StopReadWrite();
-                OFC.GLStatics.Check();
-
-                if ( tlist.Count>0)     // only if we had visible ones
-                    texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order
-
-                ri.DrawCount = (visible>0) ? (visible * 5 - 1) : 0;    // 4 vertexes per rectangle, 1 restart
-            }
-            else
-                ri.DrawCount = 0;           // and set count to zero.
-
-            RequestRender = true;
         }
 
         // call this during your Paint to render.
@@ -281,306 +158,94 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Render Finished");
         }
 
-        // called by Control to tell it that a control has been removed
-
-        public void ControlRemoved(GLBaseControl other)
-        {
-            if (currentfocus == other)
-                currentfocus = null;
-            if (currentmouseover == other)
-                currentmouseover = null;
-        }
-
         #endregion
 
-        #region UI - called from wincontrol - due to windows sending events- translate to control
+        #region Implementation
 
-        private void Gc_MouseLeave(object sender, GLMouseEventArgs e)
-        {
-            if (currentmouseover != null)
+        // override remove control since we need to know if to remove texture
+
+        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
+        {   
+            if (ControlsZ.Contains(child))      // if its our child
             {
-                currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
-                currentmouseover.Hover = false;
-
-                var mouseleaveev = new GLMouseEventArgs(e.WindowLocation);
-                SetViewScreenCoord(ref e);
-
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseLeave(mouseleaveev);
-
-                currentmouseover = null;
+                base.RemoveControl(child, dispose, removechildren); // remove
+                textures[child].Dispose();  // and delete textures
+                textures.Remove(child);
             }
         }
 
-        private void Gc_MouseEnter(object sender, GLMouseEventArgs e)
+        // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
+
+        protected override bool InvalidateDueToLocationChange(GLBaseControl child)
         {
-            Gc_MouseLeave(sender, e);       // leave current
-
-            SetViewScreenCoord(ref e);
-
-            currentmouseover = FindControlOver(e.ScreenCoord);
-
-            if (currentmouseover != null)
-            {
-                currentmouseover.Hover = true;
-
-                SetControlLocation(ref e, currentmouseover);
-
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseEnter(e);
-            }
+            //System.Diagnostics.Debug.WriteLine("Control display location change");
+            UpdateVertexTexturePositions(false);
+            return false;
         }
 
+        // override this to provide translation between form co-ords and viewport/screen coords
 
-        private void Gc_MouseDown(object sender, GLMouseEventArgs e)
-        {
-           // System.Diagnostics.Debug.WriteLine("GC Mouse down");
-            if (currentmouseover != null)
-            {
-                currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
-
-                SetViewScreenCoord(ref e);
-                SetControlLocation(ref e, currentmouseover);
-
-                if (currentmouseover.Enabled)
-                {
-                    currentmouseover.MouseButtonsDown = e.Button;
-                    currentmouseover.OnMouseDown(e);
-                }
-
-                mousedowninitialcontrol = currentmouseover;
-            }
-            else
-            {
-                if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
-                    this.OnMouseDown(e);
-            }
-        }
-
-        private void Gc_MouseMove(object sender, GLMouseEventArgs e)
-        {
-            SetViewScreenCoord(ref e);
-            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
-
-            GLBaseControl c = FindControlOver(e.ScreenCoord); // overcontrol ,or over display, or maybe outside display
-
-            if (c != currentmouseover)      // if different, either going active or inactive
-            {
-               // System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
-                mousedowninitialcontrol = null;
-
-                if (currentmouseover != null)   // for current, its a leave or its a drag..
-                {
-                    SetControlLocation(ref e, currentmouseover);
-
-                    if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
-                    {
-                        if (currentmouseover.Enabled)       // and send to control if enabled
-                            currentmouseover.OnMouseMove(e);
-
-                        return;
-                    }
-
-                    currentmouseover.Hover = false;     // we are leaving this one
-
-                    if (currentmouseover.Enabled)
-                        currentmouseover.OnMouseLeave(e);
-                }
-
-                currentmouseover = c;   // change to new value
-
-                if (currentmouseover != null)       // now, are we going over a new one?
-                {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                    currentmouseover.Hover = true;
-
-                    if (currentmouseover.Enabled)       // and send to control if enabled
-                        currentmouseover.OnMouseEnter(e);
-                }
-                else
-                {
-                    if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
-                        this.OnMouseMove(e);
-                }
-            }
-            else
-            {
-                if (currentmouseover != null)
-                {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                    if (currentmouseover.Enabled)
-                        currentmouseover.OnMouseMove(e);
-                }
-                else
-                {
-                    if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
-                        this.OnMouseMove(e);
-                }
-            }
-        }
-
-
-        private void Gc_MouseUp(object sender, GLMouseEventArgs e)
-        {
-            SetViewScreenCoord(ref e);
-
-            if (currentmouseover != null)
-            {
-                currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
-
-                SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseUp(e);
-            }
-            else
-            {
-                if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
-                    this.OnMouseUp(e);
-            }
-
-            mousedowninitialcontrol = null;
-        }
-
-        private void Gc_MouseClick(object sender, GLMouseEventArgs e)
-        {
-            SetViewScreenCoord(ref e);
-
-            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
-            {
-                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
-
-                SetFocus(currentmouseover);
-
-                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
-                {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                    OnGlobalMouseClick(currentmouseover, e);
-
-                    if (currentmouseover.Enabled)
-                        currentmouseover.OnMouseClick(e);
-                }
-            }
-            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
-            {
-                SetFocus(null); 
-                OnGlobalMouseClick(null, e);
-                this.OnMouseClick(e);
-            }
-        }
-
-        private void Gc_MouseDoubleClick(object sender, GLMouseEventArgs e)
-        {
-            SetViewScreenCoord(ref e);
-
-            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
-            {
-                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
-
-                SetFocus(currentmouseover);
-
-                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
-                {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                    if (currentmouseover.Enabled)
-                        currentmouseover.OnMouseDoubleClick(e);
-                }
-            }
-            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
-            {
-                SetFocus(null);
-
-                if (this.Enabled)
-                    this.OnMouseDoubleClick(e);
-            }
-        }
-
-        private void Gc_MouseWheel(object sender, GLMouseEventArgs e)
-        {
-            if (currentmouseover != null && currentmouseover.Enabled)
-            {
-                SetViewScreenCoord(ref e);
-                SetControlLocation(ref e, currentmouseover);    // reset location etc
-
-                if (currentmouseover.Enabled)
-                    currentmouseover.OnMouseWheel(e);
-            }
-        }
-
-        // Set up other locations, control locations, relative location, and area, etc
-
-        private void SetViewScreenCoord(ref GLMouseEventArgs e)
+        protected override void SetViewScreenCoord(ref GLMouseEventArgs e)
         {
             e.ViewportLocation = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
             e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
         }
 
-        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
-        {
-            e.ControlClientLocation = cur.DisplayControlCoords(true);     // position of control in screencoords
-            e.Location = new Point(e.ScreenCoord.X - e.ControlClientLocation.X, e.ScreenCoord.Y - e.ControlClientLocation.Y);
-           // System.Diagnostics.Debug.WriteLine("WLoc {0} VLoc {1} SLoc{2} CLoc {3} Loc {4} Control {5}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, e.ControlClientLocation, e.Location, cur.Name);
+        // update vertexes, maybe update textures
 
-            if (e.Location.X < 0)
-                e.Area = GLMouseEventArgs.AreaType.Left;
-            else if (e.Location.X >= cur.ClientWidth)
+        private void UpdateVertexTexturePositions(bool updatetextures)        
+        {
+            if (ControlsZ.Count > 0)            // may end up with nothing to draw, in which case, don't update anything
             {
-                if (e.Location.Y >= cur.ClientHeight)
-                    e.Area = GLMouseEventArgs.AreaType.NWSE;
-                else
-                    e.Area = GLMouseEventArgs.AreaType.Right;
+                vertexes.AllocateBytes(ControlsZ.Count * sizeof(float) * vertexesperentry * 4);
+                vertexes.StartWrite(0, vertexes.Length);
+
+                float z = 0.0001f;      // we place it in clip space at a z near 0
+                int visible = 0;
+
+                List<IGLTexture> tlist = new List<IGLTexture>();
+
+                foreach (var c in ControlsIZ)       // we paint in IZ order, and we set the Z (bigger is more in the back) from a notional 0.1 to 0 so the depth test works
+                {
+                    if (c.Visible)  // must be visible to be added to vlist
+                    {
+                        float[] a = new float[] {       c.Left, c.Top, z, 1,
+                                                        c.Left, c.Bottom , z, 1,
+                                                        c.Right, c.Top, z, 1,
+                                                        c.Right, c.Bottom , z, 1,
+                                                 };
+                        vertexes.Write(a);
+                        z -= 0.0000001f;
+                        visible++;
+
+                        if (updatetextures)
+                        {
+                            if (textures[c].Id == -1 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
+                            {
+                                textures[c].CreateOrUpdateTexture(c.Width, c.Height);   // and make a texture, this will dispose of the old one 
+                            }
+
+                            tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
+                        }
+                    }
+                }
+
+                vertexes.StopReadWrite();
+                OFC.GLStatics.Check();
+
+                if ( tlist.Count>0)     // only if we had visible ones
+                    texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order
+
+                ri.DrawCount = (visible>0) ? (visible * 5 - 1) : 0;    // 4 vertexes per rectangle, 1 restart
             }
-            else if (e.Location.Y < 0)
-                e.Area = GLMouseEventArgs.AreaType.Top;
-            else if (e.Location.Y >= cur.ClientHeight)
-                e.Area = GLMouseEventArgs.AreaType.Bottom;
             else
-                e.Area = GLMouseEventArgs.AreaType.Client;
-        }
-               
-        private void Gc_KeyUp(object sender, GLKeyEventArgs e)
-        {
-            if (currentfocus != null && currentfocus.Enabled)
-            {
-                if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyUp(e);            // reflect to form
+                ri.DrawCount = 0;           // and set count to zero.
 
-                if ( !e.Handled)                                    // send to control
-                    currentfocus.OnKeyUp(e);
-
-            }
+            RequestRender = true;
         }
 
-        private void Gc_KeyDown(object sender, GLKeyEventArgs e)
-        {
-            System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
-            if (currentfocus != null && currentfocus.Enabled)
-            {
-                if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyDown(e);          // reflect to form
-
-                if ( !e.Handled)                                    // send to control
-                    currentfocus.OnKeyDown(e);
-
-            }
-        }
-
-        private void Gc_KeyPress(object sender, GLKeyEventArgs e)
-        {
-            if (currentfocus != null && currentfocus.Enabled)
-            {
-                if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyPress(e);         // reflect to form
-
-                if ( !e.Handled )
-                    currentfocus.OnKeyPress(e);                     // send to control
-            }
-        }
-
+        // window is resizing
+       
         private void Gc_Resize(object sender)
         {
             //System.Diagnostics.Debug.WriteLine("Call from glwinform with Resize {0}", glwin.Size);
@@ -590,12 +255,11 @@ namespace OFC.GL4.Controls
             InvalidateLayout();                                         // and we need to invalidate layout
         }
 
+        // window is painting
         private void Gc_Paint(object sender)
         {
             Paint?.Invoke(sender);
         }
-
-        #endregion
 
         public class GLControlShader : GLShaderPipeline
         {
@@ -614,9 +278,8 @@ namespace OFC.GL4.Controls
         private GLBindlessTextureHandleBlock texturebinds;
         private GLRenderableItem ri;
         private IGLProgramShader shader;
-        private GLBaseControl currentmouseover = null;
-        private GLBaseControl currentfocus = null;
-        private GLBaseControl mousedowninitialcontrol = null;       // track where mouse down occurred
+
+        #endregion
 
     }
 }

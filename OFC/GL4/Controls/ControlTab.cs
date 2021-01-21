@@ -162,7 +162,7 @@ namespace OFC.GL4.Controls
             Invalidate();
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
 
@@ -185,7 +185,7 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public override void OnMouseLeave(GLMouseEventArgs e)
+        protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
             int oldmouseover = mouseover;
@@ -194,7 +194,7 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
 

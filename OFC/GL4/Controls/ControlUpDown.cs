@@ -128,7 +128,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseDown(GLMouseEventArgs e)
+        protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
             if ( !e.Handled)
@@ -144,7 +144,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseUp(GLMouseEventArgs e)
+        protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
             repeattimer.Stop();
@@ -166,7 +166,7 @@ namespace OFC.GL4.Controls
             Invalidate();       // make it repaint without it being amimated
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (!e.Handled)

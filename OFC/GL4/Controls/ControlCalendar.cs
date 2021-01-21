@@ -173,8 +173,8 @@ namespace OFC.GL4.Controls
                         Rectangle butarea = new Rectangle(xoff++ * cellwidth + gridxleft , vpos, cellwidth, cellheight);
                         Rectangle focusrect = butarea;
 
-                        if (i == curdateoffset)
-                            focusrect.Inflate(-1, -1);
+                        if (i == focuspos)
+                            butarea.Inflate(-2, -2);
 
                         if (i == curselectedoffset && Enabled)
                         {
@@ -236,7 +236,7 @@ namespace OFC.GL4.Controls
             Invalidate();
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
             int hover = HoveringOver(e.Location);
@@ -256,7 +256,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
             int hover = HoveringOver(e.Location);
@@ -277,7 +277,7 @@ namespace OFC.GL4.Controls
 
         }
 
-        public override void OnMouseLeave(GLMouseEventArgs e)
+        protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
             if (hoveredpos >= 0)
@@ -287,7 +287,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
             if (!e.Handled)
@@ -299,7 +299,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (e.KeyCode == System.Windows.Forms.Keys.Down)

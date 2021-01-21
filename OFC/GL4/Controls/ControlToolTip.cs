@@ -50,23 +50,23 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
+        protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
         {
             base.OnControlAdd(parent, child);
 
             var p = parent as GLControlDisplay;     // if attached to control display, its an automatic tool tip
             if (p != null && AutomaticDelay>0)      // only if auto delay is on
             {
-              // tbd change to timer..  p.GlobalMouseMove += MouseMoved;
+                p.GlobalMouseMove += MouseMoved;
             }
         }
 
-        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
+        protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             var p = parent as GLControlDisplay;     // if attached to control display, its an automatic tool tip
             if (p != null )            // unsubscribe, and we can do this even if we did not subsribe in the first place
             {
-                // tbd change to timer.. p.GlobalMouseMove -= MouseMoved;
+                p.GlobalMouseMove -= MouseMoved;
             }
 
             base.OnControlRemove(parent, child);

@@ -33,7 +33,7 @@ namespace OFC.GL4.Controls
 
         public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        // called on return, or autocomplete entry selected.
 
-        public int AutoCompleteInitialDelay { get; set; } = 2000;
+        public int AutoCompleteInitialDelay { get; set; } = 250;
 
         public GLListBox ListBox { get; set; } = new GLListBox();           // if you want to set its visual properties, do it via this
 
@@ -167,7 +167,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (!e.Handled)
@@ -207,7 +207,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
 

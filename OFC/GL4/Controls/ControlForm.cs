@@ -153,7 +153,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseDown(GLMouseEventArgs e)
+        protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
 
@@ -168,7 +168,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
 
@@ -256,7 +256,7 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void OnMouseUp(GLMouseEventArgs e)
+        protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
 
@@ -268,7 +268,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseLeave(GLMouseEventArgs e)
+        protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
 
@@ -279,7 +279,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
 
@@ -293,7 +293,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
+        protected override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyDown(e);
             //System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
@@ -313,7 +313,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto) // called if we get focus (focused=true) or if child gets focused (focused=false)
+        protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto) // called if we get focus (focused=true) or if child gets focused (focused=false)
         {
             if (evt == FocusEvent.ChildFocused)     // need to take a note
             {

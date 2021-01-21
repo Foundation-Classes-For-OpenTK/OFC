@@ -809,26 +809,27 @@ namespace OFC.GL4.Controls
         }
 
         // redraw, into usebmp
+        // usebmp, starts null, first level with bitmap sets it, passed on down tree unless another one has a bitmap
         // bounds = area that our control occupies on the bitmap, in bitmap co-ords. This may be outside of the clip area below if the child is outside of the client area of its parent control
         // cliparea = area that we can draw into, in bitmap co-ords, so we don't exceed the bounds of any parent clip areas above us. clipareas are continually narrowed
         // gr = graphics to draw into
         // we must be visible to be called. Children may not be visible
 
-        public virtual bool Redraw(Bitmap usebmp, Rectangle bounds, Rectangle cliparea, Graphics gr, bool forceredraw)
+        public virtual bool Redraw(Bitmap parentbmp, Rectangle bounds, Rectangle cliparea, Graphics gr, bool forceredraw)
         {
             Graphics parentgr = null;                           // if we changed level bmp, we need to give the control the opportunity
-            Rectangle parentarea = bounds;                      // to paint thru its level bmp to the parent bmp
+            Rectangle parentarea = bounds;                      // to paint thru its passed thru bitmap
 
             if (levelbmp != null)                               // bitmap on this level, use it for itself and its children
             {
-                if ( usebmp != null )                           // must have a bitmap to paint thru to
+                if ( parentbmp != null )                           //
                     parentgr = gr;                              // allow parent paint thru
 
-                usebmp = levelbmp;
+                parentbmp = levelbmp;
 
-                cliparea = bounds = new Rectangle(0, 0, usebmp.Width, usebmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
+                cliparea = bounds = new Rectangle(0, 0, parentbmp.Width, parentbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
 
-                gr = Graphics.FromImage(usebmp);        // get graphics for it
+                gr = Graphics.FromImage(parentbmp);        // get graphics for it
                 gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                 gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             }
@@ -882,7 +883,7 @@ namespace OFC.GL4.Controls
 
                     Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
 
-                    redrawn |= c.Redraw(usebmp, childbounds, childcliparea, gr, forceredraw);
+                    redrawn |= c.Redraw(parentbmp, childbounds, childcliparea, gr, forceredraw);
                 }
             }
 
@@ -967,7 +968,7 @@ namespace OFC.GL4.Controls
 
         #region UI Overrides
 
-        public virtual void OnMouseLeave(GLMouseEventArgs e)
+        protected  virtual void OnMouseLeave(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
             MouseLeave?.Invoke(this, e);
@@ -976,7 +977,7 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public virtual void OnMouseEnter(GLMouseEventArgs e)
+        protected virtual void OnMouseEnter(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location + " " + InvalidateOnEnterLeave);
             MouseEnter?.Invoke(this, e);
@@ -985,7 +986,7 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public virtual void OnMouseUp(GLMouseEventArgs e)
+        protected  virtual void OnMouseUp(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("up   " + Name + " " + e.Location + " " + e.Button);
             MouseUp?.Invoke(this, e);
@@ -994,7 +995,7 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public virtual void OnMouseDown(GLMouseEventArgs e)
+        protected  virtual void OnMouseDown(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("down " + Name + " " + e.Location + " " + e.Button + " " + MouseButtonsDown);
             MouseDown?.Invoke(this, e);
@@ -1005,19 +1006,19 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public virtual void OnMouseClick(GLMouseEventArgs e)
+        protected  virtual void OnMouseClick(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("click " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
             MouseClick?.Invoke(this, e);
         }
 
-        public virtual void OnMouseDoubleClick(GLMouseEventArgs e)
+        protected  virtual void OnMouseDoubleClick(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("doubleclick " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
             MouseDoubleClick?.Invoke(this, e);
         }
 
-        public virtual void OnMouseMove(GLMouseEventArgs e)
+        protected  virtual void OnMouseMove(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Over " + Name + " " + e.Location);
             MouseMove?.Invoke(this, e);
@@ -1026,28 +1027,28 @@ namespace OFC.GL4.Controls
                 Invalidate();
         }
 
-        public virtual void OnMouseWheel(GLMouseEventArgs e)
+        protected  virtual void OnMouseWheel(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Over " + Name + " " + e.Location);
             MouseWheel?.Invoke(this, e);
         }
 
-        public virtual void OnKeyDown(GLKeyEventArgs e)     // GLForm above control gets this as well, and can cancel call to control by handling it
+        protected  virtual void OnKeyDown(GLKeyEventArgs e)     // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyDown?.Invoke(this, e);
         }
 
-        public virtual void OnKeyUp(GLKeyEventArgs e)       // GLForm above control gets this as well, and can cancel call to control by handling it
+        protected  virtual void OnKeyUp(GLKeyEventArgs e)       // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyUp?.Invoke(this, e);
         }
 
-        public virtual void OnKeyPress(GLKeyEventArgs e)    // GLForm above control gets this as well, and can cancel call to control by handling it
+        protected  virtual void OnKeyPress(GLKeyEventArgs e)    // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyPress?.Invoke(this, e);
         }
 
-        public virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)  // focused elements or parents up to GLForm gets this as well
+        protected  virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)  // focused elements or parents up to GLForm gets this as well
         {
             this.focused = focused == FocusEvent.Focused;
             if (InvalidateOnFocusChange)
@@ -1055,7 +1056,7 @@ namespace OFC.GL4.Controls
             FocusChanged?.Invoke(this, focused, ctrl);
         }
 
-        public virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
+        protected  virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
         {
             GlobalFocusChanged?.Invoke(from, to);
             List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
@@ -1063,35 +1064,36 @@ namespace OFC.GL4.Controls
                 c.OnGlobalFocusChanged(from, to);
         }
 
-        public virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        protected  virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
         {
+            //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseClick?.Invoke(ctrl,e);
             List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseClick(ctrl, e);
         }
 
-        public virtual void OnFontChanged()
+        protected  virtual void OnFontChanged()
         {
             FontChanged?.Invoke(this);
         }
 
-        public virtual void OnResize()
+        protected  virtual void OnResize()
         {
             Resize?.Invoke(this);
         }
 
-        public virtual void OnMoved()
+        protected  virtual void OnMoved()
         {
             Moved?.Invoke(this);
         }
 
-        public virtual void OnControlAdd(GLBaseControl parent, GLBaseControl child)     // fired to both the parent and child
+        protected  virtual void OnControlAdd(GLBaseControl parent, GLBaseControl child)     // fired to both the parent and child
         {
             ControlAdd?.Invoke(parent, child);
         }
 
-        public virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
+        protected  virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
         {
             ControlRemove?.Invoke(parent, ctrlbeingremoved);
         }
@@ -1114,7 +1116,7 @@ namespace OFC.GL4.Controls
 
                 window = w;
 
-                if ( resized) 
+                if (resized)
                     CalcClientRectangle();
 
                 if (moved)
@@ -1123,10 +1125,10 @@ namespace OFC.GL4.Controls
                 if (resized)
                     OnResize();
 
-                if (resized || (Parent?.InvalidateDueToLocationChange(this) ?? true) == true )   // if resized, or we invalidate due to location change
+                if (resized || (Parent?.InvalidateDueToLocationChange(this) ?? true) == true)   // if resized, or we invalidate due to location change
                 {
                     NeedRedraw = true;      // we need a redraw
-                   // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
+                                            // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
                     parent?.Invalidate();   // parent is invalidated as well, and the whole form needs reendering
                     parent?.PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
                 }
@@ -1241,6 +1243,366 @@ namespace OFC.GL4.Controls
 
         #endregion
 
+
+        #region Interface to GLWindowControl
+
+        // used by GLControlDisplay only, Lower controls do not use this
+        // here so it can call protected members of this class.  
+
+        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only active from GLControlDisplay
+
+        private GLBaseControl currentmouseover = null;              
+        private GLBaseControl currentfocus = null;                  
+        private GLBaseControl mousedowninitialcontrol = null;       // track where mouse down occurred
+
+        private bool SetFocus(GLBaseControl newfocus)    // null to clear focus, true if focus taken
+        {
+            if (newfocus == currentfocus)       // no action if the same
+                return true;
+
+            if (newfocus != null)
+            {
+                if (newfocus.GiveFocusToParent && newfocus.Parent != null && newfocus.Parent.RejectFocus == false)
+                    newfocus = newfocus.Parent;     // see if we want to give it to parent
+
+                if (newfocus.RejectFocus)       // if reject focus change when clicked, abort, do not change focus
+                    return false;
+
+                if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
+                    newfocus = null;
+            }
+
+            GLBaseControl oldfocus = currentfocus;
+
+            OnGlobalFocusChanged(oldfocus, currentfocus);
+
+            //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
+
+            if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
+            {
+                currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
+
+                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
+                {
+                    c.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
+                    if (c is GLForm)
+                        break;
+                }
+
+                currentfocus = null;
+            }
+
+            if (newfocus != null)               // if we have a new focus, set and tell it
+            {
+                currentfocus = newfocus;
+
+                currentfocus.OnFocusChanged(FocusEvent.Focused, oldfocus);
+
+                for (var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
+                {
+                    c.OnFocusChanged(FocusEvent.ChildFocused, currentfocus);
+                    if (c is GLForm)
+                        break;
+                }
+            }
+
+            return true;
+        }
+
+        protected void ControlRemoved(GLBaseControl other)     // called on ControlDisplay, to inform it that a control has been removed
+        {
+            if (currentfocus == other)
+                currentfocus = null;
+            if (currentmouseover == other)
+                currentmouseover = null;
+        }
+
+        protected void Gc_MouseLeave(object sender, GLMouseEventArgs e)
+        {
+            if (currentmouseover != null)
+            {
+                currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
+                currentmouseover.Hover = false;
+
+                var mouseleaveev = new GLMouseEventArgs(e.WindowLocation);
+                SetViewScreenCoord(ref e);
+
+                if (currentmouseover.Enabled)
+                    currentmouseover.OnMouseLeave(mouseleaveev);
+
+                currentmouseover = null;
+            }
+        }
+
+        protected void Gc_MouseEnter(object sender, GLMouseEventArgs e)
+        {
+            Gc_MouseLeave(sender, e);       // leave current
+
+            SetViewScreenCoord(ref e);
+
+            currentmouseover = FindControlOver(e.ScreenCoord);
+
+            if (currentmouseover != null)
+            {
+                currentmouseover.Hover = true;
+
+                SetControlLocation(ref e, currentmouseover);
+
+                if (currentmouseover.Enabled)
+                    currentmouseover.OnMouseEnter(e);
+            }
+        }
+
+        protected void Gc_MouseDown(object sender, GLMouseEventArgs e)
+        {
+            // System.Diagnostics.Debug.WriteLine("GC Mouse down");
+            if (currentmouseover != null)
+            {
+                currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
+
+                SetViewScreenCoord(ref e);
+                SetControlLocation(ref e, currentmouseover);
+
+                if (currentmouseover.Enabled)
+                {
+                    currentmouseover.MouseButtonsDown = e.Button;
+                    currentmouseover.OnMouseDown(e);
+                }
+
+                mousedowninitialcontrol = currentmouseover;
+            }
+            else
+            {
+                if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
+                    this.OnMouseDown(e);
+            }
+        }
+
+        protected void Gc_MouseMove(object sender, GLMouseEventArgs e)
+        {
+            SetViewScreenCoord(ref e);
+            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
+
+            GlobalMouseMove?.Invoke(e);
+
+            GLBaseControl c = FindControlOver(e.ScreenCoord); // overcontrol ,or over display, or maybe outside display
+
+            if (c != currentmouseover)      // if different, either going active or inactive
+            {
+                // System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
+                mousedowninitialcontrol = null;
+
+                if (currentmouseover != null)   // for current, its a leave or its a drag..
+                {
+                    SetControlLocation(ref e, currentmouseover);
+
+                    if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
+                    {
+                        if (currentmouseover.Enabled)       // and send to control if enabled
+                            currentmouseover.OnMouseMove(e);
+
+                        return;
+                    }
+
+                    currentmouseover.Hover = false;     // we are leaving this one
+
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseLeave(e);
+                }
+
+                currentmouseover = c;   // change to new value
+
+                if (currentmouseover != null)       // now, are we going over a new one?
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                    currentmouseover.Hover = true;
+
+                    if (currentmouseover.Enabled)       // and send to control if enabled
+                        currentmouseover.OnMouseEnter(e);
+                }
+                else
+                {
+                    if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
+                        this.OnMouseMove(e);
+                }
+            }
+            else
+            {
+                if (currentmouseover != null)
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseMove(e);
+                }
+                else
+                {
+                    if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
+                        this.OnMouseMove(e);
+                }
+            }
+        }
+
+
+        protected void Gc_MouseUp(object sender, GLMouseEventArgs e)
+        {
+            SetViewScreenCoord(ref e);
+
+            if (currentmouseover != null)
+            {
+                currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
+
+                SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                if (currentmouseover.Enabled)
+                    currentmouseover.OnMouseUp(e);
+            }
+            else
+            {
+                if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
+                    this.OnMouseUp(e);
+            }
+
+            mousedowninitialcontrol = null;
+        }
+
+        protected void Gc_MouseClick(object sender, GLMouseEventArgs e)
+        {
+            SetViewScreenCoord(ref e);
+
+            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
+            {
+                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
+
+                SetFocus(currentmouseover);
+
+                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                    OnGlobalMouseClick(currentmouseover, e);
+
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseClick(e);
+               }
+            }
+            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
+            {
+                SetFocus(null);
+                OnGlobalMouseClick(null, e);
+                this.OnMouseClick(e);
+            }
+        }
+
+        protected void Gc_MouseDoubleClick(object sender, GLMouseEventArgs e)
+        {
+            SetViewScreenCoord(ref e);
+
+            if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
+            {
+                e.WasFocusedAtClick = currentmouseover == currentfocus;         // record if clicking on a focused item
+
+                SetFocus(currentmouseover);
+
+                if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
+                {
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                    if (currentmouseover.Enabled)
+                        currentmouseover.OnMouseDoubleClick(e);
+                }
+            }
+            else if (currentmouseover == null)        // not over any control, even control display, but still click, (due to screen coord clip space), so send thru the displaycontrol
+            {
+                SetFocus(null);
+
+                if (this.Enabled)
+                    this.OnMouseDoubleClick(e);
+            }
+        }
+
+        protected void Gc_MouseWheel(object sender, GLMouseEventArgs e)
+        {
+            if (currentmouseover != null && currentmouseover.Enabled)
+            {
+                SetViewScreenCoord(ref e);
+                SetControlLocation(ref e, currentmouseover);    // reset location etc
+
+                if (currentmouseover.Enabled)
+                    currentmouseover.OnMouseWheel(e);
+            }
+        }
+
+        // Set up other locations, control locations, relative location, and area, etc
+
+        protected virtual void SetViewScreenCoord(ref GLMouseEventArgs e)       // overridden in control class to provide co-ords
+        {
+        }
+
+        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
+        {
+            e.ControlClientLocation = cur.DisplayControlCoords(true);     // position of control in screencoords
+            e.Location = new Point(e.ScreenCoord.X - e.ControlClientLocation.X, e.ScreenCoord.Y - e.ControlClientLocation.Y);
+            // System.Diagnostics.Debug.WriteLine("WLoc {0} VLoc {1} SLoc{2} CLoc {3} Loc {4} Control {5}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, e.ControlClientLocation, e.Location, cur.Name);
+
+            if (e.Location.X < 0)
+                e.Area = GLMouseEventArgs.AreaType.Left;
+            else if (e.Location.X >= cur.ClientWidth)
+            {
+                if (e.Location.Y >= cur.ClientHeight)
+                    e.Area = GLMouseEventArgs.AreaType.NWSE;
+                else
+                    e.Area = GLMouseEventArgs.AreaType.Right;
+            }
+            else if (e.Location.Y < 0)
+                e.Area = GLMouseEventArgs.AreaType.Top;
+            else if (e.Location.Y >= cur.ClientHeight)
+                e.Area = GLMouseEventArgs.AreaType.Bottom;
+            else
+                e.Area = GLMouseEventArgs.AreaType.Client;
+        }
+
+        protected void Gc_KeyUp(object sender, GLKeyEventArgs e)
+        {
+            if (currentfocus != null && currentfocus.Enabled)
+            {
+                if (!(currentfocus is GLForm))
+                    currentfocus.FindForm()?.OnKeyUp(e);            // reflect to form
+
+                if (!e.Handled)                                    // send to control
+                    currentfocus.OnKeyUp(e);
+
+            }
+        }
+
+        protected void Gc_KeyDown(object sender, GLKeyEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
+            if (currentfocus != null && currentfocus.Enabled)
+            {
+                if (!(currentfocus is GLForm))
+                    currentfocus.FindForm()?.OnKeyDown(e);          // reflect to form
+
+                if (!e.Handled)                                    // send to control
+                    currentfocus.OnKeyDown(e);
+
+            }
+        }
+
+        protected void Gc_KeyPress(object sender, GLKeyEventArgs e)
+        {
+            if (currentfocus != null && currentfocus.Enabled)
+            {
+                if (!(currentfocus is GLForm))
+                    currentfocus.FindForm()?.OnKeyPress(e);         // reflect to form
+
+                if (!e.Handled)
+                    currentfocus.OnKeyPress(e);                     // send to control
+            }
+        }
+
+        #endregion
 
     }
 }

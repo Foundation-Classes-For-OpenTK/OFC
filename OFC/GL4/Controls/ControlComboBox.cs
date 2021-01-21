@@ -84,7 +84,7 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
+        protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             if (child == this && InDropDown)        // if its dropped, it need removing
                 Remove(dropdownbox);
@@ -179,7 +179,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
             if ( e.Button == GLMouseEventArgs.MouseButtons.Left )
@@ -191,7 +191,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
 
@@ -218,7 +218,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirarchy before we mess with it
 

@@ -444,7 +444,7 @@ namespace OFC.GL4.Controls
             Size = new Size(area.Right + Margin.TotalWidth + 20, area.Bottom + Margin.TotalHeight + 10 + Padding.TotalHeight + BorderWidth);
         }
 
-        public override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children
+        protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyPress(e);
             if ( !e.Handled && e.KeyChar == 27 )

@@ -111,7 +111,7 @@ namespace OFC.GL4.Controls
                     submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
                     submenu.SuspendLayout();
 
-                    //System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name);
+                    System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
 
                     submenu.Font = Font;
                     submenu.ForeColor = this.ForeColor;
@@ -233,7 +233,7 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-        public override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
+        protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control add {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
 
@@ -283,7 +283,7 @@ namespace OFC.GL4.Controls
             base.OnControlAdd(parent, child);
         }
 
-        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
+        protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control remove {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
 
@@ -302,13 +302,15 @@ namespace OFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
-        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);
-
-            if (ctrl == null || !IsThisOrChildControl(ctrl))     // not a drop down, not a child of our tree
+            if ( parentmenu == null )       // if top level menu.. top of heirarchy
             {
-                GetTopLevelMenu().CloseMenus();
+                if (ctrl == null || !IsThisOrChildControl(ctrl))     // not a drop down, not a child of our tree
+                {
+                    GetTopLevelMenu().CloseMenus();
+                }
             }
         }
 
@@ -412,7 +414,7 @@ namespace OFC.GL4.Controls
             Select(mousehovered,FlowDirection==ControlFlowDirection.Right);        // if we are a flow right menu, focus changes to below
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);
             //System.Diagnostics.Debug.WriteLine("Keydown in {0} {1}", Name, e.KeyCode);

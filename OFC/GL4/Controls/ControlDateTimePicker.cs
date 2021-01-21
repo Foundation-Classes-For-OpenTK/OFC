@@ -93,7 +93,7 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public override void OnControlRemove(GLBaseControl parent, GLBaseControl child)     // ensure calendar is removed, since its not directly attached
+        protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)     // ensure calendar is removed, since its not directly attached
         {
             if (child == this && InCalendar)
                 Remove(Calendar);
@@ -153,7 +153,7 @@ namespace OFC.GL4.Controls
 
         #region UI
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
 
@@ -182,7 +182,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
             if (!e.Handled)
@@ -199,7 +199,7 @@ namespace OFC.GL4.Controls
             OnKeyDown(e);
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
 
@@ -306,7 +306,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirachy before we mess with it
 

@@ -1,6 +1,6 @@
 ﻿namespace TestOpenTk
 {
-    partial class TestControls
+    partial class TestControlsPanels
     {
         /// <summary>
         /// Required designer variable.

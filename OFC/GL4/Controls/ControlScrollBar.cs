@@ -163,7 +163,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
 
@@ -229,7 +229,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseDown(GLMouseEventArgs e)
+        protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
 
@@ -263,7 +263,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseUp(GLMouseEventArgs e)
+        protected override void OnMouseUp(GLMouseEventArgs e)
         {
             if (mousepressed != MouseOver.MouseOverNone)
             {
@@ -283,7 +283,7 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void OnMouseLeave(GLMouseEventArgs e)
+        protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
             if (!thumbmove && mouseover != MouseOver.MouseOverNone)
@@ -293,7 +293,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
             if ( e.Delta<0)

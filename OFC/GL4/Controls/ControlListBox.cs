@@ -162,7 +162,7 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-        public override void OnFontChanged()
+        protected override void OnFontChanged()
         {
             PerformLayout();
         }
@@ -375,7 +375,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
             if ( !e.Handled)
@@ -394,7 +394,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
 
@@ -407,7 +407,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
 
@@ -430,7 +430,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (!e.Handled)

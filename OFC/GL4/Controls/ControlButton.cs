@@ -64,7 +64,7 @@ namespace OFC.GL4.Controls
             PaintButton(ClientRectangle, gr,true);
         }
 
-        public override void OnMouseClick(GLMouseEventArgs e)
+        protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
@@ -76,7 +76,7 @@ namespace OFC.GL4.Controls
             Click?.Invoke(this, e);
         }
 
-        public override void OnKeyPress(GLKeyEventArgs e)
+        protected override void OnKeyPress(GLKeyEventArgs e)
         {
             if ( e.KeyChar == 13 )
             {

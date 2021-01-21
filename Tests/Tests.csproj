@@ -80,11 +80,11 @@
     <Compile Include="Compute\ShaderTestVertexCompute.Designer.cs">
       <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\TestControls.cs">
+    <Compile Include="Controls\TestControlsPanels.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Controls\TestControls.designer.cs">
-      <DependentUpon>TestControls.cs</DependentUpon>
+    <Compile Include="Controls\TestControlsPanels.designer.cs">
+      <DependentUpon>TestControlsPanels.cs</DependentUpon>
     </Compile>
     <Compile Include="FrameBuffer\TestFrameBuffer.cs">
       <SubType>Form</SubType>
@@ -280,8 +280,8 @@
     <EmbeddedResource Include="Compute\ShaderTestVertexCompute.resx">
       <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TestControls.resx">
-      <DependentUpon>TestControls.cs</DependentUpon>
+    <EmbeddedResource Include="Controls\TestControlsPanels.resx">
+      <DependentUpon>TestControlsPanels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrameBuffer\TestFrameBuffer.resx">
       <DependentUpon>TestFrameBuffer.cs</DependentUpon>

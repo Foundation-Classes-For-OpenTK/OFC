@@ -82,7 +82,7 @@ namespace OFC.GL4.Controls
             {
                 int maxsp = LevelBitmap.Height - Height;
                 scrollpos = Math.Max(0, Math.Min(value, maxsp));
-                System.Diagnostics.Debug.WriteLine("ScrollPanel scrolled to " + scrollpos);
+                System.Diagnostics.Debug.WriteLine("ScrollPanel scrolled to " + scrollpos + " maxsp " + maxsp);
                 Invalidate();
             }
         }
@@ -91,7 +91,7 @@ namespace OFC.GL4.Controls
 
         protected override void PaintParent(Rectangle parentarea, Graphics parentgr)
         {
-            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap {2}", Name, parentarea, LevelBitmap.Size);
+            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
 
             parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
         }

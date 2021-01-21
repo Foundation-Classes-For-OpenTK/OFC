@@ -680,13 +680,13 @@ namespace OFC.GL4.Controls
 
         #region Other implementation
 
-        public override void OnFontChanged()
+        protected override void OnFontChanged()
         {
             base.OnFontChanged();
             Finish(invalidate: false, clearmarkers: false, restarttimer: false);        // no need to invalidate again, it will
         }
 
-        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
+        protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
             base.OnFocusChanged(evt, fromto);
 
@@ -702,7 +702,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnResize()
+        protected override void OnResize()
         {
             base.OnResize();
             Finish(invalidate: false, clearmarkers: false, restarttimer: false);        // no need to invalidate again, it will
@@ -891,7 +891,7 @@ namespace OFC.GL4.Controls
 
         #region UI
 
-        public override void OnKeyDown(GLKeyEventArgs e)
+        protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (!e.Handled)
@@ -934,7 +934,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnKeyPress(GLKeyEventArgs e)
+        protected override void OnKeyPress(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);
             if (!e.Handled)
@@ -1036,7 +1036,7 @@ namespace OFC.GL4.Controls
             return cpos + displaystartx+ s.Length;
         }
 
-        public override void OnMouseDown(GLMouseEventArgs e)
+        protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
             if (!e.Handled)
@@ -1053,7 +1053,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseMove(GLMouseEventArgs e)
+        protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
             if (!e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Left)
@@ -1070,7 +1070,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnMouseWheel(GLMouseEventArgs e)
+        protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
             if (e.Delta < 0)

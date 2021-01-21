@@ -126,7 +126,7 @@ namespace OFC.GL4.Controls
             ValidityChanged?.Invoke(this,valid);
         }
 
-        public override void OnKeyPress(GLKeyEventArgs e) // limit keys to whats allowed for a double
+        protected override void OnKeyPress(GLKeyEventArgs e) // limit keys to whats allowed for a double
         {
             if (AllowedChar(e.KeyChar))
             {
@@ -138,7 +138,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
+        protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
             if ( evt == FocusEvent.Deactive )     // if lost focus
             {
