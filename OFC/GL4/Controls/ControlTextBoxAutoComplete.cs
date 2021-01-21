@@ -51,7 +51,8 @@ namespace OFC.GL4.Controls
             };
             ListBox.OtherKeyPressed += (c1, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Delete) CancelAutoComplete(); };
             ListBox.Name = name + "_LB";
-            ListBox.Visible = false;
+            ListBox.TopMost = true;
+            ListBox.ShowFocusHighlight = true;
         }
 
         public GLTextBoxAutoComplete() : this("TBAC?", DefaultWindowRectangle, "")
@@ -68,7 +69,7 @@ namespace OFC.GL4.Controls
         {
             waitforautotimer.Stop();
             triggercomplete.Stop();
-            ListBox.Visible = false;
+            Remove(ListBox);
             this.SetFocus();
         }
 
@@ -149,22 +150,21 @@ namespace OFC.GL4.Controls
         {
             System.Diagnostics.Debug.WriteLine("{0} Auto Complete finished", tick);
 
-            ListBox.Visible = false;
-
-            if ( autocompletestrings != null && autocompletestrings.Count > 0 )
+            if (autocompletestrings != null && autocompletestrings.Count > 0)
             {
                 foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String " + s); }
 
                 Point sc = this.DisplayControlCoords(false);
 
-                ListBox.Font = Font;
-                ListBox.Location = new Point(sc.X, sc.Y + Height);
+                ListBox.Font = Font;                                            
+                ListBox.Location = new Point(sc.X, sc.Y + Height);      
                 ListBox.Items = autocompletestrings;
-                ListBox.Visible = true;
 
-                if ( ListBox.Parent == null )
+                if (ListBox.Parent == null)
                     AddToDesktop(ListBox);
             }
+            else
+                Remove(ListBox);
         }
 
         protected override void OnKeyDown(GLKeyEventArgs e)

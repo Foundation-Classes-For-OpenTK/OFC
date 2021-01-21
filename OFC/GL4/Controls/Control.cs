@@ -133,7 +133,7 @@ namespace OFC.GL4.Controls
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
-        public GLBaseControl Creator { get { return creator; } set { creator = value; } } // normally the same as parent, unless required to be different
+        public GLBaseControl Creator { get { return creator; } set { creator = value; } } // normally the same as parent, sometimes different if the control is attached to desktop
 
         // tooltips
         public string ToolTipText { get; set; } = null;
@@ -455,7 +455,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        public static void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from us
+        public static void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from parent
         {
             if (child.Parent != null) // if attached
             {

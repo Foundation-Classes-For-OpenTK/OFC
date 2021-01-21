@@ -25,13 +25,15 @@ namespace OFC.GL4.Controls
         public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     // not fired by programatically 
         public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
 
-        public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; Invalidate(); PerformLayout(); } }
-        public List<Image> ImageItems { get { return images; } set { images = value; Invalidate(); PerformLayout(); } }
-        public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; Invalidate(); } }
+        public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; InvalidateLayoutParent(); } }
+        public List<Image> ImageItems { get { return images; } set { images = value; InvalidateLayoutParent(); } }
+        public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; InvalidateLayoutParent(); } }
 
         public int SelectedIndex { get { return selectedIndex; } set { SetSelectedIndex(value); } }
-        public string SelectedItem { get { return selectedIndex>=0 ? Items[selectedIndex] : null; } set { SetSelectedItem(value); } }
+        public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { SetSelectedItem(value); } }
         public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { SetSelectedIndex(value); } }
+
+        public int FocusIndex { get { return focusindex; } set { if (items != null) focusindex = Math.Min(value, items.Count - 1); Invalidate(); } }        // -1 turns off focus
 
         // if set, no half lines shown
         public bool FitToItemsHeight { get { return fitToItemsHeight; } set { fitToItemsHeight = value; Invalidate(); } }
@@ -47,8 +49,11 @@ namespace OFC.GL4.Controls
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
         public Color ItemSeperatorColor { get { return itemSeperatorColor; } set { itemSeperatorColor = value; Invalidate(); } }
 
-        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
-        public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }
+        // normal behaviour is a dotted focus box following the keystrokes/hover, A hover over box, plus a solid highlight on the selected item. These allow change of mode
+
+        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }       // normal focus dotted box, 
+        public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }    // SelectedItem is highlighted
+        public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }            // if set, focus is a highlighted area, no selecteditem shown
 
         // scroll bar
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
@@ -173,7 +178,8 @@ namespace OFC.GL4.Controls
 
             if (AutoSize)       // measure text size and number of items to get idea of space required. Allow for scroll bar
             {
-                int items = (Items != null) ? Items.Count() : 0;        
+                int items = (Items != null) ? Items.Count() : 0;
+                System.Diagnostics.Debug.WriteLine("AS Items" + items);
                 SizeF max = new SizeF(ScrollBarWidth*2,0);
                 if ( items>0)
                 {
@@ -281,22 +287,33 @@ namespace OFC.GL4.Controls
                     {
                         if (offset >= firstindex && offset < firstindex + displayableitems) // + (FitToItemsHeight ? 0 : 1))
                         {
-                            if (offset == focusindex && Hover)
+                            if (ShowFocusHighlight)
                             {
-                                using (Brush highlight = new SolidBrush(MouseOverBackColor))
-                                    gr.FillRectangle(highlight, itemarea);
+                                if (offset == focusindex)                                  // default is if hovering, show hover box
+                                {
+                                    using (Brush highlight = new SolidBrush(Hover ? MouseOverBackColor : SelectedItemBackColor))
+                                        gr.FillRectangle(highlight, itemarea);
+                                }
                             }
-                            else if (offset == selectedIndex && HighlightSelectedItem)
+                            else
                             {
-                                using (Brush highlight = new SolidBrush(SelectedItemBackColor))
-                                    gr.FillRectangle(highlight, itemarea);
-                            }
+                                if (offset == focusindex && Hover)                                  // default is if hovering, show hover box
+                                {
+                                    using (Brush highlight = new SolidBrush(MouseOverBackColor))
+                                        gr.FillRectangle(highlight, itemarea);
+                                }
+                                else if (offset == selectedIndex && HighlightSelectedItem)          // else if on selected item, show
+                                {
+                                    using (Brush highlight = new SolidBrush(SelectedItemBackColor))
+                                        gr.FillRectangle(highlight, itemarea);
+                                }
 
-                            if (ShowFocusBox && Focused && offset == indextodrawfocusbox)
-                            {
-                                Color b = selectedIndex == offset ? MouseOverBackColor : SelectedItemBackColor;
-                                using (Pen p1 = new Pen(b) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
-                                    gr.DrawRectangle(p1, itemarea);
+                                if (ShowFocusBox && Focused && offset == indextodrawfocusbox)       // if showing focus box, and focused, draw
+                                {
+                                    Color b = selectedIndex == offset ? MouseOverBackColor : SelectedItemBackColor;
+                                    using (Pen p1 = new Pen(b) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                                        gr.DrawRectangle(p1, itemarea);
+                                }
                             }
 
                             if (images != null && offset < images.Count)
@@ -347,7 +364,7 @@ namespace OFC.GL4.Controls
                 scrollbar.Value = firstindex;
                 Invalidate();
             }
-            System.Diagnostics.Debug.WriteLine("Ensure view {0} {1}", focusindex, firstindex);
+            //System.Diagnostics.Debug.WriteLine("Ensure view {0} {1}", focusindex, firstindex);
         }
 
 
@@ -435,7 +452,7 @@ namespace OFC.GL4.Controls
             base.OnKeyDown(e);
             if (!e.Handled)
             {
-                System.Diagnostics.Debug.WriteLine("LB KDown " + Name + " " + e.KeyCode);
+                //System.Diagnostics.Debug.WriteLine("LB KDown " + Name + " " + e.KeyCode);
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
@@ -476,19 +493,25 @@ namespace OFC.GL4.Controls
         private Color selectedItemBackColor { get; set; } = DefaultMouseDownButtonColor;
         private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
         private Color itemSeperatorColor { get; set; } = DefaultLineSeparColor;
+
         private GLScrollBar scrollbar;
         private List<string> items;
         private List<Image> images;
         private int[] itemSeperators { get; set; } = null;     // set to array giving index of each separator
-        private int selectedIndex { get; set; } = -1;
         private int itemheight;
         private int displayableitems;
+
         private int firstindex = 0;
-        private int focusindex = -1;
-        private bool selectedindexset = false;
+        private int selectedIndex { get; set; } = -1;
+        private int focusindex = -1;                // where the focus is at
+
+        private bool selectedindexset = false;      // we just set the selected index, move to show selectedindex, set focus to it
+
         private int dropDownHeightMaximum = 400;
-        private bool showfocusbox = true;
-        private bool highlightSelectedItem = true;
+
+        private bool showfocusbox = true;           // normal focus dotted box
+        private bool showfocushighlight = false;    // focus selection is highlighted, no highlight selected shown
+        private bool highlightSelectedItem = true;  // highlight selected
 
     }
 }
