@@ -808,31 +808,27 @@ namespace OFC.GL4.Controls
             }
         }
 
-        // redraw, into usebmp
-        // usebmp, starts null, first level with bitmap sets it, passed on down tree unless another one has a bitmap
+        // gr = null at start, else gr used by parent
         // bounds = area that our control occupies on the bitmap, in bitmap co-ords. This may be outside of the clip area below if the child is outside of the client area of its parent control
         // cliparea = area that we can draw into, in bitmap co-ords, so we don't exceed the bounds of any parent clip areas above us. clipareas are continually narrowed
-        // gr = graphics to draw into
         // we must be visible to be called. Children may not be visible
 
-        public virtual bool Redraw(Bitmap parentbmp, Rectangle bounds, Rectangle cliparea, Graphics gr, bool forceredraw)
+        public virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
         {
-            Graphics parentgr = null;                           // if we changed level bmp, we need to give the control the opportunity
-            Rectangle parentarea = bounds;                      // to paint thru its passed thru bitmap
+            Rectangle parentarea = bounds;                      // remember the bounds passed
+
+            Graphics gr = parentgr;                             // we normally use the parent gr
 
             if (levelbmp != null)                               // bitmap on this level, use it for itself and its children
             {
-                if ( parentbmp != null )                           //
-                    parentgr = gr;                              // allow parent paint thru
+                cliparea = bounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
 
-                parentbmp = levelbmp;
-
-                cliparea = bounds = new Rectangle(0, 0, parentbmp.Width, parentbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
-
-                gr = Graphics.FromImage(parentbmp);        // get graphics for it
+                gr = Graphics.FromImage(levelbmp);              // get graphics for it
                 gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
                 gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             }
+
+            System.Diagnostics.Debug.Assert(gr != null);        // must normally be set, as bitmaps are created for controls under display
 
             bool redrawn = false;
 
@@ -883,7 +879,7 @@ namespace OFC.GL4.Controls
 
                     Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
 
-                    redrawn |= c.Redraw(parentbmp, childbounds, childcliparea, gr, forceredraw);
+                    redrawn |= c.Redraw(gr, childbounds, childcliparea, forceredraw);   // draw, into current gr
                 }
             }
 
@@ -898,10 +894,10 @@ namespace OFC.GL4.Controls
 
                 gr.ResetTransform();
 
-                if (parentgr != null)      // give us a chance of parent paint thru
+                if (parentgr != null && levelbmp != null)  // have a parent gr, and we have our own level bmp, we may be a scrollable panel
                 {
-                    parentgr.SetClip(parentarea);       // must set the clip area again to address the parent area
-                    PaintParent(parentarea, parentgr);
+                    parentgr.SetClip(parentarea);       // must set the clip area again to address the parent area      
+                    PaintIntoParent(parentarea, parentgr);      // give it a chance to draw our bitmap into the parent bitmap
                 }
             }
 
@@ -959,7 +955,7 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
         }
 
-        protected virtual void PaintParent(Rectangle parentarea, Graphics parentgr) // only called if you've defined a bitmap yourself, 
+        protected virtual void PaintIntoParent(Rectangle parentarea, Graphics parentgr) // only called if you've defined a bitmap yourself, 
         {                                                                        // gives you a chance to paint to the parent bitmap
            // System.Diagnostics.Debug.WriteLine("Paint Into parent {0} to {1}", Name, parentarea);
         }

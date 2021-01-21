@@ -124,7 +124,7 @@ namespace OFC.GL4.Controls
                     if (c.Visible)
                     {
                         //System.Diagnostics.Debug.WriteLine("Draw " + c.Name);
-                        bool redrawn = c.Redraw(null, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0), null, false);      // see if redraw done
+                        bool redrawn = c.Redraw(null, new Rectangle(0, 0, 0, 0), new Rectangle(0, 0, 0, 0), false);      // see if redraw done
 
                         if (redrawn)
                         {

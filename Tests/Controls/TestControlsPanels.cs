@@ -181,7 +181,7 @@ namespace TestOpenTk
                 bool testvsp2 = true;
                 bool testtabcontrol = true;
 
-                testpanel = testgroupbox = testtable = testflow = testscrollbar = testvsp1 = testvsp2 = testtabcontrol = false;
+               // testpanel = testgroupbox = testtable = testflow = testscrollbar = testvsp1 = testvsp2 = testtabcontrol = false;
 
                 testvsp1 = true;
 
@@ -255,13 +255,16 @@ namespace TestOpenTk
 
                     if (testvsp1)
                     {
+                        GLPanel p1 = new GLPanel("P3", new Rectangle(200,600,10,190));
+                        pform.Add(p1);
+
                         GLVerticalScrollPanel sp1 = new GLVerticalScrollPanel("VSP1", new Rectangle(5, 600, 190,190));
                         pform.Add(sp1);
                         GLImage sp1i1 = new GLImage("SP1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                         sp1.Add(sp1i1);
                         GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
                         sp1.Add(sp1i2);
-                     //   sp1.ScrollPos = 100;
+                        sp1.ScrollPos = 100;
                     }
 
                     if (testvsp2)

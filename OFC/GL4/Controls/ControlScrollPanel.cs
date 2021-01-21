@@ -72,6 +72,20 @@ namespace OFC.GL4.Controls
             }
         }
 
+        // override back draw to draw the whole scrolable area 
+        protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
+        {
+            base.DrawBack(new Rectangle(0, 0, LevelBitmap.Width, LevelBitmap.Height), gr, bc, bcgradientalt, bcgradientdir);
+        }
+
+        // called because we have a bitmap.  We need to draw this bitmap, which we drawn our children into, into the parent bitmap
+        protected override void PaintIntoParent(Rectangle parentarea, Graphics parentgr)
+        {
+            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
+
+            parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
+        }
+
         public override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed
         {
         }
@@ -87,14 +101,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        // only will be called if we have a bitmap defined..
 
-        protected override void PaintParent(Rectangle parentarea, Graphics parentgr)
-        {
-            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
-
-            parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
-        }
     }
 }
 
