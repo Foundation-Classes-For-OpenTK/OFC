@@ -302,7 +302,7 @@ namespace OFC.GL4.Controls
                 MoveThumb(-smallchange);
         }
 
-        public override void PerformRecursiveLayout()       // do this in recursive layout, better than Layout as it gets called by an update to any parameters
+        protected override void PerformRecursiveLayout()       // do this in recursive layout, better than Layout as it gets called by an update to any parameters
         {
             base.PerformRecursiveLayout();
 

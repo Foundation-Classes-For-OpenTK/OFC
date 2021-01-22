@@ -111,7 +111,7 @@ namespace OFC.GL4.Controls
             Invalidate();
         }
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             Margin m = text.HasChars() ? new Margin(Margin.Left, TitleBarHeight + FormMargins * 2, Margin.Right, Margin.Bottom) : 
                             new Margin(Margin.Left, FormMargins, Margin.Right, Margin.Bottom);

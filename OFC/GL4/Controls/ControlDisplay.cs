@@ -91,7 +91,7 @@ namespace OFC.GL4.Controls
             base.Add(other,atback);
         }
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
             UpdateVertexTexturePositions(true);

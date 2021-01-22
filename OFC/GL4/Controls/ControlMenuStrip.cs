@@ -32,7 +32,7 @@ namespace OFC.GL4.Controls
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }    // Set Color.Empty for no override
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
 
-        public bool AutoOpenItems { get; set; } = true;     // open after a delay
+        public int AutoOpenDelay { get; set; } = 250;     // open after a delay, 0 for off
 
         public GLMenuStrip(string name, Rectangle location) : base(name, location)
         {
@@ -119,7 +119,7 @@ namespace OFC.GL4.Controls
                     submenu.MouseOverBackColor = this.MouseOverBackColor;
                     submenu.FlowDirection = ControlFlowDirection.Down;
                     submenu.AutoSize = true;
-                    submenu.AutoOpenItems = AutoOpenItems;
+                    submenu.AutoOpenDelay = AutoOpenDelay;
                     submenu.parentmenu = this;
                     submenu.TopMost = true;
 
@@ -399,8 +399,8 @@ namespace OFC.GL4.Controls
             SetSelected(-1);
 
             GLMenuItem mi = ControlsIZ[mousehovered] as GLMenuItem; // if its a menu item, lets do a timer to autoopen
-            if (mi != null && AutoOpenItems)
-                timer.Start(250);
+            if (mi != null && AutoOpenDelay>0)
+                timer.Start(AutoOpenDelay);
         }
 
         public void MenuItemLeave(object c, GLMouseEventArgs e)

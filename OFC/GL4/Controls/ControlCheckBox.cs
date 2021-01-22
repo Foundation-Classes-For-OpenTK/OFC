@@ -65,7 +65,7 @@ namespace OFC.GL4.Controls
             base.SizeControl(parentsize);
 
             if (AutoSize)
-                CheckBoxAutoSize(parentsize);
+                CheckBoxAutoSize();
         }
 
         protected override void Paint(Graphics gr)

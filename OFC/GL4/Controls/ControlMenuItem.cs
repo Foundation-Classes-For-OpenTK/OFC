@@ -44,7 +44,7 @@ namespace OFC.GL4.Controls
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                ButtonAutoSize(parentsize, new Size(IconTickAreaWidth,0));
+                ButtonAutoSize(new Size(IconTickAreaWidth,0));
             }
         }
 

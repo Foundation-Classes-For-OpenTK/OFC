@@ -75,7 +75,7 @@ namespace OFC.GL4.Controls
             scrollpanel.ScrollPos = scrollbar.Value;
         }
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             if (scrollbar != null)
                 scrollbar.Width = ScrollBarWidth;
@@ -85,7 +85,7 @@ namespace OFC.GL4.Controls
             if ( scrollbar != null && scrollpanel != null)
             {
                 scrollbar.Maximum = scrollpanel.ScrollRange + scrollbar.LargeChange;
-                System.Diagnostics.Debug.WriteLine("Scroll panel range " + scrollbar.Maximum);
+                //System.Diagnostics.Debug.WriteLine("Scroll panel range " + scrollbar.Maximum);
             }
         }
     }

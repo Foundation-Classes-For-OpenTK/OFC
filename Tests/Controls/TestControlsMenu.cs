@@ -164,7 +164,7 @@ namespace TestOpenTk
                     if (true)
                     {
                         GLMenuStrip menubar = new GLMenuStrip("Menubar", new Rectangle(0, 0, 500, 24));
-                        //menubar.AutoOpenItems = false;
+                        menubar.AutoOpenDelay = 1000;
                         menubar.Font = new Font("Euro Caps", 12);
                         menubar.Dock = DockingType.Top;
 

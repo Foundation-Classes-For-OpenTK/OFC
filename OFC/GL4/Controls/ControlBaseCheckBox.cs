@@ -48,7 +48,7 @@ namespace OFC.GL4.Controls
         {
         }
 
-        protected void CheckBoxAutoSize(Size parentsize)        // autosize for a check box display type
+        protected void CheckBoxAutoSize()        // autosize for a check box display type
         {
             SizeF size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
             size = new SizeF(Math.Max(size.Width, 16), Math.Max(size.Height, 16));

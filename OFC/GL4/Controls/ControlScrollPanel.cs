@@ -38,7 +38,7 @@ namespace OFC.GL4.Controls
         // we layout the children within that area.
         // but if we have areas outside that, the bitmap is expanded to cover it
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();               // layout the children
 
@@ -55,13 +55,13 @@ namespace OFC.GL4.Controls
                 {
                     if (LevelBitmap == null )
                     {
-                        System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
+                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
                         MakeLevelBitmap(Width, childheight);
                     }
                     else if ( childheight != LevelBitmap.Height || LevelBitmap.Width != Width) // if height is different, or width is different
                     {
                         MakeLevelBitmap(Width, childheight);
-                        System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
+                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
                     }
                 }
             }
@@ -81,12 +81,12 @@ namespace OFC.GL4.Controls
         // called because we have a bitmap.  We need to draw this bitmap, which we drawn our children into, into the parent bitmap
         protected override void PaintIntoParent(Rectangle parentarea, Graphics parentgr)
         {
-            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
+          //  System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
 
             parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
         }
 
-        public override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed
+        protected override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed
         {
         }
 
@@ -96,7 +96,7 @@ namespace OFC.GL4.Controls
             {
                 int maxsp = LevelBitmap.Height - Height;
                 scrollpos = Math.Max(0, Math.Min(value, maxsp));
-                System.Diagnostics.Debug.WriteLine("ScrollPanel scrolled to " + scrollpos + " maxsp " + maxsp);
+                //System.Diagnostics.Debug.WriteLine("ScrollPanel scrolled to " + scrollpos + " maxsp " + maxsp);
                 Invalidate();
             }
         }

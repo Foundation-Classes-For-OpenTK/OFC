@@ -110,7 +110,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        protected void ButtonAutoSize(Size parentsize, Size extra )     // call if autosize as button
+        protected void ButtonAutoSize(Size extra )     // call if autosize as button
         {
             SizeF size = new Size(0, 0);
             if (Text.HasChars())

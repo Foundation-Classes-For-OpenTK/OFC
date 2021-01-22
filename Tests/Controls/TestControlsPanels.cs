@@ -180,13 +180,9 @@ namespace TestOpenTk
                 bool testvsp1 = true;
                 bool testvsp2 = true;
                 bool testtabcontrol = true;
-
-               // testpanel = testgroupbox = testtable = testflow = testscrollbar = testvsp1 = testvsp2 = testtabcontrol = false;
-
-                testvsp1 = true;
-
-                bool testform2 = false;
                 bool testflowlayout = true;
+
+             //  testpanel = testgroupbox = testtable = testflow = testscrollbar = testvsp1 = testvsp2 = testtabcontrol = false;
 
                 mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
@@ -195,6 +191,7 @@ namespace TestOpenTk
                 displaycontrol.Name = "displaycontrol";
                 displaycontrol.SuspendLayout();
 
+                //                testform1 = false;
                 if (testform1)
                 {
                     GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 900));
@@ -208,7 +205,6 @@ namespace TestOpenTk
                     if (testpanel)
                     {
                         GLPanel p1 = new GLPanel("P3", new Size(150, 150), DockingType.TopLeft, 0);
-                        p1.DockingMargin = new Margin(20, 20, 10, 20);
                         pform.Add(p1);
                     }
 
@@ -237,20 +233,20 @@ namespace TestOpenTk
 
                     if (testflow)
                     {
-                        GLFlowLayoutPanel ptable = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190,190));
-                        ptable.SuspendLayout();
-                        ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                        ptable.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 0);
-                        pform.Add(ptable);
+                        GLFlowLayoutPanel pflow1 = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190,190));
+                        pflow1.SuspendLayout();
+                        pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                        pflow1.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 0);
+                        pform.Add(pflow1);
                         GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
-                        ptable.Add(pti1);
+                        pflow1.Add(pti1);
                         GLImage pti2 = new GLImage("PTI2", new Rectangle(100, 0, 32, 32), Properties.Resources.dotted2);
-                        ptable.Add(pti2);
+                        pflow1.Add(pti2);
                         GLImage pti3 = new GLImage("PTI3", new Rectangle(100, 0, 48, 48), Properties.Resources.ImportSphere);
-                        ptable.Add(pti3);
+                        pflow1.Add(pti3);
                         GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), Properties.Resources.Logo8bpp);
-                        ptable.Add(pti4);
-                        ptable.ResumeLayout();
+                        pflow1.Add(pti4);
+                        pflow1.ResumeLayout();
                     }
 
                     if (testvsp1)
@@ -327,48 +323,32 @@ namespace TestOpenTk
                         psb.Add(sb2);
                     }
 
-                    pform.ResumeLayout();
-                }
-
-                if (testform2)
-                {
-                    GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 900, 800));
-                    pform2.BackColor = Color.FromArgb(200, Color.Red);
-                    pform2.Font = new Font("Ms sans serif", 12);
-                    pform2.SuspendLayout();
-                    pform2.BackColorGradientDir = 90;
-                    pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
-                    displaycontrol.Add(pform2);
-
-                    if (testflowlayout)
+                    if (testflowlayout )
                     {
-                        GLFlowLayoutPanel ptable = new GLFlowLayoutPanel("Flowlayout2", DockingType.Top, 0);
-                        ptable.AutoSize = true;
-                        ptable.SuspendLayout();
-                        ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                        ptable.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 5);
-                        pform2.Add(ptable);
+                        GLFlowLayoutPanel pflow2;
+                        pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(300,600,300,300));
+                        pflow2.AutoSize = true;
+                        pflow2.SuspendLayout();
+                        pflow2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                        pflow2.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 5);
+                        pform.Add(pflow2);
 
-                        GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
-                        ptable.Add(pti1);
+                        GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
+                        pflow2.Add(pti1);
                         GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
-                        ptable.Add(pti2);
+                        pflow2.Add(pti2);
                         GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
-                        ptable.Add(pti3);
+                        pflow2.Add(pti3);
 
-                        for (int i = 0; i < 15; i++)
+                        for (int i = 0; i < 5; i++)
                         {
                             GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
-                            ptable.Add(pti4);
+                            pflow2.Add(pti4);
                         }
                     }
 
-                    pform2.ResumeLayout();
+                    pform.ResumeLayout();
                 }
-
-
-
-
 
 
                 displaycontrol.ResumeLayout();

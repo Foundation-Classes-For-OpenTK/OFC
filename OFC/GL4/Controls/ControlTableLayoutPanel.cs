@@ -48,7 +48,7 @@ namespace OFC.GL4.Controls
         // Sizing has been recursively done for all children
         // now we are laying out from top down
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             bool okay = true;
 
@@ -98,17 +98,17 @@ namespace OFC.GL4.Controls
 
                             foreach (GLBaseControl c in clist)
                             {
-                                System.Diagnostics.Debug.WriteLine("Table layout " + c.Name + " " + cellarea);
+                              //  System.Diagnostics.Debug.WriteLine("Table layout " + c.Name + " " + cellarea);
 
                                 if (c.Dock != DockingType.None)        // if docking,
                                     c.Layout(ref cellarea);     // allow docking to work in the cell area, it uses the area to set position
                                 else
                                 {
-                                    System.Diagnostics.Debug.WriteLine("Top Left layout " + c.Name + " " + cellarea);
+                                 //   System.Diagnostics.Debug.WriteLine("Top Left layout " + c.Name + " " + cellarea);
                                     c.SetNI(location:cellarea.Location, size:cellarea.Size, clipsizetobounds:true);
                                 }
 
-                                c.PerformRecursiveLayout();
+                                c.CallPerformRecursiveLayout();
                             }
                         }
                     }

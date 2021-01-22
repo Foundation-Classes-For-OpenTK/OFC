@@ -102,7 +102,7 @@ namespace OFC.GL4.Controls
 
         #region Layout paint
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
 

@@ -102,7 +102,6 @@ namespace OFC.GL4.Controls
 
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; InvalidateLayoutParent(); } } }
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
-        public Margin DockingMargin { get { return dockingmargin; } set { if (dockingmargin != value) { dockingmargin = value; InvalidateLayout(); } } }
 
         // Autosize
 
@@ -361,21 +360,21 @@ namespace OFC.GL4.Controls
 
         public void PerformLayout()             // perform layout on all child containers inside us. Does not call Layout on ourselves
         {
-            if (suspendLayoutSet)
+            if (suspendLayoutCount>0)
             {
                 needLayout = true;
                 //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
             }
             else
             {
-                PerformRecursiveSize(Parent?.ClientSize ?? ClientSize);         // we recusively size, from lowest child up
-                PerformRecursiveLayout();       // and we layout, top down
+                PerformRecursiveSize(Parent?.ClientSize ?? ClientSize);         // we recusively size
+                PerformRecursiveLayout();       // and we layout, recursively
             }
         }
 
         public void SuspendLayout()
         {
-            suspendLayoutSet = true;
+            suspendLayoutCount++;
             //System.Diagnostics.Debug.WriteLine("Suspend layout on " + Name);
         }
 
@@ -383,12 +382,19 @@ namespace OFC.GL4.Controls
         {
             //if ( suspendLayoutSet ) System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
 
-            suspendLayoutSet = false;
-            if (needLayout)
+            if (suspendLayoutCount == 0 || --suspendLayoutCount == 0)       // if at 0, or counts to 0
             {
-                //System.Diagnostics.Debug.WriteLine("Required layout " + Name);
-                PerformLayout();
+                if (needLayout)
+                {
+                    //System.Diagnostics.Debug.WriteLine("Required layout " + Name);
+                    PerformLayout();
+                }
             }
+        }
+
+        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly
+        {
+            PerformRecursiveLayout();
         }
 
         public virtual bool AddToDesktop(GLBaseControl child, bool atback = false)
@@ -649,37 +655,41 @@ namespace OFC.GL4.Controls
 
         #region Overridables
 
-        // first,perform recursive sizing. do children first, then do us
+        // first,perform recursive sizing. 
         // pass in the parent size of client rectangle to each size to give them a hint what they can autosize into
 
         protected virtual void PerformRecursiveSize(Size parentclientrect)   
         {
-            int width = (Dock == DockingType.Top || Dock == DockingType.Bottom) ? (parentclientrect.Width-DockingMargin.TotalWidth) : ClientWidth;
-            int height = (Dock == DockingType.Left || Dock == DockingType.Right) ? (parentclientrect.Height-DockingMargin.TotalHeight) : ClientHeight;
-            Size estsize = new Size(width, height);
+            //System.Diagnostics.Debug.WriteLine("Size " + Name + " against " + parentclientrect);
+            SizeControl(parentclientrect);              // size ourselves against the parent
 
-            //System.Diagnostics.Debug.WriteLine("Size " + Name + " Estsize " + estsize);
             foreach (var c in childrenz) // in Z order
             {
                 if (c.Visible)      // invisible children don't layout
                 {
-                    c.PerformRecursiveSize(estsize);
+                    c.PerformRecursiveSize(ClientSize);
                 }
             }
 
-            SizeControl(estsize);              // size ourselves after children sized
+            SizeControlPostChild(parentclientrect);     // if you care what size your children is, do it here
         }
 
-        // override to auto size. Only use the NI functions to change size.  size is size of parent before layout occurs, but takes into account docking.
-
-        protected virtual void SizeControl(Size parentclientrect)        
+        // override to auto size before children. 
+        // Only use the NI functions to change size. 
+        protected virtual void SizeControl(Size parentclientrect)
         {
-            //System.Diagnostics.Debug.WriteLine("..Size " + Name + " area est is " + parentclientrect);
+            //System.Diagnostics.Debug.WriteLine("Size " + Name + " area est is " + parentclientrect);
+        }
+
+        // override to auto size after the children sized themselves.
+        protected virtual void SizeControlPostChild(Size parentclientrect)
+        {
+            //System.Diagnostics.Debug.WriteLine("Post Size " + Name + " area est is " + parentclientrect);
         }
 
         // second, layout after sizing, layout children.  We are layedout by parent, and lay out our children inside our client rectangle
 
-        public virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
+        protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
             //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
             Rectangle area = ClientRectangle;
@@ -697,7 +707,12 @@ namespace OFC.GL4.Controls
 
             //if (suspendLayoutSet)  System.Diagnostics.Debug.WriteLine("Removing suspend on " + Name);
 
-            suspendLayoutSet = false;   // we can't be suspended
+            ClearLayoutFlags();
+        }
+
+        public void ClearLayoutFlags()
+        { 
+            suspendLayoutCount = 0;   // we can't be suspended
             needLayout = false;     // we have layed out
         }
 
@@ -798,7 +813,7 @@ namespace OFC.GL4.Controls
 
         // Override if required if you run a bitmap. Standard actions is to replace it if width/height is different.
 
-        public virtual void CheckBitmapAfterLayout()
+        protected virtual void CheckBitmapAfterLayout()
         {
             if (levelbmp != null && ( levelbmp.Width != Width || levelbmp.Height != Height ))
             {
@@ -1209,7 +1224,7 @@ namespace OFC.GL4.Controls
         private Font font = null;
         private Rectangle window;       // total area owned, in parent co-ords
         private bool needLayout { get; set; } = false;        // need a layout after suspend layout was called
-        private bool suspendLayoutSet { get; set; } = false;        // suspend layout is on
+        private int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
         private bool enabled { get; set; } = true;
         private bool visible { get; set; } = true;
         private DockingType docktype { get; set; } = DockingType.None;

@@ -52,7 +52,7 @@ namespace OFC.GL4.Controls
         const int botmargin = 4;
         const int sidemargin = 8;
 
-        private int CalcRectangles()
+        private int CalcRectangles()            // calculate all tab rectangles and populate list, return max height
         {
             if (Font == null)
                 return botmargin;
@@ -93,19 +93,21 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             int tabuse = CalcRectangles();
 
-            foreach (var c in ControlsZ)        // all tab controls even if invisible
+            foreach (var c in ControlsZ)                // all tab controls even if invisible
             {
                 Rectangle area = ClientRectangle;       // recalc every time since layout changes it
                 area.Y += tabuse;
                 area.Height -= tabuse;
                 //System.Diagnostics.Debug.WriteLine("Dock tab {0} to {1}", c.Name, area);
                 c.Layout(ref area);
-                c.PerformRecursiveLayout();
+                c.CallPerformRecursiveLayout();
             }
+
+            ClearLayoutFlags();
         }
 
         // called after the background of the panel has been drawn - so it will be clear to write.

@@ -201,7 +201,7 @@ namespace OFC.GL4.Controls
         }
 
 
-        public override void PerformRecursiveLayout()
+        protected override void PerformRecursiveLayout()
         {
             if (scrollbar != null)  
                 scrollbar.Width = ScrollBarWidth;       // set width 

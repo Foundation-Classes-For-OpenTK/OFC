@@ -53,7 +53,7 @@ namespace OFC.GL4.Controls
         {
             base.SizeControl(parentsize);
             if (AutoSize)
-                ButtonAutoSize(parentsize, new Size(0,0));
+                ButtonAutoSize(new Size(0,0));
         }
 
         protected override void Paint(Graphics gr)

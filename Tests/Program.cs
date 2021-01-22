@@ -21,28 +21,27 @@ namespace TestOpenTk
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
 
-                string arg1 = args.Next();
-
-                Type t = Type.GetType("TestOpenTk." + arg1, false, true);
-
-                if (t == null)
-                    t = Type.GetType("TestOpenTk.Test" + arg1, false, true);
-
-                if (t == null)
-                    t = Type.GetType("TestOpenTk.Shader" + arg1, false, true);
-
-                if ( t == null )
-                    t = Type.GetType("TestOpenTk.ShaderTest" + arg1,false,true);
-
-                if (t != null)
+                while (args.Left > 0)
                 {
-                    Application.Run((Form)Activator.CreateInstance(t));
-                }
-                else
-                {
-                    Application.Run(new TestMain());
-                }
+                    string arg1 = args.Next();
 
+                    Type t = Type.GetType("TestOpenTk." + arg1, false, true);
+
+                    if (t == null)
+                        t = Type.GetType("TestOpenTk.Test" + arg1, false, true);
+
+                    if (t == null)
+                        t = Type.GetType("TestOpenTk.Shader" + arg1, false, true);
+
+                    if (t == null)
+                        t = Type.GetType("TestOpenTk.ShaderTest" + arg1, false, true);
+
+                    if (t != null)
+                    {
+                        Application.Run((Form)Activator.CreateInstance(t));
+                        break;
+                    }
+                }
             }
         }
     }
