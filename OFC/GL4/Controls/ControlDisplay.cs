@@ -121,7 +121,7 @@ namespace OFC.GL4.Controls
 
             if (ControlsIZ.Count > 0)       // only action if children present
             {
-                bool altposmove = false;
+                bool altscalechanged = false;
 
                 foreach (var c in ControlsIZ)
                 {
@@ -136,15 +136,15 @@ namespace OFC.GL4.Controls
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
 
-                        if ( c.AltPosChanged )
+                        if ( c.AltScaleChanged )
                         {
-                            c.AltPosChanged = false;
-                            altposmove = true;
+                            c.AltScaleChanged = false;
+                            altscalechanged = true;
                         }
                     }
                 }
 
-                if (altposmove)
+                if (altscalechanged)
                     UpdateVertexTexturePositions(false);        // we need to update..
 
                 GLScissors.SetToScreenCoords(0, MatrixCalc);
@@ -233,7 +233,7 @@ namespace OFC.GL4.Controls
                     {
                         float[] a;
 
-                        if (c.AlternatePos == null)
+                        if (c.ScaleWindow == null)
                         {
                             a = new float[] {   c.Left, c.Top, z, 1,
                                                         c.Left, c.Bottom , z, 1,
@@ -243,10 +243,12 @@ namespace OFC.GL4.Controls
                         }
                         else
                         {
-                            a = new float[] { c.AlternatePos.Value.Left, c.AlternatePos.Value.Top, z, 1,
-                                              c.AlternatePos.Value.Left, c.AlternatePos.Value.Bottom, z, 1,
-                                              c.AlternatePos.Value.Right, c.AlternatePos.Value.Top, z, 1,
-                                              c.AlternatePos.Value.Right, c.AlternatePos.Value.Bottom, z, 1
+                            float right = c.Left + c.Width * c.ScaleWindow.Value.Width;
+                            float bot = c.Top + c.Height * c.ScaleWindow.Value.Height;
+                            a = new float[] { c.Left, c.Top, z, 1,
+                                              c.Left, bot, z, 1,
+                                              right, c.Top, z, 1,
+                                              right, bot, z, 1
                             };
                         }
 

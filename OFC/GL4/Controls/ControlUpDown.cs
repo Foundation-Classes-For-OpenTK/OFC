@@ -48,6 +48,7 @@ namespace OFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             Rectangle area = ClientRectangle;
+
             if (ShowFocusBox)
             {
                 if (Focused)
@@ -60,9 +61,7 @@ namespace OFC.GL4.Controls
                 area.Inflate(-1, -1);
             }
 
-            Point mrel = Point.Empty;// TBD CurrentMousePosition(true);        // get this relative to client rectangle
             int halfway = area.Height / 2;
-            bool inbottomhalf = mrel.Y > halfway;
 
             Rectangle drawupper = new Rectangle(area.Left , area.Top, area.Width, halfway-1);  
             Rectangle drawlower = new Rectangle(area.Left , area.Top + halfway, area.Width, halfway-1);  
@@ -83,7 +82,8 @@ namespace OFC.GL4.Controls
                 bool mbd = MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left || amitimer.Running;
                 Color back = mbd ? MouseDownBackColor : MouseOverBackColor;
                 Color fore = mbd ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor;
-                if (amitimer.Running ? (saveddir==-1) : inbottomhalf)           // if ami, we use savedir, else mouse pos
+
+                if (amitimer.Running ? (repeatdir==-1) : mouseoverbottom)           // if ami, we use savedir, else mouse pos
                 {
                     pcdown = back;
                     pencolordown = fore;
@@ -128,6 +128,9 @@ namespace OFC.GL4.Controls
             }
         }
 
+        // change how it works.. looking at mouse pos during paint is bad
+
+
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -138,10 +141,16 @@ namespace OFC.GL4.Controls
                 OnClicked(dir);
                 if (!repeattimer.Running)
                 {
-                    saveddir = dir;
+                    repeatdir = dir;
                     repeattimer.Start(UpDownInitialDelay, UpDownRepeatRate);
                 }
             }
+        }
+
+        protected override void OnMouseMove(GLMouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            mouseoverbottom = (e.Location.Y >= Height / 2);
         }
 
         protected override void OnMouseUp(GLMouseEventArgs e)
@@ -157,7 +166,7 @@ namespace OFC.GL4.Controls
 
         private void RepeatClick(Timers.Timer t, long timeout)
         {
-            OnClicked(saveddir);
+            OnClicked(repeatdir);
         }
 
         private void AmiTick(Timers.Timer t, long timeout)
@@ -175,12 +184,12 @@ namespace OFC.GL4.Controls
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
-                    saveddir = 1;
+                    repeatdir = 1;
                     OnClicked(1);
                 }
                 else if (e.KeyCode == System.Windows.Forms.Keys.Down)
                 {
-                    saveddir = -1;
+                    repeatdir = -1;
                     OnClicked(-1);
                 }
 
@@ -191,11 +200,12 @@ namespace OFC.GL4.Controls
         }
 
 
-        enum MouseOver { MouseOverUp, MouseOverDown, MouseOverNone };
+
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
         private OFC.Timers.Timer repeattimer = new Timers.Timer();
         private OFC.Timers.Timer amitimer = new Timers.Timer();
-        private int saveddir;
+        private int repeatdir;
+        private bool mouseoverbottom;
     }
 }
 

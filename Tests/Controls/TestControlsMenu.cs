@@ -159,6 +159,7 @@ namespace TestOpenTk
                     pform.SuspendLayout();
                     pform.BackColorGradientDir = 90;
                     pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
+                    pform.ScaleWindow = new SizeF(1.25f, 1.25f);
                     displaycontrol.Add(pform);
 
                     if (true)

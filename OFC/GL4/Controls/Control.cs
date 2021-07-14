@@ -39,10 +39,10 @@ namespace OFC.GL4.Controls
         public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y, window.Width, window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
 
-        // for controls with bitmaps, we can throw them on the screen in another position than their described co-ords, for animation effects
-        public RectangleF? AlternatePos { get { return altpos; } set { altpos = value; AltPosChanged = true; FindDisplay()?.ReRender(); } }
-        public SizeF AlternateScale() { return new SizeF(Width / AlternatePos.Value.Width, Height / AlternatePos.Value.Height); }       // scaling between the two
-        public bool AltPosChanged { get; set; } = false;
+        // for controls with bitmaps, we can throw them on the screen scaled
+        public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; AltScaleChanged = true; FindDisplay()?.ReRender(); } }
+        private SizeF? altscale = null;
+        public bool AltScaleChanged { get; set; } = false;
 
         public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
@@ -466,23 +466,32 @@ namespace OFC.GL4.Controls
 
         public GLBaseControl FindControlOver(Point coords, out Point offset)
         {
-            //  System.Diagnostics.Debug.WriteLine("Find " + Name + " "  + relativecoords + " in " + Bounds + " " + ClientLeftMargin + " " + ClientTopMargin);
+            int wwidth = Width;
+            int wheight = Height;
 
-            // if inside the alternate pos bounds
-            if (AlternatePos != null && coords.X >= AlternatePos.Value.Left && coords.X <= AlternatePos.Value.Right && coords.Y >= AlternatePos.Value.Top && coords.Y <= AlternatePos.Value.Bottom)
+            if ( ScaleWindow != null)
             {
-                SizeF scale = AlternateScale();
-                coords = new Point((int)((coords.X - AlternatePos.Value.Left) * scale.Width), (int)((coords.Y - AlternatePos.Value.Top) * scale.Height));
+                wwidth = (int)(wwidth * ScaleWindow.Value.Width);
+                wheight = (int)(wheight * ScaleWindow.Value.Height);
             }
-            // else use the normal co-ords, is it outside?
-            else if (coords.X < Left || coords.X > Right || coords.Y < Top || coords.Y > Bottom)       // if outside our bounds, not found
+
+            if (coords.X < Left || coords.X >= Left+wwidth || coords.Y < Top || coords.Y >= Top+wheight)       // if outside our bounds, not found
             {
                 offset = Point.Empty;
                 return null;
             }
             else
             {
+                System.Diagnostics.Debug.WriteLine($"Find {Name} {coords} {ScaleWindow} {wwidth} {wheight}");
+
                 coords = new Point(coords.X - Left, coords.Y - Top);            // coords translated to inside the bounds of this control
+                System.Diagnostics.Debug.WriteLine($"-> {coords} ");
+                
+                if ( ScaleWindow != null )
+                {
+                    coords = new Point((int)(coords.X / ScaleWindow.Value.Width), (int)(coords.Y / ScaleWindow.Value.Height));
+                    System.Diagnostics.Debug.WriteLine($"-> {coords} ");
+                }
             }
 
             foreach (GLBaseControl c in childrenz)       // in Z order
@@ -511,42 +520,33 @@ namespace OFC.GL4.Controls
                 pin.Y += ClientTopMargin;
             }
 
-            GLBaseControl c = this;
-
             PointF p = pin;
+
+            GLBaseControl c = this;
 
             while (c != null)
             {
-                if (c.AlternatePos != null)
+                if (c.ScaleWindow != null)
                 {
-                    SizeF scale = c.AlternateScale();
-                    System.Diagnostics.Debug.WriteLine($"{c.Name} {p} Scale {scale} Alt {c.AlternatePos.Value.Left} {c.AlternatePos.Value.Top}");
-
-                    p.X = p.X / scale.Width;         // so if width = 1000, alt width = 500, scalex = 2, half scale
-                    p.Y = p.Y / scale.Height;
-
-                    p.X += c.AlternatePos.Value.Left;
-                    p.Y += c.AlternatePos.Value.Top;
+                    p.X *= c.ScaleWindow.Value.Width;         // so if width = 1000, alt width = 500, scalex = 2, half scale
+                    p.Y *= c.ScaleWindow.Value.Height;
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"{c.Name} {p} {c.Left} {c.Top}");
-                    p.X += c.Left;
-                    p.Y += c.Top;
-                }
+
+                p.X += c.Left;
+                p.Y += c.Top;
 
                 c = c.Parent;
 
                 if ( c != null )
                 {
-                    p.X += c.ClientLeftMargin;
+                    p.X += c.ClientLeftMargin;      // these will be scaled on the above scalar when it loops around
                     p.Y += c.ClientTopMargin;
                 }
 
                 System.Diagnostics.Debug.WriteLine($" -> {p} ");
             }
 
-            return new Point((int)p.X,(int)p.Y);
+            return new Point((int)p.X, (int)p.Y);
         }
 
         // what is the scale between this control and the desktop
@@ -556,29 +556,14 @@ namespace OFC.GL4.Controls
             GLBaseControl p = this;
             while (p != null)
             {
-                if (p.AlternatePos != null)
+                if (p.ScaleWindow != null)
                 {
-                    var m = p.AlternateScale();
-                    scale = new SizeF(scale.Width * m.Width, scale.Height * m.Height);
+                    scale = new SizeF(scale.Width * p.ScaleWindow.Value.Width, scale.Height * p.ScaleWindow.Value.Height);
                 }
                 p = p.Parent;
             }
             return scale;
         }
-        //public Point ScreenCoords1(Point p)
-        //{
-        //    p = DisplayCoords(p);
-        //    var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
-        //    return new Point(p.X + sp.Left, p.Y + sp.Top);
-        //}
-
-        //public Point CurrentMousePosition()              // relative to client rectangle or to bounds
-        //{
-        //    Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
-        //    Point p = ScreenCoords();
-        //    return new Point(mp.X - p.X, mp.Y - p.Y);
-        //}
-
 
         // Set multiple items at once.  Default is to invalidate it
         public void Set(Point? location = null,
@@ -1293,7 +1278,6 @@ namespace OFC.GL4.Controls
         private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
         private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
         private bool topMost { get; set; } = false;              // if set, always force to top
-        private RectangleF? altpos = null;              // alternate pos
 
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
         private GLBaseControl creator { get; set; } = null;       // its creator, normally its parent.
@@ -1611,7 +1595,7 @@ namespace OFC.GL4.Controls
             if (pos == null)
             {
                 var found = FindControlOver(e.ScreenCoord, out reloffset);      // if we have not computed it, compute again
-                System.Diagnostics.Debug.Assert(cur == found);
+                //System.Diagnostics.Debug.Assert(cur == found);
             }
             else
                 reloffset = pos.Value;

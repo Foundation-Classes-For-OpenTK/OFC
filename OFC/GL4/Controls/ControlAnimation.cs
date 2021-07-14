@@ -125,34 +125,34 @@ namespace OFC.GL4.Controls
         }
     }
 
-    public class AnimateAlternatePos : AnimateTimeBase
-    {
-        public RectangleF Target { get; set; }
-        private RectangleF begin;
+    //public class AnimateAlternatePos : AnimateTimeBase
+    //{
+    //    public RectangleF Target { get; set; }
+    //    private RectangleF begin;
 
-        public AnimateAlternatePos(ulong starttime, ulong endtime, RectangleF target) : base(starttime, endtime)
-        {
-            Target = target ;
-        }
+    //    public AnimateAlternatePos(ulong starttime, ulong endtime, RectangleF target) : base(starttime, endtime)
+    //    {
+    //        Target = target ;
+    //    }
 
-        protected override void Start(GLBaseControl cs)
-        {
-            begin = cs.AlternatePos != null ? cs.AlternatePos.Value : new RectangleF(cs.Bounds.Left,cs.Bounds.Top,cs.Bounds.Width,cs.Bounds.Height);
-        }
+    //    protected override void Start(GLBaseControl cs)
+    //    {
+    //        begin = cs.AlternatePos != null ? cs.AlternatePos.Value : new RectangleF(cs.Bounds.Left,cs.Bounds.Top,cs.Bounds.Width,cs.Bounds.Height);
+    //    }
 
-        protected override void Middle(GLBaseControl cs, double delta)
-        {
-            var s = new RectangleF((float)(begin.Left + (Target.Left - begin.Left) * delta), (float)(begin.Top + (Target.Top - begin.Top) * delta),
-                                    (float)(begin.Width + (Target.Width - begin.Width) * delta),(float)(begin.Height + (Target.Height - begin.Height) * delta));
+    //    protected override void Middle(GLBaseControl cs, double delta)
+    //    {
+    //        var s = new RectangleF((float)(begin.Left + (Target.Left - begin.Left) * delta), (float)(begin.Top + (Target.Top - begin.Top) * delta),
+    //                                (float)(begin.Width + (Target.Width - begin.Width) * delta),(float)(begin.Height + (Target.Height - begin.Height) * delta));
 
-            System.Diagnostics.Debug.WriteLine("Animate {0} to altpos {1}", cs.Name, s);
-            cs.AlternatePos = s;
-        }
+    //        System.Diagnostics.Debug.WriteLine("Animate {0} to altpos {1}", cs.Name, s);
+    //        cs.AlternatePos = s;
+    //    }
 
-        protected override void End(GLBaseControl cs)
-        {
-            cs.AlternatePos = Target;
-        }
-    }
+    //    protected override void End(GLBaseControl cs)
+    //    {
+    //        cs.AlternatePos = Target;
+    //    }
+    //}
 
 }

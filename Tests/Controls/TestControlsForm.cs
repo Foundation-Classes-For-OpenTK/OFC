@@ -156,8 +156,9 @@ namespace TestOpenTk
                 pform.SuspendLayout();
                 pform.BackColorGradientDir = 90;
                 pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
+                pform.ScaleWindow = new SizeF(1.25f, 1.25f);
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
-                pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
+                //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
                 displaycontrol.Add(pform);
 
                 int taborder = 0;

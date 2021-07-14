@@ -415,6 +415,9 @@ namespace OFC.GL4.Controls
 
         private int HoveringOver(Point p)
         {
+            if (gridxacross <= 0)       // called before paint, ignore
+                return -1;
+
             // System.Diagnostics.Debug.WriteLine("{0} {1}  {2}", p, gridystart, gridxleft);
             int margin = Font.Height / 4;
             int cellwidth = (Width - margin * 2) / gridxacross;     // x 

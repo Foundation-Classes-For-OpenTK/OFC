@@ -163,7 +163,6 @@ namespace OFC.GL4.Controls
                 {
                     capturelocation = e.ScreenCoord;
                     originalwindow = Bounds;
-                    // tbd make it work with AlternatePos? Pros and cons
                     captured = e.Area;
                 }
             }

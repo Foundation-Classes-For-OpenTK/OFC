@@ -95,20 +95,16 @@ namespace OFC.GL4.Controls
 
                 if (mi != null && mi.SubMenuItems != null)      // actually a submenu..
                 {
-                    Point p = Point.Empty; // TBD this.DisplayCoords(new Point(0,0));
-
+                    Point offset;
                     if (FlowDirection == ControlFlowDirection.Right)       // pick co-ords based on flow
-                    {
-                        p.X += mi.Left - this.ClientLeftMargin;
-                        p.Y += this.Height;
-                    }
+                        offset = new Point(mi.Left - this.ClientLeftMargin, this.Height);
                     else
-                    {
-                        p.X += this.Width;
-                        p.Y += mi.Top;
-                    }
+                        offset = new Point(Width, mi.Top);
+
+                    Point p = FindScreenCoords(offset);     // find this point in bounds on screen
 
                     submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
+                    submenu.ScaleWindow = FindScaler();
                     submenu.SuspendLayout();
 
                     System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);

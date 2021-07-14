@@ -319,8 +319,9 @@ namespace OFC.GL4.Controls
             if (!InCalendar)
             {
                 Calendar.SuspendLayout();
-                var p = Point.Empty;// TBD DisplayControlCoords(false);
-                Calendar.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, 200, 200);     // autosizes
+                var p = FindScreenCoords(new Point(ClientLeftMargin, Height + 1));
+                Calendar.Bounds = new Rectangle(p.X, p.Y, 200, 200);     // autosizes
+                Calendar.ScaleWindow = FindScaler();
                 Calendar.Name = Name + "-Cal";
                 Calendar.TopMost = true;
                 Calendar.Font = Font;

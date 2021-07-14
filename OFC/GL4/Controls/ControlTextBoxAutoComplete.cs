@@ -154,11 +154,11 @@ namespace OFC.GL4.Controls
             {
                 foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String " + s); }
 
-                Point sc = Point.Empty; // TBD this.DisplayControlCoords(false);
-
-                ListBox.Font = Font;                                            
-                ListBox.Location = new Point(sc.X, sc.Y + Height);      
+                Point sc = FindScreenCoords(new Point(ClientLeftMargin, Height + 1));
+                ListBox.Font = Font;
+                ListBox.Location = sc;
                 ListBox.Items = autocompletestrings;
+                ListBox.ScaleWindow = FindScaler();
 
                 if (ListBox.Parent == null)
                     AddToDesktop(ListBox);
