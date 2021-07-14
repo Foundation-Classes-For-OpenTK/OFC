@@ -95,7 +95,7 @@ namespace OFC.GL4.Controls
 
                 if (mi != null && mi.SubMenuItems != null)      // actually a submenu..
                 {
-                    Point p = this.DisplayControlCoords(false);
+                    Point p = Point.Empty; // TBD this.DisplayCoords(new Point(0,0));
 
                     if (FlowDirection == ControlFlowDirection.Right)       // pick co-ords based on flow
                     {

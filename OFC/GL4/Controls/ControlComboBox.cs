@@ -233,8 +233,10 @@ namespace OFC.GL4.Controls
             if (activatable)
             {
                 dropdownbox.SuspendLayout();
-                var p = DisplayControlCoords(false);
-                dropdownbox.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+                var p = FindScreenCoords(new Point(ClientLeftMargin, Height));
+                SizeF scaler = FindScaler();
+                dropdownbox.Bounds = new Rectangle(p.X, p.Y + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+                //tbd dropdownbox.AlternatePos = new RectangleF(p.X, p.Y + 1, (int)(Width / scaler.Width), (int)(Height / scaler.Height));
                 dropdownbox.Name = Name + "-Dropdown";
                 dropdownbox.TopMost = true;
                 dropdownbox.BackColor = ComboBoxBackColor;

@@ -83,7 +83,7 @@ namespace TestOpenTk
             items.Dispose();
         }
 
-        private void ControllerDraw(GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, long time)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 

@@ -235,7 +235,7 @@ void main(void)
             items.Dispose();
         }
 
-        private void ControllerDraw(GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, ulong unused)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
@@ -265,13 +265,6 @@ void main(void)
 
         private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                int times = 1000;
-                System.Diagnostics.Debug.WriteLine("Start test");
-                long tickcount = gl3dcontroller.Redraw(times);
-                System.Diagnostics.Debug.WriteLine("Redraw {0} ms per {1}", tickcount, (float)tickcount/(float)times);
-            }
         }
     }
 }

@@ -111,7 +111,7 @@ namespace TestOpenTk
             return null;
         }
 
-        public void Update(long time, float eyedistance)
+        public void Update(ulong time, float eyedistance)
         {
             const int rotperiodms = 5000;
             time = time % rotperiodms;

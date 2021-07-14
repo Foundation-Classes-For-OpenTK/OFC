@@ -328,11 +328,11 @@ namespace TestOpenTk
 
             if (displaycontrol != null)
             {
-                displaycontrol.Paint += (o) =>        // subscribing after start means we paint over the scene, letting transparency work
+                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
                 {
                     // MCUB set up by Controller3DDraw which did the work first
                     galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc);
-                    displaycontrol.Render(glwfc.RenderState);
+                    displaycontrol.Render(glwfc.RenderState,ts);
                 };
             }
 
@@ -407,7 +407,7 @@ namespace TestOpenTk
         float lasteyedistance = 100000000;
         int lastgridwidth;
 
-        private void Controller3DDraw(GLMatrixCalc mc, long time)
+        private void Controller3DDraw(Controller3D c3d, ulong time)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
@@ -425,7 +425,7 @@ namespace TestOpenTk
 
                 // set the coords fader
 
-                float coordfade = lastgridwidth == 10000 ? (0.7f - (mc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
+                float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
                 Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
                 gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
             }
@@ -436,7 +436,7 @@ namespace TestOpenTk
             {
                 galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f : 0);        // set up the volumentric uniform
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
-                galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? mc.EyeDistance : -1f);
+                galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
             }
             
             if ( travelpath != null)

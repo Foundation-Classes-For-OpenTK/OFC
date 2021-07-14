@@ -60,7 +60,7 @@ namespace OFC.GL4.Controls
                 area.Inflate(-1, -1);
             }
 
-            Point mrel = CurrentMousePosition(true);        // get this relative to client rectangle
+            Point mrel = Point.Empty;// TBD CurrentMousePosition(true);        // get this relative to client rectangle
             int halfway = area.Height / 2;
             bool inbottomhalf = mrel.Y > halfway;
 

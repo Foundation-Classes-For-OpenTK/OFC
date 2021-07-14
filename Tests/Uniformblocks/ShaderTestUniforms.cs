@@ -193,7 +193,7 @@ void main(void)
             items.Dispose();
         }
 
-        private void ControllerDraw(OFC.GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, ulong unused)
         {
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");

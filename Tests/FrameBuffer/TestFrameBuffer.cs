@@ -325,7 +325,7 @@ namespace TestOpenTk
             items.Dispose();
         }
 
-        private void ControllerDraw(GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, ulong unused)
         {
             //System.Diagnostics.Debug.WriteLine("Draw");
 

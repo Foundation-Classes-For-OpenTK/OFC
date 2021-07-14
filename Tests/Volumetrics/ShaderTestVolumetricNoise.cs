@@ -252,7 +252,7 @@ namespace TestOpenTk
             p.Run();        // run the shader to compute into the noise3d block the noise.
         }
 
-        private void ControllerDraw(GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, ulong unused)
         {
             items.Get<GLMatrixCalcUniformBlock>("MCUB").Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
@@ -381,10 +381,6 @@ void main(void)
         {
             if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                int times = 1000;
-                System.Diagnostics.Debug.WriteLine("Start test");
-                long tickcount = gl3dcontroller.Redraw(times);
-                System.Diagnostics.Debug.WriteLine("Redraw {0} ms per {1}", tickcount, (float)tickcount/(float)times);
             }
         }
     }

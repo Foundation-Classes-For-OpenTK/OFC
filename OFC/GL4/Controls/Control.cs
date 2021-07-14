@@ -20,43 +20,6 @@ using System.Drawing;
 
 namespace OFC.GL4.Controls
 {
-    [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
-    public struct Padding
-    {
-        public int Left; public int Top; public int Right; public int Bottom;
-        public Padding(int left, int top, int right, int bottom) { Left = left; Top = top; Right = right; Bottom = bottom; }
-        public Padding(int pad = 0) { Left = pad; Top = pad; Right = pad; Bottom = pad; }
-        public int TotalWidth { get { return Left + Right; } }
-        public int TotalHeight { get { return Top + Bottom; } }
-
-        public static bool operator ==(Padding l, Padding r) { return l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom; }
-        public static bool operator !=(Padding l, Padding r) { return !(l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom); }
-        public override bool Equals(Object other) { return other is Padding && this == (Padding)other; }
-        public override int GetHashCode() { return base.GetHashCode(); }
-    };
-
-    [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
-    public struct Margin
-    {
-        public int Left; public int Top; public int Right; public int Bottom;
-        public Margin(int left, int top, int right, int bottom) { Left = left; Top = top; Right = right; Bottom = bottom; }
-        public Margin(int pad = 0) { Left = pad; Top = pad; Right = pad; Bottom = pad; }
-        public int TotalWidth { get { return Left + Right; } }
-        public int TotalHeight { get { return Top + Bottom; } }
-
-        public static bool operator ==(Margin l, Margin r) { return l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom; }
-        public static bool operator !=(Margin l, Margin r) { return !(l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom); }
-        public override bool Equals(Object other) { return other is Margin && this == (Margin)other; }
-        public override int GetHashCode() { return base.GetHashCode(); }
-    };
-
-    public enum DockingType {   None, Fill, Center,
-                                Left, LeftCenter, LeftTop, LeftBottom,              // order vital to layout test, keep
-                                Right, RightCenter, RightTop, RightBottom,
-                                Top, TopCenter, TopLeft, TopRight,
-                                Bottom, BottomCentre, BottomLeft, BottomRight,
-                              };
-
     [System.Diagnostics.DebuggerDisplay("Control {Name} {window}")]
     public abstract class GLBaseControl : IDisposable
     {
@@ -73,8 +36,15 @@ namespace OFC.GL4.Controls
         public int Bottom { get { return window.Bottom; } set { SetPos(window.Left, window.Top, window.Width, value - window.Top); } }
         public int Width { get { return window.Width; } set { SetPos(window.Left, window.Top, value, window.Height); } }
         public int Height { get { return window.Height; } set { SetPos(window.Left, window.Top, window.Width, value); } }
-        public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y,window.Width,window.Height); } }
+        public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y, window.Width, window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
+
+        // for controls with bitmaps, we can throw them on the screen in another position than their described co-ords, for animation effects
+        public RectangleF? AlternatePos { get { return altpos; } set { altpos = value; AltPosChanged = true; FindDisplay()?.ReRender(); } }
+        public SizeF AlternateScale() { return new SizeF(Width / AlternatePos.Value.Width, Height / AlternatePos.Value.Height); }       // scaling between the two
+        public bool AltPosChanged { get; set; } = false;
+
+        public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
         // padding/margin and border control
 
@@ -199,6 +169,8 @@ namespace OFC.GL4.Controls
         public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
 
+        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only hook on GLControlDisplay.  Has all the GLMouseEventArgs fields filled out including control ones
+
         // default color schemes and sizes
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
@@ -254,38 +226,6 @@ namespace OFC.GL4.Controls
                 parent.NeedRedraw = true;
                 parent.PerformLayout();
             }
-        }
-
-        // return in display co-ord (within window) terms either the bounds top left or the client rectangle top left
-        public Point DisplayControlCoords(bool clienttopleft)       
-        {
-            Point p = Location;     // Left/Top of bounding box
-            GLBaseControl b = this;
-            while (b.Parent != null)
-            {       // we need to add on the parent left and clientleftmargin, top the same, to move the point up to the next level
-                p = new Point(p.X + b.parent.Left + b.parent.ClientLeftMargin, p.Y + b.parent.Top + b.parent.ClientTopMargin);
-                b = b.parent;
-            }
-            if (clienttopleft)
-            {
-                p.X += ClientLeftMargin;
-                p.Y += ClientTopMargin;
-            }
-            return p;
-        }
-
-        public Point ScreenCoords(bool clienttopleft)           // return in windows screen co-ords the top left of the selected control
-        {
-            Point p = DisplayControlCoords(clienttopleft);
-            var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
-            return new Point(p.X + sp.Left, p.Y + sp.Top);
-        }
-
-        public Point CurrentMousePosition(bool clienttopleft)              // relative to client rectangle or to bounds
-        {
-            Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
-            Point p = ScreenCoords(clienttopleft);
-            return new Point(mp.X - p.X, mp.Y - p.Y);
         }
 
         public Rectangle ChildArea()            // area used by children controls
@@ -521,26 +461,124 @@ namespace OFC.GL4.Controls
             }
         }
 
-        // p = co-coords (form if called from DisplayControl), finds including margin/padding/border area, so inside bounds
-        public GLBaseControl FindControlOver(Point relativecoords)
+        // p = co-coords finds including margin/padding/border area, so inside bounds
+        // if control found, return offset within bounds left
+
+        public GLBaseControl FindControlOver(Point coords, out Point offset)
         {
             //  System.Diagnostics.Debug.WriteLine("Find " + Name + " "  + relativecoords + " in " + Bounds + " " + ClientLeftMargin + " " + ClientTopMargin);
 
-            if (relativecoords.X < Left || relativecoords.X > Right || relativecoords.Y < Top || relativecoords.Y > Bottom)
+            // if inside the alternate pos bounds
+            if (AlternatePos != null && coords.X >= AlternatePos.Value.Left && coords.X <= AlternatePos.Value.Right && coords.Y >= AlternatePos.Value.Top && coords.Y <= AlternatePos.Value.Bottom)
+            {
+                SizeF scale = AlternateScale();
+                coords = new Point((int)((coords.X - AlternatePos.Value.Left) * scale.Width), (int)((coords.Y - AlternatePos.Value.Top) * scale.Height));
+            }
+            // else use the normal co-ords, is it outside?
+            else if (coords.X < Left || coords.X > Right || coords.Y < Top || coords.Y > Bottom)       // if outside our bounds, not found
+            {
+                offset = Point.Empty;
                 return null;
+            }
+            else
+            {
+                coords = new Point(coords.X - Left, coords.Y - Top);            // coords translated to inside the bounds of this control
+            }
 
             foreach (GLBaseControl c in childrenz)       // in Z order
             {
                 if (c.Visible)      // must be visible to be found..
                 {
-                    var r = c.FindControlOver(new Point(relativecoords.X - Left - ClientLeftMargin, relativecoords.Y - Top - ClientTopMargin));   // find, converting co-ords into child co-ords
+                    // convert bounds co-ords to client coords by removing client margin, and check
+
+                    var r = c.FindControlOver(new Point(coords.X-ClientLeftMargin,coords.Y-ClientTopMargin), out offset);   
                     if (r != null)
                         return r;
                 }
             }
 
+            offset = coords;        // no children, so return bounds offset
             return this;
         }
+
+
+        // given a point x in control relative to bounds, in bitmap space (so not scaled), what is its screen coords
+        public Point FindScreenCoords(Point pin, bool clientpos = false)
+        {
+            if ( clientpos )
+            {
+                pin.X += ClientLeftMargin;
+                pin.Y += ClientTopMargin;
+            }
+
+            GLBaseControl c = this;
+
+            PointF p = pin;
+
+            while (c != null)
+            {
+                if (c.AlternatePos != null)
+                {
+                    SizeF scale = c.AlternateScale();
+                    System.Diagnostics.Debug.WriteLine($"{c.Name} {p} Scale {scale} Alt {c.AlternatePos.Value.Left} {c.AlternatePos.Value.Top}");
+
+                    p.X = p.X / scale.Width;         // so if width = 1000, alt width = 500, scalex = 2, half scale
+                    p.Y = p.Y / scale.Height;
+
+                    p.X += c.AlternatePos.Value.Left;
+                    p.Y += c.AlternatePos.Value.Top;
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"{c.Name} {p} {c.Left} {c.Top}");
+                    p.X += c.Left;
+                    p.Y += c.Top;
+                }
+
+                c = c.Parent;
+
+                if ( c != null )
+                {
+                    p.X += c.ClientLeftMargin;
+                    p.Y += c.ClientTopMargin;
+                }
+
+                System.Diagnostics.Debug.WriteLine($" -> {p} ");
+            }
+
+            return new Point((int)p.X,(int)p.Y);
+        }
+
+        // what is the scale between this control and the desktop
+        public SizeF FindScaler()
+        {
+            SizeF scale = new SizeF(1, 1);
+            GLBaseControl p = this;
+            while (p != null)
+            {
+                if (p.AlternatePos != null)
+                {
+                    var m = p.AlternateScale();
+                    scale = new SizeF(scale.Width * m.Width, scale.Height * m.Height);
+                }
+                p = p.Parent;
+            }
+            return scale;
+        }
+        //public Point ScreenCoords1(Point p)
+        //{
+        //    p = DisplayCoords(p);
+        //    var sp = FindDisplay()?.ClientScreenPos ?? Rectangle.Empty;
+        //    return new Point(p.X + sp.Left, p.Y + sp.Top);
+        //}
+
+        //public Point CurrentMousePosition()              // relative to client rectangle or to bounds
+        //{
+        //    Point mp = FindDisplay()?.MouseScreenPosition ?? Point.Empty;
+        //    Point p = ScreenCoords();
+        //    return new Point(mp.X - p.X, mp.Y - p.Y);
+        //}
+
 
         // Set multiple items at once.  Default is to invalidate it
         public void Set(Point? location = null,
@@ -649,6 +687,17 @@ namespace OFC.GL4.Controls
             levelbmp = null;
             if (width > 0 && height > 0)
                 levelbmp = new Bitmap(width, height);
+        }
+
+        public void Animate(ulong ts)
+        {
+            if (Visible)
+            {
+                foreach (var c in ControlsIZ)
+                    c.Animate(ts);
+                foreach (var a in Animators)
+                    a.Animate(this, ts);
+            }
         }
 
         #endregion
@@ -849,10 +898,9 @@ namespace OFC.GL4.Controls
 
             if (NeedRedraw || forceredraw)          // if we need a redraw, or we are forced to draw by a parent redrawing above us.
             {
-                //System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, 
-                                          //ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
+                System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
 
-                forceredraw = true;             // all children, force redraw       // clear in case need to re-invalidate
+                forceredraw = true;             // all children, force redraw      
                 NeedRedraw = false;             // we have been redrawn
                 redrawn = true;                 // and signal up we have been redrawn
 
@@ -1245,6 +1293,7 @@ namespace OFC.GL4.Controls
         private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
         private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
         private bool topMost { get; set; } = false;              // if set, always force to top
+        private RectangleF? altpos = null;              // alternate pos
 
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
         private GLBaseControl creator { get; set; } = null;       // its creator, normally its parent.
@@ -1254,13 +1303,10 @@ namespace OFC.GL4.Controls
 
         #endregion
 
-
         #region Interface to GLWindowControl
 
-        // used by GLControlDisplay only, Lower controls do not use this
+        // used by GLControlDisplay only, Lower controls do not use these functions
         // here so it can call protected members of this class.  
-
-        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only active from GLControlDisplay
 
         private GLBaseControl currentmouseover = null;              
         private GLBaseControl currentfocus = null;                  
@@ -1351,13 +1397,13 @@ namespace OFC.GL4.Controls
 
             SetViewScreenCoord(ref e);
 
-            currentmouseover = FindControlOver(e.ScreenCoord);
+            currentmouseover = FindControlOver(e.ScreenCoord, out Point leftover);
 
             if (currentmouseover != null)
             {
                 currentmouseover.Hover = true;
 
-                SetControlLocation(ref e, currentmouseover);
+                SetControlLocation(ref e, currentmouseover, leftover);
 
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseEnter(e);
@@ -1394,21 +1440,21 @@ namespace OFC.GL4.Controls
             SetViewScreenCoord(ref e);
             //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
 
-            GlobalMouseMove?.Invoke(e);
-
-            GLBaseControl c = FindControlOver(e.ScreenCoord); // overcontrol ,or over display, or maybe outside display
+            GLBaseControl c = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display
 
             if (c != currentmouseover)      // if different, either going active or inactive
             {
-                // System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name);
+                //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} from {3} to {4}, rel {5}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, currentmouseover?.Name, c?.Name, leftover);
                 mousedowninitialcontrol = null;
 
                 if (currentmouseover != null)   // for current, its a leave or its a drag..
                 {
-                    SetControlLocation(ref e, currentmouseover);
+                    SetControlLocation(ref e, currentmouseover, leftover);
 
                     if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
                     {
+                        GlobalMouseMove?.Invoke(e);     // we move, with the currentmouseover
+
                         if (currentmouseover.Enabled)       // and send to control if enabled
                             currentmouseover.OnMouseMove(e);
 
@@ -1425,15 +1471,19 @@ namespace OFC.GL4.Controls
 
                 if (currentmouseover != null)       // now, are we going over a new one?
                 {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover, leftover);    // reset location etc
 
                     currentmouseover.Hover = true;
+
+                    GlobalMouseMove?.Invoke(e);     // we move, with the new currentmouseover
 
                     if (currentmouseover.Enabled)       // and send to control if enabled
                         currentmouseover.OnMouseEnter(e);
                 }
                 else
                 {
+                    GlobalMouseMove?.Invoke(e);     // we move, with no mouse over
+
                     if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
                         this.OnMouseMove(e);
                 }
@@ -1442,13 +1492,17 @@ namespace OFC.GL4.Controls
             {
                 if (currentmouseover != null)
                 {
-                    SetControlLocation(ref e, currentmouseover);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover, leftover);    // reset location etc
+
+                    GlobalMouseMove?.Invoke(e);     // we move, with the new currentmouseover
 
                     if (currentmouseover.Enabled)
                         currentmouseover.OnMouseMove(e);
                 }
                 else
                 {
+                    GlobalMouseMove?.Invoke(e);     // we move, with no mouse over
+
                     if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
                         this.OnMouseMove(e);
                 }
@@ -1545,18 +1599,29 @@ namespace OFC.GL4.Controls
             }
         }
 
-        // Set up other locations, control locations, relative location, and area, etc
-
+        // overriden by GLControlDisplay. Translate WindowsLocation into ViewPortLocation and ScreenCoord
         protected virtual void SetViewScreenCoord(ref GLMouseEventArgs e)       // overridden in control class to provide co-ords
         {
         }
 
-        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
+        // pos if passed is offset into bounds of control 
+        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur, Point? pos = null)
         {
-            e.ControlClientLocation = cur.DisplayControlCoords(true);     // position of control in screencoords
-            e.Location = new Point(e.ScreenCoord.X - e.ControlClientLocation.X, e.ScreenCoord.Y - e.ControlClientLocation.Y);
-            // System.Diagnostics.Debug.WriteLine("WLoc {0} VLoc {1} SLoc{2} CLoc {3} Loc {4} Control {5}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, e.ControlClientLocation, e.Location, cur.Name);
+            Point reloffset;
+            if (pos == null)
+            {
+                var found = FindControlOver(e.ScreenCoord, out reloffset);      // if we have not computed it, compute again
+                System.Diagnostics.Debug.Assert(cur == found);
+            }
+            else
+                reloffset = pos.Value;
 
+            // record control, bounds, and client location
+            e.Control = cur;
+            e.BoundsLocation = reloffset;
+            e.Location = new Point(reloffset.X-cur.ClientLeftMargin, reloffset.Y-cur.ClientTopMargin);      // translate to client rectangle co-ords
+
+            // determine logical area
             if (e.Location.X < 0)
                 e.Area = GLMouseEventArgs.AreaType.Left;
             else if (e.Location.X >= cur.ClientWidth)
@@ -1572,6 +1637,8 @@ namespace OFC.GL4.Controls
                 e.Area = GLMouseEventArgs.AreaType.Bottom;
             else
                 e.Area = GLMouseEventArgs.AreaType.Client;
+
+            System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
         }
 
         protected void Gc_KeyUp(object sender, GLKeyEventArgs e)

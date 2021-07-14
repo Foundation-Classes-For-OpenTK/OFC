@@ -48,7 +48,7 @@ namespace TestOpenTk
         float lasteyedistance = 100000000;
         int lastgridwidth;
 
-        private void ControllerDraw(GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D c3d, ulong unused)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
@@ -63,13 +63,13 @@ namespace TestOpenTk
 
             s.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, i.InstanceCount);
 
-            float dist = mc.EyeDistance;
+            float dist = c3d.MatrixCalc.EyeDistance;
             float d1 = dist - lastgridwidth;
             float suc = d1 / (9.0f * lastgridwidth);
             float cf = 1.0f - suc.Clamp(0f, 1f);
             float a = 0.7f * cf;
 
-            float coordfade = lastgridwidth == 10000 ? (0.7f - (mc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
+            float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
             Color coordscol = Color.FromArgb(coordfade<0.05 ? 0 : 150, Color.Cyan);
 
             System.Diagnostics.Debug.WriteLine("Dist {0} grid {1} suc {2} cf {3} a {4} coord {5} {6}", dist, lastgridwidth, suc, cf, a , coordfade, coordscol);
@@ -81,7 +81,7 @@ namespace TestOpenTk
 
             IGLProgramShader p = items.Shader("Galaxy");
             var fsgalaxy = p.Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
-            fsgalaxy.SetFader(mc.EyeDistance);
+            fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -346,13 +346,6 @@ namespace TestOpenTk
 
         private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                int times = 1000;
-                System.Diagnostics.Debug.WriteLine("Start test");
-                long tickcount = gl3dcontroller.Redraw(times);
-                System.Diagnostics.Debug.WriteLine("Redraw {0} ms per {1}", tickcount, (float)tickcount / (float)times);
-            }
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 IGLProgramShader ps = items.Shader("Galaxy");

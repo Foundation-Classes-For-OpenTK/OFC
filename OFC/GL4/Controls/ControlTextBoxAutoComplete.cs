@@ -154,7 +154,7 @@ namespace OFC.GL4.Controls
             {
                 foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String " + s); }
 
-                Point sc = this.DisplayControlCoords(false);
+                Point sc = Point.Empty; // TBD this.DisplayControlCoords(false);
 
                 ListBox.Font = Font;                                            
                 ListBox.Location = new Point(sc.X, sc.Y + Height);      

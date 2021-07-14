@@ -27,18 +27,20 @@ namespace OFC.GL4.Controls
     {
         #region Public IF
 
-        public bool RequestRender { get; set; } = false;
+        public bool RequestRender { get; set; } = false;                        // set whenever anything is invalidated by a control.
         public void ReRender() { RequestRender = true; }
 
         public Point MouseScreenPosition { get { return glwin.MouseScreenPosition; } }
 
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
-        public new Action<Object> Paint { get; set; } = null;                   // override to get a paint event
+        public new Action<Object,ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
 
         public GLMatrixCalc MatrixCalc { get; set; }
 
         public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }
+
+        public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc) : base("displaycontrol", new Rectangle(0, 0, mc.ScreenCoordMax.Width, mc.ScreenCoordMax.Height))
         {
@@ -110,7 +112,7 @@ namespace OFC.GL4.Controls
 
         // call this during your Paint to render.
 
-        public void Render(GLRenderControl currentstate)
+        public void Render(GLRenderControl currentstate, ulong ts)
         {
             //System.Diagnostics.Debug.WriteLine("Render");
 
@@ -119,6 +121,8 @@ namespace OFC.GL4.Controls
 
             if (ControlsIZ.Count > 0)       // only action if children present
             {
+                bool altposmove = false;
+
                 foreach (var c in ControlsIZ)
                 {
                     if (c.Visible)
@@ -131,8 +135,17 @@ namespace OFC.GL4.Controls
                             textures[c].CreateLoadBitmap(c.LevelBitmap);  // and update texture unit with new bitmap
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
+
+                        if ( c.AltPosChanged )
+                        {
+                            c.AltPosChanged = false;
+                            altposmove = true;
+                        }
                     }
                 }
+
+                if (altposmove)
+                    UpdateVertexTexturePositions(false);        // we need to update..
 
                 GLScissors.SetToScreenCoords(0, MatrixCalc);
                 shader.Start(MatrixCalc);
@@ -158,11 +171,20 @@ namespace OFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Render Finished");
         }
 
+        public new void Animate(ulong ts)
+        {
+            foreach (var c in ControlsIZ)
+            {
+                c.Animate(ts);
+            }
+        }
+
+
         #endregion
 
         #region Implementation
 
-        // override remove control since we need to know if to remove texture
+                // override remove control since we need to know if to remove texture
 
         protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {   
@@ -178,9 +200,9 @@ namespace OFC.GL4.Controls
 
         protected override bool InvalidateDueToLocationChange(GLBaseControl child)
         {
-            //System.Diagnostics.Debug.WriteLine("Control display location change");
+            System.Diagnostics.Debug.WriteLine("Control display location change");
             UpdateVertexTexturePositions(false);
-            return false;
+            return false;       // we don't need to invalidate due to just a location change, we can handle that without it
         }
 
         // override this to provide translation between form co-ords and viewport/screen coords
@@ -205,15 +227,29 @@ namespace OFC.GL4.Controls
 
                 List<IGLTexture> tlist = new List<IGLTexture>();
 
-                foreach (var c in ControlsIZ)       // we paint in IZ order, and we set the Z (bigger is more in the back) from a notional 0.1 to 0 so the depth test works
+                foreach (var c in ControlsIZ)       // we paint in IZ order, and we set the Z (bigger is more in the back) from a notional X to 0 so the depth test works
                 {
                     if (c.Visible)  // must be visible to be added to vlist
                     {
-                        float[] a = new float[] {       c.Left, c.Top, z, 1,
+                        float[] a;
+
+                        if (c.AlternatePos == null)
+                        {
+                            a = new float[] {   c.Left, c.Top, z, 1,
                                                         c.Left, c.Bottom , z, 1,
                                                         c.Right, c.Top, z, 1,
                                                         c.Right, c.Bottom , z, 1,
                                                  };
+                        }
+                        else
+                        {
+                            a = new float[] { c.AlternatePos.Value.Left, c.AlternatePos.Value.Top, z, 1,
+                                              c.AlternatePos.Value.Left, c.AlternatePos.Value.Bottom, z, 1,
+                                              c.AlternatePos.Value.Right, c.AlternatePos.Value.Top, z, 1,
+                                              c.AlternatePos.Value.Right, c.AlternatePos.Value.Bottom, z, 1
+                            };
+                        }
+
                         vertexes.Write(a);
                         z -= 0.0000001f;
                         visible++;
@@ -255,10 +291,10 @@ namespace OFC.GL4.Controls
             InvalidateLayout();                                         // and we need to invalidate layout
         }
 
-        // window is painting
-        private void Gc_Paint(object sender)
+        // window is painting - hooked up to GLWindowControl Paint function. ts is elapsed time in ms.
+        private void Gc_Paint(object sender,ulong ts)
         {
-            Paint?.Invoke(sender);
+            Paint?.Invoke(sender,ts);
         }
 
         public class GLControlShader : GLShaderPipeline

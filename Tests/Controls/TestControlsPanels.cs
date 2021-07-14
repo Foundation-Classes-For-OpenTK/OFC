@@ -194,17 +194,26 @@ namespace TestOpenTk
                 //                testform1 = false;
                 if (testform1)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 900));
+                    GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 500, 600));
                     pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
                     pform.BackColorGradientDir = 90;
                     pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
+                 //   pform.AlternatePos = new RectangleF(100, 10, 1000, 900);
+                 //   pform.AlternatePos = new RectangleF(100, 10, 250, 300);
+
+                    //pform.Animators.Add(new AnimateMove(glwfc.ElapsedTimems + 2000, glwfc.ElapsedTimems + 10000, new Point(100, 100)));
+                    //   pform.Animators.Add(new AnimateAlternatePos(glwfc.ElapsedTimems + 2000, glwfc.ElapsedTimems + 10000, new RectangleF(100, 100,500,450)));
 
                     displaycontrol.Add(pform);
 
                     if (testpanel)
                     {
                         GLPanel p1 = new GLPanel("P3", new Size(150, 150), DockingType.TopLeft, 0);
+                        p1.BackColor = Color.Purple;
+                        p1.SetMarginBorderWidth(new OFC.GL4.Controls.Margin(10), 5, Color.Green, new OFC.GL4.Controls.Padding(5));
+                        //p1.Animators.Add(new AnimateMove(glwfc.ElapsedTimems + 2000, glwfc.ElapsedTimems + 5000, new Point(500, 500)));
+                        //p1.Animators.Add(new AnimateSize(glwfc.ElapsedTimems + 3000, glwfc.ElapsedTimems + 7000, new Size(300, 300)));
                         pform.Add(p1);
                     }
 
@@ -249,7 +258,7 @@ namespace TestOpenTk
                         pflow1.ResumeLayout();
                     }
 
-                    if (testvsp1)
+                    if (testvsp1 && false)
                     {
                         GLPanel p1 = new GLPanel("P3", new Rectangle(200,600,10,190));
                         pform.Add(p1);
@@ -263,9 +272,10 @@ namespace TestOpenTk
                         sp1.ScrollPos = 100;
                     }
 
+                    int col2 = 200;
                     if (testvsp2)
                     {
-                        GLVerticalScrollPanelScrollBar spb1 = new GLVerticalScrollPanelScrollBar("CSPan", new Rectangle(300, 5, 190, 190));
+                        GLVerticalScrollPanelScrollBar spb1 = new GLVerticalScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
                         pform.Add(spb1);
                         GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                         spb1.Add(spb1i1);
@@ -283,7 +293,7 @@ namespace TestOpenTk
 
                     if (testtabcontrol)
                     {
-                        GLTabControl tc = new GLTabControl("Tabc", new Rectangle(300, 200, 200, 190));
+                        GLTabControl tc = new GLTabControl("Tabc", new Rectangle(col2, 200, 200, 190));
                         tc.TabStyle = new TabStyleRoundedEdge();
                         tc.TabStyle = new TabStyleSquare();
                         tc.TabStyle = new TabStyleAngled();
@@ -295,6 +305,7 @@ namespace TestOpenTk
                         GLButton tabp1b1 = new GLButton("B1", new Rectangle(5, 5, 80, 40), "Button 1");
                         tabp1.Add(tabp1b1);
                         tabp1b1.Click += (c, ev) => { System.Diagnostics.Debug.WriteLine("On click for " + c.Name + " " + ev.Button); };
+                        tabp1b1.ToolTipText = "Button 1";
 
                         GLTabPage tabp2 = new GLTabPage("tabp2", "TAB Page 2", Color.Yellow);
                         GLButton tabp2b1 = new GLButton("B2-2", new Rectangle(5, 25, 80, 40), "Button 2-2");
@@ -310,9 +321,9 @@ namespace TestOpenTk
                         tc.SelectedTab = 0;
                     }
 
-                    if (testscrollbar)
+                    if (testscrollbar && false)
                     {
-                        GLPanel psb = new GLPanel("panelsb", new Rectangle(300, 400, 190,190));
+                        GLPanel psb = new GLPanel("panelsb", new Rectangle(col2, 400, 190,190));
                         pform.Add(psb);
                         
                         GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(0, 0, 20, 100), 0, 100);
@@ -323,10 +334,10 @@ namespace TestOpenTk
                         psb.Add(sb2);
                     }
 
-                    if (testflowlayout )
+                    if (testflowlayout && false)
                     {
                         GLFlowLayoutPanel pflow2;
-                        pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(300,600,300,300));
+                        pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col2,600,300,300));
                         pflow2.AutoSize = true;
                         pflow2.SuspendLayout();
                         pflow2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
@@ -345,6 +356,11 @@ namespace TestOpenTk
                             GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
                             pflow2.Add(pti4);
                         }
+                    }
+
+                    {
+                        GLToolTip tip = new GLToolTip("ToolTip");
+                        displaycontrol.Add(tip);
                     }
 
                     pform.ResumeLayout();
@@ -373,9 +389,10 @@ namespace TestOpenTk
             {
                 gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
-                displaycontrol.Paint += (o) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {                                 
-                    displaycontrol.Render(glwfc.RenderState);       // we use the same matrix calc as done in controller 3d draw
+                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
+                {
+                    System.Diagnostics.Debug.WriteLine(ts + " Render");
+                    displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
                 };
 
             }
@@ -413,7 +430,7 @@ namespace TestOpenTk
         }
 
 
-        private void Controller3dDraw(GLMatrixCalc mc, long time)   // call back by controller to do painting
+        private void Controller3dDraw(Controller3D mc, ulong unused)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
@@ -425,6 +442,7 @@ namespace TestOpenTk
         private void SystemTick(object sender, EventArgs e)
         {
             OFC.Timers.Timer.ProcessTimers();
+            displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true);

@@ -134,7 +134,7 @@ namespace TestOpenTk
             fnt.Dispose();
         }
 
-        public void Update(long time, float eyedistance)
+        public void Update(ulong time, float eyedistance)
         {
             const int rotperiodms = 10000;
             time = time % rotperiodms;

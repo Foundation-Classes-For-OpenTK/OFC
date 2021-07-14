@@ -40,9 +40,7 @@ namespace OFC.Controller
         public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 0.5f;     // per pixel movement at zoom 1 (zoom scaled)
         public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 2.0f;  // per pixel movement at zoom 1
 
-        public Action<GLMatrixCalc, long> PaintObjects;       // madatory if you actually want to see anything
-
-        public int LastHandleInterval;                      // set after handlekeyboard, how long since previous one was handled in ms
+        public Action<Controller3D, ulong> PaintObjects;                        // Mandatory. ulong is time in ms
 
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
         public PositionCamera PosCamera { get; private set; } = new PositionCamera();
@@ -68,7 +66,7 @@ namespace OFC.Controller
         {
             glwin = win;
 
-            win.Resize += GlControl_Resize;
+            win.Resize += glControl_Resize;
             win.Paint += glControl_Paint;
 
             if (registermouseui)
@@ -90,8 +88,6 @@ namespace OFC.Controller
             PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
             MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
-
-            sysinterval.Start();
         }
 
         // Pos Direction interface
@@ -127,7 +123,7 @@ namespace OFC.Controller
             Stopwatch sw = new Stopwatch();
             sw.Start();
             for (int i = 0; i < times; i++)
-                glControl_Paint(null);
+                glControl_Paint(null,(ulong)sw.ElapsedMilliseconds);
             long time = sw.ElapsedMilliseconds;
             sw.Stop();
             return time;
@@ -138,9 +134,9 @@ namespace OFC.Controller
 
         public void HandleKeyboardSlews(bool activated, Action<KeyboardMonitor> handleotherkeys = null)
         {
-            long elapsed = sysinterval.ElapsedMilliseconds;         // stopwatch provides precision timing on last paint time.
-            LastHandleInterval = (int)(elapsed - lastintervalcount);
-            lastintervalcount = elapsed;
+            ulong curtime = glwin.ElapsedTimems;
+            int LastHandleInterval = lastkeyintervalcount.HasValue ? (int)(curtime - lastkeyintervalcount) : 1;
+            lastkeyintervalcount = curtime;
 
             if (activated && glwin.Focused)                      // if we can accept keys
             {
@@ -314,7 +310,7 @@ namespace OFC.Controller
 
         #region Implementation
 
-        private void GlControl_Resize(object sender)          // from the window, a resize event
+        private void glControl_Resize(object sender)          // from the window, a resize event
         {
             System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);
@@ -325,15 +321,14 @@ namespace OFC.Controller
 
         // Paint the scene - just pass the call down to the installed PaintObjects
 
-        private void glControl_Paint(Object obj)
+        // gl paint hook, invoke paint objects for 3d 
+        private void glControl_Paint(Object obj,ulong ts)
         {
-            PaintObjects?.Invoke(MatrixCalc, sysinterval.ElapsedMilliseconds);
+            PaintObjects?.Invoke(this, ts);
         }
 
-          private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
-
-        private Stopwatch sysinterval = new Stopwatch();    // to accurately measure interval between system ticks
-        private long lastintervalcount = 0;                   // last update tick at previous update
+        private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
+        private ulong? lastkeyintervalcount = null;
 
         private Point mouseDownPos;
         private Point mouseStartRotate = new Point(int.MinValue, int.MinValue);        // used to indicate not started for these using mousemove

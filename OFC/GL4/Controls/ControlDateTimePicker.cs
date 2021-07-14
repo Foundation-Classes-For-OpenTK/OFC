@@ -319,7 +319,7 @@ namespace OFC.GL4.Controls
             if (!InCalendar)
             {
                 Calendar.SuspendLayout();
-                var p = DisplayControlCoords(false);
+                var p = Point.Empty;// TBD DisplayControlCoords(false);
                 Calendar.Bounds = new Rectangle(p.X + ClientLeftMargin, p.Y + Height + 1, 200, 200);     // autosizes
                 Calendar.Name = Name + "-Cal";
                 Calendar.TopMost = true;

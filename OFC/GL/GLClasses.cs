@@ -23,9 +23,9 @@ namespace OFC
         [System.Flags]
         public enum MouseButtons { None = 0, Left = 1, Middle = 2, Right = 4, };
 
-        public GLMouseEventArgs(Point l) { Button = MouseButtons.None; WindowLocation = l; Clicks = 0; Delta = 0; Handled = false; Area = AreaType.Client; Alt = Control = Shift = false; }
-        public GLMouseEventArgs(MouseButtons b, Point l, int c, int delta, bool alt, bool ctrl, bool sh) { Button = MouseButtons.None; WindowLocation = l; Clicks = c; Delta = delta; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
-        public GLMouseEventArgs(MouseButtons b, Point l, int c, bool alt, bool ctrl, bool sh) { Button = b; WindowLocation = l; Clicks = c;Delta = 0; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Control = ctrl; }
+        public GLMouseEventArgs(Point l) { Button = MouseButtons.None; WindowLocation = l; Clicks = 0; Delta = 0; Handled = false; Area = AreaType.Client; Alt = Ctrl = Shift = false; }
+        public GLMouseEventArgs(MouseButtons b, Point l, int c, int delta, bool alt, bool ctrl, bool sh) { Button = MouseButtons.None; WindowLocation = l; Clicks = c; Delta = delta; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Ctrl = ctrl; }
+        public GLMouseEventArgs(MouseButtons b, Point l, int c, bool alt, bool ctrl, bool sh) { Button = b; WindowLocation = l; Clicks = c;Delta = 0; Handled = false; Area = AreaType.Client; Alt = alt; Shift = sh; Ctrl = ctrl; }
 
         // Set by GLWinForm etc
 
@@ -35,19 +35,20 @@ namespace OFC
         public int Delta { get; set; }
         public bool Alt { get; private set; }
         public bool Shift { get; private set; }
+        public bool Ctrl { get; private set; }       
 
         public bool Handled { get; set; }               // indicate if handled
 
         // Set by displaycontrol
 
-        public Point ViewportLocation { get; set; }     // View port location
+        public Point ViewportLocation { get; set; }     // View port location, cursor adjusted to left/top of viewport with no scaling
         public Point ScreenCoord { get; set; }          // moved to screen coord space (takes into account viewport and screen coord scaling).
 
         // Set by displaycontrol if over a control.  Tell by Control != null
 
-        public bool Control { get; private set; }       // the control its within
-        public Point ControlClientLocation { get; set; }    // the client area top left in screen coords
-        public Point Location { get; set; }             // offset within control ClientRectangle (similar to Location in winforms)
+        public Object Control { get; set; }             // Control type found (GLBaseControl)
+        public Point BoundsLocation { get; set; }       // offset within control bounds
+        public Point Location { get; set; }             // offset within control ClientRectangle (similar to Location in winforms) in bitmap terms
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };
         public AreaType Area { get; set; }
         public bool WasFocusedAtClick { get; set; }     // if set, it was focused on click, valid for Click only
@@ -93,7 +94,7 @@ namespace OFC
     public interface GLWindowControl
     {
         Action<Object> Resize { get; set; }
-        Action<Object> Paint { get; set; }
+        Action<Object,ulong> Paint { get; set; }
         Action<Object, GLMouseEventArgs> MouseDown { get; set; }
         Action<Object, GLMouseEventArgs> MouseUp { get; set; }
         Action<Object, GLMouseEventArgs> MouseMove { get; set; }
@@ -114,5 +115,6 @@ namespace OFC
         Size Size { get; }
         bool Focused { get; }
         void SetCursor(GLCursorType t);
+        ulong ElapsedTimems { get; }        
     }
 }

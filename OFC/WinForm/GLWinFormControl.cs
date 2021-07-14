@@ -42,8 +42,6 @@ namespace OFC.WinForm
 
     public class GLWinFormControl : GLWindowControl
     {
-        public GLControlKeyOverride glControl { get; private set; }      // use only in extreams for back compat
-
         public Color BackColor { get; set; } = Color.Black;
         public int Width { get { return glControl.Width; } }
         public int Height { get { return glControl.Height; } }
@@ -67,7 +65,12 @@ namespace OFC.WinForm
         public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyPress { get; set; } = null;
         public Action<Object> Resize { get; set; } = null;
-        public Action<Object> Paint { get; set; } = null;
+        public Action<Object,ulong> Paint { get; set; } = null;     // ulong is elapsed time in ms
+
+        public ulong ElapsedTimems { get { return (ulong)sw.ElapsedMilliseconds; } }
+
+        private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        private GLControlKeyOverride glControl { get; set; }
 
         public GLWinFormControl(Control attachcontrol, OpenTK.Graphics.GraphicsMode mode = null)
         {
@@ -98,6 +101,7 @@ namespace OFC.WinForm
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
 
+            sw.Start();
         }
 
         public void Invalidate()        // repaint
@@ -120,7 +124,6 @@ namespace OFC.WinForm
             else
                 glControl.Cursor = Cursors.Default;
         }
-
 
         private void Gl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)    // all keys are for us
         {
@@ -255,7 +258,7 @@ namespace OFC.WinForm
                 RenderState = GL4.GLRenderControl.Start();
             }
 
-            Paint?.Invoke(glControl);
+            Paint?.Invoke(glControl,(ulong)sw.ElapsedMilliseconds);
 
             glControl.SwapBuffers();
         }

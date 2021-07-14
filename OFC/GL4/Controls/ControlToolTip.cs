@@ -93,19 +93,20 @@ namespace OFC.GL4.Controls
 
         private void MouseMoved(GLMouseEventArgs e)
         {
-            GLBaseControl ctrl = FindDisplay().FindControlOver(e.ScreenCoord);
+            var control = e.Control as GLBaseControl;
+           // System.Diagnostics.Debug.WriteLine($"GLOBAL: Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {control.Name}");
 
-            if (mouseover != ctrl)        // moved into new control or out of it
+            if ( mouseover != control)
             {
                 Hide();
 
-                if (ctrl == null)       // out
+                if (control == null)       // out
                 {
                     timer.Stop();
                 }
                 else if (mouseover != null )    // into
                 {
-                    if (ctrl.ToolTipText.HasChars())
+                    if (control.ToolTipText.HasChars())
                     {
                      //   System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Start(AutomaticDelay);     // start timer
@@ -118,7 +119,7 @@ namespace OFC.GL4.Controls
                     }
                 }
 
-                mouseover = ctrl;       // set control mouse is over
+                mouseover = control;       // set control mouse is over
             }
             else
             {       // in same control

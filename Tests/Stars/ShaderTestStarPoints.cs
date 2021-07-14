@@ -182,7 +182,7 @@ void main(void)
             items.Dispose();
         }
 
-        private void ControllerDraw(OFC.GLMatrixCalc mc, long time)
+        private void ControllerDraw(Controller3D mc, ulong time)
         {
             float degrees = ((float)time / 5000.0f * 360.0f) % 360f;
             float degreesd2 = ((float)time / 10000.0f * 360.0f) % 360f;
