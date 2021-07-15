@@ -10,6 +10,8 @@ namespace TestOpenTk
         private GLLabel status;
         private const int iconsize = 32;
 
+        public const string EntryTextName = "MSEntryText";
+
         public MapMenu(Map g)
         {
             map = g;
@@ -36,7 +38,7 @@ namespace TestOpenTk
             map.displaycontrol.Add(tpforward);
             tpforward.MouseClick = (o, e1) => { g.GoToTravelSystem(1); };
 
-            GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete("EntryText", new Rectangle(170, 10, 300, iconsize), "");
+            GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete(EntryTextName, new Rectangle(170, 10, 300, iconsize), "");
             tptextbox.TextAlign = ContentAlignment.MiddleLeft;
             tptextbox.BackColor = Color.Transparent;
             tptextbox.BorderColor = Color.Gray;
@@ -57,6 +59,8 @@ namespace TestOpenTk
 
             map.displaycontrol.GlobalFocusChanged += (from, to) =>
             {
+                System.Diagnostics.Debug.WriteLine($"Focus change {from?.Name} => {to?.Name}");
+
                 if (to == map.displaycontrol && map.displaycontrol["FormMenu"] != null)
                 {
                     ((GLForm)map.displaycontrol["FormMenu"]).Close();

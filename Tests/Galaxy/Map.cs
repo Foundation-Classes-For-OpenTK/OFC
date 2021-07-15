@@ -347,7 +347,7 @@ namespace TestOpenTk
 
             // Autocomplete text box at top for searching
 
-            GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol["EntryText"]);
+            GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]);
 
             tbac.PerformAutoCompleteInUIThread = (s, a) =>
             {
@@ -486,8 +486,8 @@ namespace TestOpenTk
 
         public void SetEntryText(string text)
         {
-            ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).Text = text;
-            ((GLTextBoxAutoComplete)displaycontrol["EntryText"]).CancelAutoComplete();
+            ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]).Text = text;
+            ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]).CancelAutoComplete();
             displaycontrol.SetFocus();
         }
 

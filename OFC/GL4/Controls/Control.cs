@@ -1304,12 +1304,15 @@ namespace OFC.GL4.Controls
                     return false;
 
                 if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
+                {
+                    System.Diagnostics.Debug.WriteLine("Focus target not enabled/focusable " + newfocus.Name);
                     newfocus = null;
+                }
             }
 
             GLBaseControl oldfocus = currentfocus;
 
-            OnGlobalFocusChanged(oldfocus, currentfocus);
+            OnGlobalFocusChanged(oldfocus, newfocus);
 
             //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
 
