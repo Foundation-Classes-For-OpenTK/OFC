@@ -222,7 +222,7 @@ namespace OFC.GL4.Controls
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirarchy before we mess with it
 
-            if (InDropDown && (ctrl == null || !dropdownbox.IsThisOrChildOf(ctrl)))        // if its not part of dropdown, close it
+            if (InDropDown && ctrl != this && (ctrl == null || !dropdownbox.IsThisOrChildOf(ctrl)))        // if its not part of dropdown, close it
                 Deactivate();
         }
 

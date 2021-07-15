@@ -39,10 +39,11 @@ namespace OFC.GL4.Controls
         public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y, window.Width, window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
 
-        // for controls with bitmaps, we can throw them on the screen scaled
+        // only for top level windows at the moment, we can throw them on the screen scaled..  <1 smaller, >1 bigger
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; AltScaleChanged = true; FindDisplay()?.ReRender(); } }
         private SizeF? altscale = null;
         public bool AltScaleChanged { get; set; } = false;
+        public Size ScaledSize { get { if ( altscale!=null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
         public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
@@ -466,31 +467,24 @@ namespace OFC.GL4.Controls
 
         public GLBaseControl FindControlOver(Point coords, out Point offset)
         {
-            int wwidth = Width;
-            int wheight = Height;
+            Size sz = ScaledSize;       // get visual size shown to user
 
-            if ( ScaleWindow != null)
-            {
-                wwidth = (int)(wwidth * ScaleWindow.Value.Width);
-                wheight = (int)(wheight * ScaleWindow.Value.Height);
-            }
-
-            if (coords.X < Left || coords.X >= Left+wwidth || coords.Y < Top || coords.Y >= Top+wheight)       // if outside our bounds, not found
+            if (coords.X < Left || coords.X >= Left+sz.Width || coords.Y < Top || coords.Y >= Top+sz.Height)       // if outside our bounds, not found
             {
                 offset = Point.Empty;
                 return null;
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"Find {Name} {coords} {ScaleWindow} {wwidth} {wheight}");
+                //System.Diagnostics.Debug.WriteLine($"Find {Name} {coords} {ScaleWindow} {sz}");
 
                 coords = new Point(coords.X - Left, coords.Y - Top);            // coords translated to inside the bounds of this control
-                System.Diagnostics.Debug.WriteLine($"-> {coords} ");
+                //System.Diagnostics.Debug.WriteLine($"-> {coords} ");
                 
-                if ( ScaleWindow != null )
+                if ( ScaleWindow != null )      // we need to match the offset above, in screen pixels, to the internal scale. / because if the ScaleWindow <1, it means the internal scale is bigger than the visual one
                 {
                     coords = new Point((int)(coords.X / ScaleWindow.Value.Width), (int)(coords.Y / ScaleWindow.Value.Height));
-                    System.Diagnostics.Debug.WriteLine($"-> {coords} ");
+                    //System.Diagnostics.Debug.WriteLine($"-> {coords} ");
                 }
             }
 
@@ -528,7 +522,7 @@ namespace OFC.GL4.Controls
             {
                 if (c.ScaleWindow != null)
                 {
-                    p.X *= c.ScaleWindow.Value.Width;         // so if width = 1000, alt width = 500, scalex = 2, half scale
+                    p.X *= c.ScaleWindow.Value.Width;         // scale down the X/Y offsets by the window scale to get visual scale
                     p.Y *= c.ScaleWindow.Value.Height;
                 }
 
@@ -543,7 +537,7 @@ namespace OFC.GL4.Controls
                     p.Y += c.ClientTopMargin;
                 }
 
-                System.Diagnostics.Debug.WriteLine($" -> {p} ");
+                //System.Diagnostics.Debug.WriteLine($" -> {p} ");
             }
 
             return new Point((int)p.X, (int)p.Y);
@@ -883,7 +877,7 @@ namespace OFC.GL4.Controls
 
             if (NeedRedraw || forceredraw)          // if we need a redraw, or we are forced to draw by a parent redrawing above us.
             {
-                System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
+                //System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
 
                 forceredraw = true;             // all children, force redraw      
                 NeedRedraw = false;             // we have been redrawn
@@ -1589,16 +1583,15 @@ namespace OFC.GL4.Controls
         }
 
         // pos if passed is offset into bounds of control 
-        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur, Point? pos = null)
+        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur, Point? reltobounds = null)
         {
             Point reloffset;
-            if (pos == null)
+            if (reltobounds == null)
             {
                 var found = FindControlOver(e.ScreenCoord, out reloffset);      // if we have not computed it, compute again
-                //System.Diagnostics.Debug.Assert(cur == found);
             }
             else
-                reloffset = pos.Value;
+                reloffset = reltobounds.Value;
 
             // record control, bounds, and client location
             e.Control = cur;
@@ -1622,7 +1615,7 @@ namespace OFC.GL4.Controls
             else
                 e.Area = GLMouseEventArgs.AreaType.Client;
 
-            System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
+            //System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
         }
 
         protected void Gc_KeyUp(object sender, GLKeyEventArgs e)

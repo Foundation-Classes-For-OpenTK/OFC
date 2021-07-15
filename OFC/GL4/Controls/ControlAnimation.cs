@@ -65,24 +65,26 @@ namespace OFC.GL4.Controls
         }
     }
 
-    public class AnimateMove : AnimateTimeBase
+    public class AnimateTranslate : AnimateTimeBase
     {
         public Point Target { get; set; }
-        private Point beginpoint;
+        private Point? Begin { get; set; }
 
-        public AnimateMove(ulong starttime, ulong endtime, Point target) : base(starttime, endtime)
+        public AnimateTranslate(ulong starttime, ulong endtime, Point target, Point? begin = null) : base(starttime, endtime)
         {
             Target = target;
+            Begin = begin;
         }
 
         protected override void Start(GLBaseControl cs)
         {
-            beginpoint = cs.Location;
+            if ( Begin == null)
+                Begin = cs.Location;
         }
 
         protected override void Middle(GLBaseControl cs, double delta)
         {
-            var p = new Point((int)(beginpoint.X + (double)(Target.X - beginpoint.X) * delta), (int)(beginpoint.Y + (double)(Target.Y - beginpoint.Y) * delta));
+            var p = new Point((int)(Begin.Value.X + (double)(Target.X - Begin.Value.X) * delta), (int)(Begin.Value.Y + (double)(Target.Y - Begin.Value.Y) * delta));
             System.Diagnostics.Debug.WriteLine("Animate {0} to pos {1}", cs.Name, p);
             if (cs.Dock != DockingType.None)
                 cs.Dock = DockingType.None;
@@ -98,21 +100,23 @@ namespace OFC.GL4.Controls
     public class AnimateSize : AnimateTimeBase
     {
         public Size Target { get; set; }
-        private Size beginsize;
+        public Size? Begin { get; set; } = null;
 
-        public AnimateSize(ulong starttime, ulong endtime, Size target) : base(starttime, endtime)
+        public AnimateSize(ulong starttime, ulong endtime, Size target, Size? begin = null) : base(starttime, endtime)
         {
             Target = target;
+            Begin = begin;
         }
 
         protected override void Start(GLBaseControl cs)
         {
-            beginsize = cs.Size;
+            if ( Begin == null)
+                Begin = cs.Size;
         }
 
         protected override void Middle(GLBaseControl cs, double delta)
         {
-            var s = new Size((int)(beginsize.Width + (double)(Target.Width - beginsize.Width) * delta), (int)(beginsize.Width + (double)(Target.Width - beginsize.Width) * delta));
+            var s = new Size((int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta), (int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta));
             System.Diagnostics.Debug.WriteLine("Animate {0} to size {1}", cs.Name, s);
             if (cs.Dock != DockingType.None)
                 cs.Dock = DockingType.None;
@@ -125,34 +129,36 @@ namespace OFC.GL4.Controls
         }
     }
 
-    //public class AnimateAlternatePos : AnimateTimeBase
-    //{
-    //    public RectangleF Target { get; set; }
-    //    private RectangleF begin;
+    public class AnimateScale : AnimateTimeBase
+    {
+        public SizeF Target { get; set; }
+        public SizeF? Begin { get; set; } = null;
 
-    //    public AnimateAlternatePos(ulong starttime, ulong endtime, RectangleF target) : base(starttime, endtime)
-    //    {
-    //        Target = target ;
-    //    }
+        public AnimateScale(ulong starttime, ulong endtime, SizeF target, SizeF? begin = null) : base(starttime, endtime)
+        {
+            Target = target;
+            Begin = begin;
+        }
 
-    //    protected override void Start(GLBaseControl cs)
-    //    {
-    //        begin = cs.AlternatePos != null ? cs.AlternatePos.Value : new RectangleF(cs.Bounds.Left,cs.Bounds.Top,cs.Bounds.Width,cs.Bounds.Height);
-    //    }
+        protected override void Start(GLBaseControl cs)
+        {
+            if ( Begin == null )
+                Begin = cs.ScaleWindow ?? new SizeF(1, 1);
+        }
 
-    //    protected override void Middle(GLBaseControl cs, double delta)
-    //    {
-    //        var s = new RectangleF((float)(begin.Left + (Target.Left - begin.Left) * delta), (float)(begin.Top + (Target.Top - begin.Top) * delta),
-    //                                (float)(begin.Width + (Target.Width - begin.Width) * delta),(float)(begin.Height + (Target.Height - begin.Height) * delta));
+        protected override void Middle(GLBaseControl cs, double delta)
+        {
+            var s = new SizeF(Begin.Value.Width + (Target.Width - Begin.Value.Width) * (float)delta,
+                              Begin.Value.Height + (Target.Height - Begin.Value.Height) * (float)delta);
 
-    //        System.Diagnostics.Debug.WriteLine("Animate {0} to altpos {1}", cs.Name, s);
-    //        cs.AlternatePos = s;
-    //    }
+            System.Diagnostics.Debug.WriteLine("Animate {0} to scale {1}", cs.Name, s);
+            cs.ScaleWindow = s;
+        }
 
-    //    protected override void End(GLBaseControl cs)
-    //    {
-    //        cs.AlternatePos = Target;
-    //    }
-    //}
+        protected override void End(GLBaseControl cs)
+        {
+            cs.ScaleWindow = Target;
+        }
+    }
 
 }

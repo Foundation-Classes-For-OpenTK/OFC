@@ -151,14 +151,17 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(100, 100, 1000, 800));
+                GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
                 pform.BackColor = Color.FromArgb(200, Color.Red);
                 pform.SuspendLayout();
                 pform.BackColorGradientDir = 90;
                 pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
-                pform.ScaleWindow = new SizeF(1.25f, 1.25f);
+                //pform.ScaleWindow = new SizeF(0.75f, 0.75f);
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
                 //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
+                pform.ScaleWindow = new SizeF(0.0f, 0.0f);
+                pform.Animators.Add(new AnimateScale(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, new SizeF(1, 1)));
+                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, new Point(100,100)));
                 displaycontrol.Add(pform);
 
                 int taborder = 0;
