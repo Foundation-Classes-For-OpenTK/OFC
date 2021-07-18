@@ -18,7 +18,8 @@ using System.Collections.Generic;
 
 namespace OFC.GL4
 {
-    // Class holds a MatrixBuffer, with [0,3] = -1 if deleted
+    // Class holds a MatrixBuffer, as used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
+    // [0,3] = image index, [1,3] = ctrl word (<0 not shown, 0++ ctrl as per GLPL)
     // You can delete by tag name or clear all
     // You can delete by generation
 
@@ -81,12 +82,12 @@ namespace OFC.GL4
 
         public bool RemoveAt(int i)
         {
-            if (i >= 0 && i < entries.Count)
+            if (i >= 0 && i < entries.Count && entries[i].empty == false )      // if valid to remove
             {
                 if (entries[i].data != null)           // owned, bitmap will be valid
                     entries[i].data.Dispose();
 
-                entries[i] = new EntryInfo(); // all will be null/false
+                entries[i] = new EntryInfo();           // set to empty as default for this class
 
                 Matrix4 zero = Matrix4.Identity;      // set ctrl 1,3 to -1 to indicate cull matrix
                 zero[1, 3] = -1;                      // if it did not work, it would appear at (0,0,0)
@@ -94,6 +95,20 @@ namespace OFC.GL4
                 MatrixBuffer.Write(zero);
                 MatrixBuffer.StopReadWrite();
                 Deleted++;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool SetVisibilityRotation(int i, float ctrl)            // reset the ctrl word at [1,3] of a particular entry
+        {
+            if (i >= 0 && i < entries.Count && entries[i].empty == false)      // in range and not empty
+            {
+                MatrixBuffer.StartWrite(GLLayoutStandards.Mat4size * i + 7 * sizeof(float), sizeof(float));
+                MatrixBuffer.Write(ctrl);
+                MatrixBuffer.StopReadWrite();
+                //float[] f= MatrixBuffer.ReadFloats(GLLayoutStandards.Mat4size * i, 16, true);
                 return true;
             }
             else

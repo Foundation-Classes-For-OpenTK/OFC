@@ -69,12 +69,13 @@ namespace TestOpenTk
                             Vector3 rotationradians,        // ignored if rotates are on
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
                             float alphascale = 0, float alphaend = 0,
-                            bool ownbitmap = false
+                            bool ownbitmap = false,
+                            bool textvisible = true
                          )
         {
             // returning group, pos, count
             starworldpos -= vertshader.WorldPositionOffset;     // the matrix is used directly by bitmap, so we need to move it offset by star offset
-            var gpc = base.Add(tag, bmp, bmpmipmaplevels, starworldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap);
+            var gpc = base.Add(tag, bmp, bmpmipmaplevels, starworldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap, textvisible);
             grouprenderlist[gpc.Item1].InstanceCount = gpc.Item3;
             return gpc;
         }

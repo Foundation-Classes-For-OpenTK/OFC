@@ -28,7 +28,6 @@ namespace EliteDangerousCore.EDSM
         public List<GalMapType> galacticMapTypes = null;
 
         public GalacticMapObject[] RenderableMapObjects { get { return galacticMapObjects.Where(x => x.galMapType.Image != null).ToArray(); } }
-        public GalacticMapObject[] RenderableMapObjectsEnabled { get { return galacticMapObjects.Where(x => x.galMapType.Image != null && x.galMapType.Enabled).ToArray(); } }
         public GalMapType[] RenderableMapTypes { get { return galacticMapTypes.Where(x => x.Image != null).ToArray(); } }
 
         public bool Loaded { get { return galacticMapObjects != null; } }
@@ -36,13 +35,6 @@ namespace EliteDangerousCore.EDSM
         public GalacticMapping()
         {
             galacticMapTypes = GalMapType.GetTypes();          // we always have the types.
-
-            int sel = -1;
-            foreach (GalMapType tp in galacticMapTypes)
-            {
-                tp.Enabled = (sel & 1) != 0;
-                sel >>= 1;
-            }
         }
 
         public bool ParseFile(string file)
@@ -98,32 +90,7 @@ namespace EliteDangerousCore.EDSM
             return false;
         }
 
-        public void ToggleEnable(GalMapType tpsel = null)
-        {
-            GalMapType tpon = galacticMapTypes.Find(x => x.Enabled == true);  // find if any are on
-
-            foreach (GalMapType tp in galacticMapTypes)
-            {
-                if (tpsel == null)                              // if toggle all..
-                    tp.Enabled = (tpon == null);                // enabled if all are OFF, else disabled if any are on
-                else if (tpsel == tp)
-                    tp.Enabled = !tp.Enabled;
-            }
-        }
-
-        public void SaveSettings()
-        {
-            int index = 0;
-            int sel = 0;
-
-            foreach (GalMapType tp in galacticMapTypes)
-            {
-                sel |= (tp.Enabled ? 1 : 0) << index;
-                index++;
-            }
-        }
-
-        public GalacticMapObject Find(string name, bool contains = false , bool disregardenable = false)
+        public GalacticMapObject Find(string name, bool contains = false )
         {
             if (galacticMapObjects != null && name.Length>0)
             {
@@ -131,8 +98,7 @@ namespace EliteDangerousCore.EDSM
                 {
                     if ( gmo.name.Equals(name,StringComparison.InvariantCultureIgnoreCase) || (contains && gmo.name.IndexOf(name,StringComparison.InvariantCultureIgnoreCase)>=0))
                     {
-                        if ( gmo.galMapType.Enabled || disregardenable )
-                            return gmo;
+                         return gmo;
                     }
                 }
             }

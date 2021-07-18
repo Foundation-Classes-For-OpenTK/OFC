@@ -14,12 +14,12 @@ namespace TestOpenTk
         {
         }
 
-        public void Toggle() { renderstate = (renderstate + 1) % 8; Set(); }
-        public int SelectionMask { get { return renderstate; } set { renderstate = value; Set(); } }
-        public bool Enable { get { return enable; } set { enable = value;  if (value) Set(); else regionshader.Enable = outlineshader.Enable = textrenderer.Enable = false; } }
-        public bool Regions { get { return (renderstate & 1) != 0; } set { renderstate = (renderstate & 0x6) | (value ? 1 : 0); Set(); } }
-        public bool Outlines { get { return (renderstate & 2) != 0; } set { renderstate = (renderstate & 0x5) | (value ? 2 : 0); Set(); } }
-        public bool Text { get { return (renderstate & 4) != 0; } set { renderstate = (renderstate & 0x3) | (value ? 4 : 0); Set(); } }
+        public void Toggle() { renderstate = (renderstate + 1) % 8; UpdateEnables(); }
+        public int SelectionMask { get { return renderstate; } set { renderstate = value; UpdateEnables(); } }
+        public bool Enable { get { return enable; } set { enable = value;  if (value) UpdateEnables(); else regionshader.Enable = outlineshader.Enable = textrenderer.Enable = false; } }
+        public bool Regions { get { return (renderstate & 1) != 0; } set { renderstate = (renderstate & 0x6) | (value ? 1 : 0); if ( enable) UpdateEnables(); } }
+        public bool Outlines { get { return (renderstate & 2) != 0; } set { renderstate = (renderstate & 0x5) | (value ? 2 : 0); if ( enable) UpdateEnables(); } }
+        public bool Text { get { return (renderstate & 4) != 0; } set { renderstate = (renderstate & 0x3) | (value ? 4 : 0); if (enable) UpdateEnables(); } }
 
         public class ManualCorrections
         {
@@ -45,7 +45,7 @@ namespace TestOpenTk
 
             foreach (GalacticMapObject gmo in galmap.galacticMapObjects)
             {
-                if (gmo.galMapType.Enabled && gmo.galMapType.Group == GalMapType.GalMapGroup.Regions)
+                if (gmo.galMapType.Group == GalMapType.GalMapGroup.Regions)
                 {
                     string name = gmo.name;
 
@@ -110,7 +110,7 @@ namespace TestOpenTk
                         Vector3 bestpos = new Vector3(final.Item1.X, 0, final.Item1.Y);
                         Vector3 bestsize = new Vector3(final.Item2.X, 1, final.Item2.Y);
                         
-                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphascale:5000, alphaend:500);
+                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphafadedistance:5000, alphaenddistance:500);
                     }
                 }
             }
@@ -156,7 +156,7 @@ namespace TestOpenTk
         private int renderstate = 0;
         private bool enable = true;
 
-        private void Set()
+        private void UpdateEnables()
         {
             regionshader.Enable = Regions;
             outlineshader.Enable = Outlines;

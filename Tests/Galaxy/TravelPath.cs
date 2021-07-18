@@ -126,7 +126,7 @@ namespace TestOpenTk
                     if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
                         textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
-                                new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphascale: -200, alphaend: 250);
+                                new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphafadedistance: -200, alphaenddistance: 250);
                     }
                 }
             }

@@ -20,7 +20,7 @@ using System.Linq;
 
 namespace OFC.GL4
 {
-    // Class holds a MatrixBuffer, with [0,3] = -1 if deleted
+    // Class holds a MatrixBuffer
     // You can delete by tag name or clear all
     // You can delete by generation
 
@@ -72,6 +72,17 @@ namespace OFC.GL4
             {
                 pos.Item1.RemoveAt(pos.Item2);
                 tagtoentries.Remove(tag);
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool SetVisibilityRotation(Object tag, float ctrl)       // ctrl is in the format described by the vertex sharer in use
+        {
+            if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
+            {
+                pos.Item1.SetVisibilityRotation(pos.Item2,ctrl);
                 return true;
             }
             else

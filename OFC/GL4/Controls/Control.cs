@@ -167,8 +167,9 @@ namespace OFC.GL4.Controls
         public Action<GLBaseControl, GLBaseControl> ControlAdd { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlRemove { get; set; } = null;
 
-        public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change
+        public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change. Either may be null
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
+        public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;       // sent to all controls on a click. GLBaseControl may be null
 
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only hook on GLControlDisplay.  Has all the GLMouseEventArgs fields filled out including control ones
 
@@ -1102,16 +1103,25 @@ namespace OFC.GL4.Controls
                 c.OnGlobalFocusChanged(from, to);
         }
 
-        protected  virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        protected virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
-            GlobalMouseClick?.Invoke(ctrl,e);
+            GlobalMouseClick?.Invoke(ctrl, e);
             List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseClick(ctrl, e);
         }
 
-        protected  virtual void OnFontChanged()
+        protected virtual void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        {
+            //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
+            GlobalMouseDown?.Invoke(ctrl, e);
+            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            foreach (var c in list)
+                c.OnGlobalMouseDown(ctrl, e);
+        }
+
+        protected virtual void OnFontChanged()
         {
             FontChanged?.Invoke(this);
         }
@@ -1401,6 +1411,8 @@ namespace OFC.GL4.Controls
                 SetViewScreenCoord(ref e);
                 SetControlLocation(ref e, currentmouseover);
 
+                OnGlobalMouseDown(currentmouseover, e);
+
                 if (currentmouseover.Enabled)
                 {
                     currentmouseover.MouseButtonsDown = e.Button;
@@ -1411,6 +1423,8 @@ namespace OFC.GL4.Controls
             }
             else
             {
+                OnGlobalMouseDown(null, e);
+
                 if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
                     this.OnMouseDown(e);
             }

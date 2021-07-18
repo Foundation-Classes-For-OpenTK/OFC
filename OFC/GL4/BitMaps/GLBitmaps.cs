@@ -67,7 +67,9 @@ namespace OFC.GL4
                             Vector3 rotationradians,        // ignored if rotates are on
                             StringFormat fmt = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphascale = 0, float alphaend = 0
+                            float alphafadedistance = 0, 
+                            float alphaenddistance = 0,
+                            bool visible = true
                          )
         {
             if (size.Z == 0 && size.Y == 0)
@@ -80,7 +82,7 @@ namespace OFC.GL4
 
             BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
-            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphascale, alphaend, ownbitmap:false);
+            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadedistance, alphaenddistance, ownbitmap:false, visible);
         }
 
         // add a bitmap, indicate if owned by class or you.  Gives back group no, position in group, total in group
@@ -91,8 +93,10 @@ namespace OFC.GL4
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
                             Vector3 rotationradians,        // ignored if rotates are on
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphascale = 0, float alphaend = 0,
-                            bool ownbitmap = false
+                            float alphafadedistance = 0, 
+                            float alphafadeend = 0,
+                            bool ownbitmap = false,
+                            bool visible=  true
                          )
         {
             Matrix4 mat = Matrix4.Identity;
@@ -104,9 +108,9 @@ namespace OFC.GL4
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
             }
             mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
-            mat[1, 3] = rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection
-            mat[2, 3] = alphascale;
-            mat[3, 3] = alphaend;
+            mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
+            mat[2, 3] = alphafadedistance;
+            mat[3, 3] = alphafadeend;
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
@@ -161,6 +165,11 @@ namespace OFC.GL4
         public bool Remove(Object tag)
         {
             return matrixbuffers.Remove(tag);
+        }
+
+        public bool SetVisiblityRotation(Object tag, bool onoff , bool rotatetoviewer = false, bool rotateelevation = false)
+        {
+            return matrixbuffers.SetVisibilityRotation( tag, !onoff ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0);  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
         }
 
         public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)

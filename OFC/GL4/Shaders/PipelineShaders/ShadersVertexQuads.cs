@@ -22,10 +22,10 @@ namespace OFC.GL4
     //      no model vertex input, its auto gen to y=0, x=+/-1, z = +/-1
     //      vertex 4-7 : transform: mat4 array of transforms, one per instance 
     //              [col=3,row=0] is the image index, 
-    //              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, -1 means cull primitive
+    //              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, <0 means cull primitive
     //              [col=3,row=2] Fade distance, 0 = none.  >0 fade out as eye goes in, <0 fade in as eye goes in
-    //              [col=3,row=3] Fade End, 0 = none.   > 0 formula is alpha = clamp((EyeDistance-fade end)/Fade distance,0,1).  Fades out as you get closer
-    //                                                  < 0 formula is alpha = clamp((fadeend-EyeDistance)/-Fade distance,0,1).  Fades in as you get closer
+    //              [col=3,row=3] Fade End, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade end)/Fade distance,0,1). 
+    //                                                  for fade in formula is alpha = clamp((fadeend-EyeDistance)/-Fade distance,0,1). 
     //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      location 0 : vs_textureCoordinate
@@ -81,16 +81,16 @@ namespace OFC.GL4
 
         //wpout = worldposition; epout = mc.EyePosition.xyz; // for debug
 
-        if ( tx[2][3]>0)
-            alpha = clamp((mc.EyeDistance-tx[3][3])/tx[2][3],0,1);
+        if ( tx[2][3]>0)                                      // fade distance, >0 means fade out as eye goes in
+            alpha = clamp((mc.EyeDistance-tx[3][3])/tx[2][3],0,1);  // fade end is 3,3
         else if (tx[2][3]<0)
-            alpha = clamp((tx[3][3]-mc.EyeDistance)/-tx[2][3],0,1);
+            alpha = clamp((tx[3][3]-mc.EyeDistance)/-tx[2][3],0,1); // <0 means fade in as eye goes in
         else
             alpha = 1;
 
-        float ctrl = tx[1][3];
+        float ctrl = tx[1][3];              // control word for rotate
 
-        if ( ctrl < 0 )
+        if ( ctrl < 0 )                     // -1 cull
         {
             gl_CullDistance[0] = -1;        // all vertex culled
         }

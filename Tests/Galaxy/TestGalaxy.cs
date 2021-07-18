@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using OFC.GL4.Controls;
 using EliteDangerousCore.EDSM;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace TestOpenTk
 {
@@ -33,6 +35,7 @@ namespace TestOpenTk
         private GalacticMapping eliteRegions;
 
         private Map map;
+        private MapSaverTest mapdefaults;
 
 
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,13 +53,20 @@ namespace TestOpenTk
             text = System.Text.Encoding.UTF8.GetString(Properties.Resources.EliteGalacticRegions);
             eliteRegions.ParseJson(text);                            // at this point, gal map data has been uploaded - get it into memory
 
+            mapdefaults = new MapSaverTest();
+            mapdefaults.ReadFromDisk(@"c:\code\mapdef.txt");
+
             map = new Map();
             map.Start(glwfc, galacticMapping, eliteRegions);
+            map.LoadDefaults(mapdefaults);
+
             systemtimer.Start();
         }
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
+            map.SaveState(mapdefaults);
+            mapdefaults.WriteToDisk(@"c:\code\mapdef.txt");
             map.Dispose();
         }
 
@@ -66,6 +76,44 @@ namespace TestOpenTk
             map.Systick();
         }
     }
+
+    public class MapSaverTest : MapSaver
+    {
+        private Dictionary<string, Object> settings = new Dictionary<string, object>();
+
+        public void ReadFromDisk(string file)
+        {
+            if ( File.Exists(file))
+            {
+                string s = File.ReadAllText(file);
+                JToken jk = JToken.Parse(s);
+                settings = jk.ToObject<Dictionary<string,Object>>();
+            }
+        }
+
+        public void WriteToDisk(string file)
+        {
+            JToken jk = JToken.FromObject(settings);
+            File.WriteAllText(file, jk.ToString(Newtonsoft.Json.Formatting.Indented));
+        }
+            
+        public T GetSetting<T>(string id, T defaultvalue)
+        {
+            if (settings.ContainsKey(id))
+            {
+                return (T)settings[id];
+            }
+            else
+                return defaultvalue;
+        }
+
+        public void PutSetting<T>(string id, T value)
+        {
+            settings[id] = value;
+        }
+    }
+
+
 }
 
 

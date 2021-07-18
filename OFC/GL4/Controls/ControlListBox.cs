@@ -139,17 +139,20 @@ namespace OFC.GL4.Controls
 
         public bool FocusDown(int count = 1)
         {
-            count = Math.Min(count, Items.Count - focusindex - 1);
-
-            if (Items != null && count > 0)
+            if (Items != null)
             {
-                focusindex += count;
-                EnsureInView();
-                Invalidate();
-                return true;
+                count = Math.Min(count, Items.Count - focusindex - 1);
+
+                if (count > 0)
+                {
+                    focusindex += count;
+                    EnsureInView();
+                    Invalidate();
+                    return true;
+                }
             }
-            else
-                return false;
+
+            return false;
         }
 
         public bool SelectCurrent()

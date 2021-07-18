@@ -1,4 +1,18 @@
-﻿using EliteDangerousCore.EDSM;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+using EliteDangerousCore.EDSM;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -16,6 +30,12 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
+    public interface MapSaver           // saver interface
+    {
+        void PutSetting<T>(string id, T value);
+        T GetSetting<T>(string id, T defaultvalue);
+    }
+
     public class Map
     {
         public GLMatrixCalc matrixcalc;
@@ -301,7 +321,7 @@ namespace TestOpenTk
 
             // menu system
 
-            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc);       // hook form to the window - its the master
+            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f,0.00001f);       // hook form to the window - its the master
             displaycontrol.Font = new Font("Arial", 10f);
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.SetFocus();
@@ -387,7 +407,43 @@ namespace TestOpenTk
                 debugbuffer = new GLStorageBlock(31, true);
                 debugbuffer.AllocateBytes(32000, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
             }
+        }
 
+        public void LoadDefaults(MapSaver defaults)
+        {
+            GalaxyDisplay = defaults.GetSetting("GD", true);
+            StarDotsDisplay = defaults.GetSetting("SDD", true);
+            TravelPathDisplay = defaults.GetSetting("TPD", true);
+            GalObjectDisplay = defaults.GetSetting("GALOD", true);
+            SetAllGalObjectTypeEnables(defaults.GetSetting("GALOBJLIST", ""));
+
+            // tbd
+            EDSMRegionsEnable = defaults.GetSetting("ERe", false);
+            EDSMRegionsOutlineEnable = defaults.GetSetting("ERoe", false);
+            EDSMRegionsShadingEnable = defaults.GetSetting("ERse", false);
+            EDSMRegionsTextEnable = defaults.GetSetting("ERte", false);
+
+            EliteRegionsEnable = defaults.GetSetting("ELe", true);
+            EliteRegionsOutlineEnable = defaults.GetSetting("ELoe", true);
+            EliteRegionsShadingEnable = defaults.GetSetting("ELse", false);
+            EliteRegionsTextEnable = defaults.GetSetting("ELte", true);
+        }
+
+        public void SaveState(MapSaver defaults)
+        {
+            defaults.PutSetting("GD", GalaxyDisplay);
+            defaults.PutSetting("SDD", StarDotsDisplay);
+            defaults.PutSetting("TPD", TravelPathDisplay);
+            defaults.PutSetting("GALOD", GalObjectDisplay);
+            defaults.PutSetting("GALOBJLIST", GetAllGalObjectTypeEnables());
+            defaults.PutSetting("ERe", EDSMRegionsEnable);
+            defaults.PutSetting("ERoe", EDSMRegionsOutlineEnable);
+            defaults.PutSetting("ERse", EDSMRegionsShadingEnable);
+            defaults.PutSetting("ERte", EDSMRegionsTextEnable);
+            defaults.PutSetting("ELe", EliteRegionsEnable);
+            defaults.PutSetting("ELoe", EliteRegionsOutlineEnable);
+            defaults.PutSetting("ELse", EliteRegionsShadingEnable);
+            defaults.PutSetting("ELte", EliteRegionsTextEnable);
         }
 
         #endregion
@@ -470,9 +526,22 @@ namespace TestOpenTk
 
         #region Turn on/off, move, etc.
 
-        public bool EnableGalaxy { get { return galaxyshader.Enable; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
-        public bool EnableStarDots { get { return stardots.Enable; } set { stardots.Enable = value; glwfc.Invalidate(); } }
-        public bool EnableTravelPath { get { return travelpath.Enable; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+        public bool GalaxyDisplay { get { return galaxyshader.Enable; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
+        public bool StarDotsDisplay { get { return stardots.Enable; } set { stardots.Enable = value; glwfc.Invalidate(); } }
+        public bool TravelPathDisplay { get { return travelpath.Enable; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+        public bool GalObjectDisplay { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
+        public void SetGalObjectTypeEnable(string id, bool state) { galmapobjects.SetGalObjectTypeEnable(id, state); glwfc.Invalidate(); }
+        public bool GetGalObjectTypeEnable(string id) { return galmapobjects.GetGalObjectTypeEnable(id); }
+        public void SetAllGalObjectTypeEnables(string set) { galmapobjects.SetAllEnables(set); glwfc.Invalidate(); }
+        public string GetAllGalObjectTypeEnables() { return galmapobjects.GetAllEnables(); }
+        public bool EDSMRegionsEnable { get { return edsmgalmapregions.Enable; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions.Outlines; } set { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions.Regions; } set { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions.Text; } set { edsmgalmapregions.Text = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsEnable { get { return elitemapregions.Enable; } set { elitemapregions.Enable = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsOutlineEnable { get { return elitemapregions.Outlines; } set { elitemapregions.Outlines = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsShadingEnable { get { return elitemapregions.Regions; } set { elitemapregions.Regions = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsTextEnable { get { return elitemapregions.Text; } set { elitemapregions.Text = value; glwfc.Invalidate(); } }
 
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {
@@ -484,33 +553,29 @@ namespace TestOpenTk
             }
         }
 
-        public void SetEntryText(string text)
+        #endregion
+
+        #region Helpers
+
+        private void SetEntryText(string text)
         {
             ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]).Text = text;
             ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]).CancelAutoComplete();
             displaycontrol.SetFocus();
         }
 
-        public bool GalObjectEnable { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
-
-        public void UpdateGalObjectsStates()
-        {
-            galmapobjects.UpdateEnables(galmap);
-            glwfc.Invalidate();
-        }
-
-        public Object FindObjectOnMap(Point vierpowerloc)
+        private Object FindObjectOnMap(Point vierpowerloc)
         {
             var sys = travelpath?.FindSystem(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size) ?? null;
             if (sys != null)
                 return sys;
-            var gmo = galmapobjects?.FindPOI(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size, galmap) ?? null;
+            var gmo = galmapobjects?.FindPOI(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size) ?? null;
             if (gmo != null)
                 return gmo;
             return null;
         }
 
-        public Tuple<string,Vector3> NameLocation(Object obj)       // given a type, return its name and location
+        private Tuple<string,Vector3> NameLocation(Object obj)       // given a type, return its name and location
         {
             var sys = obj as ISystem;
             var gmo = obj as GalacticMapObject;
@@ -522,14 +587,6 @@ namespace TestOpenTk
                 return null;
         }
 
-        public bool EDSMRegionsEnable { get { return edsmgalmapregions.Enable; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions.Outlines; } set { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions.Regions; } set { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions.Text; } set { edsmgalmapregions.Text = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsEnable { get { return elitemapregions.Enable; } set { elitemapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsOutlineEnable { get { return elitemapregions.Outlines; } set { elitemapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsShadingEnable { get { return elitemapregions.Regions; } set { elitemapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsTextEnable { get { return elitemapregions.Text; } set { elitemapregions.Text = value; glwfc.Invalidate(); } }
 
         #endregion
 
@@ -543,12 +600,19 @@ namespace TestOpenTk
 
             if (item != null)
             {
-                if (item is ISystem)
-                    travelpath.SetSystem(item as ISystem);
-                var nl = NameLocation(item);
-                System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
-                SetEntryText(nl.Item1);
-                gl3dcontroller.SlewToPosition(nl.Item2, -1);
+                if (e.Button == GLMouseEventArgs.MouseButtons.Left)
+                {
+                    if (item is ISystem)
+                        travelpath.SetSystem(item as ISystem);
+                    var nl = NameLocation(item);
+                    System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
+                    SetEntryText(nl.Item1);
+                    gl3dcontroller.SlewToPosition(nl.Item2, -1);
+                }
+                else if (e.Button == GLMouseEventArgs.MouseButtons.Right )
+                {
+
+                }
             }
             else
                 gl3dcontroller.MouseDown(s, e);
@@ -594,19 +658,19 @@ namespace TestOpenTk
             }
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                EnableGalaxy = !EnableGalaxy;
+                GalaxyDisplay = !GalaxyDisplay;
             }
             if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                EnableStarDots = !EnableStarDots;
+                StarDotsDisplay = !StarDotsDisplay;
             }
             if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                EnableTravelPath = !EnableTravelPath;
+                TravelPathDisplay = !TravelPathDisplay;
             }
             if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                GalObjectEnable = !GalObjectEnable;
+                GalObjectDisplay = !GalObjectDisplay;
             }
             if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {

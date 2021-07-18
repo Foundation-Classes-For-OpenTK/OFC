@@ -40,7 +40,7 @@ namespace TestOpenTk
 
             GLTextBoxAutoComplete tptextbox = new GLTextBoxAutoComplete(EntryTextName, new Rectangle(170, 10, 300, iconsize), "");
             tptextbox.TextAlign = ContentAlignment.MiddleLeft;
-            tptextbox.BackColor = Color.Transparent;
+            tptextbox.BackColor = Color.FromArgb(96,50,50,50);
             tptextbox.BorderColor = Color.Gray;
             tptextbox.BorderWidth = 1;
             map.displaycontrol.Add(tptextbox);
@@ -57,15 +57,14 @@ namespace TestOpenTk
 
             GLBaseControl.Themer = Theme;
 
-            map.displaycontrol.GlobalFocusChanged += (from, to) =>
+            map.displaycontrol.GlobalMouseDown += (ctrl, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Focus change {from?.Name} => {to?.Name}");
-
-                if (to == map.displaycontrol && map.displaycontrol["FormMenu"] != null)
+                if (map.displaycontrol["Galmenu"]!= null && (ctrl == null || !map.displaycontrol["Galmenu"].IsThisOrChildOf(ctrl)))       // true because we don't want action if galmenu is closed
                 {
-                    ((GLForm)map.displaycontrol["FormMenu"]).Close();
+                    ((GLForm)map.displaycontrol["Galmenu"]).Close();
                 }
             };
+
         }
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it
@@ -94,7 +93,7 @@ namespace TestOpenTk
             int vpos = 10;
             int ypad = 10;
 
-            GLForm pform = new GLForm("FormMenu", "Configure Map", new Rectangle(10, 10, 600, 400));
+            GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 400));
             pform.BackColor = Color.FromArgb(180, 60, 60, 70);
             pform.ForeColor = Color.Orange;
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
@@ -128,20 +127,20 @@ namespace TestOpenTk
 
                 GLCheckBox butgal = new GLCheckBox("Galaxy", new Rectangle(leftmargin, vpos, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);
                 butgal.ToolTipText = "Show galaxy image";
-                butgal.Checked = map.EnableGalaxy;
-                butgal.CheckChanged += (e1) => { map.EnableGalaxy = butgal.Checked; };
+                butgal.Checked = map.GalaxyDisplay;
+                butgal.CheckChanged += (e1) => { map.GalaxyDisplay = butgal.Checked; };
                 pform.Add(butgal);
 
                 GLCheckBox butsd = new GLCheckBox("StarDots", new Rectangle(50, vpos, iconsize, iconsize), Properties.Resources.StarDots, null);
                 butsd.ToolTipText = "Show star field";
-                butsd.Checked = map.EnableStarDots;
-                butsd.CheckChanged += (e1) => { map.EnableStarDots = butsd.Checked; };
+                butsd.Checked = map.StarDotsDisplay;
+                butsd.CheckChanged += (e1) => { map.StarDotsDisplay = butsd.Checked; };
                 pform.Add(butsd);
 
                 GLCheckBox buttp = new GLCheckBox("TravelPath", new Rectangle(100, vpos, iconsize, iconsize), Properties.Resources.StarDots, null);
                 buttp.ToolTipText = "Show travel path";
-                buttp.Checked = map.EnableTravelPath;
-                buttp.CheckChanged += (e1) => { map.EnableTravelPath = buttp.Checked; };
+                buttp.Checked = map.TravelPathDisplay;
+                buttp.CheckChanged += (e1) => { map.TravelPathDisplay = buttp.Checked; };
                 pform.Add(buttp);
 
                 vpos += butgal.Height + ypad;
@@ -162,17 +161,21 @@ namespace TestOpenTk
                 for (int i = map.galmap.RenderableMapTypes.Length - 1; i >= 0; i--)
                 {
                     var gt = map.galmap.RenderableMapTypes[i];
+                    bool en = map.GetGalObjectTypeEnable(gt.Typeid);
                     GLCheckBox butg = new GLCheckBox("GMSEL", new Rectangle(0, 0, iconsize, iconsize), gt.Image, null);
                     butg.ToolTipText = "Enable/Disable " + gt.Description;
-                    butg.Checked = gt.Enabled;
-                    butg.CheckChanged += (e1) => { gt.Enabled = butg.Checked; map.UpdateGalObjectsStates(); };
+                    butg.Checked = en;
+                    butg.CheckChanged += (e1) =>
+                    {
+                        map.SetGalObjectTypeEnable(gt.Typeid, butg.Checked);
+                    };
                     galfp.Add(butg);
                 }
 
                 GLCheckBox butgonoff = new GLCheckBox("GMONOFF", new Rectangle(0, 0, iconsize, iconsize), Properties.Resources.dotted, null);
                 butgonoff.ToolTipText = "Enable/Disable Display";
-                butgonoff.Checked = map.GalObjectEnable;
-                butgonoff.CheckChanged += (e1) => { map.GalObjectEnable = !map.GalObjectEnable; };
+                butgonoff.Checked = map.GalObjectDisplay;
+                butgonoff.CheckChanged += (e1) => { map.GalObjectDisplay = !map.GalObjectDisplay; };
                 galfp.Add(butgonoff);
 
                 vpos += galgb.Height + ypad;

@@ -42,7 +42,12 @@ namespace OFC.GL4.Controls
 
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
-        public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc) : base("displaycontrol", new Rectangle(0, 0, mc.ScreenCoordMax.Width, mc.ScreenCoordMax.Height))
+        // need items, need a window to attach to, need a MC
+        public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc,
+                                    bool depthtest = true,          // do depth testing or not
+                                    float startz = 0.001f,          // z for the deepest window (only will apply if depth testing
+                                    float deltaz = 0.001f           // delta betwwen them
+                                ) : base("displaycontrol", new Rectangle(0, 0, mc.ScreenCoordMax.Width, mc.ScreenCoordMax.Height))
         {
             glwin = win;
             MatrixCalc = mc;
@@ -56,6 +61,11 @@ namespace OFC.GL4.Controls
 
             GLRenderControl rc = GLRenderControl.TriStrip();
             rc.PrimitiveRestart = 0xff;
+            rc.DepthTest = depthtest;
+
+            this.startz = startz;
+            this.deltaz = deltaz;
+
             ri = new GLRenderableItem(rc, 0, vertexarray);     // create a renderable item
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
             ri.DrawCount = 0;                               // nothing to draw at this point
@@ -184,7 +194,7 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-                // override remove control since we need to know if to remove texture
+        // override remove control since we need to know if to remove texture
 
         protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {   
@@ -222,7 +232,7 @@ namespace OFC.GL4.Controls
                 vertexes.AllocateBytes(ControlsZ.Count * sizeof(float) * vertexesperentry * 4);
                 vertexes.StartWrite(0, vertexes.Length);
 
-                float z = 0.0001f;      // we place it in clip space at a z near 0
+                float z = startz;      // we place it in clip space at a z near
                 int visible = 0;
 
                 List<IGLTexture> tlist = new List<IGLTexture>();
@@ -253,7 +263,7 @@ namespace OFC.GL4.Controls
                         }
 
                         vertexes.Write(a);
-                        z -= 0.0000001f;
+                        z -= deltaz;
                         visible++;
 
                         if (updatetextures)
@@ -316,6 +326,7 @@ namespace OFC.GL4.Controls
         private GLBindlessTextureHandleBlock texturebinds;
         private GLRenderableItem ri;
         private IGLProgramShader shader;
+        private float startz, deltaz;
 
         #endregion
 

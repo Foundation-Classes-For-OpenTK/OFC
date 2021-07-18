@@ -96,7 +96,7 @@ namespace TestOpenTk
                 tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 2);      // group 2
                 tim.CurrentGeneration = uint.MaxValue-10;
                 items.Add(tim);
-                tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadedistance: 10, alphaenddistance: 5);
                 tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                 tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
             }
@@ -183,7 +183,7 @@ namespace TestOpenTk
                     float width = 2.5f;
                     Vector3 bannersize = new Vector3(width, 0, 0);
                     Font f = new Font("MS sans serif", 8f);
-                    tim.Add("T1-" + genpos, "F" + genpos, f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphascale: 10, alphaend: 5);
+                    tim.Add("T1-" + genpos, "F" + genpos, f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadedistance: 10, alphaenddistance: 5);
                     tim.Add("T2" + genpos, "J" + genpos, f, Color.White, Color.Red, new Vector3(0, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                     tim.Add("T3" + genpos, "S" + genpos, f, Color.White, Color.Red, new Vector3(10, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
                 }

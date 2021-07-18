@@ -42,6 +42,7 @@ namespace EliteDangerousCore.EDSM
         deepSpaceOutpost,
         mysteryPOI,
         restrictedSectors,
+        independentOutpost,
     }
 
     public class GalMapType
@@ -57,9 +58,8 @@ namespace EliteDangerousCore.EDSM
         public string Typeid;
         public string Description;
         public Image Image;
-        public bool Animate;
         public GalMapGroup Group;
-        public bool Enabled;
+        public bool Animate;
         public int Index;
 
         public GalMapType(string id, string desc, GalMapGroup g, Image b, bool animate, int i)
@@ -69,7 +69,6 @@ namespace EliteDangerousCore.EDSM
             Group = g;
             Image = b;
             Animate = animate;
-            Enabled = false;
             Index = i;
         }
 
@@ -95,7 +94,8 @@ namespace EliteDangerousCore.EDSM
             type.Add(new GalMapType("deepSpaceOutpost", "Deep space outpost", GalMapGroup.Markers, TestOpenTk.Properties.Resources.deepSpaceOutpost, true, index++));
             type.Add(new GalMapType("mysteryPOI", "Mystery POI", GalMapGroup.Markers, TestOpenTk.Properties.Resources.mysteryPOI, true, index++));
             type.Add(new GalMapType("restrictedSectors", "Restricted Sectors", GalMapGroup.Markers, TestOpenTk.Properties.Resources.restrictedSectors, true, index++));
-     
+            type.Add(new GalMapType("independentOutpost", "Independent Outpost", GalMapGroup.Markers, TestOpenTk.Properties.Resources.restrictedSectors, true, index++));
+
             type.Add(new GalMapType("travelRoute", "Travel Route", GalMapGroup.Routes , null, true, index++));
             type.Add(new GalMapType("historicalRoute", "Historical Route", GalMapGroup.Routes , null, true, index++));
             type.Add(new GalMapType("minorRoute", "Minor Route", GalMapGroup.Routes, null, true, index++));
