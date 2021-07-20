@@ -121,7 +121,7 @@ namespace TestOpenTk
                     textrenderer.Add(o.id, o.name, fnt, 
                         Color.White,Color.Transparent, 
                         pos,
-                        new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: false, rotateelevation: false, 
+                        new Vector3(30, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: false, rotateelevation: false, 
                         alphafadedistance: -1000, alphaenddistance: 2000); //at 2000ly ed, 2000-2000/1000 = 0, at 1000ly, 2000-1000/1000 = 1. 0-1000 is at full alpha
                 }
             }

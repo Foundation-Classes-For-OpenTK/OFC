@@ -25,8 +25,8 @@ namespace OFC.GL4
     {
         // tape is segmented, and roty determines if its flat to Y or not, use with TriangleStrip
         // series of tapes with a margin between them.  Set up to provide the element index buffer indices as well
-        // aligns the element indexes for each tape to mod 4 to allow trianglestrip to work properly
-        // return list of points, and element buffer indexes
+        // aligns the element indexes start point for each tape to mod 4 to allow trianglestrip to work properly
+        // return list of points, and element buffer indexes, and the indexor draw element type
 
         public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, float width, float segmentlength = 1, float rotationaroundy = 0, 
                                                        float margin = 0, uint restartindex = 0xffffffff)
@@ -43,12 +43,12 @@ namespace OFC.GL4
                 {
                     while( vec.Count % 4 != 0 )     // must be on a boundary of four for the vertex shaders which normally are used
                     {
-                        vec.Add(new Vector4(1000,1000,1000,1));
+                        vec.Add(new Vector4(1000,2000,3000,1));     // dummy value we can recognise
                         vno++;
                     }
 
                     Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, margin);
-                    System.Diagnostics.Debug.WriteLine($"At {vno} vec {vec.Count} add {vec1.Length}");
+                  //  System.Diagnostics.Debug.WriteLine($"At {vno} vec {vec.Count} add {vec1.Length}");
                     vec.AddRange(vec1);
 
                     for (int l = 0; l < vec1.Length; l++)
@@ -65,10 +65,9 @@ namespace OFC.GL4
         }
         
         // Creates triangle strip co-ords
-        // A tape, between start and end, of width.
+        // A tape, between start and end, of width. Minimum of 4 points
         // segment length is the length between each set of vector points
         // select rotation around y in radians
-        // ensure integer samples
         // margin is offset to start from and end from from points
 
         public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundy = 0, float margin = 0)
@@ -83,7 +82,7 @@ namespace OFC.GL4
 
             float length = (end - start).Length;
             int innersegments = (int)(length / segmentlength);
-            if (innersegments < 1)  // must have at least 1 segment, since we need at least 4 vectors
+            if (innersegments < 1)  // must have at least 1 inner segment, since we need at least 4 vectors
                 innersegments = 1;
 
             segmentlength = length / innersegments;

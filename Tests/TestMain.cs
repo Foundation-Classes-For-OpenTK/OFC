@@ -327,7 +327,7 @@ namespace TestOpenTk
                             new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(30, 0, 10))
                             ));
 
-                // for this one, demo indexes and draw with CW to show it works
+                // for this one, demo indexes and draw with CW to show it works.  Note we are not using primitive restart
 
                 var cyl2 = GLCylinderObjectFactory.CreateCylinderFromTrianglesIndexes(3, 10, 20, 2, caps: true, ccw:false);
 
@@ -443,7 +443,7 @@ namespace TestOpenTk
 
             #region Tape
 
-            if (false)
+            if (true)
             {
                 var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 10), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
 
@@ -459,7 +459,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("tapeshader"), "tape1", GLRenderableItem.CreateVector4(items, rts, p , new GLRenderDataTexture(items.Tex("tapelogo"))));
             }
 
-            if (false)
+            if (true)
             {
                 var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 10), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
 
@@ -485,7 +485,7 @@ namespace TestOpenTk
                 items.Tex("tapelogo3").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
                 items.Add( new GLTexturedShaderTriangleStripWithWorldCoord(true), "tapeshader3");
 
-                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3);
+                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3);     // sets primitive restart value to Item3 draw type
                 rts.CullFace = false;
 
                 GLRenderableItem ri = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo3")));

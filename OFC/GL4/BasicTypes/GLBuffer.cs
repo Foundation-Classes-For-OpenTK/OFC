@@ -254,7 +254,7 @@ namespace OFC.GL4
             Positions.Clear();
         }
 
-        public void FillRectangularIndicesBytes(int reccount, int restartindex = 0xff)        // rectangular indicies with restart of 0xff
+        public void FillRectangularIndicesBytes(int reccount, uint restartindex = 0xff)        // rectangular indicies with restart of 0xff
         {
             AllocateBytes(reccount * 5);
             StartWrite(0, Length);
@@ -267,7 +267,7 @@ namespace OFC.GL4
             StopReadWrite();
         }
 
-        public void FillRectangularIndicesShort(int reccount, int restartindex = 0xffff)        // rectangular indicies with restart of 0xff
+        public void FillRectangularIndicesShort(int reccount, uint restartindex = 0xffff)        // rectangular indicies with restart of 0xff
         {
             AllocateBytes(reccount * 5 * sizeof(short));     // lets use short because we don't have a marshall copy ushort.. ignore the overflow
             StartWrite(0, Length);

@@ -282,8 +282,6 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.TravelPathStartDate = new DateTime(2020, 6, 13);
-                travelpath.TravelPathStartDateEnable = true;
                 travelpath.Create(items, rObjects, pos, 2, 0.8f, findstarblock);
                 travelpath.SetSystem(0);
             }
@@ -420,11 +418,11 @@ namespace TestOpenTk
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 
             TravelPathDisplay = defaults.GetSetting("TPD", true);
-          //  TravelPathStartDate = defaults.GetSetting("TPSD", new DateTime(2014, 12, 16));
-          //  TravelPathStartDateEnable = defaults.GetSetting("TPSDE", false);
-           // TravelPathEndDate = defaults.GetSetting("TPED", DateTime.UtcNow.AddMonths(1));
-           // TravelPathEndDateEnable = defaults.GetSetting("TPEDE", false);
-          //  if ( TravelPathStartDateEnable || TravelPathEndDateEnable )
+            TravelPathStartDate = defaults.GetSetting("TPSD", new DateTime(2014, 12, 16));
+            TravelPathStartDateEnable = defaults.GetSetting("TPSDE", false);
+            TravelPathEndDate = defaults.GetSetting("TPED", DateTime.UtcNow.AddMonths(1));
+            TravelPathEndDateEnable = defaults.GetSetting("TPEDE", false);
+            if ( TravelPathStartDateEnable || TravelPathEndDateEnable )
                 travelpath.Refresh();       // and refresh it if we set the data
 
             GalObjectDisplay = defaults.GetSetting("GALOD", true);

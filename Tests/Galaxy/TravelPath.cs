@@ -93,67 +93,68 @@ namespace TestOpenTk
             // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
             var tape = GLTapeObjectFactory.CreateTape(positionsv4, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
 
-            //if (ritape == null) // first time..
-            //{
-            //    // first the tape
+            if (ritape == null) // first time..
+            {
+                // first the tape
 
-            //    var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
-            //    items.Add(tapetex);
-            //    tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+                var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
+                items.Add(tapetex);
+                tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
-            //    tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
-            //    items.Add(tapeshader);
+                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
+                items.Add(tapeshader);
 
-            //    GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // gl control object
-            //    rts.DepthTest = false;  // no depth test so always appears
+                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
+                rts.DepthTest = false;  // no depth test so always appears
 
-            //    // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
-            //    ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));   
-            //    tapepointbuf = items.LastBuffer();  // keep buffer for refill
-            //    ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
+                // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
+                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
+                tapepointbuf = items.LastBuffer();  // keep buffer for refill
+                ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
-            //    ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
+                ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
 
-            //    rObjects.Add(tapeshader, ritape);   // add render to object list
+                rObjects.Add(tapeshader, ritape);   // add render to object list
 
-            //    // now the stars
+                // now the stars
 
-            //    starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
-            //    starposbuf.AllocateFill(positionsv4);
+                starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
+                starposbuf.AllocateFill(positionsv4);
 
-            //    sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
-            //    items.Add(sunvertex);
-            //    sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-            //    items.Add(sunshader);
+                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
+                items.Add(sunvertex);
+                sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
+                items.Add(sunshader);
 
-            //    var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
+                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
 
-            //    GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-            //    rt.DepthTest = false;
-            //    renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
-            //    rObjects.Add(sunshader, renderersun);
+                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                rt.DepthTest = false;
+                renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
+                rObjects.Add(sunshader, renderersun);
 
-            //    // find compute
+                // find compute
 
-            //    findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
-            //    items.Add(findshader);
-            //    rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
+                findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+                items.Add(findshader);
+                rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
-            //    // Sun names, handled by textrenderer
-            //    textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest:false, cullface:false);
-            //    items.Add(textrenderer);
-            //}
-            //else
-            //{
-            //    tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
-            //    ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
-            //    ritape.Visible = tape.Item1.Count > 0;
+                // Sun names, handled by textrenderer
+                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: false, cullface: false);
+                items.Add(textrenderer);
+            }
+            else
+            {
+                tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
+                ritape.RenderControl.PrimitiveRestart = GL4Statics.DrawElementsRestartValue(tape.Item3);        // IMPORTANT missing bit Robert, must set the primitive restart value to the new tape size
+                ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
+                ritape.Visible = tape.Item1.Count > 0;
 
-            //    starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
-            //    renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
+                starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
+                renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
 
-            //    rifind.InstanceCount = positionsv4.Length;  // update the find list
-            //}
+                rifind.InstanceCount = positionsv4.Length;  // update the find list
+            }
 
             // name bitmaps
 

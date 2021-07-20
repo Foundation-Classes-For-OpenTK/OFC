@@ -259,11 +259,11 @@ namespace OFC.GL4
             return CreateVector4Vector2(items, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
         }
 
-        // using output of some shape generators, with element buffer indices. Normally Vertex, UVs, element indexes
+        // using output of some shape generators, with element buffer indices. Normally Vertex, UVs, element indexes.. Not using primitive restart here.
         public static GLRenderableItem CreateVector4Vector2Indexed(GLItemsList items, GLRenderControl pt, Tuple<Vector4[], Vector2[], uint[]> vectors, IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
-            var dt = GL4Statics.DrawElementsTypeFromMaxEID((uint)vectors.Item1.Length - 1);
             var ri = CreateVector4Vector2(items, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
+            var dt = GL4Statics.DrawElementsTypeFromMaxEID((uint)vectors.Item1.Length - 1);
             ri.CreateElementIndex(items.NewBuffer(), vectors.Item3, dt);
             return ri;
         }
@@ -494,7 +494,7 @@ namespace OFC.GL4
 
         #region Create element indexs for this RI. Normally called after Create..
 
-        public void CreateRectangleElementIndexByte(GLBuffer elementbuf, int reccount, int restartindex = 0xff)
+        public void CreateRectangleElementIndexByte(GLBuffer elementbuf, int reccount, uint restartindex = 0xff)
         {
             ElementBuffer = elementbuf;
             ElementBuffer.FillRectangularIndicesBytes(reccount, restartindex);
@@ -503,7 +503,7 @@ namespace OFC.GL4
             //byte[] b = elementbuf.ReadBuffer(0, elementbuf.BufferSize); // test read back
         }
 
-        public void CreateRectangleElementIndexUShort(GLBuffer elementbuf, int reccount, int restartindex = 0xffff)
+        public void CreateRectangleElementIndexUShort(GLBuffer elementbuf, int reccount, uint restartindex = 0xffff)
         {
             ElementBuffer = elementbuf;
             ElementBuffer.FillRectangularIndicesShort(reccount, restartindex);
@@ -529,13 +529,13 @@ namespace OFC.GL4
             DrawCount = indexes.Length;
         }
 
-        // create an index, to the drawtype size
+        // create an index, calculate the draw type
         public void CreateElementIndex(GLBuffer elementbuf, uint[] eids, int base_index = 0)
         {
             CreateElementIndex(elementbuf, eids, GL4Statics.DrawElementsTypeFromMaxEID(eids.Max()), base_index);
         }
 
-        // create an index, to the drawtype size
+        // create an index, to the drawtype sepcified
         public void CreateElementIndex(GLBuffer elementbuf, uint[] eids, DrawElementsType drawtype, int base_index = 0)
         {
             ElementBuffer = elementbuf;
@@ -543,17 +543,14 @@ namespace OFC.GL4
             if (drawtype == DrawElementsType.UnsignedByte)
             {
                 ElementBuffer.AllocateFill(eids.Select(x => (byte)x).ToArray());
-                DrawType = DrawElementsType.UnsignedByte;
             }
             else if (drawtype == DrawElementsType.UnsignedShort)
             {
                 ElementBuffer.AllocateFill(eids.Select(x => (ushort)x).ToArray());
-                DrawType = DrawElementsType.UnsignedShort;
             }
             else
             {
                 ElementBuffer.AllocateFill(eids.ToArray());
-                DrawType = DrawElementsType.UnsignedInt;
             }
 
             DrawType = drawtype;
