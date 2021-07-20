@@ -646,6 +646,8 @@ namespace OFC.GL4.Controls
                 }
             }
 
+            //System.Diagnostics.Debug.WriteLine($"Remove control {child.Name} in {Name}");
+
             child.OnControlRemove(this, child);
             OnControlRemove(this, child);
             //System.Diagnostics.Debug.WriteLine("Remove {0} {1}", child.GetType().Name, child.Name);

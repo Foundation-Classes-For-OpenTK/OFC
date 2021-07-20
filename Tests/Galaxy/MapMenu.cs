@@ -1,4 +1,5 @@
 ﻿using OFC.GL4.Controls;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -93,10 +94,11 @@ namespace TestOpenTk
             int vpos = 10;
             int ypad = 10;
 
-            GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 400));
+            GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 600));
             pform.BackColor = Color.FromArgb(180, 60, 60, 70);
             pform.ForeColor = Color.Orange;
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
+            pform.Resizable = pform.Moveable = false;
 
             {   // top buttons
                 GLPanel p3d2d = new GLPanel("3d2d", new Rectangle(leftmargin, vpos, 80, iconsize), Color.Transparent);
@@ -108,7 +110,7 @@ namespace TestOpenTk
                 but3d.MouseClick += (e1, e2) => { map.gl3dcontroller.ChangePerspectiveMode(true); };
                 p3d2d.Add(but3d);
 
-                GLCheckBox but2d = new GLCheckBox("2d", new Rectangle(40, 0, iconsize, iconsize), Properties.Resources._2d, null);
+                GLCheckBox but2d = new GLCheckBox("2d", new Rectangle(50, 0, iconsize, iconsize), Properties.Resources._2d, null);
                 but2d.Checked = !map.gl3dcontroller.MatrixCalc.InPerspectiveMode;
                 but2d.ToolTipText = "2D View";
                 but2d.GroupRadioButton = true;
@@ -123,28 +125,55 @@ namespace TestOpenTk
                 butelite.CheckChanged += (e1) => { map.gl3dcontroller.EliteMovement = butelite.Checked; };
                 pform.Add(butelite);
 
-                vpos += p3d2d.Height + ypad;
-
-                GLCheckBox butgal = new GLCheckBox("Galaxy", new Rectangle(leftmargin, vpos, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);
+                GLCheckBox butgal = new GLCheckBox("Galaxy", new Rectangle(150, vpos, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);
                 butgal.ToolTipText = "Show galaxy image";
                 butgal.Checked = map.GalaxyDisplay;
                 butgal.CheckChanged += (e1) => { map.GalaxyDisplay = butgal.Checked; };
                 pform.Add(butgal);
 
-                GLCheckBox butsd = new GLCheckBox("StarDots", new Rectangle(50, vpos, iconsize, iconsize), Properties.Resources.StarDots, null);
+                GLCheckBox butsd = new GLCheckBox("StarDots", new Rectangle(200, vpos, iconsize, iconsize), Properties.Resources.StarDots, null);
                 butsd.ToolTipText = "Show star field";
                 butsd.Checked = map.StarDotsDisplay;
                 butsd.CheckChanged += (e1) => { map.StarDotsDisplay = butsd.Checked; };
                 pform.Add(butsd);
 
-                GLCheckBox buttp = new GLCheckBox("TravelPath", new Rectangle(100, vpos, iconsize, iconsize), Properties.Resources.StarDots, null);
+                vpos += butgal.Height + ypad;
+            }
+
+            {
+                GLGroupBox tpgb = new GLGroupBox("TravelPathGB", "Travel Path", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize *2));
+                tpgb.BackColor = pform.BackColor;
+                tpgb.ForeColor = Color.Orange;
+                pform.Add(tpgb);
+
+                GLCheckBox buttp = new GLCheckBox("TravelPath", new Rectangle(leftmargin, 0, iconsize, iconsize), Properties.Resources.StarDots, null);
                 buttp.ToolTipText = "Show travel path";
                 buttp.Checked = map.TravelPathDisplay;
                 buttp.CheckChanged += (e1) => { map.TravelPathDisplay = buttp.Checked; };
-                pform.Add(buttp);
+                tpgb.Add(buttp);
 
-                vpos += butgal.Height + ypad;
+                GLDateTimePicker dtps = new GLDateTimePicker("TPStart", new Rectangle(50, 0, 250, 30), DateTime.Now);
+                dtps.Font = new Font("Ms Sans Serif", 8.25f);
+                dtps.ShowCheckBox = dtps.ShowCalendar = true;
+                dtps.Value = map.TravelPathStartDate;
+                dtps.Checked = map.TravelPathStartDateEnable;
+                dtps.ValueChanged += (e1) => { map.TravelPathStartDate = dtps.Value; map.TravelPathRefresh(); };
+                dtps.CheckChanged += (e1) => { map.TravelPathStartDateEnable = dtps.Checked; map.TravelPathRefresh(); };
+                dtps.ShowUpDown = true;
+                tpgb.Add(dtps);
 
+                GLDateTimePicker dtpe = new GLDateTimePicker("TPEnd", new Rectangle(320, 0, 250, 30), DateTime.Now);
+                dtpe.Font = new Font("Ms Sans Serif", 8.25f);
+                dtpe.ShowCheckBox = dtps.ShowCalendar = true;
+                dtpe.Value = map.TravelPathEndDate;
+                dtpe.Checked = map.TravelPathEndDateEnable;
+                dtpe.ValueChanged += (e1) => { map.TravelPathEndDate = dtpe.Value; map.TravelPathRefresh(); };
+                dtpe.CheckChanged += (e1) => { map.TravelPathEndDateEnable = dtpe.Checked; map.TravelPathRefresh(); };
+                dtpe.ShowUpDown = true;
+                tpgb.Add(dtpe);
+
+
+                vpos += tpgb.Height + ypad;
             }
 
             { // Galaxy objects
@@ -162,7 +191,7 @@ namespace TestOpenTk
                 {
                     var gt = map.galmap.RenderableMapTypes[i];
                     bool en = map.GetGalObjectTypeEnable(gt.Typeid);
-                    GLCheckBox butg = new GLCheckBox("GMSEL", new Rectangle(0, 0, iconsize, iconsize), gt.Image, null);
+                    GLCheckBox butg = new GLCheckBox("GMSEL"+i, new Rectangle(0, 0, iconsize, iconsize), gt.Image, null);
                     butg.ToolTipText = "Enable/Disable " + gt.Description;
                     butg.Checked = en;
                     butg.CheckChanged += (e1) =>
@@ -190,7 +219,6 @@ namespace TestOpenTk
                 vpos += edsmregionsgb.Height + ypad;
 
                 GLCheckBox butedre = new GLCheckBox("EDSMRE", new Rectangle(leftmargin, 0, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);
-
                 butedre.ToolTipText = "Enable EDSM Regions";
                 butedre.Checked = map.EDSMRegionsEnable;
                 butedre.UserCanOnlyCheck = true;

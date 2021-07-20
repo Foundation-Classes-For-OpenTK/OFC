@@ -261,25 +261,30 @@ namespace TestOpenTk
             if (true)       // travel path
             {
                 Random rnd = new Random(52);
-                List<ISystem> pos = new List<ISystem>();
+                List<HistoryEntry> pos = new List<HistoryEntry>();
+                DateTime start = new DateTime(2020, 1, 1);
                 for (int j = 0; j <= 200; j++)
                 {
                     int i = j * 10;
                     string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
-                        pos.Add(new ISystem(name, i + rnd.Next(50), rnd.Next(50), i));
+                        pos.Add(new HistoryEntry(start, name, i + rnd.Next(50), rnd.Next(50), i));
                     else if (i < 60000)
-                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
+                        pos.Add(new HistoryEntry(start, name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
                     else if (i < 90000)
-                        pos.Add(new ISystem(name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
+                        pos.Add(new HistoryEntry(start, name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
                     else 
-                        pos.Add(new ISystem(name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
+                        pos.Add(new HistoryEntry(start, name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
+
+                    start = start.AddDays(1);
                 }
 
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.CreatePath(items, rObjects, pos, 2, 0.8f, findstarblock);
+                travelpath.TravelPathStartDate = new DateTime(2020, 6, 13);
+                travelpath.TravelPathStartDateEnable = true;
+                travelpath.Create(items, rObjects, pos, 2, 0.8f, findstarblock);
                 travelpath.SetSystem(0);
             }
 
@@ -374,7 +379,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
                 List<string> list = glist.Select(x => x.name).ToList();
-                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Name));
+                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
                 list.Sort();
                 return list;
             };
@@ -391,11 +396,11 @@ namespace TestOpenTk
                 }
                 else
                 {
-                    var sys = travelpath.CurrentList.Find(x => x.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
-                    if (sys != null)
+                    var he = travelpath.CurrentList.Find(x => x.System.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                    if (he != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("Move to sys " + sys.Name);
-                        gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
+                        System.Diagnostics.Debug.WriteLine("Move to sys " + he.System.Name);
+                        gl3dcontroller.SlewToPosition(new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z), -1);
                     }
                     else
                         tbac.InErrorCondition = true;
@@ -413,11 +418,18 @@ namespace TestOpenTk
         {
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
+
             TravelPathDisplay = defaults.GetSetting("TPD", true);
+          //  TravelPathStartDate = defaults.GetSetting("TPSD", new DateTime(2014, 12, 16));
+          //  TravelPathStartDateEnable = defaults.GetSetting("TPSDE", false);
+           // TravelPathEndDate = defaults.GetSetting("TPED", DateTime.UtcNow.AddMonths(1));
+           // TravelPathEndDateEnable = defaults.GetSetting("TPEDE", false);
+          //  if ( TravelPathStartDateEnable || TravelPathEndDateEnable )
+                travelpath.Refresh();       // and refresh it if we set the data
+
             GalObjectDisplay = defaults.GetSetting("GALOD", true);
             SetAllGalObjectTypeEnables(defaults.GetSetting("GALOBJLIST", ""));
 
-            // tbd
             EDSMRegionsEnable = defaults.GetSetting("ERe", false);
             EDSMRegionsOutlineEnable = defaults.GetSetting("ERoe", false);
             EDSMRegionsShadingEnable = defaults.GetSetting("ERse", false);
@@ -434,6 +446,10 @@ namespace TestOpenTk
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
             defaults.PutSetting("TPD", TravelPathDisplay);
+            defaults.PutSetting("TPSD", TravelPathStartDate );
+            defaults.PutSetting("TPSDE", TravelPathStartDateEnable);
+            defaults.PutSetting("TPED", TravelPathEndDate);
+            defaults.PutSetting("TPEDE", TravelPathEndDateEnable);
             defaults.PutSetting("GALOD", GalObjectDisplay);
             defaults.PutSetting("GALOBJLIST", GetAllGalObjectTypeEnables());
             defaults.PutSetting("ERe", EDSMRegionsEnable);
@@ -529,6 +545,13 @@ namespace TestOpenTk
         public bool GalaxyDisplay { get { return galaxyshader.Enable; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
         public bool StarDotsDisplay { get { return stardots.Enable; } set { stardots.Enable = value; glwfc.Invalidate(); } }
         public bool TravelPathDisplay { get { return travelpath.Enable; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+
+        public void TravelPathRefresh() { travelpath.Refresh(); }   // travelpath.Refresh() manually after these have changed
+        public DateTime TravelPathStartDate { get { return travelpath.TravelPathStartDate; } set { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } }
+        public bool TravelPathStartDateEnable { get { return travelpath.TravelPathStartDateEnable; } set { if (travelpath.TravelPathStartDateEnable != value) { travelpath.TravelPathStartDateEnable = value; } } }
+        public DateTime TravelPathEndDate { get { return travelpath.TravelPathEndDate; } set { if (travelpath.TravelPathEndDate != value) { travelpath.TravelPathEndDate = value;  } } }
+        public bool TravelPathEndDateEnable { get { return travelpath.TravelPathEndDateEnable; } set { if (travelpath.TravelPathEndDateEnable != value) { travelpath.TravelPathEndDateEnable = value; } } }
+
         public bool GalObjectDisplay { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
         public void SetGalObjectTypeEnable(string id, bool state) { galmapobjects.SetGalObjectTypeEnable(id, state); glwfc.Invalidate(); }
         public bool GetGalObjectTypeEnable(string id) { return galmapobjects.GetGalObjectTypeEnable(id); }
@@ -545,11 +568,11 @@ namespace TestOpenTk
 
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {
-            var sys = dir == 0 ? travelpath.CurrentSystem : (dir < 0 ? travelpath.PrevSystem() : travelpath.NextSystem());
-            if ( sys!= null)
+            var he = dir == 0 ? travelpath.CurrentSystem : (dir < 0 ? travelpath.PrevSystem() : travelpath.NextSystem());
+            if ( he!= null)
             {
-                gl3dcontroller.SlewToPosition(new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), -1);
-                SetEntryText(sys.Name);
+                gl3dcontroller.SlewToPosition(new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z), -1);
+                SetEntryText(he.System.Name);
             }
         }
 
@@ -577,10 +600,10 @@ namespace TestOpenTk
 
         private Tuple<string,Vector3> NameLocation(Object obj)       // given a type, return its name and location
         {
-            var sys = obj as ISystem;
+            var he = obj as HistoryEntry;
             var gmo = obj as GalacticMapObject;
-            if (sys != null)
-                return new Tuple<string, Vector3>(sys.Name, new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z));
+            if (he != null)
+                return new Tuple<string, Vector3>(he.System.Name, new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z));
             else if (gmo != null)
                 return new Tuple<string, Vector3>(gmo.name, new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z));
             else
@@ -602,8 +625,8 @@ namespace TestOpenTk
             {
                 if (e.Button == GLMouseEventArgs.MouseButtons.Left)
                 {
-                    if (item is ISystem)
-                        travelpath.SetSystem(item as ISystem);
+                    if (item is HistoryEntry)
+                        travelpath.SetSystem(item as HistoryEntry);
                     var nl = NameLocation(item);
                     System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
                     SetEntryText(nl.Item1);
@@ -686,37 +709,11 @@ namespace TestOpenTk
                 EliteRegionsEnable = edsm;
             }
 
-            // DEBUG!
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
-            {
-                Random rnd = new Random(System.Environment.TickCount);
-                List<ISystem> pos = new List<ISystem>();
-                for (int j = 0; j <= 200; j++)
-                {
-                    int i = j * 10;
-                    string name = "Kyli Flyuae AA-B h" + j.ToString();
-                    if (i < 30000)
-                        pos.Add(new ISystem(name, i + rnd.Next(50), rnd.Next(50), i));
-                    else if (i < 60000)
-                        pos.Add(new ISystem(name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
-                    else if (i < 90000)
-                        pos.Add(new ISystem(name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
-                    else
-                        pos.Add(new ISystem(name, -30000 + (i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
-                }
-
-                travelpath.CreatePath(null, null, pos, 2, 0.8f, 0);
-                travelpath.SetSystem(0);
-
-                glwfc.Invalidate();
-            }
-
             if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
             {
-                ISystem prev = travelpath.CurrentList.Last();
-                travelpath.CurrentList.Add(new ISystem("new-" + newsys.ToString(), prev.X, prev.Y, prev.Z + 100));
+                HistoryEntry prev = travelpath.CurrentList.Last();
+                travelpath.AddSystem(new HistoryEntry(DateTime.UtcNow, "new-" + newsys.ToString(), prev.System.X, prev.System.Y, prev.System.Z + 100));
                 newsys++;
-                travelpath.CreatePath(null, null, travelpath.CurrentList, 2, 0.8f, 0);
                 glwfc.Invalidate();
             }
         }

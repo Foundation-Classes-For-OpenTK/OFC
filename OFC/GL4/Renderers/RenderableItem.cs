@@ -500,7 +500,6 @@ namespace OFC.GL4
             ElementBuffer.FillRectangularIndicesBytes(reccount, restartindex);
             DrawType = DrawElementsType.UnsignedByte;
             DrawCount = ElementBuffer.Length - 1;
-
             //byte[] b = elementbuf.ReadBuffer(0, elementbuf.BufferSize); // test read back
         }
 
@@ -544,6 +543,7 @@ namespace OFC.GL4
             if (drawtype == DrawElementsType.UnsignedByte)
             {
                 ElementBuffer.AllocateFill(eids.Select(x => (byte)x).ToArray());
+                DrawType = DrawElementsType.UnsignedByte;
             }
             else if (drawtype == DrawElementsType.UnsignedShort)
             {

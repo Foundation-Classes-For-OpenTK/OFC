@@ -181,7 +181,7 @@ void main(void)
     // either the vertex's are separated by primitive restart, 
     // or they are back to back in which case we need to invert text co-ord x for each other set of triangles
     // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord - as per triangle strip
+    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord - as per triangle strip. Strip must start on a modulo 4 boundary. Must have at least 3 points.
     //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
     //      location 24 : uniform of texture offset (written by start automatically)
 

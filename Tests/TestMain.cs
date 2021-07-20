@@ -64,7 +64,7 @@ namespace TestOpenTk
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
-                return (float)ms / 100.0f;
+                return (float)ms / 10.0f;
             };
 
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
@@ -320,9 +320,10 @@ namespace TestOpenTk
                             ));
 
                 var cyl = GLCylinderObjectFactory.CreateCylinderFromTriangles(3, 20, 20, 2, caps:true);
-                GLRenderControl rt2 = GLRenderControl.Tri();
+
+                GLRenderControl rtri = GLRenderControl.Tri();
                 rObjects.Add(items.Shader("TEXOTNoRot"), "cylinder1",
-                GLRenderableItem.CreateVector4Vector2(items, rt2, cyl,
+                GLRenderableItem.CreateVector4Vector2(items, rtri, cyl,
                             new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(30, 0, 10))
                             ));
 
@@ -331,7 +332,7 @@ namespace TestOpenTk
                 var cyl2 = GLCylinderObjectFactory.CreateCylinderFromTrianglesIndexes(3, 10, 20, 2, caps: true, ccw:false);
 
                 rObjectscw.Add(items.Shader("TEXOTNoRot"), "cylinder2",
-                        GLRenderableItem.CreateVector4Vector2Indexed(items, rt2, cyl2,
+                        GLRenderableItem.CreateVector4Vector2Indexed(items, rtri, cyl2,
                             new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(40, 0, 10))
                             ));
 
@@ -442,9 +443,9 @@ namespace TestOpenTk
 
             #region Tape
 
-            if (true)
+            if (false)
             {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 10), new Vector3(100, 50, 100), 4, 20, 80F.Radians(), ensureintegersamples: true);
+                var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 10), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
 
                 items.Add( new GLTexture2D(Properties.Resources.Logo8bpp), "tapelogo");
 
@@ -458,9 +459,9 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("tapeshader"), "tape1", GLRenderableItem.CreateVector4(items, rts, p , new GLRenderDataTexture(items.Tex("tapelogo"))));
             }
 
-            if (true)
+            if (false)
             {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 10), new Vector3(-100, 50, 100), 4, 20, 80F.Radians(), ensureintegersamples: true);
+                var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 10), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
 
                 items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "tapelogo2");
 
@@ -476,19 +477,19 @@ namespace TestOpenTk
 
             if (true)
             {
-                Vector4[] points = new Vector4[] { new Vector4(100, 5, 40, 0), new Vector4(0, 5, 100, 0), new Vector4(-50, 5, 80, 0), new Vector4(-60, 5, 40, 0) };
+                Vector4[] points = new Vector4[] { new Vector4(100, 5, 40, 0), new Vector4(0, 5, 100, 0), new Vector4(-50, 5, 80, 0), new Vector4(-60, 5, 20, 0) };
 
-                var p = GLTapeObjectFactory.CreateTape(points.ToArray(), 4, 20, 90F.Radians(), ensureintegersamples: true, margin:0.5f);
+                var tape = GLTapeObjectFactory.CreateTape(points.ToArray(), 1, 20f, 90F.Radians(), margin:1.5f);
 
                 items.Add( new GLTexture2D(Properties.Resources.chevron), "tapelogo3");
                 items.Tex("tapelogo3").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
                 items.Add( new GLTexturedShaderTriangleStripWithWorldCoord(true), "tapeshader3");
 
-                GLRenderControl rts = GLRenderControl.TriStrip(p.Item3);
+                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3);
                 rts.CullFace = false;
 
-                GLRenderableItem ri = GLRenderableItem.CreateVector4(items, rts, p.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo3")));
-                ri.CreateElementIndex(items.NewBuffer(), p.Item2.ToArray(), p.Item3);
+                GLRenderableItem ri = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo3")));
+                ri.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3);
 
                 rObjects.Add(items.Shader("tapeshader3"), "tape3", ri);
             }

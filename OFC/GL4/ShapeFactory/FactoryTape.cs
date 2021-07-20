@@ -23,14 +23,13 @@ namespace OFC.GL4
 
     static public class GLTapeObjectFactory
     {
-        // tape is segmented, and rotx determines if its flat to Y or not, use with TriangleStrip
-
-
+        // tape is segmented, and roty determines if its flat to Y or not, use with TriangleStrip
         // series of tapes with a margin between them.  Set up to provide the element index buffer indices as well
         // aligns the element indexes for each tape to mod 4 to allow trianglestrip to work properly
+        // return list of points, and element buffer indexes
 
         public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, float width, float segmentlength = 1, float rotationaroundy = 0, 
-                                                        bool ensureintegersamples = false, float margin = 0, uint restartindex = 0xffffffff)
+                                                       float margin = 0, uint restartindex = 0xffffffff)
         {
             List<Vector4> vec = new List<Vector4>();
             List<uint> eids = new List<uint>();
@@ -42,14 +41,14 @@ namespace OFC.GL4
 
                 for (int i = 0; i < points.Length - 1; i++)
                 {
-                    if (vec.Count % 4 == 2)   // must start each line on a mod 4 vector index boundary for the triangle strip to work (vertex shader)
+                    while( vec.Count % 4 != 0 )     // must be on a boundary of four for the vertex shaders which normally are used
                     {
-                        vec.Add(Vector4.Zero);
-                        vec.Add(Vector4.Zero);
-                        vno += 2;
+                        vec.Add(new Vector4(1000,1000,1000,1));
+                        vno++;
                     }
 
-                    Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, ensureintegersamples, margin);
+                    Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, margin);
+                    System.Diagnostics.Debug.WriteLine($"At {vno} vec {vec.Count} add {vec1.Length}");
                     vec.AddRange(vec1);
 
                     for (int l = 0; l < vec1.Length; l++)
@@ -65,8 +64,14 @@ namespace OFC.GL4
             return new Tuple<List<Vector4>, List<uint>,DrawElementsType>(vec, eids,det);
         }
         
+        // Creates triangle strip co-ords
+        // A tape, between start and end, of width.
+        // segment length is the length between each set of vector points
+        // select rotation around y in radians
+        // ensure integer samples
+        // margin is offset to start from and end from from points
 
-        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundy = 0, bool ensureintegersamples = false, float margin = 0)
+        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundy = 0, float margin = 0)
         {
             Vector3 vectorto = Vector3.Normalize(end - start);                  // vector between the points, normalised
 
@@ -78,13 +83,10 @@ namespace OFC.GL4
 
             float length = (end - start).Length;
             int innersegments = (int)(length / segmentlength);
-            if ( ensureintegersamples )
-            {
-                if (innersegments % 2 == 1)         // for the triangle strip to work, across a primitive restart, we must have an even set of segments..
-                    innersegments++;                // fragment shader expects first primitive to be mod 4
+            if (innersegments < 1)  // must have at least 1 segment, since we need at least 4 vectors
+                innersegments = 1;
 
-                segmentlength = length / innersegments;
-            }
+            segmentlength = length / innersegments;
 
             Vector4[] tape = new Vector4[2 + 2 * innersegments];                // 2 start, plus 2 for any inners
             double xzangle = Math.Atan2(end.Z - start.Z, end.X - start.X);      // angle on the ZX plane between start/end

@@ -39,8 +39,10 @@ namespace OFC.GL4.Controls
         public const int FormBorderWidth = 1;
 
         public bool FormShown { get; set; } = false;        // only applies to top level forms
-        public bool TabChangesFocus { get; set; } = true;
-        public bool ShowClose { get; set; } = true;     // show close symbol
+        public bool TabChangesFocus { get; set; } = true;   // tab works
+        public bool ShowClose { get; set; } = true;         // show close symbol
+        public bool Resizable { get; set; } = true;         // resize works
+        public bool Moveable { get; set; } = true;          // move window works
 
         public Action<GLForm> Shown;
         public Action<GLForm,GLHandledArgs> FormClosing;
@@ -172,77 +174,84 @@ namespace OFC.GL4.Controls
         {
             base.OnMouseMove(e);
 
-            if (e.Handled == false)
+            if (e.Handled == false )
             {
                 //System.Diagnostics.Debug.WriteLine("Form drag " + e.Location +" " +  e.Area);
-                if (captured != GLMouseEventArgs.AreaType.Client)
+                if (captured != GLMouseEventArgs.AreaType.Client)       // Client meaning none
                 {
                     Point curscrlocation = e.ScreenCoord; 
                     Point capturedelta = new Point(curscrlocation.X - capturelocation.X, curscrlocation.Y - capturelocation.Y);
                     //System.Diagnostics.Debug.WriteLine("Form " + captured + " " + e.Location + " " + capturelocation + " " + capturedelta);
 
-                    if (captured == GLMouseEventArgs.AreaType.Left)
+                    if (Resizable)
                     {
-                        int left = originalwindow.Left + capturedelta.X;
-                        int width = originalwindow.Right - left;
-                        if (width > MinimumResizeWidth)
-                            Bounds = new Rectangle(left, originalwindow.Top, width, originalwindow.Height);
-                    }
-                    else if (captured == GLMouseEventArgs.AreaType.Right)
-                    {
-                        int right = originalwindow.Right + capturedelta.X;
-                        int width = right - originalwindow.Left;
-                        if (width > MinimumResizeWidth)
-                            Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, originalwindow.Height);
-                    }
-                    else if (captured == GLMouseEventArgs.AreaType.Top)
-                    {
-                        if (originalwindow.Top + capturedelta.Y >= 0 &&
-                            originalwindow.Left + capturedelta.X + 16 < FindDisplay().Width &&
-                            originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
+                        if (captured == GLMouseEventArgs.AreaType.Right)
                         {
-                            Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
+                            int right = originalwindow.Right + capturedelta.X;
+                            int width = right - originalwindow.Left;
+                            if (width > MinimumResizeWidth)
+                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, originalwindow.Height);
                         }
+                        else if (captured == GLMouseEventArgs.AreaType.Bottom)
+                        {
+                            int bottom = originalwindow.Bottom + capturedelta.Y;
+                            int height = bottom - originalwindow.Top;
+                            if (height > MinimumResizeHeight)
+                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, originalwindow.Width, height);
+                        }
+                        else if (captured == GLMouseEventArgs.AreaType.NWSE)
+                        {
+                            int right = originalwindow.Right + capturedelta.X;
+                            int bottom = originalwindow.Bottom + capturedelta.Y;
+                            int width = right - originalwindow.Left;
+                            int height = bottom - originalwindow.Top;
+                            if (height > MinimumResizeHeight && width >= MinimumResizeWidth)
+                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, height);
+                        }
+                        else if (captured == GLMouseEventArgs.AreaType.Left && Moveable)
+                        {
+                            int left = originalwindow.Left + capturedelta.X;
+                            int width = originalwindow.Right - left;
+                            if (width > MinimumResizeWidth)
+                                Bounds = new Rectangle(left, originalwindow.Top, width, originalwindow.Height);
+                        }
+                    }
 
-                        System.Diagnostics.Debug.WriteLine("Drag to {0}", Location);
-                    }
-                    else if (captured == GLMouseEventArgs.AreaType.Bottom)
+                    if (Moveable)
                     {
-                        int bottom = originalwindow.Bottom + capturedelta.Y;
-                        int height = bottom - originalwindow.Top;
-                        if (height > MinimumResizeHeight)
-                            Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, originalwindow.Width, height);
-                    }
-                    else if (captured == GLMouseEventArgs.AreaType.NWSE)
-                    {
-                        int right = originalwindow.Right + capturedelta.X;
-                        int bottom = originalwindow.Bottom + capturedelta.Y;
-                        int width = right - originalwindow.Left;
-                        int height = bottom - originalwindow.Top;
-                        if (height > MinimumResizeHeight && width >= MinimumResizeWidth)
-                            Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, height);
+                        if (captured == GLMouseEventArgs.AreaType.Top)
+                        {
+                            if (originalwindow.Top + capturedelta.Y >= 0 &&
+                                originalwindow.Left + capturedelta.X + 16 < FindDisplay().Width &&
+                                originalwindow.Left + capturedelta.X + Width - 40 >= 0)        // limit so can't go off screen
+                            {
+                                Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
+                            }
+
+                            System.Diagnostics.Debug.WriteLine("Drag to {0}", Location);
+                        }
                     }
                 }
                 else
                 {
                     // look at where we are pointing, and change cursor appropriately
 
-                    if (e.Area == GLMouseEventArgs.AreaType.Left || e.Area == GLMouseEventArgs.AreaType.Right)
+                    if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizable))
                     {
                         FindDisplay()?.SetCursor(GLCursorType.EW);
                         cursorindicatingmovement = true;
                     }
-                    else if (e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
+                    else if (Moveable && e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
                     {
                         FindDisplay()?.SetCursor(GLCursorType.Move);
                         cursorindicatingmovement = true;
                     }
-                    else if (e.Area == GLMouseEventArgs.AreaType.Bottom)
+                    else if (Resizable && e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
                         FindDisplay()?.SetCursor(GLCursorType.NS);
                         cursorindicatingmovement = true;
                     }
-                    else if (e.Area == GLMouseEventArgs.AreaType.NWSE)
+                    else if (Resizable && e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
                         FindDisplay()?.SetCursor(GLCursorType.NWSE);
                         cursorindicatingmovement = true;
@@ -265,7 +274,7 @@ namespace OFC.GL4.Controls
             {
                 FindDisplay()?.SetCursor(GLCursorType.Normal);
                 captured = GLMouseEventArgs.AreaType.Client;
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
+                //??FindDisplay()?.SetCursor(GLCursorType.Normal);
             }
         }
 

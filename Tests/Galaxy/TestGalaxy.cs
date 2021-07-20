@@ -94,7 +94,9 @@ namespace TestOpenTk
         public void WriteToDisk(string file)
         {
             JToken jk = JToken.FromObject(settings);
-            File.WriteAllText(file, jk.ToString(Newtonsoft.Json.Formatting.Indented));
+            string s = jk.ToString(Newtonsoft.Json.Formatting.Indented);
+            System.Diagnostics.Debug.WriteLine(s);
+            File.WriteAllText(file, s);
         }
             
         public T GetSetting<T>(string id, T defaultvalue)

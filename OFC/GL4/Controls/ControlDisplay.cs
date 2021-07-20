@@ -197,10 +197,11 @@ namespace OFC.GL4.Controls
         // override remove control since we need to know if to remove texture
 
         protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
-        {   
+        {
+            base.RemoveControl(child, dispose, removechildren); // remove
+
             if (ControlsZ.Contains(child))      // if its our child
             {
-                base.RemoveControl(child, dispose, removechildren); // remove
                 textures[child].Dispose();  // and delete textures
                 textures.Remove(child);
             }

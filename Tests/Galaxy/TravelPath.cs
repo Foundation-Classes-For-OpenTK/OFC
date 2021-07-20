@@ -12,18 +12,30 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
-    class ISystem
+    class SystemClass
     {
         public double X, Y, Z;
         public string Name;
-        public ISystem(string n, double x, double y, double z) { Name = n;X = x;Y = y;Z = z; }
+        public bool HasCoordinate { get { return !double.IsNaN(X); } }
+    }
+
+    class HistoryEntry
+    {
+        public HistoryEntry(DateTime utc, string n, double x, double y, double z) { EventTimeUTC = utc; System = new SystemClass() { Name = n, X = x, Y = y, Z = z }; }
+        public SystemClass System;
+        public DateTime EventTimeUTC;
     }
 
     class TravelPath
     {
-        public List<ISystem> CurrentList { get { return lastlist; } }
+        public List<HistoryEntry> Unfilteredlist { get { return unfilteredlist; } }
+        public List<HistoryEntry> CurrentList { get { return currentfilteredlist; } }       // whats being displayed
         public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable = value; } }
         public int MaxStars { get; }
+        public DateTime TravelPathStartDate { get; set; } = new DateTime(2014, 12, 14);
+        public DateTime TravelPathEndDate { get; set; } = DateTime.UtcNow.AddMonths(1);
+        public bool TravelPathStartDateEnable { get; set; } = false;
+        public bool TravelPathEndDateEnable { get; set; } = false;
 
         public TravelPath(int maxstars)
         {
@@ -32,88 +44,120 @@ namespace TestOpenTk
 
         // tested to 50K+ stars, tested updating a single one
 
-        public void CreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, List<ISystem> incomingsys, float sunsize, float tapesize, int bufferfindbinding)
+        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, int bufferfindbinding)
         {
-            ISystem lastone = lastpos != -1 ? lastlist[lastpos] : null;
+            this.sunsize = sunsize;
+            this.tapesize = tapesize;
 
-            if (incomingsys.Count > MaxStars)       // limit to max stars so we don't eat stupid amounts of memory
-                lastlist = incomingsys.Skip(incomingsys.Count - MaxStars).ToList();
+            unfilteredlist = incomingsys;
+
+            IntCreatePath(items, rObjects, bufferfindbinding);
+        }
+
+        public void Refresh()
+        {
+            IntCreatePath(null, null, -1);  // refilters
+        }
+
+        public void AddSystem(HistoryEntry he)
+        {
+            unfilteredlist.Add(he);
+            Refresh();
+        }
+
+        private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, int bufferfindbinding)
+        {
+            HistoryEntry lastone = lastpos != -1 && lastpos < currentfilteredlist.Count ? currentfilteredlist[lastpos] : null;  // see if lastpos is there, and store it
+
+            if (TravelPathEndDateEnable || TravelPathStartDateEnable)
+            {
+                currentfilteredlist = unfilteredlist.Where(x => (!TravelPathStartDateEnable || x.EventTimeUTC >= TravelPathStartDate) && (!TravelPathEndDateEnable || x.EventTimeUTC <= TravelPathEndDate)).ToList();
+                if (currentfilteredlist.Count > MaxStars)
+                    currentfilteredlist = currentfilteredlist.Skip(currentfilteredlist.Count - MaxStars).ToList();
+            }
             else
-                lastlist = incomingsys;
+            {
+                if (unfilteredlist.Count > MaxStars)
+                    currentfilteredlist = unfilteredlist.Skip(currentfilteredlist.Count - MaxStars).ToList();
+                else
+                    currentfilteredlist = unfilteredlist;
+            }
 
-            lastpos = lastlist.IndexOf(lastone);        // may be -1, may have been removed
+                // do date filter on currentfilteredlist
 
-            var positionsv4 = lastlist.Select(x => new Vector4((float)x.X, (float)x.Y, (float)x.Z, 0)).ToArray();
+            lastpos = lastone == null ? -1 : currentfilteredlist.IndexOf(lastone);        // may be -1, may have been removed
+
+            var positionsv4 = currentfilteredlist.Select(x => new Vector4((float)x.System.X, (float)x.System.Y, (float)x.System.Z, 0)).ToArray();
             float seglen = tapesize * 10;
 
             // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
-            var tape = GLTapeObjectFactory.CreateTape(positionsv4, tapesize, seglen, 0F.Radians(), ensureintegersamples: true, margin: sunsize * 1.2f);
+            var tape = GLTapeObjectFactory.CreateTape(positionsv4, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
 
-            if (ritape == null) // first time..
-            {
-                // first the tape
+            //if (ritape == null) // first time..
+            //{
+            //    // first the tape
 
-                var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
-                items.Add(tapetex);
-                tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
+            //    var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
+            //    items.Add(tapetex);
+            //    tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
-                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
-                items.Add(tapeshader);
+            //    tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
+            //    items.Add(tapeshader);
 
-                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // gl control object
-                rts.DepthTest = false;  // no depth test so always appears
+            //    GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // gl control object
+            //    rts.DepthTest = false;  // no depth test so always appears
 
-                // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
-                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));   
-                tapepointbuf = items.LastBuffer();  // keep buffer for refill
-                ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
+            //    // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
+            //    ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));   
+            //    tapepointbuf = items.LastBuffer();  // keep buffer for refill
+            //    ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
-                ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
+            //    ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
 
-                rObjects.Add(tapeshader, ritape);   // add render to object list
+            //    rObjects.Add(tapeshader, ritape);   // add render to object list
 
-                // now the stars
+            //    // now the stars
 
-                starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
-                starposbuf.AllocateFill(positionsv4);
+            //    starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
+            //    starposbuf.AllocateFill(positionsv4);
 
-                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
-                items.Add(sunvertex);
-                sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-                items.Add(sunshader);
+            //    sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
+            //    items.Add(sunvertex);
+            //    sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
+            //    items.Add(sunshader);
 
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
+            //    var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
 
-                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-                rt.DepthTest = false;
-                renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, lastlist.Count, 1);
-                rObjects.Add(sunshader, renderersun);
+            //    GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+            //    rt.DepthTest = false;
+            //    renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
+            //    rObjects.Add(sunshader, renderersun);
 
-                // find compute
+            //    // find compute
 
-                findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
-                items.Add(findshader);
-                rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: lastlist.Count, seconddivisor: 1);
+            //    findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+            //    items.Add(findshader);
+            //    rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
-                // Sun names, handled by textrenderer
-                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest:false, cullface:false);
-                items.Add(textrenderer);
-            }
-            else
-            {
-                tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
-                ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
-                ritape.Visible = tape.Item1.Count > 0;
+            //    // Sun names, handled by textrenderer
+            //    textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest:false, cullface:false);
+            //    items.Add(textrenderer);
+            //}
+            //else
+            //{
+            //    tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
+            //    ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
+            //    ritape.Visible = tape.Item1.Count > 0;
 
-                starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
-                renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
+            //    starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
+            //    renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
 
-                rifind.InstanceCount = positionsv4.Length;  // update the find list
-            }
+            //    rifind.InstanceCount = positionsv4.Length;  // update the find list
+            //}
 
             // name bitmaps
 
-            HashSet<object> hashset = new HashSet<object>(lastlist);            // so it can find it quickly
+            HashSet<object> hashset = new HashSet<object>(currentfilteredlist);            // so it can find it quickly
             textrenderer.CurrentGeneration++;                                   // setup for next generation
             textrenderer.RemoveGeneration(textrenderer.CurrentGeneration - 1, hashset); // and remove all of the previous one which are not in hashset.
 
@@ -121,12 +165,12 @@ namespace TestOpenTk
             using (StringFormat fmt = new StringFormat())
             {
                 fmt.Alignment = StringAlignment.Center;
-                foreach (var isys in lastlist)
+                foreach (var isys in currentfilteredlist)
                 {
                     if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
-                        textrenderer.Add(isys, isys.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.X, (float)isys.Y - 12, (float)isys.Z),
-                                new Vector3(50, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphafadedistance: -200, alphaenddistance: 250);
+                        textrenderer.Add(isys, isys.System.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.System.X, (float)isys.System.Y - 12, (float)isys.System.Z),
+                                new Vector3(30, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphafadedistance: -200, alphaenddistance: 250);
                     }
                 }
             }
@@ -147,7 +191,7 @@ namespace TestOpenTk
             tapeshader.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
-        public ISystem FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
+        public HistoryEntry FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(viewportloc, viewportsize);
@@ -158,19 +202,19 @@ namespace TestOpenTk
             if (res != null)
             {
                 //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                return lastlist[(int)res[0].Y];
+                return currentfilteredlist[(int)res[0].Y];
             }
 
             return null;
         }
 
-        public ISystem CurrentSystem { get { return lastlist!=null ? lastlist[lastpos] : null; } }
+        public HistoryEntry CurrentSystem { get { return currentfilteredlist!=null && lastpos != -1 ? currentfilteredlist[lastpos] : null; } }
 
-        public bool SetSystem(ISystem s)
+        public bool SetSystem(HistoryEntry s)
         {
-            if (lastlist != null)
+            if (currentfilteredlist != null)
             {
-                lastpos = lastlist.IndexOf(s); // -1 if not in list, hence no system
+                lastpos = currentfilteredlist.IndexOf(s); // -1 if not in list, hence no system
             }
             else
                 lastpos = -1;
@@ -179,7 +223,7 @@ namespace TestOpenTk
 
         public bool SetSystem(int i)
         {
-            if (lastlist != null && i >= 0 && i < lastlist.Count)
+            if (currentfilteredlist != null && i >= 0 && i < currentfilteredlist.Count)
             {
                 lastpos = i;
                 return true;
@@ -188,30 +232,30 @@ namespace TestOpenTk
                 return false;
         }
 
-        public ISystem NextSystem()
+        public HistoryEntry NextSystem()
         {
-            if (lastlist == null)
+            if (currentfilteredlist == null)
                 return null;
 
             if (lastpos == -1)
                 lastpos = 0;
-            else if (lastpos < lastlist.Count - 1)
+            else if (lastpos < currentfilteredlist.Count - 1)
                 lastpos++;
 
-            return lastlist[lastpos];
+            return currentfilteredlist[lastpos];
         }
 
-        public ISystem PrevSystem()
+        public HistoryEntry PrevSystem()
         {
-            if (lastlist == null)
+            if (currentfilteredlist == null)
                 return null;
 
             if (lastpos == -1)
-                lastpos = lastlist.Count - 1;
+                lastpos = currentfilteredlist.Count - 1;
             else if (lastpos > 0)
                 lastpos--;
 
-            return lastlist[lastpos];
+            return currentfilteredlist[lastpos];
         }
 
         private GLTexturedShaderTriangleStripWithWorldCoord tapeshader;
@@ -228,9 +272,12 @@ namespace TestOpenTk
         private GLShaderPipeline findshader;        // finder
         private GLRenderableItem rifind;
 
-        private List<ISystem> lastlist;
-        private int lastpos = -1;       // -1 no system
+        private List<HistoryEntry> currentfilteredlist;
+        private List<HistoryEntry> unfilteredlist;
+        private int lastpos = -1;       // -1 no system, in currentfilteredlist
 
+        private float sunsize;
+        private float tapesize;
     }
 
 }
