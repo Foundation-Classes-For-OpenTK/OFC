@@ -52,7 +52,7 @@ namespace TestOpenTk
             IGLTexture texarray = items.Add(new GLTexture2DArray(images, mipmaplevel:1, genmipmaplevel:3), "GalObjTex");
 
             // a look at vertex shader
-            var vert = new GLPLVertexScaleLookat(rotate:true, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);
+            var vert = new GLPLVertexScaleLookat(rotate:false, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);
             var tcs = new GLPLTesselationControl(10f);
             tes = new GLPLTesselationEvaluateSinewave(0.2f,1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
             var frag = new GLPLFragmentShaderTexture2DDiscard(1);       // binding 1 - takes image pos from tes. imagepos < 0 means discard
@@ -101,6 +101,9 @@ namespace TestOpenTk
 
             var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
 
+
+       //     List<Vector3> posset = new List<Vector3>();
+
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())
             {
@@ -108,20 +111,28 @@ namespace TestOpenTk
                 for(int i = 0 ; i < renderablegalmapobjects.Length; i++)
                 {
                     var o = renderablegalmapobjects[i];
-                    float offset = -12;
-                    for( int j = 0; j < i; j++)
-                    {
-                        var diff = new Vector3(o.points[0].X, o.points[0].Y, o.points[0].Z) - new Vector3(renderablegalmapobjects[j].points[0].X, renderablegalmapobjects[j].points[0].Y, renderablegalmapobjects[j].points[0].Z);
+                    float offset = -4;
+                    //for( int j = 0; j < i; j++)
+                    //{
+                    //    var d1 = new Vector3(o.points[0].X, o.points[0].Y+offset, o.points[0].Z);
+                    //    var d2 = posset[j];     // where it was placed.
+                    //    var diff = d1 - d2;
 
-                        if (diff.Length < 50)
-                            offset -= 12;
-                    }
+                    //    if (diff.Length < 5)
+                    //    {
+                    //        offset -= 5;
+                    //        System.Diagnostics.Debug.WriteLine($"{d1} {d2} close {renderablegalmapobjects[i].name} {renderablegalmapobjects[j].name} {offset}");
+                    //    }
+                    //}
+                    //offset = -4;
 
                     Vector3 pos = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
+                   // posset.Add(pos);
+                    System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
                     textrenderer.Add(o.id, o.name, fnt, 
-                        Color.White,Color.Transparent, 
+                        Color.White,Color.FromArgb(0,255,0,0),//Color.Red,//Color.Transparent, 
                         pos,
-                        new Vector3(30, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: false, rotateelevation: false, 
+                        new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: false, rotateelevation: false, 
                         alphafadedistance: -1000, alphaenddistance: 2000); //at 2000ly ed, 2000-2000/1000 = 0, at 1000ly, 2000-1000/1000 = 1. 0-1000 is at full alpha
                 }
             }

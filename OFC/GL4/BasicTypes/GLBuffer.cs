@@ -640,12 +640,36 @@ namespace OFC.GL4
             return data[0];
         }
 
-        public Vector4[] ReadVector4s(int count)                    // read into a byte array
+        public Vector2[] ReadVector2s(int count)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
-            var p = AlignArrayPtr(Vec4size,count);
-            float[] fdata = new float[count*4];
-            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count*4);
+            var p = AlignArrayPtr(Vec2size, count);
+            float[] fdata = new float[count * 2];       // aligned 2s
+            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count * 2);
+            Vector2[] data = new Vector2[count];
+            for (int i = 0; i < count; i++)
+                data[i] = new Vector2(fdata[i * 2], fdata[i * 2 + 1]);
+            return data;
+        }
+
+        public Vector3[] ReadVector3s(int count)
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
+            var p = AlignArrayPtr(Vec3size, count);
+            float[] fdata = new float[count * 4];       // aligned 4s
+            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count * 4);
+            Vector3[] data = new Vector3[count];
+            for (int i = 0; i < count; i++)
+                data[i] = new Vector3(fdata[i * 4], fdata[i * 4 + 1], fdata[i * 4 + 2]);
+            return data;
+        }
+
+        public Vector4[] ReadVector4s(int count)                    
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
+            var p = AlignArrayPtr(Vec4size, count);
+            float[] fdata = new float[count * 4];
+            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count * 4);
             Vector4[] data = new Vector4[count];
             for (int i = 0; i < count; i++)
                 data[i] = new Vector4(fdata[i * 4], fdata[i * 4 + 1], fdata[i * 4 + 2], fdata[i * 4 + 3]);
@@ -726,6 +750,22 @@ namespace OFC.GL4
         {
             StartRead(offset);
             var v = ReadFloats(number, ignorestd130);
+            StopReadWrite();
+            return v;
+        }
+
+        public Vector2[] ReadVector2s(int offset, int number)
+        {
+            StartRead(offset);
+            var v = ReadVector2s(number);
+            StopReadWrite();
+            return v;
+        }
+
+        public Vector3[] ReadVector3s(int offset, int number)
+        {
+            StartRead(offset);
+            var v = ReadVector3s(number);
             StopReadWrite();
             return v;
         }

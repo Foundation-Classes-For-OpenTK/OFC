@@ -14,7 +14,11 @@
 
 const float PI = 3.1415926535897932384626433832795;
 
-vec2 AzEl(vec3 curpos, vec3 target)		//vec2.x = inclination, vec2.y = azimuth
+// az/el from curpos to target
+// vec2.x = inclination (0 upwards, 90 degress horizontal, 180 downwards)
+// vec2.y = azimuth (0 forward, 90 to the right, 180 behind, -90 to the left)
+
+vec2 AzEl(vec3 curpos, vec3 target)		
 {
 	vec3 delta = target-curpos;
 	float radius = length(delta);

@@ -59,7 +59,7 @@ namespace TestOpenTk
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
             gl3dcontroller.MatrixCalc.PerspectiveFarZDistance= 1000f;
-            gl3dcontroller.ZoomDistance = 20F;
+            gl3dcontroller.ZoomDistance = 60F;
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(110f, 0, 0f), 1F);
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
@@ -771,32 +771,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.Assert(v == true);
             }
 
-            if (true)   // instanced sinewive
-            {
-                var shdrtesssine = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.4f, 1f, rotate:true, rotateelevation:false);
-                items.Add(shdrtesssine, "TESIx1");
-
-                Vector4[] pos = new Vector4[]       //w = image index
-                {   
-                    new Vector4(40,0,-30,0),
-                    new Vector4(39,0,-20,1),
-                    new Vector4(38,0,-10,2),
-                };
-
-                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.beacon, Properties.Resources.planetaryNebula, Properties.Resources.wooden });
-                items.Add(texarray, "Sinewavetex");
-
-                GLRenderControl rp = GLRenderControl.Patches(4);
-                var dt = GLRenderableItem.CreateVector4Vector4(items, rp,
-                                        GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(),0,0)), pos,
-                                        new GLRenderDataTexture(texarray),
-                                        ic:3, seconddivisor:1);
-
-                rObjects.Add(shdrtesssine, "O-TES2", dt);
-
-            }
-
-            #endregion
+              #endregion
 
 
             #region Instancing with matrix and lookat
@@ -825,6 +800,35 @@ namespace TestOpenTk
 
                 rObjects.Add(shader, "1-atex2",
                                         GLRenderableItem.CreateMatrix4(items, rp, pos, 4, ic: 3, matrixdivisor: 1));
+
+            }
+
+            #endregion
+
+            #region Sineway look at
+
+            if (true)   // instanced sinewive with rotate
+            {
+                var shdrtesssine = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.0f, 1f, rotate: true, rotateelevation: false);
+                items.Add(shdrtesssine, "TESIx1");
+
+                Vector4[] pos = new Vector4[]       //w = image index
+                {   
+                    //new Vector4(38,0,-10,2),
+                    //new Vector4(39,0,-20,1),
+                    new Vector4(40,0,-30,0),            // flat on the xz plane
+                };
+
+                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.Logo8bpp, });
+                items.Add(texarray, "Sinewavetex");
+
+                GLRenderControl rp = GLRenderControl.Patches(4);
+                var dt = GLRenderableItem.CreateVector4Vector4(items, rp,
+                                        GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos,
+                                        new GLRenderDataTexture(texarray),
+                                        ic: 3, seconddivisor: 1);
+
+                rObjects.Add(shdrtesssine, "O-TES2", dt);
 
             }
 
@@ -885,8 +889,8 @@ namespace TestOpenTk
 
             if (items.Contains("TESx1"))
                 ((GLTesselationShaderSinewave)items.Shader("TESx1")).Phase = degrees / 360.0f;
-            if (items.Contains("TESIx1"))
-                ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx1")).Phase = degrees / 360.0f;
+        //    if (items.Contains("TESIx1"))
+          //      ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx1")).Phase = degrees / 360.0f;
 
             GLStatics.Check();
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");

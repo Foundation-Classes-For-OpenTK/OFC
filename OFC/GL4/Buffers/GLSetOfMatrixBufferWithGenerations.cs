@@ -89,6 +89,16 @@ namespace OFC.GL4
                 return false;
         }
 
+        public Matrix4 GetMatrix(Object tag)
+        {
+            if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
+            {
+                return pos.Item1.GetMatrix(pos.Item2);
+            }
+            else
+                return Matrix4.Zero;
+        }
+
         public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)
         {
             uint oldestgenfound = 0;

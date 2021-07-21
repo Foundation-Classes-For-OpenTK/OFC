@@ -111,7 +111,7 @@ namespace OFC.GL4
 
                 // dirout = vec4(degrees(dir.x),degrees(dir.y),mc.EyeDistance,alpha); // for debug
 
-                tx = mat4rotateXthenYthenScalethenTranslation(ctrl >= 2 ? -dir.x : -PI/2,-PI+dir.y,scale,worldposition);
+                tx = mat4ScalethenRotateXthenYthenTranslation(ctrl >= 2 ? -dir.x : -PI/2,-PI+dir.y,scale,worldposition);
             }
 
             gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];    

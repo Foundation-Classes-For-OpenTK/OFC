@@ -70,7 +70,7 @@ namespace OFC.GL4
         // select rotation around y in radians
         // margin is offset to start from and end from from points
 
-        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundy = 0, float margin = 0)
+        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundx = 0, float margin = 0)
         {
             Vector3 vectorto = Vector3.Normalize(end - start);                  // vector between the points, normalised
 
@@ -87,26 +87,29 @@ namespace OFC.GL4
 
             segmentlength = length / innersegments;
 
-            Vector4[] tape = new Vector4[2 + 2 * innersegments];                // 2 start, plus 2 for any inners
-            double xzangle = Math.Atan2(end.Z - start.Z, end.X - start.X);      // angle on the ZX plane between start/end
+            // the vectorto and left/right normals are on the notional direction plane of the vector in this view
+            // given the normalised vector between the start end, create a normal vector (90 to it) pointing left and right
 
             Vector3 leftnormal = Vector3.TransformNormal(vectorto, Matrix4.CreateRotationY(-(float)Math.PI / 2)); // + is clockwise.  Generate normal to vector on left side
             Vector3 rightnormal = Vector3.TransformNormal(vectorto, Matrix4.CreateRotationY((float)Math.PI / 2)); // On right side.
 
-            // the way this works, is that we rotate the l/r normals around Y, to align then with the YZ plane.
-            // The rotation is the difference between the facing angle in the ZX plane (xzangle) and the YZ plane itself which is at +90degrees on the ZX plane
+            // the way this works, is that we rotate the l/r normals around Y, to align then with the YZ plane (YZ of the direction plane)
+            // The rotation is the difference between the facing angle in the ZX plane (xzangle) and the YZ plane itself which is at +90degrees direction on the ZX plane
             // then we rotate around X
             // then we rotate it back by the facing angle
-            // lets just say this took a bit of thinking about!  This is a generic way of rotating around an arbitary plane - rotate it back to a plane.
+            // lets just say this took a bit of thinking about!  
+            // This is a generic way of rotating around an arbitary plane - rotate it back to a plane without the one you want to rotate on.
 
-            double rotatetoyzangle = Math.PI / 2 - (xzangle + Math.PI / 2);           // angle to rotate back to the YZ plane
+            double xzangle = Math.Atan2(end.Z - start.Z, end.X - start.X);      // angle on the ZX plane between start/end
+            double rotatetoyzangle = Math.PI / 2 - (xzangle + Math.PI / 2);           // angle to rotate back to the YZ plane, noting the normals are 90 to the xyangle
 
-            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY(-(float)rotatetoyzangle));     // rotate back to YZ plane
-            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationX(-(float)rotationaroundy));     // rotate on the YZ plane
-            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY((float)rotatetoyzangle));      // rotate back to angle on XZ plane
-
+            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY(-(float)rotatetoyzangle));     // rotate the normals to YZ plane
             rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationY(-(float)rotatetoyzangle));
-            rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationX(-(float)rotationaroundy));   
+
+            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationX(-(float)rotationaroundx));     // rotate on the YZ plane around X to tip it up
+            rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationX(-(float)rotationaroundx));
+
+            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY((float)rotatetoyzangle));      // rotate back to angle on XZ plane
             rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationY((float)rotatetoyzangle));
 
             leftnormal *= width;
@@ -115,7 +118,8 @@ namespace OFC.GL4
             Vector4 l = new Vector4(start.X + leftnormal.X, start.Y + leftnormal.Y, start.Z + leftnormal.Z, 1);
             Vector4 r = new Vector4(start.X + rightnormal.X, start.Y + rightnormal.Y, start.Z + rightnormal.Z, 1);
             Vector4 segoff = new Vector4((end.X - start.X) / length * segmentlength, (end.Y - start.Y) / length * segmentlength, (end.Z - start.Z) / length * segmentlength, 0);
-            
+            Vector4[] tape = new Vector4[2 + 2 * innersegments];                // 2 start, plus 2 for any inners
+
             int i;
             for ( i = 0; i <= innersegments; i++ )   // include at least the start
             {

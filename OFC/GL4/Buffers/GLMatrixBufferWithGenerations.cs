@@ -115,6 +115,19 @@ namespace OFC.GL4
                 return false;
         }
 
+        public Matrix4 GetMatrix(int i)
+        {
+            if (i >= 0 && i < entries.Count && entries[i].empty == false)      // in range and not empty
+            {
+                MatrixBuffer.StartRead(GLLayoutStandards.Mat4size * i, GLLayoutStandards.Mat4size);
+                Matrix4 mat = MatrixBuffer.ReadMatrix4();
+                MatrixBuffer.StopReadWrite();
+                return mat;
+            }
+            else
+                return Matrix4.Zero;
+        }
+
         // if keeplist, and its in the list, generation = currentgeneration and kept
         // else if <= removegeneration (modulo), remove
         // return relative index giving the different between the current gen and the maximum generation found

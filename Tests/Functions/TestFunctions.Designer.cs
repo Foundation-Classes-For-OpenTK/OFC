@@ -37,16 +37,16 @@
             this.glControlContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.glControlContainer.Location = new System.Drawing.Point(0, 0);
             this.glControlContainer.Name = "glControlContainer";
-            this.glControlContainer.Size = new System.Drawing.Size(1555, 1005);
+            this.glControlContainer.Size = new System.Drawing.Size(184, 161);
             this.glControlContainer.TabIndex = 0;
             // 
-            // ShaderTest4
+            // ShaderTestFunctions
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1555, 1005);
+            this.ClientSize = new System.Drawing.Size(184, 161);
             this.Controls.Add(this.glControlContainer);
-            this.Name = "ShaderTest4";
+            this.Name = "ShaderTestFunctions";
             this.Text = "Form1";
             this.ResumeLayout(false);
 

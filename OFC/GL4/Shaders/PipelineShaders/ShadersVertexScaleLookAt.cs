@@ -72,16 +72,75 @@ void main(void)
 
     if ( rotate )
     {
-        vec2 dir = AzEl(worldposition.xyz,mc.EyePosition.xyz);      // y = azimuth
+        
 
-        mat4 tx;
+// works 1
+        ///vec2 dir = AzEl(worldposition.xyz,mc.EyePosition.xyz);      // From our pos, to the object, what is Az/El
+        //float roty = PI-dir.y;
+        //pos = mat4rotateXm90thenYm90() * pos;
+        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
+        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
 
-        if (rotateelevation )
-            tx = mat4rotateXthenY(dir.x,PI-dir.y);              // rotate the flat image to vertical using dir.x (0 = on top, 90 = straight on, etc) then rotate by 180-dir (0 if directly facing from neg z)
+// works 2:
+        //pos = pos * mat4rotateX(PI/2);      // rotate to XY plane
+        //pos = pos * mat4rotateY(PI/2);  // rotate back to YZ plane
+        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
+        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
+
+// works 3:
+        //pos = mat4rotateXm90thenYm90() * pos;
+        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
+        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
+
+// works 4:
+        //pos = mat4rotateXm90thenYm90() * pos;
+        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
+        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
+
+// works 5:
+        //vec2 dir = AzEl(mc.EyePosition.xyz,worldposition.xyz);      // From our pos, to the object, what is Az/El
+        //pos = mat4rotateX(-(PI-dir.x)) * pos;            // dir.x = inc, 0 upwards to target, 180 downwards to target. So PI-dir.x, and negative to rotate it towards us
+        //pos = mat4rotateY(dir.y) * pos;
+
+// works 6:
+        vec2 dir = AzEl(mc.EyePosition.xyz,worldposition.xyz);      // From our pos, to the object, what is Az/El.  Az = 0 if forward, 180 if back. El = 0 if up, 90 if level, 180 if down
+        if ( rotateelevation)
+        {
+            pos = mat4rotateX(-(PI-dir.x)) * pos;            // dir.x = inc, 0 upwards to target, 180 downwards to target. So PI-dir.x, and negative to rotate it towards us
+            pos = mat4rotateY(dir.y) * pos;
+        }
         else
-            tx = mat4rotateXthenY(PI/2,PI-dir.y);
+        {
+         //   pos = mat4rotateXm90() * pos;
+           // pos = mat4rotateY(dir.y) * pos;
+            pos = mat4rotateXm90thenY(dir.y) * pos;
+        }
 
-        pos = pos * tx;
+
+// rotate X to dir.x works
+
+       // if (rotateelevation )
+         //   tx = mat4rotateXthenY(dir.x,PI-dir.y);              // rotate the flat image to vertical using dir.x (0 = on top, 90 = straight on, etc) then rotate by 180-dir (0 if directly facing from neg z)
+        //else
+            //tx = mat4rotateXthenY(PI/2,PI-dir.y);
+        //tx = mat4rotateXthenY(dir.x,0);
+
+// this seems to work
+        //pos = pos * mat4rotateX(PI/2);      // rotate to XY plane
+        //pos = pos * mat4rotateY(PI/2);  // rotate back to YZ plane
+
+
+
+
+
+
+
+//        tx = mat4rotateY(PI-dir.y);
+  ///      pos = pos * tx;
+     //   mat4 t2 = mat4rotateX(dir.x);
+       // pos = pos *t2;
+
+        //pos = pos * ty * tx;
     }
 
     gl_Position = pos;
@@ -94,7 +153,9 @@ void main(void)
         public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, bool commontransform = false,
                                                     float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
         {
-            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation, "usetransform", commontransform, "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
+            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
+                                                                    "usetransform", commontransform, "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
         }
     }
 }

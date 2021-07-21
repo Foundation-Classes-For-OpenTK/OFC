@@ -172,6 +172,17 @@ namespace OFC.GL4
             return matrixbuffers.SetVisibilityRotation( tag, !onoff ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0);  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
         }
 
+        public Matrix4 GetMatrix(Object tag)
+        {
+            return matrixbuffers.GetMatrix(tag);
+        }
+
+        public Vector3 GetWorldPos(Object tag)              // if not there, get 0,0,0 back. Use exists to check first
+        {
+            var x = matrixbuffers.GetMatrix(tag);       // zero if not there
+            return new Vector3(x.M11, x.M22, x.M33);
+        }
+
         public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)
         {
             return matrixbuffers.RemoveGeneration(removegenerationbelow, keeplist);

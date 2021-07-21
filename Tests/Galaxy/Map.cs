@@ -258,6 +258,28 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
             }
 
+            if (true)       // Gal map regions
+            {
+                var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
+                    new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
+                    new GalMapRegions.ManualCorrections("The Abyss", y: +3000 ),
+                    new GalMapRegions.ManualCorrections("Eurus", y: -3000 ),
+                    new GalMapRegions.ManualCorrections("The Perseus Transit", x: -3000, y: -3000 ),
+                    new GalMapRegions.ManualCorrections("Zephyrus", x: 0, y: 2000 ),
+                };
+
+                edsmgalmapregions = new GalMapRegions();
+                edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr: corr);
+            }
+
+            if (true)           // Elite regions
+            {
+                elitemapregions = new GalMapRegions();
+                elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
+                EliteRegionsEnable = false;
+            }
+
+
             if (true)       // travel path
             {
                 Random rnd = new Random(52);
@@ -290,27 +312,6 @@ namespace TestOpenTk
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, galmap, findgeomapblock);
-            }
-
-            if (true)       // Gal map regions
-            {
-                var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
-                    new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
-                    new GalMapRegions.ManualCorrections("The Abyss", y: +3000 ),
-                    new GalMapRegions.ManualCorrections("Eurus", y: -3000 ),
-                    new GalMapRegions.ManualCorrections("The Perseus Transit", x: -3000, y: -3000 ),
-                    new GalMapRegions.ManualCorrections("Zephyrus", x: 0, y: 2000 ),
-                };
-
-                edsmgalmapregions = new GalMapRegions();
-                edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr: corr);
-            }
-
-            if (true)           // Elite regions
-            {
-                elitemapregions = new GalMapRegions();
-                elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
-                EliteRegionsEnable = false;
             }
 
 
