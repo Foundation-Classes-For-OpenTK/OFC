@@ -67,7 +67,7 @@ namespace OFC.GL4
                             Vector3 rotationradians,        // ignored if rotates are on
                             StringFormat fmt = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphafadedistance = 0, 
+                            float alphafadescalar = 0, 
                             float alphaenddistance = 0,
                             bool visible = true
                          )
@@ -82,7 +82,7 @@ namespace OFC.GL4
 
             BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
-            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadedistance, alphaenddistance, ownbitmap:false, visible);
+            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphaenddistance, ownbitmap:false, visible);
         }
 
         // add a bitmap, indicate if owned by class or you.  Gives back group no, position in group, total in group
@@ -93,7 +93,7 @@ namespace OFC.GL4
                             Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
                             Vector3 rotationradians,        // ignored if rotates are on
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
-                            float alphafadedistance = 0, 
+                            float alphafadescalar = 0, 
                             float alphafadeend = 0,
                             bool ownbitmap = false,
                             bool visible=  true
@@ -109,7 +109,7 @@ namespace OFC.GL4
             }
             mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
             mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
-            mat[2, 3] = alphafadedistance;
+            mat[2, 3] = alphafadescalar;
             mat[3, 3] = alphafadeend;
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group

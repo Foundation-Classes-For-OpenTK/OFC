@@ -147,7 +147,7 @@ namespace TestOpenTk
 
                     tim = new GLBitmaps(rObjects, bitmapsize, 3, false, true,2);      // group 2
                     items.Add(tim);
-                    tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadedistance: 10, alphaenddistance: 5);
+                    tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadescalar: 10, alphaenddistance: 5);
                     tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                     tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
                     tim.Remove("T2");

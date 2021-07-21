@@ -170,8 +170,8 @@ namespace TestOpenTk
                 {
                     if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
-                        textrenderer.Add(isys, isys.System.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.System.X, (float)isys.System.Y - 12, (float)isys.System.Z),
-                                new Vector3(30, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: true, alphafadedistance: -200, alphaenddistance: 250);
+                        textrenderer.Add(isys, isys.System.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.System.X, (float)isys.System.Y - 5, (float)isys.System.Z),
+                                new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: false, alphafadescalar: -200, alphaenddistance: 300);
                     }
                 }
             }

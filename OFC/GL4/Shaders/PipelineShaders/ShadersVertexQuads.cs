@@ -23,9 +23,9 @@ namespace OFC.GL4
     //      vertex 4-7 : transform: mat4 array of transforms, one per instance 
     //              [col=3,row=0] is the image index, 
     //              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, <0 means cull primitive
-    //              [col=3,row=2] Fade distance, 0 = none.  >0 fade out as eye goes in, <0 fade in as eye goes in
-    //              [col=3,row=3] Fade End, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade end)/Fade distance,0,1). 
-    //                                                  for fade in formula is alpha = clamp((fadeend-EyeDistance)/-Fade distance,0,1). 
+    //              [col=3,row=2] Fade scaler, 0 = none.  >0 fade out as eye goes in, <0 fade in as eye goes in
+    //              [col=3,row=3] Fade End, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade end)/Fade scalar,0,1). 
+    //                                                  for fade in formula is alpha = clamp((fadeend-EyeDistance)/-Fade scalar,0,1). 
     //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      location 0 : vs_textureCoordinate
