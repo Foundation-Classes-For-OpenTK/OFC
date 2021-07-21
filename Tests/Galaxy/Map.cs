@@ -616,8 +616,22 @@ namespace TestOpenTk
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("Mouse down on map");
+            gl3dcontroller.MouseDown(s, e);
+        }
 
+        private void MouseUpOnMap(Object s, GLMouseEventArgs e)
+        {
+            gl3dcontroller.MouseUp(s, e);
+        }
+
+        private void MouseMoveOnMap(Object s, GLMouseEventArgs e)
+        {
+            gl3dcontroller.MouseMove(s, e);
+        }
+
+        private void MouseClickOnMap(Object s, GLMouseEventArgs e)
+        {
+          //  System.Diagnostics.Debug.WriteLine("map click");
             Object item = FindObjectOnMap(e.ViewportLocation);
 
             if (item != null)
@@ -627,39 +641,20 @@ namespace TestOpenTk
                     if (item is HistoryEntry)
                         travelpath.SetSystem(item as HistoryEntry);
                     var nl = NameLocation(item);
-                    System.Diagnostics.Debug.WriteLine("Move to " + nl.Item1);
+                    System.Diagnostics.Debug.WriteLine("Click on and slew to " + nl.Item1);
                     SetEntryText(nl.Item1);
                     gl3dcontroller.SlewToPosition(nl.Item2, -1);
                 }
-                else if (e.Button == GLMouseEventArgs.MouseButtons.Right )
+                else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
                 {
 
                 }
             }
-            else
-                gl3dcontroller.MouseDown(s, e);
-        }
-
-        private void MouseUpOnMap(Object s, GLMouseEventArgs e)
-        {
-            //System.Diagnostics.Debug.WriteLine("Mouse up on map");
-            gl3dcontroller.MouseUp(s, e);
-        }
-
-        private void MouseMoveOnMap(Object s, GLMouseEventArgs e)
-        {
-           // System.Diagnostics.Debug.WriteLine("Mouse move on map");
-            gl3dcontroller.MouseMove(s, e);
-        }
-
-        private void MouseClickOnMap(Object s, GLMouseEventArgs e)
-        {
-           // System.Diagnostics.Debug.WriteLine("Mouse click on map");
         }
 
         private void MouseDoubleClickOnMap(Object s, GLMouseEventArgs e)
         {
-            gl3dcontroller.KillSlews();
+            gl3dcontroller.KillSlew();
           //  System.Diagnostics.Debug.WriteLine("Mouse double click on map");
             Object item = FindObjectOnMap(e.ViewportLocation);
             if (item != null)

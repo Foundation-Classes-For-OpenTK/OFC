@@ -103,7 +103,10 @@ namespace OFC.Controller
             PosCamera.PanZoomTo(normtarget, zoom, time);
         }
 
-        public void KillSlews() { PosCamera.KillSlew(); }
+        public void KillSlew()
+        {
+            PosCamera.KillSlew();
+        }
 
         // perspective.. use this don't just change the matrixcalc.
         public void ChangePerspectiveMode(bool on)
@@ -183,13 +186,14 @@ namespace OFC.Controller
 
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("3dcontroller mouse down");
+          //  System.Diagnostics.Debug.WriteLine("3dcontroller mouse down");
 
             mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
             if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Left))
             {
                 mouseStartRotate = mouseDownPos;
+               // System.Diagnostics.Debug.WriteLine($"..start rotate {mouseStartRotate} {e.WindowLocation}");
             }
 
             if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Right))
@@ -201,7 +205,7 @@ namespace OFC.Controller
 
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("3dcontroller mouse up");
+           // System.Diagnostics.Debug.WriteLine("3dcontroller mouse up");
 
             var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
@@ -225,9 +229,17 @@ namespace OFC.Controller
             {
                 if (MatrixCalc.InPerspectiveMode && mouseStartRotate.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
-                    KillSlews();
                     int dx = mousepos.X - mouseStartRotate.X;
                     int dy = mousepos.Y - mouseStartRotate.Y;
+                   // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
+                    if (dx > 50 || dy> 50)
+                    {
+
+                    }
+
+
+
+                    KillSlew();    // all slews
 
                     mouseStartTranslateXZ = mouseStartRotate = mousepos;
 
@@ -238,7 +250,7 @@ namespace OFC.Controller
             {
                 if (mouseStartTranslateXY.X != int.MinValue)
                 {
-                    KillSlews();
+                    KillSlew();
 
                     int dx = mousepos.X - mouseStartTranslateXY.X;
                     int dy = mousepos.Y - mouseStartTranslateXY.Y;
@@ -254,7 +266,7 @@ namespace OFC.Controller
             {
                 if (mouseStartTranslateXZ.X != int.MinValue)
                 {
-                    KillSlews();
+                    KillSlew();
 
                     int dx = mousepos.X - mouseStartTranslateXZ.X;
                     int dy = mousepos.Y - mouseStartTranslateXZ.Y;

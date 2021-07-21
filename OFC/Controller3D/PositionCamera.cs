@@ -42,7 +42,7 @@ namespace OFC.Controller
         {
             if (!float.IsNaN(gotopos.X))
             {
-                //System.Diagnostics.Debug.WriteLine("Goto " + normpos + " in " + timeslewsec + " at " + unitspersecond);
+                //System.Diagnostics.Debug.WriteLine("Goto " + gotopos + " in " + timeslewsec + " at " + unitspersecond);
 
                 double dist = Math.Sqrt((lookat.X - gotopos.X) * (lookat.X - gotopos.X) + (lookat.Y - gotopos.Y) * (lookat.Y - gotopos.Y) + (lookat.Z - gotopos.Z) * (lookat.Z - gotopos.Z));
                 Debug.Assert(!double.IsNaN(dist));      // had a bug due to incorrect signs!
@@ -55,6 +55,7 @@ namespace OFC.Controller
                     {
                         lookat = gotopos;
                         eyeposition = gotopos + eyeoffset;
+                        //System.Diagnostics.Debug.WriteLine("{0} Immediate Slew to {1} eye {2} offset {3}", Environment.TickCount % 10000, targetposSlewPosition, targetposEyePosition, eyeoffset);
                     }
                     else
                     {
@@ -62,7 +63,7 @@ namespace OFC.Controller
                         targetposEyePosition = gotopos + eyeoffset;
                         targetposSlewProgress = 0.0f;
                         targetposSlewTime = (timeslewsec < 0) ? ((float)Math.Max(1.0, dist / unitspersecond)) : timeslewsec;            //10000 ly/sec, with a minimum slew
-                        //System.Diagnostics.Debug.WriteLine("{0} Slew start to {1} in {2}",  Environment.TickCount % 10000 , targetposSlewPosition , targetposSlewTime);
+                        //System.Diagnostics.Debug.WriteLine("{0} Slew start to {1} eye {2} offset {3} in {4} cameradir {5}", Environment.TickCount % 10000, targetposSlewPosition, targetposEyePosition, eyeoffset, targetposSlewTime, cameradir);
                     }
                 }
             }
@@ -82,6 +83,8 @@ namespace OFC.Controller
         public void RotateCamera(Vector2 addazel, float addzrot, bool movepos)
         {
             KillSlew();
+           // System.Diagnostics.Debug.WriteLine("{0} Rotate camera {1} {2} {3} look {4} eye {5} camera dir {6}", Environment.TickCount % 10000, addazel, addzrot, movepos, lookat, eyeposition, cameradir);
+
             System.Diagnostics.Debug.Assert(!float.IsNaN(addazel.X) && !float.IsNaN(addazel.Y));
             Vector2 cameraDir = CameraDirection;
 
@@ -99,6 +102,7 @@ namespace OFC.Controller
                 SetLookatPositionFromEye(cameraDir, EyeDistance);
             else
                 SetEyePositionFromLookat(cameraDir, EyeDistance);
+            //System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2}", Environment.TickCount % 10000, lookat, eyeposition);
         }
 
         public void Pan(Vector2 newcamerapos, float timeslewsec = 0) 
@@ -235,7 +239,11 @@ namespace OFC.Controller
 
         public void KillSlew()
         {
-            targetposSlewProgress = 1.0f;
+            if (targetposSlewProgress < 1)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Kill target pos slew at {targetposSlewProgress}");
+                targetposSlewProgress = 1.0f;
+            }
             zoomSlewTarget = 0;
             cameraDirSlewProgress = 1.0f;
         }
@@ -251,7 +259,7 @@ namespace OFC.Controller
                 {
                     lookat = targetposSlewPosition;
                     eyeposition = targetposEyePosition;
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1}", Environment.TickCount % 10000, position);
+                    //System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
                 }
                 else
                 {
@@ -263,7 +271,7 @@ namespace OFC.Controller
                     var totvector = new Vector3((float)(targetposSlewPosition.X - lookat.X), (float)(targetposSlewPosition.Y - lookat.Y), (float)(targetposSlewPosition.Z - lookat.Z));
                     lookat += Vector3.Multiply(totvector, (float)slewfact);
                     eyeposition += Vector3.Multiply(totvector, (float)slewfact);
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew to {1} prog {2}", Environment.TickCount % 10000, position, newprogress);
+                    //System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
                 }
 
                 targetposSlewProgress = (float)newprogress;
@@ -275,7 +283,7 @@ namespace OFC.Controller
                 float zoommultiplier = (float)Math.Pow(10.0, Math.Log10(zoomSlewTarget / zoomSlewStart) / wantedsteps);      // I.S^n = F I = initial, F = final, S = scaling, N = no of steps
 
                 float newzoom = (float)(ZoomFactor * zoommultiplier);
-                System.Diagnostics.Debug.WriteLine("Zoom {0} -> {1} {2}", ZoomFactor, newzoom, zoommultiplier);
+                //System.Diagnostics.Debug.WriteLine("Zoom {0} -> {1} {2}", ZoomFactor, newzoom, zoommultiplier);
                 bool stop = (zoomSlewTarget > ZoomFactor) ? (newzoom >= zoomSlewTarget) : (newzoom <= zoomSlewTarget);
 
                 if (stop)

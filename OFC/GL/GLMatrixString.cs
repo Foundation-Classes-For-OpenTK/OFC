@@ -17,7 +17,43 @@ using System;
 
 namespace OFC
 {
-    //strictly for debugging, a string matrix multiplier so your mind does not get warped
+    //strictly for debugging, a string matrix multiplier so your mind does not get warped when trying to come up with compound matrix functions
+    //for glsl
+
+    public class StringVector4
+    {
+        public string[] Element { get; set; } = new string[4];        // in column order
+
+        public StringVector4() { }
+        public StringVector4(params string[] el)     // in row order
+        {
+            int i = 0;
+            foreach (var e in el)
+            {
+                Element[i++] = e;
+            }
+        }
+        public override string ToString()
+        { return ToString(false); }
+
+        public string ToString(bool lf)
+        {
+            string res = "(";
+            for (int i = 0; i < 4; i++)
+            {
+                res += Element[i];
+                if (i < 3)
+                {
+                    res += ", ";
+                    if (lf)
+                        res += Environment.NewLine;
+                }
+            }
+
+            res += ")";
+            return res;
+        }
+    }
 
     public class StringMatrix
     {
@@ -45,23 +81,52 @@ namespace OFC
                 {
                     var a = l.Element[left + j];
                     var b = r.Element[right + j * 4];
-                    if (a != "0" && b != "0")
-                    {
-                        if (a == "1")
-                            equation = equation.AppendPrePad(b, " + ");
-                        else if (a == "-1")
-                            equation = equation.AppendPrePad("-" + b, " + ");
-                        else if (b == "1")
-                            equation = equation.AppendPrePad(a, " + ");
-                        else if (b == "-1")
-                            equation = equation.AppendPrePad("-" + a, " + ");
-                        else
-                            equation = equation.AppendPrePad(a + "*" + b, " + ");
-                    }
+                    string m = Mult(a, b);
+                    equation = equation.AppendPrePad(m, " + ");
                 }
 
                 equation = equation != "" ? equation : "0";
 
+                res.Element[i] = equation;
+            }
+            return res;
+        }
+
+        static public string Mult(string a,string b)
+        {
+            if (a != "0" && b != "0")
+            {
+                if (a == "1")
+                    return b;
+                else if (a == "-1")
+                    return b.StartsWith("-") ? b.Substring(1) : "-" + b;
+                else if (b == "1")
+                    return a;
+                else if (b == "-1")
+                    return a.StartsWith("-") ? a.Substring(1) : "-" + a;
+                else
+                    return a + "*" + b;
+            }
+            else
+                return null;
+        }
+
+        static public StringVector4 Mult(StringMatrix l, StringVector4 r)
+        {
+            StringVector4 res = new StringVector4();
+            for (int i = 0; i < 4; i++)
+            {
+                int left = i * 4;
+                string equation = "";
+                for (int j = 0; j < 4; j++)
+                {
+                    var a = l.Element[left + j];
+                    var b = r.Element[i];
+                    string m = Mult(a, b);
+                    equation = equation.AppendPrePad(m, " + ");
+                }
+
+                equation = equation != "" ? equation : "0";
                 res.Element[i] = equation;
             }
             return res;

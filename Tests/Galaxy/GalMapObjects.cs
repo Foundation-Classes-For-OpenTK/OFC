@@ -52,7 +52,7 @@ namespace TestOpenTk
             IGLTexture texarray = items.Add(new GLTexture2DArray(images, mipmaplevel:1, genmipmaplevel:3), "GalObjTex");
 
             // a look at vertex shader
-            var vert = new GLPLVertexScaleLookat(rotate:false, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);
+            var vert = new GLPLVertexScaleLookat(rotate:true, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);
             var tcs = new GLPLTesselationControl(10f);
             tes = new GLPLTesselationEvaluateSinewave(0.2f,1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
             var frag = new GLPLFragmentShaderTexture2DDiscard(1);       // binding 1 - takes image pos from tes. imagepos < 0 means discard
@@ -111,7 +111,7 @@ namespace TestOpenTk
                 for(int i = 0 ; i < renderablegalmapobjects.Length; i++)
                 {
                     var o = renderablegalmapobjects[i];
-                    float offset = -4;
+                    float offset = -6;
                     //for( int j = 0; j < i; j++)
                     //{
                     //    var d1 = new Vector3(o.points[0].X, o.points[0].Y+offset, o.points[0].Z);

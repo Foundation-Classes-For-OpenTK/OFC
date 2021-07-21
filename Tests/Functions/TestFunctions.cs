@@ -287,9 +287,20 @@ void main(void)
                                                     "0", "1", "0", "0",
                                                     "sy", "0", "cy", "0",
                                                     "0", "0", "0", "1");
-                StringMatrix res = StringMatrix.Mult(roxm90,roy);
+                StringMatrix res = StringMatrix.Mult(roxm90, roy);
                 string r = res.ToString(true);
                 System.Diagnostics.Debug.WriteLine($"{r}");
+
+                res = StringMatrix.Mult(rox, roy);
+                r = res.ToString(true);
+                System.Diagnostics.Debug.WriteLine($"{r}");
+
+                StringVector4 v4a = new StringVector4("a", "-1", "c", "d");
+                StringVector4 resv4 = StringMatrix.Mult(rox, v4a);
+                r = resv4.ToString(true);
+                System.Diagnostics.Debug.WriteLine($"{r}");
+
+
             }
 
 

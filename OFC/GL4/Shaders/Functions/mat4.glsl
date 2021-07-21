@@ -102,7 +102,7 @@ mat4 mat4rotateXthenY(float radiansx, float radiansy)		// TestFunctions
 	return v;
 }
 
-mat4 mat4rotateXm90thenYm90()								
+mat4 mat4rotateXm90thenYm90()							// constant version of above	
 {
 	const float cx = 0;			// -90degress (rotate towards viewer) around X
 	const float sx = -1;		

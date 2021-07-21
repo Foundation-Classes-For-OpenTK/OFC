@@ -155,7 +155,7 @@ void main(void)
             Vector4 v = new Vector4(((float)p.X) / (s.Width / 2) - 1.0f, (1.0f - (float)p.Y / (s.Height / 2)), 0, 0);   // convert to clip space
             GL.ProgramUniform4(Id, 10, v);
             float pixd = (float)(margin / (float)(s.Width+s.Height/2/2));
-            System.Diagnostics.Debug.WriteLine("Set CP {0} Pixd {1}", v , pixd);
+           // System.Diagnostics.Debug.WriteLine("Set CP {0} Pixd {1}", v , pixd);
             GL.ProgramUniform1(Id, 11, pixd);
         }
 

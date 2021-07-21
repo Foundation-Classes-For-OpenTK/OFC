@@ -51,8 +51,8 @@ out gl_PerVertex {
         float gl_ClipDistance[];
     };
 
-const bool rotateelevation = true;
-const bool rotate = true;
+const bool rotateelevation = false;
+const bool rotate = false;
 const bool usetransform = false;
 const float autoscale = 0;
 const float autoscalemax = 0;
@@ -65,82 +65,24 @@ void main(void)
     if ( autoscale>0)
         pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
 
-    if ( usetransform )
+    if ( rotate )       // reverified after much work 21/7/21
     {
-        pos = transform * pos;      // use transform to adjust
-    }
-
-    if ( rotate )
-    {
-        
-
-// works 1
-        ///vec2 dir = AzEl(worldposition.xyz,mc.EyePosition.xyz);      // From our pos, to the object, what is Az/El
-        //float roty = PI-dir.y;
-        //pos = mat4rotateXm90thenYm90() * pos;
-        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
-        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
-
-// works 2:
-        //pos = pos * mat4rotateX(PI/2);      // rotate to XY plane
-        //pos = pos * mat4rotateY(PI/2);  // rotate back to YZ plane
-        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
-        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
-
-// works 3:
-        //pos = mat4rotateXm90thenYm90() * pos;
-        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
-        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
-
-// works 4:
-        //pos = mat4rotateXm90thenYm90() * pos;
-        //pos = pos * mat4rotateZ(dir.x-PI/2); // rotate around Z to set elevation
-        //pos = pos * mat4rotateY(-(PI/2-roty));  // inverse rotate back YZ plane to set azimuth
-
-// works 5:
-        //vec2 dir = AzEl(mc.EyePosition.xyz,worldposition.xyz);      // From our pos, to the object, what is Az/El
-        //pos = mat4rotateX(-(PI-dir.x)) * pos;            // dir.x = inc, 0 upwards to target, 180 downwards to target. So PI-dir.x, and negative to rotate it towards us
-        //pos = mat4rotateY(dir.y) * pos;
-
-// works 6:
         vec2 dir = AzEl(mc.EyePosition.xyz,worldposition.xyz);      // From our pos, to the object, what is Az/El.  Az = 0 if forward, 180 if back. El = 0 if up, 90 if level, 180 if down
-        if ( rotateelevation)
+        if ( rotateelevation )
         {
-            pos = mat4rotateX(-(PI-dir.x)) * pos;            // dir.x = inc, 0 upwards to target, 180 downwards to target. So PI-dir.x, and negative to rotate it towards us
-            pos = mat4rotateY(dir.y) * pos;
+            pos = mat4rotateXthenY(-(PI-dir.x), dir.y) * pos;       // dir.x = inclination, 0 upwards to target, 180 downwards to target. Picture is flat on xz plane.
+                                                                    // So 180-dir.x (meaning 0 rotate by 180, or 180 no rotate), and negative to rotate it towards us not the other way
+                                                                    // dir.y = 0 eye towards target, 180 eye behind target, -90 left +90 right. rotate to eye
         }
         else
         {
-         //   pos = mat4rotateXm90() * pos;
-           // pos = mat4rotateY(dir.y) * pos;
-            pos = mat4rotateXm90thenY(dir.y) * pos;
+            pos = mat4rotateXm90thenY(dir.y) * pos;                 // rotate the bitmap vertical (m90) then rotate to viewer
         }
+    }
 
-
-// rotate X to dir.x works
-
-       // if (rotateelevation )
-         //   tx = mat4rotateXthenY(dir.x,PI-dir.y);              // rotate the flat image to vertical using dir.x (0 = on top, 90 = straight on, etc) then rotate by 180-dir (0 if directly facing from neg z)
-        //else
-            //tx = mat4rotateXthenY(PI/2,PI-dir.y);
-        //tx = mat4rotateXthenY(dir.x,0);
-
-// this seems to work
-        //pos = pos * mat4rotateX(PI/2);      // rotate to XY plane
-        //pos = pos * mat4rotateY(PI/2);  // rotate back to YZ plane
-
-
-
-
-
-
-
-//        tx = mat4rotateY(PI-dir.y);
-  ///      pos = pos * tx;
-     //   mat4 t2 = mat4rotateX(dir.x);
-       // pos = pos *t2;
-
-        //pos = pos * ty * tx;
+    if ( usetransform )
+    {
+        pos = transform * pos;      // use transform to adjust
     }
 
     gl_Position = pos;
@@ -155,7 +97,7 @@ void main(void)
         {
             CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
                                                                     "usetransform", commontransform, "autoscale", autoscale,
-                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax },completeoutfile:@"c:\code\shader.txt");
         }
     }
 }

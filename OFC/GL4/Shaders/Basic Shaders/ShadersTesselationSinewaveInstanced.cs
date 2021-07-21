@@ -23,7 +23,7 @@ namespace OFC.GL4
         public GLTesselationShaderSinewaveAutoscaleLookatInstanced(float tesselation,float amplitude, float repeats, bool rotate = false, bool rotateelevation = true, 
                                                     bool commontransform = false,  float autoscale=0, float autoscalemin = 0.1f, float autoscalemax= 3f)
         {
-            var vert = new GLPLVertexScaleLookat(rotate,rotateelevation, rotateelevation, autoscale, autoscalemin, autoscalemax);
+            var vert = new GLPLVertexScaleLookat(rotate,rotateelevation, commontransform, autoscale, autoscalemin, autoscalemax);
             var tcs = new GLPLTesselationControl(tesselation);
             tes = new GLPLTesselationEvaluateSinewave(amplitude,repeats);
             var frag = new GLPLFragmentShaderTexture2DDiscard();

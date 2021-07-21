@@ -77,7 +77,7 @@ namespace OFC.GL4
         mat4 tx = transform;
         vs.vs_index = int(tx[0][3]);                                // row/col ordering
 
-        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 (floats 12-14)
+        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 
 
         //wpout = worldposition; epout = mc.EyePosition.xyz; // for debug
 
@@ -107,11 +107,10 @@ namespace OFC.GL4
             {
                 vec3 scale = vec3(tx[0][0],tx[1][1],tx[2][2]);
 
-                vec2 dir = AzEl(worldposition,mc.EyePosition.xyz);      // x = elevation y = azimuth
+                vec2 dir = AzEl(mc.EyePosition.xyz,worldposition);      // x = elevation y = azimuth        eye to world. see GLPLVertexScaleLookat
+                tx = mat4ScalethenRotateXthenYthenTranslation(ctrl >= 2 ? -(PI-dir.x) : -PI/2,dir.y,scale,worldposition);
 
-                // dirout = vec4(degrees(dir.x),degrees(dir.y),mc.EyeDistance,alpha); // for debug
-
-                tx = mat4ScalethenRotateXthenYthenTranslation(ctrl >= 2 ? -dir.x : -PI/2,-PI+dir.y,scale,worldposition);
+            // dirout = vec4(degrees(dir.x),degrees(dir.y),mc.EyeDistance,alpha); // for debug
             }
 
             gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];    

@@ -82,27 +82,16 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
             items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
             items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");    
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
 
-            #region Sphere mapping 
-
-            {
-                GLRenderControl rc1 = GLRenderControl.Tri();
-                rObjects.Add(items.Shader("TEXOT"), "sphere7",
-                    GLRenderableItem.CreateVector4Vector2(items, rc1,
-                            GLSphereObjectFactory.CreateTexturedSphereFromTriangles(4, 4.0f),
-                            new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(4, 0, 0))
-                            ));
-
-            }
+            ulong ctrl = 0xffffffff;
+            //ctrl = 3 | (1 << 23);
 
 
-
-            #endregion
 
             #region coloured lines
 
-            if (true)
+            if( (ctrl & (1<<0)) != 0)
             {
                 GLRenderControl lines = GLRenderControl.Lines(1);
 
@@ -118,7 +107,7 @@ namespace TestOpenTk
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green }));
             }
-            if ( true )
+            if( (ctrl & (1<<1)) != 0)
             {
                 GLRenderControl lines = GLRenderControl.Lines(1);
 
@@ -136,8 +125,23 @@ namespace TestOpenTk
 
             #endregion
 
+            #region Sphere mapping 
+
+            if ((ctrl & (1 << 2)) != 0)
+            {
+                GLRenderControl rc1 = GLRenderControl.Tri();
+                rObjects.Add(items.Shader("TEXOT"), "sphere7",
+                    GLRenderableItem.CreateVector4Vector2(items, rc1,
+                            GLSphereObjectFactory.CreateTexturedSphereFromTriangles(4, 4.0f),
+                            new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(4, 0, 0))
+                            ));
+
+            }
+
+            #endregion
+
             #region Coloured triangles
-            if (true)
+            if ( (ctrl & (1<<3)) != 0)
             {
                 GLRenderControl rc = GLRenderControl.Tri();
                 rc.CullFace = false;
@@ -170,7 +174,7 @@ namespace TestOpenTk
 
             #region view marker
 
-            if (true)
+            if( (ctrl & (1<<4)) != 0)
             {
                 GLRenderControl rc = GLRenderControl.Points(10);
 
@@ -185,7 +189,7 @@ namespace TestOpenTk
 
 
             #region coloured points
-            if (true)
+            if( (ctrl & (1<<5)) != 0)
             {
                 GLRenderControl rc2 = GLRenderControl.Points(2);
 
@@ -232,7 +236,7 @@ namespace TestOpenTk
 
 
             #region textures
-            if (true)
+            if( (ctrl & (1<<6)) != 0)
             {
                 GLRenderControl rt = GLRenderControl.Tri();
 
@@ -342,7 +346,7 @@ namespace TestOpenTk
             #endregion
 
             #region 2dArrays
-            if (true)
+            if( (ctrl & (1<<7)) != 0)
             {
                 items.Add( new GLTexturedShader2DBlendWithWorldCoord(), "TEX2DA");
                 items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap2, Properties.Resources.mipmap3 }, 9), "2DArray2");
@@ -368,7 +372,7 @@ namespace TestOpenTk
             #endregion
 
             #region Instancing
-            if (true)
+            if( (ctrl & (1<<8)) != 0)
             {
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithMatrixTranslation(), new GLPLFragmentShaderVSColor()),"IC-1");
 
@@ -410,7 +414,7 @@ namespace TestOpenTk
 
 
             #region Tesselation
-            if (true)
+            if ((ctrl & (1 << 9)) != 0)
             {
                 var shdrtesssine = new GLTesselationShaderSinewave(20, 0.5f, 2f);
                 items.Add(shdrtesssine, "TESx1");
@@ -428,7 +432,7 @@ namespace TestOpenTk
 
 
             #region MipMaps
-            if (true)
+            if( (ctrl & (1<<10)) != 0)
             {
                 items.Add( new GLTexture2D(Properties.Resources.mipmap2, 9), "mipmap1");
 
@@ -443,7 +447,7 @@ namespace TestOpenTk
 
             #region Tape
 
-            if (true)
+            if( (ctrl & (1<<11)) != 0)
             {
                 var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 10), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
 
@@ -459,7 +463,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("tapeshader"), "tape1", GLRenderableItem.CreateVector4(items, rts, p , new GLRenderDataTexture(items.Tex("tapelogo"))));
             }
 
-            if (true)
+            if( (ctrl & (1<<12)) != 0)
             {
                 var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 10), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
 
@@ -475,7 +479,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("tapeshader2"), "tape2", GLRenderableItem.CreateVector4(items, rts, p, new GLRenderDataTexture(items.Tex("tapelogo2"))));
             }
 
-            if (true)
+            if( (ctrl & (1<<13)) != 0)
             {
                 Vector4[] points = new Vector4[] { new Vector4(100, 5, 40, 0), new Vector4(0, 5, 100, 0), new Vector4(-50, 5, 80, 0), new Vector4(-60, 5, 20, 0) };
 
@@ -498,7 +502,7 @@ namespace TestOpenTk
 
             #region Screen coords
             // fixed point on screen
-            if (true)
+            if( (ctrl & (1<<14)) != 0)
             {
                 Vector4[] p = new Vector4[4];
 
@@ -520,7 +524,7 @@ namespace TestOpenTk
             #region Index/instance draw
 
             // multi element index draw
-            if (true)
+            if( (ctrl & (1<<15)) != 0)
             {
                 float CS = 2, O = -20, OY = 0;
                 float[] v = new float[]
@@ -562,7 +566,7 @@ namespace TestOpenTk
             }
 
             // multi element index draw with primitive restart, draw a triangle strip
-            if (true)
+            if( (ctrl & (1<<16)) != 0)
             {
                 float X = -10, Z = -10;
                 float X2 = -8, Z2 = -10;
@@ -591,7 +595,7 @@ namespace TestOpenTk
             }
 
             // indirect multi draw with element index - two red squares in foreground.
-            if (true)
+            if( (ctrl & (1<<17)) != 0)
             {
                 float X = -10, Z = -12;
                 float X2 = -8, Z2 = -12;
@@ -633,7 +637,7 @@ namespace TestOpenTk
             #endregion
 
             #region Bindless texture
-            if (true)
+            if ((ctrl & (1 << 18)) != 0)
             {
                 IGLTexture[] btextures = new IGLTexture[3];
                 btextures[0] = items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "bl1");
@@ -680,7 +684,7 @@ namespace TestOpenTk
 
             #region Objects
 
-            if (false)
+            if ((ctrl & (1 << 19)) != 0 && false)   // tbd
             {
                 GLWaveformObjReader read = new GLWaveformObjReader();
                 string s = System.Text.Encoding.UTF8.GetString(Properties.Resources.cubeobj);
@@ -711,7 +715,7 @@ namespace TestOpenTk
                 }
             }
 
-            if (true)       // waveform object, wood panel, at y=-20,x=15
+            if( (ctrl & (1<<20)) != 0)       // waveform object, wood panel, at y=-20,x=15
             {
                 GLWaveformObjReader read = new GLWaveformObjReader();
                 string s = System.Text.Encoding.UTF8.GetString(Properties.Resources.textobj1);
@@ -743,7 +747,7 @@ namespace TestOpenTk
                 }
             }
 
-            if ( true )     // wood face at y=-20, coloured cube at y=-20
+            if( (ctrl & (1<<21)) != 0)     // wood face at y=-20, coloured cube at y=-20
             {
                 GLWaveformObjReader read = new GLWaveformObjReader();
                 var objlist = read.ReadOBJData(System.Text.Encoding.UTF8.GetString(Properties.Resources.textobj1));
@@ -759,7 +763,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.Assert(v == true);
             }
 
-            if ( true) // large sofa
+            if( (ctrl & (1<<22)) != 0) // large sofa
             {
                 GLWaveformObjReader read = new GLWaveformObjReader();
                 var objlist = read.ReadOBJData(System.Text.Encoding.UTF8.GetString(Properties.Resources.Koltuk));
@@ -775,7 +779,7 @@ namespace TestOpenTk
 
 
             #region Instancing with matrix and lookat
-            if (true)
+            if( (ctrl & (1<<23)) != 0)
             {
                 var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted2, Properties.Resources.planetaryNebula, Properties.Resources.wooden });
                 items.Add(texarray);
@@ -787,12 +791,15 @@ namespace TestOpenTk
 
                 Matrix4[] pos = new Matrix4[3];
                 pos[0] = Matrix4.CreateTranslation(new Vector3(-20, 0, -10));
+                pos[0] = Matrix4.CreateScale(5) * pos[0];
 
                 pos[1] = Matrix4.CreateTranslation(new Vector3(-20, 5, -10));
+                pos[1] = Matrix4.CreateScale(4) * pos[1];
                 pos[1][0, 3] = 1;   // image no
                 pos[1][1, 3] = 1;   // lookat control
 
                 pos[2] = Matrix4.CreateRotationX(-45f.Radians());
+                pos[2] = Matrix4.CreateScale(4) * pos[2];
                 pos[2] *= Matrix4.CreateTranslation(new Vector3(-20, 10, -10));
                 pos[2][0, 3] = 2;
                 pos[2][1, 3] = 2;   // lookat control
@@ -807,29 +814,44 @@ namespace TestOpenTk
 
             #region Sineway look at
 
-            if (true)   // instanced sinewive with rotate
+            if( (ctrl & (1<<24)) != 0)   // instanced sinewive with rotate
             {
-                var shdrtesssine = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.0f, 1f, rotate: true, rotateelevation: false);
+                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.Logo8bpp, Properties.Resources.Logo8bpp });
+                items.Add(texarray, "Sinewavetex");
+                GLRenderControl rp = GLRenderControl.Patches(4);
+
+                var shdrtesssine = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.2f, 1f, rotate: true, rotateelevation: false);
                 items.Add(shdrtesssine, "TESIx1");
 
                 Vector4[] pos = new Vector4[]       //w = image index
-                {   
-                    //new Vector4(38,0,-10,2),
-                    //new Vector4(39,0,-20,1),
+                {
+                    new Vector4(40,0,-10,1),
                     new Vector4(40,0,-30,0),            // flat on the xz plane
                 };
 
-                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.Logo8bpp, });
-                items.Add(texarray, "Sinewavetex");
 
-                GLRenderControl rp = GLRenderControl.Patches(4);
                 var dt = GLRenderableItem.CreateVector4Vector4(items, rp,
                                         GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos,
                                         new GLRenderDataTexture(texarray),
-                                        ic: 3, seconddivisor: 1);
+                                        ic: 2, seconddivisor: 1);
 
-                rObjects.Add(shdrtesssine, "O-TES2", dt);
+                rObjects.Add(shdrtesssine, "O-TESA1", dt);
 
+                var shdrtesssine2 = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.2f, 1f, rotate: true, rotateelevation: true);
+                items.Add(shdrtesssine2, "TESIx2");
+
+                Vector4[] pos2 = new Vector4[]       //w = image index
+                {
+                    new Vector4(60,0,-10,1),
+                    new Vector4(60,0,-30,0),            // flat on the xz plane
+                };
+
+                var dt2 = GLRenderableItem.CreateVector4Vector4(items, rp,
+                                        GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos2,
+                                        new GLRenderDataTexture(texarray),
+                                        ic: 2, seconddivisor: 1);
+
+                rObjects.Add(shdrtesssine2, "O-TESA2", dt2);
             }
 
             #endregion
@@ -861,18 +883,29 @@ namespace TestOpenTk
 
             if (rObjects.Contains("woodbox"))
             {
-                ((GLRenderDataTranslationRotation)(rObjects["woodbox"].RenderData)).XRotDegrees = degrees;
-                ((GLRenderDataTranslationRotation)(rObjects["woodbox"].RenderData)).ZRotDegrees = degrees;
-
-                ((GLRenderDataTranslationRotation)(rObjects["EDDCube"].RenderData)).YRotDegrees = degrees;
-                ((GLRenderDataTranslationRotation)(rObjects["EDDCube"].RenderData)).ZRotDegrees = degreesd2;
-
-                ((GLRenderDataTranslationRotation)(rObjects["sphere3"].RenderData)).XRotDegrees = -degrees;
-                ((GLRenderDataTranslationRotation)(rObjects["sphere3"].RenderData)).YRotDegrees = degrees;
-                ((GLRenderDataTranslationRotation)(rObjects["sphere4"].RenderData)).YRotDegrees = degrees;
-                ((GLRenderDataTranslationRotation)(rObjects["sphere4"].RenderData)).ZRotDegrees = -degreesd2;
-                ((GLRenderDataTranslationRotation)(rObjects["sphere7"].RenderData)).YRotDegrees = degreesd4;
+                (rObjects["woodbox"].RenderData as GLRenderDataTranslationRotation).XRotDegrees = degrees;
+                (rObjects["woodbox"].RenderData as GLRenderDataTranslationRotation).ZRotDegrees = degrees;
             }
+
+            if (rObjects.Contains("EDDCube"))
+            {
+                (rObjects["EDDCube"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degrees;
+                (rObjects["EDDCube"].RenderData as GLRenderDataTranslationRotation).ZRotDegrees = degreesd2;
+            }
+
+            if (rObjects.Contains("sphere3"))
+            {
+                (rObjects["sphere3"].RenderData as GLRenderDataTranslationRotation).XRotDegrees = -degrees;
+                (rObjects["sphere3"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degrees;
+            }
+            if (rObjects.Contains("sphere3"))
+            {
+                (rObjects["sphere4"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degrees;
+                (rObjects["sphere4"].RenderData as GLRenderDataTranslationRotation).ZRotDegrees = -degreesd2;
+            }
+
+            if (rObjects.Contains("sphere7"))
+                (rObjects["sphere7"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degreesd4;
 
             if (items.Contains("TEXOCT"))
                 ((GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation)items.Shader("TEXOCT").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader)).Transform.YRotDegrees = degrees;
@@ -889,8 +922,10 @@ namespace TestOpenTk
 
             if (items.Contains("TESx1"))
                 ((GLTesselationShaderSinewave)items.Shader("TESx1")).Phase = degrees / 360.0f;
-        //    if (items.Contains("TESIx1"))
-          //      ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx1")).Phase = degrees / 360.0f;
+            if (items.Contains("TESIx1"))
+                ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx1")).Phase = degrees / 360.0f;
+            if (items.Contains("TESIx2"))
+                ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx2")).Phase = degrees / 360.0f;
 
             GLStatics.Check();
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");

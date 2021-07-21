@@ -586,7 +586,7 @@ namespace OFC.GL4.Controls
             if (invalidate)
                 Invalidate();
 
-            System.Diagnostics.Debug.WriteLine("Cpos Line {0} cpos {1} cur {2} off {3} len {4} maxline {5} line '{6}'", cursorlineno, cursorlinecpos, cursorpos, cursorpos - cursorlinecpos, linelengths[cursorlineno], MaxLineLength, GetLineWithoutCRLF(cursorlinecpos,cursorlineno,displaystartx));
+            //System.Diagnostics.Debug.WriteLine("Cpos Line {0} cpos {1} cur {2} off {3} len {4} maxline {5} line '{6}'", cursorlineno, cursorlinecpos, cursorpos, cursorpos - cursorlinecpos, linelengths[cursorlineno], MaxLineLength, GetLineWithoutCRLF(cursorlinecpos,cursorlineno,displaystartx));
         }
 
 

@@ -1317,7 +1317,7 @@ namespace OFC.GL4.Controls
 
                 if (!newfocus.Enabled || !newfocus.Focusable)       // if its not enabled or not focusable, change to no focus
                 {
-                    System.Diagnostics.Debug.WriteLine("Focus target not enabled/focusable " + newfocus.Name);
+                    //System.Diagnostics.Debug.WriteLine("Focus target not enabled/focusable " + newfocus.Name);
                     newfocus = null;
                 }
             }
