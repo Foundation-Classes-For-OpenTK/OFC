@@ -43,7 +43,7 @@ namespace OFC.GL4.Controls
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; AltScaleChanged = true; FindDisplay()?.ReRender(); } }
         private SizeF? altscale = null;
         public bool AltScaleChanged { get; set; } = false;
-        public Size ScaledSize { get { if ( altscale!=null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
+        public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
         public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
@@ -59,11 +59,11 @@ namespace OFC.GL4.Controls
 
         public int ClientLeftMargin { get { return Margin.Left + Padding.Left + BorderWidth; } }
         public int ClientRightMargin { get { return Margin.Right + Padding.Right + BorderWidth; } }
-        public int ClientWidthMargin { get { return Margin.TotalWidth + Padding.TotalWidth + BorderWidth*2; } }
+        public int ClientWidthMargin { get { return Margin.TotalWidth + Padding.TotalWidth + BorderWidth * 2; } }
         public int ClientTopMargin { get { return Margin.Top + Padding.Top + BorderWidth; } }
         public int ClientBottomMargin { get { return Margin.Bottom + Padding.Bottom + BorderWidth; } }
-        public int ClientHeightMargin { get { return Margin.TotalHeight + Padding.TotalHeight + BorderWidth*2; } }
-        public int ClientWidth { get { return ClientRectangle.Width ; } set { SetPos(window.Left, window.Top, value + ClientLeftMargin + ClientRightMargin, window.Height); } }
+        public int ClientHeightMargin { get { return Margin.TotalHeight + Padding.TotalHeight + BorderWidth * 2; } }
+        public int ClientWidth { get { return ClientRectangle.Width; } set { SetPos(window.Left, window.Top, value + ClientLeftMargin + ClientRightMargin, window.Height); } }
         public int ClientHeight { get { return ClientRectangle.Height; } set { SetPos(window.Left, window.Top, window.Width, value + ClientTopMargin + ClientBottomMargin); } }
         public Size ClientSize { get { return ClientRectangle.Size; } set { SetPos(window.Left, window.Top, value.Width + ClientLeftMargin + ClientRightMargin, value.Height + ClientTopMargin + ClientBottomMargin); } }
         public Point ClientLocation { get { return new Point(ClientLeftMargin, ClientTopMargin); } }
@@ -86,13 +86,14 @@ namespace OFC.GL4.Controls
         public virtual bool Focused { get { return focused; } }
         public virtual bool Focusable { get { return focusable; } set { focusable = value; } }          // if set, it can get focus. if clear, clicking on it sets focus to null
         public virtual bool RejectFocus { get { return rejectfocus; } set { rejectfocus = value; } }    // if set, focus is never given or changed by clicking on it.
-        public virtual bool GiveFocusToParent { get { return givefocustoparent; } set { givefocustoparent= value; } }    // if set, focus is passed to parent if present, and it does not reject it
+        public virtual bool GiveFocusToParent { get { return givefocustoparent; } set { givefocustoparent = value; } }    // if set, focus is passed to parent if present, and it does not reject it
         public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
-        
+
         // colour font
 
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
-        public Font Font { get { return font ?? parent?.Font ?? DefaultFont; } set { SetFont(value); InvalidateLayout(); } }
+        public Font Font { get { return font ?? parent?.Font ?? DefaultFont; } set { SetFont(value); InvalidateLayout(); } }    // look back up tree
+        public bool IsFontDefined { get { return font != null; } }
         public Color BackColor { get { return backcolor; } set { if (backcolor != value) { backcolor = value; Invalidate(); } } }
         public int BackColorGradientDir { get { return backcolorgradientdir; } set { if (backcolorgradientdir != value) { backcolorgradientdir = value; Invalidate(); } } }
         public Color BackColorGradientAlt { get { return backcolorgradientalt; } set { if (backcolorgradientalt != value) { backcolorgradientalt = value; Invalidate(); } } }
@@ -379,7 +380,6 @@ namespace OFC.GL4.Controls
             CheckZOrder();      // verify its okay 
 
             Themer?.Invoke(child);      // added to control, theme it
-
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout();        // we are invalidated and layout

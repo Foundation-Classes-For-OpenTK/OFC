@@ -30,88 +30,137 @@ namespace OFC.GL4.Controls
             RetryCancel = 5
         }
 
-        public GLMessageBox( GLBaseControl c, Action<GLMessageBox, DialogResult> callback, string text, string caption, MessageBoxButtons but = MessageBoxButtons.OK, Font fnt = null )
+        public GLMessageBox( GLBaseControl attachto, Point offsetinparent, Action<GLMessageBox, DialogResult> callback, string text, string caption, 
+                            MessageBoxButtons buttons = MessageBoxButtons.OK, Font fnt = null )
         {
             callbackfunc = callback;
 
             if (fnt == null)
                 fnt = new Font("Ms Sans Serif", 12);
 
-            GLFormConfigurable c1 = new GLFormConfigurable();
-            c1.TopMost = true;
-            c1.Font = fnt;
+            GLFormConfigurable cf = new GLFormConfigurable();
+            cf.TopMost = true;
+            cf.Font = fnt;
 
-            int butright;
-            int butwidth = 80;
-            int butheight = 20;
-            int butline;
+            const int butwidth = 80;
+            const int butheight = 20;
+            const int textoffsettop = 10;
+            const int butspacingundertext = 10;
+            const int butxspacing = 20;
+            const int textmargin = 10;
+            const int windowmargin = 10;
+            int horzscrollbarheight = 0;
+            bool horzscrollon = false;
+            Rectangle textboxpos;
+
+            Size availablespace = attachto.Size;
+
+            GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(0,0,100,100), text);
 
             using (var fmt = new StringFormat())
             {
-                var textsize = BitMapHelpers.MeasureStringInBitmap(text, fnt, fmt);
-                butline = 10 + (int)textsize.Height + 10;
-                butright = Math.Max((butwidth + 20) * 2 + 20, Math.Min((int)textsize.Width + 20, 1600));
+                var textsize = BitMapHelpers.MeasureStringInBitmap(text + (text.EndsWith(Environment.NewLine) ? "AAAA" : ""), fnt, fmt);
+
+                int buts = (buttons == MessageBoxButtons.AbortRetryIgnore || buttons == MessageBoxButtons.YesNoCancel) ? 3 : 2;     // guess of how many, just to set min but width
+                int estwidth = Math.Max((butwidth + butxspacing) * buts + butxspacing, (int)textsize.Width + butxspacing);
+
+                if ( estwidth > availablespace.Width - windowmargin * 2)
+                {
+                    estwidth = availablespace.Width - windowmargin * 2;
+                    horzscrollon = true;
+                    horzscrollbarheight = fnt.Height;
+                }
+                horzscrollon = true;
+                horzscrollbarheight = fnt.Height;
+
+                int tbheight = tb.NumberOfLines * fnt.Height + fnt.Height / 4 + horzscrollbarheight;   // font is added to nerf up a little to account for rounding
+
+                int estclientarea = textoffsettop + tbheight + butspacingundertext + butheight;     // as measured by FormConfigurable line 442
+                int estheight = cf.Margin.TotalHeight + cf.Padding.TotalHeight + cf.BorderWidth + cf.ExtraClientMargin.Height;      // see FormConfigurable line 443 Size=
+                estheight += estclientarea ;     // estimate
+
+                if (estheight > availablespace.Height - windowmargin * 2)       // too big
+                {
+                    estheight -= tbheight;
+                    tbheight = (availablespace.Height - windowmargin * 2) - estheight;
+                    estheight += tbheight;
+                }
+
+                if ( offsetinparent.Y + estheight > availablespace.Height)      // make sure not off the bottom
+                {
+                    offsetinparent.Y = Math.Max(0,availablespace.Height - estheight);
+                }
+
+                textboxpos = new Rectangle(textmargin, textoffsettop, estwidth, tbheight);
             }
 
-            if (but == MessageBoxButtons.AbortRetryIgnore)
+            int butright = textboxpos.Right - butwidth;
+            int butline = textboxpos.Bottom + butspacingundertext;
+
+            if (buttons == MessageBoxButtons.AbortRetryIgnore)
             {
-                c1.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Ignore));
-                c1.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright-butwidth-20, butline), new Size(butwidth, butheight), null, DialogResult.Retry));
-                c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-butwidth*2-40, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
+                cf.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Ignore));
+                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright-butwidth-butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Retry));
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-(butwidth+butxspacing)*2, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
             }
-            else if (but == MessageBoxButtons.OKCancel)
+            else if (buttons == MessageBoxButtons.OKCancel)
             {
-                c1.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { taborder = 1 });
-                c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-butwidth-20, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { taborder = 1 });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-butwidth-butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
             }
-            else if (but == MessageBoxButtons.RetryCancel)
+            else if (buttons == MessageBoxButtons.RetryCancel)
             {
-                c1.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Retry));
-                c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-butwidth-20, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
+                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Retry));
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright-butwidth-butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { taborder = 0 });
             }
-            else if (but == MessageBoxButtons.YesNo)
+            else if (buttons == MessageBoxButtons.YesNo)
             {
-                c1.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.No));
-                c1.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright-butwidth-20, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { taborder = 0 });
+                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.No));
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright-butwidth-butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { taborder = 0 });
             }
-            else if (but == MessageBoxButtons.YesNo)
+            else if (buttons == MessageBoxButtons.YesNoCancel)
             {
-                c1.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel));
-                c1.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright-butwidth-20, butline), new Size(butwidth, butheight), null, DialogResult.No));
-                c1.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright-butwidth*2-40, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { taborder = 0 });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel));
+                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright-butwidth-butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.No));
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright-(butwidth+butxspacing)*2, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { taborder = 0 });
             }
             else 
             {
-                c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.OK));
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.OK));
             }
 
-            GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(10, 10, butright + butwidth - 10, butline - 20),text);
+            tb.Bounds = textboxpos;
+            tb.ScrollBarWidth = horzscrollbarheight;
             tb.BackColor = Color.Transparent;
             tb.ForeColor = GLBaseControl.DefaultFormTextColor;
-            tb.ReadOnly = true;
-            c1.Add(new GLFormConfigurable.Entry(tb));
+            //tb.ReadOnly = true;
+            tb.EnableHorizontalScrollBar = horzscrollon;
+            tb.EnableVerticalScrollBar = true;
+            tb.CursorToTop();
+            cf.Add(new GLFormConfigurable.Entry(tb));
 
-            c1.Init(new Point(200, 200), caption);
-            c1.DialogCallback = FormCallBack;
-            c1.Tag = this;
-            c1.Trigger += (cfg, en, ctrlname, args) =>
+            cf.Init(offsetinparent, caption);
+            System.Diagnostics.Debug.WriteLine("Cf bounds" + cf.Bounds);
+            cf.DialogCallback = DialogCallback;
+            cf.Tag = this;
+            cf.Trigger += (cfg, en, ctrlname, args) =>
             {
                 if (ctrlname == "Escape")
                 {
-                    c1.DialogResult = DialogResult.Abort;
-                    c1.Close();
+                    cf.DialogResult = DialogResult.Abort;
+                    cf.Close();
                 }
                 else
                 {
-                    c1.DialogResult = (DialogResult)en.tag;
-                    c1.Close();
+                    cf.DialogResult = (DialogResult)en.tag;
+                    cf.Close();
                 }
             };
 
-            c.AddToDesktop(c1);
+            attachto.AddToDesktop(cf);
         }
 
-        private void FormCallBack(GLForm p, DialogResult r)
+        private void DialogCallback(GLForm p, DialogResult r)
         {
             GLMessageBox m = p.Tag as GLMessageBox;
             callbackfunc?.Invoke(m, r);

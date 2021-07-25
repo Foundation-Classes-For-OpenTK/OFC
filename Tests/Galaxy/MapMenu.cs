@@ -187,9 +187,9 @@ namespace TestOpenTk
                 galfp.BackColor = pform.BackColor;
                 galgb.Add(galfp);
 
-                for (int i = map.galmap.RenderableMapTypes.Length - 1; i >= 0; i--)
+                for (int i = map.edsmmapping.RenderableMapTypes.Length - 1; i >= 0; i--)
                 {
-                    var gt = map.galmap.RenderableMapTypes[i];
+                    var gt = map.edsmmapping.RenderableMapTypes[i];
                     bool en = map.GetGalObjectTypeEnable(gt.Typeid);
                     GLCheckBox butg = new GLCheckBox("GMSEL"+i, new Rectangle(0, 0, iconsize, iconsize), gt.Image, null);
                     butg.ToolTipText = "Enable/Disable " + gt.Description;

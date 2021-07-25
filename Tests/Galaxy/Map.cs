@@ -41,8 +41,7 @@ namespace TestOpenTk
         public GLMatrixCalc matrixcalc;
         public Controller3D gl3dcontroller;
         public GLControlDisplay displaycontrol;
-        public GalacticMapping galmap;
-        public GalacticMapping eliteregions;
+        public GalacticMapping edsmmapping;
 
         private OFC.WinForm.GLWinFormControl glwfc;
 
@@ -61,6 +60,7 @@ namespace TestOpenTk
         private TravelPath travelpath;
         private MapMenu galaxymenu;
 
+        private GalacticMapping elitemapping;
         private GalMapObjects galmapobjects;
         private GalMapRegions edsmgalmapregions;
         private GalMapRegions elitemapregions;
@@ -81,11 +81,11 @@ namespace TestOpenTk
 
         #region Initialise
 
-        public void Start(OFC.WinForm.GLWinFormControl glwfc, GalacticMapping galmap, GalacticMapping eliteregions)
+        public void Start(OFC.WinForm.GLWinFormControl glwfc, GalacticMapping edsmmapping, GalacticMapping eliteregions)
         {
             this.glwfc = glwfc;
-            this.galmap = galmap;
-            this.eliteregions = eliteregions;
+            this.edsmmapping = edsmmapping;
+            this.elitemapping = eliteregions;
 
             sw.Start();
 
@@ -269,7 +269,7 @@ namespace TestOpenTk
                 };
 
                 edsmgalmapregions = new GalMapRegions();
-                edsmgalmapregions.CreateObjects(items, rObjects, galmap, 8000, corr: corr);
+                edsmgalmapregions.CreateObjects(items, rObjects, edsmmapping, 8000, corr: corr);
             }
 
             if (true)           // Elite regions
@@ -311,9 +311,8 @@ namespace TestOpenTk
             if (true)       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
-                galmapobjects.CreateObjects(items, rObjects, galmap, findgeomapblock);
+                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock);
             }
-
 
             // Matrix calc holding transform info
 
@@ -376,7 +375,7 @@ namespace TestOpenTk
             tbac.PerformAutoCompleteInUIThread = (s, a) =>
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
-                var glist = galmap.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
+                var glist = edsmmapping.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
                 List<string> list = glist.Select(x => x.name).ToList();
                 list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
                 list.Sort();
@@ -387,7 +386,7 @@ namespace TestOpenTk
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
-                var gmo = galmap.galacticMapObjects.Find(x => x.name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                var gmo = edsmmapping.galacticMapObjects.Find(x => x.name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
                 if (gmo != null)
                 {
                     System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.points[0]);

@@ -31,7 +31,7 @@ namespace TestOpenTk
 
         private Timer systemtimer = new Timer();
 
-        private GalacticMapping galacticMapping;
+        private GalacticMapping edsmmapping;
         private GalacticMapping eliteRegions;
 
         private Map map;
@@ -45,9 +45,9 @@ namespace TestOpenTk
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
 
-            galacticMapping = new GalacticMapping();
+            edsmmapping = new GalacticMapping();
             string text = System.Text.Encoding.UTF8.GetString(Properties.Resources.galacticmapping);
-            galacticMapping.ParseJson(text);                            // at this point, gal map data has been uploaded - get it into memory
+            edsmmapping.ParseJson(text);                            // at this point, gal map data has been uploaded - get it into memory
 
             eliteRegions = new GalacticMapping();
             text = System.Text.Encoding.UTF8.GetString(Properties.Resources.EliteGalacticRegions);
@@ -57,7 +57,7 @@ namespace TestOpenTk
             mapdefaults.ReadFromDisk(@"c:\code\mapdef.txt");
 
             map = new Map();
-            map.Start(glwfc, galacticMapping, eliteRegions);
+            map.Start(glwfc, edsmmapping, eliteRegions);
             map.LoadDefaults(mapdefaults);
 
             systemtimer.Start();

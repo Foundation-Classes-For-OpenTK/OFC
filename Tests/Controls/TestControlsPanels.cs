@@ -421,7 +421,7 @@ namespace TestOpenTk
 
         private void MsgDialog()
         {
-            GLMessageBox msg = new GLMessageBox( displaycontrol, MsgReturn, "text text\r\nwskwkkw\r\nsksksk\r\nskksks end", "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            GLMessageBox msg = new GLMessageBox( displaycontrol, new Point(10, 10), MsgReturn, "text text\r\nwskwkkw\r\nsksksk\r\nskksks end", "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
         }
 
         private void MsgReturn(GLMessageBox msg, OFC.GL4.Controls.DialogResult res)

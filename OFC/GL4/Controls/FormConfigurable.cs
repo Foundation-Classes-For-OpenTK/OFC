@@ -33,9 +33,6 @@ namespace OFC.GL4.Controls
 
         public event Action<GLFormConfigurable, Entry, string, Object> Trigger;
 
-        private List<Entry> entries;
-        private Object callertag;
-
         // You give an array of Entries describing the controls
         // either added programatically by Add(entry) or via a string descriptor Add(string) (disabled for now)
         // Directly Supported Types (string name/base type)
@@ -97,6 +94,8 @@ namespace OFC.GL4.Controls
         {
             entries = new List<Entry>();
         }
+
+        public Size ExtraClientMargin { get; set; } = new Size(20, 10);         // extra space left/bot to add
 
         public void Add(Entry e)               // add an entry..
         {
@@ -441,7 +440,7 @@ namespace OFC.GL4.Controls
 
             Location = pos;
             Rectangle area = ChildArea();
-            Size = new Size(area.Right + Margin.TotalWidth + 20, area.Bottom + Margin.TotalHeight + 10 + Padding.TotalHeight + BorderWidth);
+            Size = new Size(area.Right + Margin.TotalWidth + ExtraClientMargin.Width, area.Bottom + Margin.TotalHeight + ExtraClientMargin.Height + Padding.TotalHeight + BorderWidth);
         }
 
         protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children
@@ -456,6 +455,8 @@ namespace OFC.GL4.Controls
 
         #endregion
 
+        private List<Entry> entries;
+        private Object callertag;
     }
 }
 

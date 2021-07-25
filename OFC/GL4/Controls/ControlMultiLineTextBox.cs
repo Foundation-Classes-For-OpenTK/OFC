@@ -49,7 +49,7 @@ namespace OFC.GL4.Controls
 
         public bool EnableVerticalScrollBar { get { return vertscroller != null; } set { ScrollBars(value, horzscroller != null); } }
         public bool EnableHorizontalScrollBar { get { return horzscroller != null; } set { ScrollBars(vertscroller != null, value); } }
-        public int ScrollBarWidth { get; set; } = 20;
+        public int ScrollBarWidth { get { return scrollbarwidth; } set { scrollbarwidth = value; Finish(true, true, true); } }
 
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
         {
@@ -288,6 +288,13 @@ namespace OFC.GL4.Controls
                     }
                 }
             }
+        }
+
+        public void CursorToTop()
+        {
+            startpos = firstline = cursorpos = 0;
+            CalculateTextParameters();                      // will correct for out of range start/cursor pos
+            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
         }
 
         public void SetSelection(int start, int end)        // set equal to cancel, else set start/end pos
@@ -559,14 +566,13 @@ namespace OFC.GL4.Controls
                 {
                     vertscroller.Visible = newstate;
                     //System.Diagnostics.Debug.WriteLine("Change state to {0}", newstate);
-
-                    if (horzscroller != null)
-                    {
-                        horzscroller.Padding = new Padding(0, 0, newstate ? ScrollBarWidth : 0, 0);
-                    }
-
                     invalidate = true;
                 }
+
+                //if (horzscroller != null)
+                //{
+                //    //horzscroller.Padding = new Padding(0, 0, newstate ? ScrollBarWidth : 0, 0);
+                //}
 
                 if (vertscroller.Visible)
                     vertscroller.SetValueMaximumLargeChange(firstline, NumberOfLines-1 , CurrentDisplayableLines);
@@ -680,6 +686,13 @@ namespace OFC.GL4.Controls
 
         #region Other implementation
 
+        protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)    
+        {
+            base.OnControlAdd(parent, child);
+            if (child == this && !IsFontDefined)    // if we have not defined a font, on attach we need to finish again, because the font has changed from the default
+                Finish(true, false, false);
+        }
+
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
@@ -754,9 +767,10 @@ namespace OFC.GL4.Controls
 
         protected override void Paint(Graphics gr)
         {
-            if (displaystartx < 0)      // no paint if not set up
+            if (displaystartx < 0)      // no paint if not set up - checking for race conditions
                 return;
 
+            System.Diagnostics.Debug.WriteLine($"{startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
             Rectangle usablearea = UsableAreaForText(ClientRectangle);
             gr.SetClip(usablearea);     // so we don't paint outside of this
 
@@ -832,6 +846,7 @@ namespace OFC.GL4.Controls
 
                         if (s.Length > 0)
                         {
+                            System.Diagnostics.Debug.WriteLine("Paint with " + Font);
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
                         }
 
@@ -1147,8 +1162,9 @@ namespace OFC.GL4.Controls
                 }
             }
 
-            if (horzscroller?.Visible ?? false)
-                horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
+            //remove for now
+      //      if (horzscroller?.Visible ?? false)
+         //       horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
             if (vertscroller?.Visible ?? false)
                 vertscroller.Padding = new Padding(0, 0, 0, horz ? ScrollBarWidth : 0);
         }
@@ -1158,33 +1174,39 @@ namespace OFC.GL4.Controls
         private int CurrentDisplayableLines { get { return ((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / Font.Height); } }
         private int MaxDisplayableLines { get { return ClientRectangle.Height / Font.Height; } }
 
-        private List<int> linelengths = new List<int>(); // computed on text set, includes space for cr/lf
-        private List<int> lineendlengths = new List<int>(); // computed on text set, 0 = none, 1 = lf, 2 = cr/lf
+        // cursor and marker info
 
         private int cursorpos = int.MaxValue; // set on text set if invalid
-        private int cursorlineno;   // computed on text set, updated by all moves/inserts
-        private int cursorlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
-
         private int startpos = int.MaxValue; // set on text set if invalid
-        private int startlineno;   // computed on text set, updated by all moves/inserts
-        private int startlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
-
         private int firstline = 0;  // first line to display
         private int displaystartx = -1; // first character to display
 
+        // Calculated by CalculateTextParameters - these are independent of font/area size etc.
+        // Includes MaxLineLength
+
+        private List<int> linelengths = new List<int>(); // computed on text set, includes space for cr/lf
+        private List<int> lineendlengths = new List<int>(); // computed on text set, 0 = none, 1 = lf, 2 = cr/lf
+
+        private int cursorlineno;   // computed on text set, updated by all moves/inserts
+        private int cursorlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
+        private int startlineno;   // computed on text set, updated by all moves/inserts
+        private int startlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
+
+        // Display
+
         private Color highlightColor { get; set; } = DefaultHighlightColor;
         private Color lineColor { get; set; } = Color.Transparent;
-
-        private bool inerror = false;
         private Color backerrorcolor { get; set; } = DefaultErrorColor;
+        private bool inerror = false;
 
-        private bool cursorshowing = true;
+        private int scrollbarwidth = 20;
+
+        private bool cursorshowing = true;  // is cursor currently showing
 
         private OFC.Timers.Timer cursortimer = new Timers.Timer();
 
-        GLScrollBar vertscroller;
-        GLScrollBar horzscroller;
-
+        private GLScrollBar vertscroller;
+        private GLScrollBar horzscroller;
     }
 }
 

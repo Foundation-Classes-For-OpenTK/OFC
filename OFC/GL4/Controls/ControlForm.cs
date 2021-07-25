@@ -66,6 +66,7 @@ namespace OFC.GL4.Controls
         }
 
         public int TitleBarHeight { get { return (Font?.ScalePixels(20) ?? 20) + FormMargins * 2; } }
+        static public int TitleBarHeightFromFont(Font fnt) { return (fnt?.ScalePixels(20) ?? 20) + FormMargins * 2; }
 
         public void Close()
         {

@@ -160,8 +160,8 @@ namespace TestOpenTk
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
                 //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
                 pform.ScaleWindow = new SizeF(0.0f, 0.0f);
-                pform.Animators.Add(new AnimateScale(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, new SizeF(1, 1)));
-                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, new Point(100,100)));
+                pform.Animators.Add(new AnimateScale(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 300, new SizeF(1, 1)));
+                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 300, new Point(100,100)));
                 displaycontrol.Add(pform);
 
                 int taborder = 0;
@@ -186,115 +186,118 @@ namespace TestOpenTk
                 b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
                 pform.Add(b2);
 
-                GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
-                cb1.Margin = new Margin(16, 8, 16, 8);
-                cb1.TabOrder = taborder++;
-                cb1.ToolTipText = "Combo Box";
-                pform.Add(cb1);
-
-                GLCheckBox chk1 = new GLCheckBox("Checkbox", new Rectangle(0, 150, 0, 0), "CheckBox 1");
-                chk1.Margin = new Margin(16, 0, 0, 0);
-                chk1.TabOrder = taborder++;
-                pform.Add(chk1);
-                GLCheckBox chk2 = new GLCheckBox("Checkbox", new Rectangle(100, 150, 0, 0), "CheckBox 2");
-                chk2.Appearance = CheckBoxAppearance.Radio;
-                chk2.TabOrder = taborder++;
-                pform.Add(chk2);
-                GLCheckBox chk3 = new GLCheckBox("Checkbox", new Rectangle(200, 150, 0, 0), "CheckBox 3");
-                chk3.Appearance = CheckBoxAppearance.Button;
-                chk3.TabOrder = taborder++;
-                pform.Add(chk3);
-                GLCheckBox chk4 = new GLCheckBox("Checkbox", new Rectangle(300, 150, 0, 0), "");
-                chk4.TabOrder = taborder++;
-                pform.Add(chk4);
-                GLCheckBox chk5 = new GLCheckBox("Checkbox", new Rectangle(350, 150, 0, 0), "R1");
-                chk5.Appearance = CheckBoxAppearance.Radio;
-                chk5.GroupRadioButton = true;
-                chk5.TabOrder = taborder++;
-                pform.Add(chk5);
-                GLCheckBox chk6 = new GLCheckBox("Checkbox", new Rectangle(400, 150, 0, 0), "");
-                chk6.Appearance = CheckBoxAppearance.Radio;
-                chk6.GroupRadioButton = true;
-                chk6.TabOrder = taborder++;
-                pform.Add(chk6);
-
-                GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
-                dtp.Font = new Font("Ms Sans Serif", 11);
-                dtp.ShowCheckBox = dtp.ShowCalendar = true;
-                dtp.ShowUpDown = true;
-                //dtp.Culture = CultureInfo.GetCultureInfo("es");
-                dtp.TabOrder = taborder++;
-                pform.Add(dtp);
-
-                List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
-                GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
-                lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                lb1.Font = new Font("Microsoft Sans Serif", 12f);
-                lb1.TabOrder = taborder++;
-                //lb1.FitToItemsHeight = false;
-                pform.Add(lb1);
-                lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
-
+                if (false)
                 {
-                    string l = "";
-                    for (int i = 0; i < 20; i++)
+                    GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
+                    cb1.Margin = new Margin(16, 8, 16, 8);
+                    cb1.TabOrder = taborder++;
+                    cb1.ToolTipText = "Combo Box";
+                    pform.Add(cb1);
+
+                    GLCheckBox chk1 = new GLCheckBox("Checkbox", new Rectangle(0, 150, 0, 0), "CheckBox 1");
+                    chk1.Margin = new Margin(16, 0, 0, 0);
+                    chk1.TabOrder = taborder++;
+                    pform.Add(chk1);
+                    GLCheckBox chk2 = new GLCheckBox("Checkbox", new Rectangle(100, 150, 0, 0), "CheckBox 2");
+                    chk2.Appearance = CheckBoxAppearance.Radio;
+                    chk2.TabOrder = taborder++;
+                    pform.Add(chk2);
+                    GLCheckBox chk3 = new GLCheckBox("Checkbox", new Rectangle(200, 150, 0, 0), "CheckBox 3");
+                    chk3.Appearance = CheckBoxAppearance.Button;
+                    chk3.TabOrder = taborder++;
+                    pform.Add(chk3);
+                    GLCheckBox chk4 = new GLCheckBox("Checkbox", new Rectangle(300, 150, 0, 0), "");
+                    chk4.TabOrder = taborder++;
+                    pform.Add(chk4);
+                    GLCheckBox chk5 = new GLCheckBox("Checkbox", new Rectangle(350, 150, 0, 0), "R1");
+                    chk5.Appearance = CheckBoxAppearance.Radio;
+                    chk5.GroupRadioButton = true;
+                    chk5.TabOrder = taborder++;
+                    pform.Add(chk5);
+                    GLCheckBox chk6 = new GLCheckBox("Checkbox", new Rectangle(400, 150, 0, 0), "");
+                    chk6.Appearance = CheckBoxAppearance.Radio;
+                    chk6.GroupRadioButton = true;
+                    chk6.TabOrder = taborder++;
+                    pform.Add(chk6);
+
+                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
+                    dtp.Font = new Font("Ms Sans Serif", 11);
+                    dtp.ShowCheckBox = dtp.ShowCalendar = true;
+                    dtp.ShowUpDown = true;
+                    //dtp.Culture = CultureInfo.GetCultureInfo("es");
+                    dtp.TabOrder = taborder++;
+                    pform.Add(dtp);
+
+                    List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
+                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
+                    lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                    lb1.Font = new Font("Microsoft Sans Serif", 12f);
+                    lb1.TabOrder = taborder++;
+                    //lb1.FitToItemsHeight = false;
+                    pform.Add(lb1);
+                    lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
+
                     {
-                        string s = string.Format("Line " + i);
-                        if (i == 5)
-                            s += "And a much much longer Line which should break the width";
-                        l += s + "\r\n";
+                        string l = "";
+                        for (int i = 0; i < 20; i++)
+                        {
+                            string s = string.Format("Line " + i);
+                            if (i == 5)
+                                s += "And a much much longer Line which should break the width";
+                            l += s + "\r\n";
+                        }
+                        l += "trail ";
+                        // l = "";
+
+                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
+                        mtb.Font = new Font("Ms Sans Serif", 14);
+                        mtb.LineColor = Color.Green;
+                        mtb.EnableVerticalScrollBar = true;
+                        mtb.EnableHorizontalScrollBar = true;
+                        mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                        mtb.TabOrder = taborder++;
+                        pform.Add(mtb);
                     }
-                    l += "trail ";
-                    // l = "";
 
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
-                    mtb.Font = new Font("Ms Sans Serif", 14);
-                    mtb.LineColor = Color.Green;
-                    mtb.EnableVerticalScrollBar = true;
-                    mtb.EnableHorizontalScrollBar = true;
-                    mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    mtb.TabOrder = taborder++;
-                    pform.Add(mtb);
+                    GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
+                    tb1.Font = new Font("Arial", 12);
+                    tb1.TabOrder = taborder++;
+                    pform.Add(tb1);
+
+                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 550, 26, 46));
+                    upc1.TabOrder = taborder++;
+                    pform.Add(upc1);
+                    upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
+
+                    GLCalendar cal = new GLCalendar("Cal", new Rectangle(500, 10, 300, 200));
+                    cal.TabOrder = taborder++;
+                    //cal.Culture = CultureInfo.GetCultureInfo("es");
+                    cal.AutoSize = true;
+                    cal.Font = new Font("Arial", 10);
+                    pform.Add(cal);
+
+                    GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
+                    glf.TabOrder = taborder++;
+                    glf.Font = new Font("Ms Sans Serif", 12);
+                    glf.Minimum = -1000;
+                    glf.Maximum = 1000;
+                    pform.Add(glf);
+
+                    GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
+                    gla.TabOrder = taborder++;
+                    gla.Font = new Font("Ms Sans Serif", 12);
+                    gla.PerformAutoCompleteInThread += (s, a) =>
+                    {
+                        var r = new List<string>() { "one", "two", "three" };
+                        return r.Where(x => x.StartsWith(s)).ToList();
+                    };
+                    pform.Add(gla);
                 }
-
-                GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
-                tb1.Font = new Font("Arial", 12);
-                tb1.TabOrder = taborder++;
-                pform.Add(tb1);
-
-                GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 550, 26, 46));
-                upc1.TabOrder = taborder++;
-                pform.Add(upc1);
-                upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
-
-                GLCalendar cal = new GLCalendar("Cal", new Rectangle(500, 10, 300, 200));
-                cal.TabOrder = taborder++;
-                //cal.Culture = CultureInfo.GetCultureInfo("es");
-                cal.AutoSize = true;
-                cal.Font = new Font("Arial", 10);
-                pform.Add(cal);
-
-                GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
-                glf.TabOrder = taborder++;
-                glf.Font = new Font("Ms Sans Serif", 12);
-                glf.Minimum = -1000;
-                glf.Maximum = 1000;
-                pform.Add(glf);
-
-                GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
-                gla.TabOrder = taborder++;
-                gla.Font = new Font("Ms Sans Serif", 12);
-                gla.PerformAutoCompleteInThread += (s, a) =>
-                {
-                    var r = new List<string>() { "one", "two", "three" };
-                    return r.Where(x => x.StartsWith(s)).ToList();
-                };
-                pform.Add(gla);
 
                 pform.ResumeLayout();
             }
 
-            if (true)
+            if (false)
             {
                 GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 400));
                 pform2.BackColor = Color.FromArgb(200, Color.Red);
@@ -363,7 +366,11 @@ namespace TestOpenTk
 
         private void MsgDialog()
         {
-            GLMessageBox msg = new GLMessageBox( displaycontrol, MsgReturn, "text text\r\nwskwkkw\r\nsksksk\r\nskksks end", "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            string t = "";
+            for (int i = 0; i < 30; i++)
+                t += "Line " + i + " is here" + Environment.NewLine;
+
+            GLMessageBox msg = new GLMessageBox( displaycontrol, new Point(100, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
         }
 
         private void MsgReturn(GLMessageBox msg, OFC.GL4.Controls.DialogResult res)
