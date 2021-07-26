@@ -112,6 +112,8 @@ namespace TestOpenTk
                 {
                     var o = renderablegalmapobjects[i];
                     float offset = -6;
+
+                    //tbd
                     //for( int j = 0; j < i; j++)
                     //{
                     //    var d1 = new Vector3(o.points[0].X, o.points[0].Y+offset, o.points[0].Z);
@@ -128,7 +130,7 @@ namespace TestOpenTk
 
                     Vector3 pos = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
                    // posset.Add(pos);
-                    System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
+                    //System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
                     textrenderer.Add(o.id, o.name, fnt, 
                         Color.White,Color.FromArgb(0,255,0,0),//Color.Red,//Color.Transparent, 
                         pos,

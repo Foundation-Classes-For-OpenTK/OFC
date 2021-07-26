@@ -713,6 +713,7 @@ namespace OFC.GL4.Controls
         }
 
         // override to auto size after the children sized themselves.
+        // Only use the NI functions to change size. 
         protected virtual void SizeControlPostChild(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Post Size " + Name + " area est is " + parentclientrect);

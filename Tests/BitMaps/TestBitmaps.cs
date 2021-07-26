@@ -234,22 +234,22 @@ namespace TestOpenTk
         {
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.CameraLookAt(new Vector3(0, 0, 0), 1, 2);
+                gl3dcontroller.PanZoomTo(new Vector3(0, 0, 0), 1, 2);
             }
 
             if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.CameraLookAt(new Vector3(4, 0, 0), 1, 2);
+                gl3dcontroller.PanZoomTo(new Vector3(4, 0, 0), 1, 2);
             }
 
             if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.CameraLookAt(new Vector3(10, 0, -10), 1, 2);
+                gl3dcontroller.PanZoomTo(new Vector3(10, 0, -10), 1, 2);
             }
 
             if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.CameraLookAt(new Vector3(50, 0, 50), 1, 2);
+                gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
             }
 
             if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
@@ -291,12 +291,12 @@ namespace TestOpenTk
             if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to 90");
-                gl3dcontroller.CameraPan(new Vector2(90, 0), 3);
+                gl3dcontroller.Pan(new Vector2(90, 0), 3);
             }
             if (kb.HasBeenPressed(Keys.P, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to -180");
-                gl3dcontroller.CameraPan(new Vector2(90, 180), 3);
+                gl3dcontroller.Pan(new Vector2(90, 180), 3);
             }
 
             //System.Diagnostics.Debug.WriteLine("kb check");

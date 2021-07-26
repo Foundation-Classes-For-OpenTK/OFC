@@ -37,7 +37,7 @@ namespace OFC.Controller
             eyeposition += pos;
         }
 
-        // time <0 estimate, 0 instance >0 time
+        // time <0 estimate, 0 instant >0 time
         public void GoTo(Vector3 gotopos, float timeslewsec = 0, float unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             if (!float.IsNaN(gotopos.X))
@@ -55,18 +55,23 @@ namespace OFC.Controller
                     {
                         lookat = gotopos;
                         eyeposition = gotopos + eyeoffset;
-                        //System.Diagnostics.Debug.WriteLine("{0} Immediate Slew to {1} eye {2} offset {3}", Environment.TickCount % 10000, targetposSlewPosition, targetposEyePosition, eyeoffset);
+                        System.Diagnostics.Debug.WriteLine("{0} Immediate Slew to {1}", Environment.TickCount % 10000, targetposSlewTarget);
                     }
                     else
                     {
-                        targetposSlewPosition = gotopos;
-                        targetposEyePosition = gotopos + eyeoffset;
+                        targetposSlewTarget = gotopos;
                         targetposSlewProgress = 0.0f;
                         targetposSlewTime = (timeslewsec < 0) ? ((float)Math.Max(1.0, dist / unitspersecond)) : timeslewsec;            //10000 ly/sec, with a minimum slew
-                        //System.Diagnostics.Debug.WriteLine("{0} Slew start to {1} eye {2} offset {3} in {4} cameradir {5}", Environment.TickCount % 10000, targetposSlewPosition, targetposEyePosition, eyeoffset, targetposSlewTime, cameradir);
+                        System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Slew start to {gotopos} {targetposSlewTime}");
                     }
                 }
             }
+        }
+
+        public void GoToZoom(Vector3 gotopos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
+        {
+            GoTo(gotopos, timeslewsec, unitspersecond);
+            GoToZoom(zoom, targetposSlewTime);
         }
 
         #endregion
@@ -105,6 +110,7 @@ namespace OFC.Controller
             //System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2}", Environment.TickCount % 10000, lookat, eyeposition);
         }
 
+        // Pan to camera position, time = 0 immediate, <0 estimate, else time to slew in seconds
         public void Pan(Vector2 newcamerapos, float timeslewsec = 0) 
         {
             if (timeslewsec == 0)
@@ -113,18 +119,28 @@ namespace OFC.Controller
             }
             else
             {
-                cameraDirSlewPosition = newcamerapos;
+                if (timeslewsec < 0)       // auto estimate on log distance between them
+                {
+                    Vector2 diff = newcamerapos - cameradir;
+                    timeslewsec = (float)(diff.Length / 60);
+                    System.Diagnostics.Debug.WriteLine($"camera diff {diff} {timeslewsec}");
+                }
+
+                cameraDirSlewStart = CameraDirection;
+                cameraDirSlewTarget = newcamerapos;
                 cameraDirSlewProgress = 0.0f;
                 cameraDirSlewTime = (timeslewsec == 0) ? (1.0F) : timeslewsec;
             }
         }
 
-        public void PanTo(Vector3 target, float time = 0)            
+        // Pan to target, time = 0 immeidate, else time to slew
+        public void PanTo(Vector3 target, float timeslewsec = 0)            
         {
             Vector2 camera = EyePosition.AzEl(target, true);
-            Pan(camera, time);
+            Pan(camera, timeslewsec);
         }
 
+        // time = 0 estimate
         public void PanZoomTo(Vector3 target, float zoom, float time = 0) 
         {
             Vector2 camera = EyePosition.AzEl(target, true);
@@ -162,6 +178,7 @@ namespace OFC.Controller
             Zoom(newzoomfactor);
         }
 
+        // to to zoom, time 0 = immediate, <0 estimate, >0 in seconds
         public void GoToZoom(float z, float timetozoom = 0)        // <0 means auto estimate
         {
             z = Math.Max(Math.Min(z, ZoomMax), ZoomMin);
@@ -180,7 +197,8 @@ namespace OFC.Controller
                     timetozoom = (float)(Math.Abs(Math.Log10(zoomSlewTarget / ZoomFactor)) * 1.5);
                 }
 
-                zoomSlewTimeToZoom = timetozoom;
+                zoomSlewTime = timetozoom;
+                zoomSlewProgress = 0;
             }
         }
 
@@ -257,9 +275,8 @@ namespace OFC.Controller
 
                 if (newprogress >= 1.0f)
                 {
-                    lookat = targetposSlewPosition;
-                    eyeposition = targetposEyePosition;
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
+                    lookat = targetposSlewTarget;
+                //    System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
                 }
                 else
                 {
@@ -268,31 +285,34 @@ namespace OFC.Controller
                     Debug.Assert((1 - 0 - slewstart) != 0);
                     var slewfact = (slewend - slewstart) / (1.0 - slewstart);
 
-                    var totvector = new Vector3((float)(targetposSlewPosition.X - lookat.X), (float)(targetposSlewPosition.Y - lookat.Y), (float)(targetposSlewPosition.Z - lookat.Z));
-                    lookat += Vector3.Multiply(totvector, (float)slewfact);
-                    eyeposition += Vector3.Multiply(totvector, (float)slewfact);
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
+                    var totvector = new Vector3((float)(targetposSlewTarget.X - lookat.X), (float)(targetposSlewTarget.Y - lookat.Y), (float)(targetposSlewTarget.Z - lookat.Z));
+
+                    var move = Vector3.Multiply(totvector, (float)slewfact);
+                    lookat += move;
+                    eyeposition += move;
+                  //  System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
                 }
 
                 targetposSlewProgress = (float)newprogress;
             }
 
-            if ( zoomSlewTarget > 0 )
+            if ( zoomSlewProgress < 1.0f )
             {
-                int wantedsteps = (int)((zoomSlewTimeToZoom * 1000.0F) / msticks);
-                float zoommultiplier = (float)Math.Pow(10.0, Math.Log10(zoomSlewTarget / zoomSlewStart) / wantedsteps);      // I.S^n = F I = initial, F = final, S = scaling, N = no of steps
+                var newprogress = zoomSlewProgress + msticks / (zoomSlewTime * 1000);
 
-                float newzoom = (float)(ZoomFactor * zoommultiplier);
-                //System.Diagnostics.Debug.WriteLine("Zoom {0} -> {1} {2}", ZoomFactor, newzoom, zoommultiplier);
-                bool stop = (zoomSlewTarget > ZoomFactor) ? (newzoom >= zoomSlewTarget) : (newzoom <= zoomSlewTarget);
-
-                if (stop)
+                if ( newprogress > 1.0f)
                 {
-                    newzoom = zoomSlewTarget;
-                    zoomSlewTarget = 0;
+                  // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over");
+                    SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
+                }
+                else
+                {
+                    float newzoom = (zoomSlewTarget - zoomSlewStart) * newprogress;
+                //    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} {ZoomFactor} -> {newzoom}");
+                    SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 
-                SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
+                zoomSlewProgress = newprogress;
             }
 
             if (cameraDirSlewProgress < 1.0f)
@@ -301,21 +321,17 @@ namespace OFC.Controller
 
                 if (newprogress >= 1.0f)
                 {
-                    SetLookatPositionFromEye(cameraDirSlewPosition, EyeDistance);
+                    SetLookatPositionFromEye(cameraDirSlewTarget, EyeDistance);
+              //      System.Diagnostics.Debug.WriteLine($"Slew stop at {cameraDirSlewTarget}");
                 }
                 else
                 {
-                    var slewstart = Math.Sin((cameraDirSlewProgress - 0.5) * Math.PI);
-                    var slewend = Math.Sin((newprogress - 0.5) * Math.PI);
-                    Debug.Assert((1 - 0 - slewstart) != 0);
-                    var slewfact = (slewend - slewstart) / (1.0 - slewstart);
-
-                    var totvector = new Vector2((float)(cameraDirSlewPosition.X - CameraDirection.X), (float)(cameraDirSlewPosition.Y - CameraDirection.Y));
-                    cameradir += Vector2.Multiply(totvector, (float)slewfact);
-                    SetLookatPositionFromEye(cameradir, EyeDistance);
-                }
-
-                cameraDirSlewProgress = (float)newprogress;
+                    Vector2 newpos = new Vector2(cameraDirSlewStart.X + (cameraDirSlewTarget.X - cameraDirSlewStart.X) * newprogress,
+                                             cameraDirSlewStart.Y + (cameraDirSlewTarget.Y - cameraDirSlewStart.Y) * newprogress);
+                    SetLookatPositionFromEye(newpos, EyeDistance);
+             //       System.Diagnostics.Debug.WriteLine($"Slewing {cameraDirSlewProgress} to {newpos}");
+                 }
+                 cameraDirSlewProgress = newprogress;
             }
         }
 
@@ -537,18 +553,19 @@ namespace OFC.Controller
         private Vector2 cameradir = Vector2.Zero;               // camera dir, kept in track
         private float camerarot = 0;                            // and rotation
 
+        private Vector3 targetposSlewTarget;                    // where to slew to.
         private float targetposSlewProgress = 1.0f;             // 0 -> 1 slew progress
         private float targetposSlewTime;                        // how long to take to do the slew
-        private Vector3 targetposSlewPosition;                  // where to slew to.
-        private Vector3 targetposEyePosition;                   // where to slew to.
 
-        private float zoomSlewStart = 0;
         private float zoomSlewTarget = 0;
-        private float zoomSlewTimeToZoom = 0;
+        private float zoomSlewStart = 0;
+        private float zoomSlewProgress = 1.0f;
+        private float zoomSlewTime = 0;
 
+        private Vector2 cameraDirSlewTarget;                    // where to slew to.
+        private Vector2 cameraDirSlewStart;                     // where it started
         private float cameraDirSlewProgress = 1.0f;             // 0 -> 1 slew progress
         private float cameraDirSlewTime;                        // how long to take to do the slew
-        private Vector2 cameraDirSlewPosition;                  // where to slew to.
 
         #endregion
     }

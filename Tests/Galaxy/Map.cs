@@ -66,6 +66,8 @@ namespace TestOpenTk
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
 
+        private GLContextMenu rightclickmenu;
+
         private GLBuffer debugbuffer;
 
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
@@ -314,6 +316,41 @@ namespace TestOpenTk
                 galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock);
             }
 
+            if ( true)
+            {
+                rightclickmenu = new GLContextMenu("RightClickMenu",    
+                    new GLMenuItem("RCMInfo", "Information")
+                    {
+                        MouseClick = (s, e) => {
+                        var nl = NameLocationDescription(rightclickmenu.Tag);
+                        System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
+                        }
+                    },
+                    new GLMenuItem("RCMGoto", "Goto Zoom In")
+                    {
+                        MouseClick = (s1, e1) => {
+                            var nl = NameLocationDescription(rightclickmenu.Tag);
+                            gl3dcontroller.SlewToPositionZoom(nl.Item2, 100, -1);
+                        }
+                    },
+                    new GLMenuItem("RCMGoto", "Goto Position")
+                    {
+                        MouseClick = (s1, e1) => {
+                            var nl = NameLocationDescription(rightclickmenu.Tag);
+                            System.Diagnostics.Debug.WriteLine($"Goto {nl.Item1} {nl.Item2}");
+                            gl3dcontroller.SlewToPosition(nl.Item2, -1);
+                        }
+                    },
+                    new GLMenuItem("RCMZoom", "Look At") {
+                        MouseClick = (s1, e1) => {
+                            var nl = NameLocationDescription(rightclickmenu.Tag);
+                            gl3dcontroller.PanTo(nl.Item2, -1);
+                        }
+                    }
+                );
+
+            }
+
             // Matrix calc holding transform info
 
             matrixcalc = new GLMatrixCalc();
@@ -364,7 +401,6 @@ namespace TestOpenTk
             displaycontrol.MouseDown += MouseDownOnMap;
             displaycontrol.MouseMove += MouseMoveOnMap;
             displaycontrol.MouseWheel += MouseWheelOnMap;
-            displaycontrol.MouseDoubleClick += MouseDoubleClickOnMap;
 
             galaxymenu = new MapMenu(this);
 
@@ -596,16 +632,26 @@ namespace TestOpenTk
             return null;
         }
 
-        private Tuple<string,Vector3> NameLocation(Object obj)       // given a type, return its name and location
+        private Tuple<string,Vector3,string> NameLocationDescription(Object obj)       // given a type, return its name and location
         {
             var he = obj as HistoryEntry;
             var gmo = obj as GalacticMapObject;
             if (he != null)
-                return new Tuple<string, Vector3>(he.System.Name, new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z));
+            {
+                return new Tuple<string, Vector3, string>(he.System.Name,
+                                                          new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z),
+                                                          $"{he.System.Name} @ {he.System.X:#.##},{he.System.Y:#.##},{he.System.Z:#.##}");
+            }
             else if (gmo != null)
-                return new Tuple<string, Vector3>(gmo.name, new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z));
+            {
+                return new Tuple<string, Vector3, string>(gmo.name,
+                                                          new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z),
+                                                          gmo.description);
+            }
             else
+            {
                 return null;
+            }
         }
 
 
@@ -639,26 +685,17 @@ namespace TestOpenTk
                 {
                     if (item is HistoryEntry)
                         travelpath.SetSystem(item as HistoryEntry);
-                    var nl = NameLocation(item);
+                    var nl = NameLocationDescription(item);
                     System.Diagnostics.Debug.WriteLine("Click on and slew to " + nl.Item1);
                     SetEntryText(nl.Item1);
                     gl3dcontroller.SlewToPosition(nl.Item2, -1);
                 }
                 else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
                 {
-
+                    rightclickmenu.Tag = item;
+                    rightclickmenu.Show(displaycontrol, e.Location);
                 }
             }
-        }
-
-        private void MouseDoubleClickOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.KillSlew();
-          //  System.Diagnostics.Debug.WriteLine("Mouse double click on map");
-            Object item = FindObjectOnMap(e.ViewportLocation);
-            if (item != null)
-                System.Diagnostics.Debug.WriteLine("Double click on " + item);
-
         }
 
         private void MouseWheelOnMap(Object s, GLMouseEventArgs e)

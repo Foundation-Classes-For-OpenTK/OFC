@@ -95,13 +95,12 @@ namespace OFC.Controller
         public bool EliteMovement { get { return PosCamera.EliteMovement; } set { PosCamera.EliteMovement = value; } }
         public void TranslatePosition(Vector3 posx) { PosCamera.Translate(posx); }
         public void SlewToPosition(Vector3 normpos, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoTo(normpos, timeslewsec, unitspersecond); }
+        public void SlewToPositionZoom(Vector3 normpos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoToZoom(normpos, zoom,timeslewsec, unitspersecond); }
 
         public void SetCameraDir(Vector2 pos) { PosCamera.CameraDirection = pos; }
-        public void CameraPan(Vector2 pos, float timeslewsec = 0) { PosCamera.Pan(pos, timeslewsec); }
-        public void CameraLookAt(Vector3 normtarget, float zoom, float time = 0)
-        {
-            PosCamera.PanZoomTo(normtarget, zoom, time);
-        }
+        public void Pan(Vector2 pos, float timeslewsec = 0) { PosCamera.Pan(pos, timeslewsec); }
+        public void PanTo(Vector3 normtarget, float timeslewsec = 0) { PosCamera.PanTo(normtarget, timeslewsec); }
+        public void PanZoomTo(Vector3 normtarget, float zoom, float time = 0)  {  PosCamera.PanZoomTo(normtarget, zoom, time); }
 
         public void KillSlew()
         {

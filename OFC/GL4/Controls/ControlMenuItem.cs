@@ -14,6 +14,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -44,7 +45,7 @@ namespace OFC.GL4.Controls
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                ButtonAutoSize(new Size(IconTickAreaWidth,0));
+                ButtonAutoSize(new Size(IconTickAreaWidth, 0));
             }
         }
 
@@ -58,11 +59,11 @@ namespace OFC.GL4.Controls
             {
                 butarea.Width -= IconTickAreaWidth;
                 butarea.X += IconTickAreaWidth;
-                if ( back == BackColor )
+                if (back == BackColor)
                 {
                     using (Brush br = new SolidBrush(IconStripBackColor))
                     {
-                        gr.FillRectangle(br, new Rectangle(0,0, IconTickAreaWidth, ClientHeight));
+                        gr.FillRectangle(br, new Rectangle(0, 0, IconTickAreaWidth, ClientHeight));
                     }
 
                     base.PaintButtonBack(butarea, gr, back);
@@ -79,7 +80,7 @@ namespace OFC.GL4.Controls
 
             base.PaintButton(butarea, gr, false);       // don't paint the image
 
-            if ( IconTickAreaWidth > 0 )
+            if (IconTickAreaWidth > 0)
             {
                 int reduce = (int)(IconTickAreaWidth * TickBoxReductionRatio);
                 Rectangle tickarea = new Rectangle((IconTickAreaWidth - reduce) / 2, (ClientHeight - reduce) / 2, reduce, reduce);
@@ -99,11 +100,11 @@ namespace OFC.GL4.Controls
 
                 tickarea.Inflate(-1, -1);       // reduce it around the drawn box above
 
-                if ( Image != null )        // if we have an image, draw it into the tick area
+                if (Image != null)        // if we have an image, draw it into the tick area
                 {
                     base.DrawImage(Image, tickarea, gr, (Enabled) ? drawnImageAttributesEnabled : drawnImageAttributesDisabled);
                 }
-                else 
+                else
                 {
                     base.DrawTick(tickarea, Color.FromArgb(200, CheckColor.Multiply(discaling)), CheckState, gr);
                 }
@@ -117,5 +118,20 @@ namespace OFC.GL4.Controls
         private bool disablehoverhighlighted { get; set; } = false;
     }
 
+    public class GLAutoCheckBoxMenuItem : GLMenuItem
+    {
+        public GLAutoCheckBoxMenuItem(string name, string text, bool state) : base(name, text)        // these are autosized
+        {
+            Checked = state;
+            CheckOnClick = true;
+        }
+    }
+    public class GLSubmenuMenuItem: GLMenuItem
+    {
+        public GLSubmenuMenuItem(string name, string text, params GLBaseControl[] subitems) : base(name, text) 
+        {
+            SubMenuItems = subitems.ToList();
+        }
+    }
 }
 

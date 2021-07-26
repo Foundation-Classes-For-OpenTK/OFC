@@ -34,25 +34,27 @@ namespace OFC.GL4.Controls
 
         public int AutoOpenDelay { get; set; } = 250;     // open after a delay, 0 for off
 
-        public GLMenuStrip(string name, Rectangle location) : base(name, location)
+        public GLMenuStrip(string name, Rectangle location, params GLMenuItem[] items) : base(name, location)
         {
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
             timer.Tick += Timeout;
             FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;   // default is left-right menu
+            foreach (var e in items)
+                Add(e);
         }
 
         public GLMenuStrip(string name = "Menu?") : this(name, DefaultWindowRectangle)
         {
         }
 
-        public GLMenuStrip(string name, DockingType type, float dockpercent) : this(name, DefaultWindowRectangle)
+        public GLMenuStrip(string name, DockingType type, float dockpercent, params GLMenuItem[] items) : this(name, DefaultWindowRectangle, items)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
-        public GLMenuStrip(string name, Size sizep, DockingType type, float dockpercentage) : this(name, DefaultWindowRectangle)
+        public GLMenuStrip(string name, Size sizep, DockingType type, float dockpercentage, params GLMenuItem[] items) : this(name, DefaultWindowRectangle, items)
         {
             Dock = type;
             DockPercent = dockpercentage;
@@ -61,7 +63,7 @@ namespace OFC.GL4.Controls
 
         // call to pop up the context menu, parent is normally displaycontrol
         // you can double call and the previous one is closed
-        public void OpenAsContextMenu(GLBaseControl parent, Point coord)        
+        public void Show(GLBaseControl parent, Point coord)        
         {
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             Detach(this);
@@ -204,11 +206,12 @@ namespace OFC.GL4.Controls
 
         public void CloseMenus()        // all menus close down
         {
-            //System.Diagnostics.Debug.WriteLine("Close menus" + Name);
+            System.Diagnostics.Debug.WriteLine($"{Name} Close menus");
             CloseSubMenus();
             SetSelected(-1);
             if (openedascontextmenu)
             {
+                System.Diagnostics.Debug.WriteLine($"{Name} Detach");
                 Detach(this);
             }
         }
@@ -218,6 +221,7 @@ namespace OFC.GL4.Controls
             if (submenu != null)
             {
                 submenu.CloseSubMenus();    // close child submenus first
+                System.Diagnostics.Debug.WriteLine($"{Name} Close down");
                 submenu.Close();
                 GetTopLevelMenu().SubmenuClosed?.Invoke(ControlsIZ[selected] as GLMenuItem);                 // call, allowing configuration of the submenu
                 submenu = null;
@@ -301,10 +305,14 @@ namespace OFC.GL4.Controls
         protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);
+            System.Diagnostics.Debug.WriteLine($"{Name} Global click on {ctrl.Name}");
             if ( parentmenu == null )       // if top level menu.. top of heirarchy
             {
-                if (ctrl == null || !IsThisOrChildControl(ctrl))     // not a drop down, not a child of our tree
+                bool isthischild = IsThisOrChildControl(ctrl);
+                System.Diagnostics.Debug.WriteLine($"..{Name} ctrl '{ctrl?.Name}' {isthischild}");
+                if (ctrl == null || !isthischild )     // not a drop down, not a child of our tree
                 {
+                    System.Diagnostics.Debug.WriteLine($".. {Name} Close");
                     GetTopLevelMenu().CloseMenus();
                 }
             }
@@ -488,7 +496,15 @@ namespace OFC.GL4.Controls
         private OFC.Timers.Timer timer = new Timers.Timer();
 
         private bool openedascontextmenu = false;
+    }
 
+    // Helper class - use Show() to make it visible. Do not attach to anything at creation
+    public class GLContextMenu : GLMenuStrip
+    {
+        public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, items)
+        {
+            FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
+        }
     }
 }
 

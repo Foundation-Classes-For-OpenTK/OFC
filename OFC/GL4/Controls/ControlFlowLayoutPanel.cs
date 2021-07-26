@@ -50,25 +50,23 @@ namespace OFC.GL4.Controls
 
         public GL4.Controls.Padding FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
 
-        private GL4.Controls.Padding flowPadding { get; set; } = new Padding(1);
-        private ControlFlowDirection flowDirection = ControlFlowDirection.Right;
-
+       
         // Sizing has been recursively done for all children, now size us
-
-        protected override void SizeControl(Size parentsize)
+        // pick the PostChild hook
+        protected override void SizeControlPostChild(Size parentsize)
         {
-            base.SizeControl(parentsize);
+            base.SizeControlPostChild(parentsize);
     
             if (AutoSize)       // width stays the same, height changes, width based on what parent says we can have (either our width, or docked width)
             {
                 Size arealeft = new Size(parentsize.Width - Left, parentsize.Height - Top);
-              //  System.Diagnostics.Debug.WriteLine("Flow {0} location {1} parentsize {2} left {3} panelsize {4}", Name, Location, parentsize, arealeft , Size);
+                //System.Diagnostics.Debug.WriteLine("Flow {0} location {1} parentsize {2} left {3} panelsize {4}", Name, Location, parentsize, arealeft , Size);
 
-                var flowsize = Flow(arealeft, KeepWithinParent, (c, p) => { }); // includes flow padding
+                var flowsize = Flow(arealeft, KeepWithinParent); // includes flow padding
                 if (flowsize.IsEmpty)
                     flowsize = DefaultWindowRectangle.Size;     // emergency min for no controls
 
-               // System.Diagnostics.Debug.WriteLine("..children measured {0} ", flowsize);
+                //System.Diagnostics.Debug.WriteLine("..children measured {0} ", flowsize);
 
                 if (AutoSizeBoth)
                 {
@@ -83,7 +81,8 @@ namespace OFC.GL4.Controls
                     SetNI(clientsize: new Size(flowsize.Width , ClientHeight));
                 }
 
-               // System.Diagnostics.Debug.WriteLine("..panel size now {0} ", Size);
+                //System.Diagnostics.Debug.WriteLine("..panel size now {0} ", Size);
+                //foreach (var cc in ControlsIZ) System.Diagnostics.Debug.WriteLine($"  children size {cc.Size}");
             }
         }
 
@@ -91,32 +90,31 @@ namespace OFC.GL4.Controls
 
         protected override void PerformRecursiveLayout()
         {
-         //   System.Diagnostics.Debug.WriteLine("Flow Laying out " + Name + " In client size " + ClientSize);
+            //System.Diagnostics.Debug.WriteLine("Flow Laying out " + Name + " In client size " + ClientSize);
 
             Flow(ClientSize, true, (c, p) => 
             {
-                //stem.Diagnostics.Debug.WriteLine("Flow Control " + c.Name + " to " + p);
+                //System.Diagnostics.Debug.WriteLine(".. set pos Control " + c.Name + " to " + p + c.Size);
                 c.SetNI(location:p);
                 c.CallPerformRecursiveLayout();
+                //System.Diagnostics.Debug.WriteLine(".... " + c.Size);
             });
         }
 
-        private Size Flow(Size area, bool usearea, Action<GLBaseControl, Point> action)
+        // flow in size and perform action if required
+        private Size Flow(Size area, bool usearea, Action<GLBaseControl, Point> action = null)
         {
             Point flowpos = new Point(0, 0);        // in client co-ords
             Size max = new Size(0, 0);
 
-            //System.Diagnostics.Debug.WriteLine("Flow in {0} {1}", area, usearea);
-
+           // System.Diagnostics.Debug.WriteLine("Flow in {0} {1} dir {2}", area, usearea, FlowDirection);
             foreach (GLBaseControl c in (FlowInZOrder ? ControlsZ: ControlsIZ))
             {
-                //System.Diagnostics.Debug.WriteLine("flow layout " + c.Name + " " + flowpos + " h " + maxh);
-
                 Point pos;
 
                 int controlwidth = c.Width + c.FlowOffsetPosition.X;        // including any flow offsets
                 int controlheight = c.Height + c.FlowOffsetPosition.Y;
-                //System.Diagnostics.Debug.WriteLine("Flow {0} {1} {2} {3}", c.Name, controlwidth, controlheight, FlowOffsetPosition);
+                //System.Diagnostics.Debug.WriteLine(".. flow {0} cw {1} ch {2} fop {3} flowpos {4}", c.Name, controlwidth, controlheight, FlowOffsetPosition, flowpos);
 
                 if (FlowDirection == ControlFlowDirection.Right)
                 {
@@ -149,12 +147,15 @@ namespace OFC.GL4.Controls
 
                // System.Diagnostics.Debug.WriteLine("  Position {0} to {1} s {2}", c.Name, pos, c.Size);
 
-                action(c, pos);
+                action?.Invoke(c, pos);
             }
 
-            //System.Diagnostics.Debug.WriteLine("  Max " + max);
+            //System.Diagnostics.Debug.WriteLine("Flow END Max " + max);
             return max;
         }
+
+        private GL4.Controls.Padding flowPadding { get; set; } = new Padding(1);
+        private ControlFlowDirection flowDirection = ControlFlowDirection.Right;
     }
 }
 

@@ -213,10 +213,9 @@ namespace TestOpenTk
                     pform.ResumeLayout();
                 }
 
-                if ( false)
+                if ( true)
                 {
-                    GLMenuStrip cm = new GLMenuStrip("CM1");
-                    cm.FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
+                    GLContextMenu cm = new GLContextMenu("CM1");
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
@@ -237,7 +236,7 @@ namespace TestOpenTk
                     {
                         if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
                         {
-                            cm.OpenAsContextMenu(displaycontrol,ev.ScreenCoord);
+                            cm.Show(displaycontrol,ev.ScreenCoord);
                         }
                     };
                 }
