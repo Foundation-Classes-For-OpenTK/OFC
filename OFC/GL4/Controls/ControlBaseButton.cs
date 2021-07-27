@@ -62,7 +62,7 @@ namespace OFC.GL4.Controls
             Color colBack = Color.Empty;
 
             if (Enabled == false)
-                colBack = ButtonBackColor.Multiply(DisabledScaling);
+                colBack = ButtonBackColor;// Previously ButtonBackColor.Multiply(DisabledScaling); but its too strong
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
                 colBack = MouseDownBackColor;
             else if (lockhighlight || (Hover && !disablehoverhighlight))

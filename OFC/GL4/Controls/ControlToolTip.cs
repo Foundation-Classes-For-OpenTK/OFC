@@ -106,7 +106,7 @@ namespace OFC.GL4.Controls
                 }
                 else if (mouseover != null )    // into
                 {
-                    if (control.ToolTipText.HasChars())
+                    if (control.ToolTipText.HasChars() && control.Enabled)
                     {
                      //   System.Diagnostics.Debug.WriteLine("Tooltip Found " + ctrl.Name + " " + e.ScreenCoord);
                         timer.Start(AutomaticDelay);     // start timer

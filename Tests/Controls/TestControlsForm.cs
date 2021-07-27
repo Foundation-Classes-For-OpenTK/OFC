@@ -169,22 +169,33 @@ namespace TestOpenTk
                 GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400,0,0, 0), "From Check");
                 pform.Add(lab1);
 
-                GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1");
-                b1.Margin = new Margin(2);
-                b1.TabOrder = taborder++;
-                b1.Padding = new OFC.GL4.Controls.Padding(5);
-                b1.Click += (c, ev) => { ConfDialog(); };
-                b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
-                pform.Add(b1);
+                if (true)
+                {
+                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1");
+                    b1.Margin = new Margin(2);
+                    b1.TabOrder = taborder++;
+                    b1.Padding = new OFC.GL4.Controls.Padding(5);
+                    b1.Click += (c, ev) => { ConfDialog(); };
+                    b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
+                    pform.Add(b1);
 
-                GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Button 2");
-                b2.Image = Properties.Resources.ImportSphere;
-                b2.TabOrder = taborder++;
-                b2.ImageAlign = ContentAlignment.MiddleLeft;
-                b2.TextAlign = ContentAlignment.MiddleRight;
-                b2.Click += (c, ev) => { MsgDialog(); };
-                b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
-                pform.Add(b2);
+                    GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Button 2");
+                    b2.Image = Properties.Resources.ImportSphere;
+                    b2.TabOrder = taborder++;
+                    b2.ImageAlign = ContentAlignment.MiddleLeft;
+                    b2.TextAlign = ContentAlignment.MiddleRight;
+                    b2.Click += (c, ev) => { MsgDialog(); };
+                    b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
+                    pform.Add(b2);
+
+                    GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Button 3");
+                    b3.Margin = new Margin(2);
+                    b3.TabOrder = taborder++;
+                    b3.Padding = new OFC.GL4.Controls.Padding(5);
+                    b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
+                    b3.Enabled = false;
+                    pform.Add(b3);
+                }
 
                 if (false)
                 {
@@ -264,8 +275,10 @@ namespace TestOpenTk
                     mtb.EnableHorizontalScrollBar = true;
                     mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
                     mtb.TabOrder = taborder++;
-                    mtb.FlashingCursor = false;
+                    mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
                     pform.Add(mtb);
+                    //mtb.FlashingCursor = false;
+                    //mtb.ReadOnly = true;
                 }
 
                 if (false)

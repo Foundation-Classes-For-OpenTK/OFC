@@ -51,6 +51,8 @@ namespace OFC.GL4.Controls
         public bool EnableHorizontalScrollBar { get { return horzscroller != null; } set { ScrollBars(vertscroller != null, value); } }
         public int ScrollBarWidth { get { return scrollbarwidth; } set { scrollbarwidth = value; Finish(true, true, true); } }
 
+        public Font RightClickMenuFont { get; set; } = null;        // if null, use Font for control
+
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
         {
             Focusable = true;
@@ -58,6 +60,30 @@ namespace OFC.GL4.Controls
             cursortimer.Tick += CursorTick;
             CalculateTextParameters();
             Finish(false, false, false);
+
+            rightclickmenu = new GLContextMenu("MLTBRightClickMenu",
+                        new GLMenuItem("MTLBEditCut", "Cut")
+                        {
+                            MouseClick = (s, e) => {
+                                Cut();
+                                SetFocus();
+                            }
+                        },
+                        new GLMenuItem("MTLBCopy", "Copy")
+                        {
+                            MouseClick = (s1, e1) => {
+                                Copy();
+                                SetFocus();
+                            }
+                        },
+                        new GLMenuItem("MTLBEditPaste", "Paste")
+                        {
+                            MouseClick = (s1, e1) => {
+                                Paste();
+                                SetFocus();
+                            }
+                        }
+                    );
         }
 
         public GLMultiLineTextBox() : this("TBML?", DefaultWindowRectangle, "")
@@ -1089,7 +1115,7 @@ namespace OFC.GL4.Controls
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
-            if (!e.Handled)
+            if (!e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
                 int xcursorpos = FindCursorPos(e.Location, out int xlinecpos, out int xlineno);
 
@@ -1117,6 +1143,17 @@ namespace OFC.GL4.Controls
                     cursorpos = xcursorpos;
                     Invalidate();
                 }
+            }
+        }
+
+        protected override void OnMouseClick(GLMouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+            if ( !e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Right)
+            {
+                rightclickmenu.Font = RightClickMenuFont ?? Font;
+                rightclickmenu.ApplyToControlOfName("MTLBEdit*", a => a.Enabled = !ReadOnly);
+                rightclickmenu.Show(this.FindDisplay(), e.ScreenCoord);
             }
         }
 
@@ -1242,6 +1279,8 @@ namespace OFC.GL4.Controls
 
         private GLScrollBar vertscroller;
         private GLScrollBar horzscroller;
+
+        private GLContextMenu rightclickmenu;
 
         //bool pone = false;      // debugging only
 

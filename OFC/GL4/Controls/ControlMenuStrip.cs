@@ -306,9 +306,11 @@ namespace OFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
-        protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
+        // intercept mouse clicks, and if not clicked on us, close us
+
+        protected override void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e)
         {
-            base.OnGlobalMouseClick(ctrl, e);
+            base.OnGlobalMouseDown(ctrl, e);
             System.Diagnostics.Debug.WriteLine($"{Name} Global click on {ctrl.Name}");
             if ( parentmenu == null )       // if top level menu.. top of heirarchy
             {
@@ -507,7 +509,6 @@ namespace OFC.GL4.Controls
     {
         public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, items)
         {
-            FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
         }
     }
 }
