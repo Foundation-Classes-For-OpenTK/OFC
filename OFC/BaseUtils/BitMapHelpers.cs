@@ -253,7 +253,7 @@ namespace OFC
             {
                 using (Graphics g = Graphics.FromImage(t))
                 {
-                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;      // recommendation from https://docs.microsoft.com/en-us/dotnet/api/system.drawing.graphics.measurestring?view=dotnet-plat-ext-5.0
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit; 
                     if ( fmt != null )
                         return g.MeasureString(text, f, new Size(10000, 10000), fmt);
                     else

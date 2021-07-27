@@ -219,7 +219,10 @@ namespace TestOpenTk
                     chk6.GroupRadioButton = true;
                     chk6.TabOrder = taborder++;
                     pform.Add(chk6);
+                }
 
+                if (false)
+                {
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = dtp.ShowCalendar = true;
@@ -227,7 +230,10 @@ namespace TestOpenTk
                     //dtp.Culture = CultureInfo.GetCultureInfo("es");
                     dtp.TabOrder = taborder++;
                     pform.Add(dtp);
+                }
 
+                if (false)
+                {
                     List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
                     GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
                     lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
@@ -236,46 +242,60 @@ namespace TestOpenTk
                     //lb1.FitToItemsHeight = false;
                     pform.Add(lb1);
                     lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
+                }
 
+                if (true)
+                {
+                    string l = "";
+                    for (int i = 0; i < 20; i++)
                     {
-                        string l = "";
-                        for (int i = 0; i < 20; i++)
-                        {
-                            string s = string.Format("Line " + i);
-                            if (i == 5)
-                                s += "And a much much longer Line which should break the width";
-                            l += s + "\r\n";
-                        }
-                        l += "trail ";
-                        // l = "";
-
-                        GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
-                        mtb.Font = new Font("Ms Sans Serif", 14);
-                        mtb.LineColor = Color.Green;
-                        mtb.EnableVerticalScrollBar = true;
-                        mtb.EnableHorizontalScrollBar = true;
-                        mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                        mtb.TabOrder = taborder++;
-                        pform.Add(mtb);
+                        string s = string.Format("Line " + i);
+                        if (i == 0)
+                            s += "And a much much longer Line which should break the width";
+                        l += s + "\r\n";
                     }
+                    l += "trail ";
+                    // l = "";
 
+                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
+                    mtb.Font = new Font("Ms Sans Serif", 16);
+                    mtb.LineColor = Color.Green;
+                    mtb.EnableVerticalScrollBar = true;
+                    mtb.EnableHorizontalScrollBar = true;
+                    mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                    mtb.TabOrder = taborder++;
+                    mtb.FlashingCursor = false;
+                    pform.Add(mtb);
+                }
+
+                if (false)
+                {
                     GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
                     tb1.Font = new Font("Arial", 12);
                     tb1.TabOrder = taborder++;
                     pform.Add(tb1);
+                }
 
+                if (false)
+                {
                     GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 550, 26, 46));
                     upc1.TabOrder = taborder++;
                     pform.Add(upc1);
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
+                }
 
+                if (false)
+                {
                     GLCalendar cal = new GLCalendar("Cal", new Rectangle(500, 10, 300, 200));
                     cal.TabOrder = taborder++;
                     //cal.Culture = CultureInfo.GetCultureInfo("es");
                     cal.AutoSize = true;
                     cal.Font = new Font("Arial", 10);
                     pform.Add(cal);
+                }
 
+                if ( false )
+                { 
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
                     glf.TabOrder = taborder++;
                     glf.Font = new Font("Ms Sans Serif", 12);

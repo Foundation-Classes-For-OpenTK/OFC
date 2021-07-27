@@ -528,7 +528,7 @@ namespace OFC.GL4.Controls
                 {
                     using (Graphics gr = Graphics.FromImage(bmp))
                     {
-                        gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // recommended default for measuring text
+                        gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit; // normal we use in OFC
 
                         using (var sfmt = new StringFormat())       // measure where the cursor will be and move startx to make it visible
                         {
@@ -770,7 +770,7 @@ namespace OFC.GL4.Controls
             if (displaystartx < 0)      // no paint if not set up - checking for race conditions
                 return;
 
-            System.Diagnostics.Debug.WriteLine($"{startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
+            //System.Diagnostics.Debug.WriteLine($"Paint MLTB {startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
             Rectangle usablearea = UsableAreaForText(ClientRectangle);
             gr.SetClip(usablearea);     // so we don't paint outside of this
 
@@ -789,8 +789,6 @@ namespace OFC.GL4.Controls
 
                     int bottom = usablearea.Bottom;
                     usablearea.Height = Font.Height;        // move the area down the screen progressively
-
-                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // all rendering and measurement uses this
 
                     while (usablearea.Top < bottom)       // paint each line
                     {
@@ -848,6 +846,42 @@ namespace OFC.GL4.Controls
                         {
                             //System.Diagnostics.Debug.WriteLine($"Text: '{s}'");
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
+
+                            // useful for debug
+
+                            //Pen pr = new Pen(Color.Red);
+                            //Pen pg = new Pen(Color.Green);
+                            //using (Bitmap b = new Bitmap(1000, 100))
+                            //{
+                            //    using (Graphics grx = Graphics.FromImage(b))
+                            //    {
+                            //        grx.TextRenderingHint = gr.TextRenderingHint;     // recommended default for measuring text
+
+                            //        for (int i = 0; i < s.Length; i++)    // we have to do it one by one, as the query is limited to 32 char ranges
+                            //        {
+                            //            using (var fmt = new StringFormat())
+                            //            {
+                            //                fmt.Alignment = StringAlignment.Near;
+                            //                fmt.LineAlignment = StringAlignment.Near;
+                            //                fmt.FormatFlags = StringFormatFlags.NoWrap;
+
+                            //                CharacterRange[] characterRanges = { new CharacterRange(i, 1) };
+                            //                fmt.SetMeasurableCharacterRanges(characterRanges);
+
+                            //                var rect = grx.MeasureCharacterRanges(s, Font, usablearea, fmt)[0].GetBounds(grx);
+                            //                if (rect.Width == 0)
+                            //                    break;
+                            //                if ( !pone )
+                            //                    System.Diagnostics.Debug.WriteLine("Paint Region " + rect + " char " + i + " " + s[i]);
+                            //                gr.DrawLine(pr, new Point(usablearea.X + (int)rect.Left, usablearea.Y + 15), new Point(usablearea.X + (int)rect.Left, usablearea.Y + 30));
+                            //                gr.DrawLine(pg, new Point(usablearea.X + (int)rect.Right - 1, usablearea.Y + 15), new Point(usablearea.X + (int)rect.Right - 1, usablearea.Y + 30));
+                            //            }
+                            //        }
+                            //    }
+                            //    pone = true;
+                            //    pr.Dispose();
+                            //    pg.Dispose();
+                            //}
                         }
 
                         int cursoroffset = cursorpos - cursorlinecpos - displaystartx;
@@ -896,8 +930,6 @@ namespace OFC.GL4.Controls
                         usablearea.Y += Font.Height;
                         lineno++;
                     }
-
-                    //gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;     // back to system default
                 }
             }
         }
@@ -1022,7 +1054,7 @@ namespace OFC.GL4.Controls
             {
                 using (Graphics gr = Graphics.FromImage(b))
                 {
-                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;     // recommended default for measuring text
+                    gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;     // default for OFC - MUST sync with the TRH used in DrawString
                                                                                                 
                     for (int i = 0; i < s.Length; i++)    // we have to do it one by one, as the query is limited to 32 char ranges
                     {
@@ -1030,16 +1062,19 @@ namespace OFC.GL4.Controls
                         {
                             fmt.Alignment = StringAlignment.Near;
                             fmt.LineAlignment = StringAlignment.Near;
+                            fmt.FormatFlags = StringFormatFlags.NoWrap;
 
                             CharacterRange[] characterRanges = { new CharacterRange(i, 1) };
                             fmt.SetMeasurableCharacterRanges(characterRanges);
 
                             var rect = gr.MeasureCharacterRanges(s, Font, usablearea, fmt)[0].GetBounds(gr);
-                            //System.Diagnostics.Debug.WriteLine("Region " + rect + " char " + i + " " + s[i] + " vs " + click);
-                            if (click.X >= rect.Left && click.X < rect.Right)
+
+                            int mid =((int)rect.Left + (int)rect.Right) / 2;
+
+                            //System.Diagnostics.Debug.WriteLine("Region " + rect.Left + ".." + (rect.Right-1) + " mid " + mid + " char " + i + " " + s[i] + " vs " + click);
+                            if ( click.X >= rect.Left && click.X < rect.Right)
                             {
-                                //System.Diagnostics.Debug.WriteLine("Return " + (cpos + displaystartx + i));
-                                return cpos + displaystartx + i;
+                                return cpos + displaystartx + i + ((click.X>=mid) ? 1 : 0);     // pick nearest edge
                             }
                         }
                     }
@@ -1207,6 +1242,9 @@ namespace OFC.GL4.Controls
 
         private GLScrollBar vertscroller;
         private GLScrollBar horzscroller;
+
+        //bool pone = false;      // debugging only
+
     }
 }
 
