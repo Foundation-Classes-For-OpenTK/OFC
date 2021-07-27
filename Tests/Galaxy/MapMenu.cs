@@ -87,18 +87,18 @@ namespace TestOpenTk
 
         public void ShowMenu()
         {
-            map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = false; });
-            //map.displaycontrol["MSMainMenu"].Visible = false;
+            map.displaycontrol.ApplyToControlOfName("InfoBoxForm*", (c) => { ((GLForm)c).Close(); });      // close any info box forms
+            map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = false; });      // hide the visiblity of the on screen controls
 
             int leftmargin = 4;
             int vpos = 10;
             int ypad = 10;
 
             GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 600));
-            pform.BackColor = Color.FromArgb(180, 60, 60, 70);
+            pform.BackColor = Color.FromArgb(220, 60, 60, 70);
             pform.ForeColor = Color.Orange;
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
-            pform.Resizable = pform.Moveable = false;
+            pform.Resizeable = pform.Moveable = false;
 
             {   // top buttons
                 GLPanel p3d2d = new GLPanel("3d2d", new Rectangle(leftmargin, vpos, 80, iconsize), Color.Transparent);

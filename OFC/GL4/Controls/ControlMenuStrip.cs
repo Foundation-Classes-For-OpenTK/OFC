@@ -34,12 +34,14 @@ namespace OFC.GL4.Controls
 
         public int AutoOpenDelay { get; set; } = 250;     // open after a delay, 0 for off
 
-        public GLMenuStrip(string name, Rectangle location, params GLMenuItem[] items) : base(name, location)
+        // if you specify items, make sure the direction is right also.
+
+        public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : base(name, location)
         {
+            FlowDirection = direction;
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
             timer.Tick += Timeout;
-            FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Right;   // default is left-right menu
             foreach (var e in items)
                 Add(e);
         }
@@ -48,13 +50,15 @@ namespace OFC.GL4.Controls
         {
         }
 
-        public GLMenuStrip(string name, DockingType type, float dockpercent, params GLMenuItem[] items) : this(name, DefaultWindowRectangle, items)
+        public GLMenuStrip(string name, DockingType type, float dockpercent, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : 
+                            this(name, DefaultWindowRectangle, direction, items)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
-        public GLMenuStrip(string name, Size sizep, DockingType type, float dockpercentage, params GLMenuItem[] items) : this(name, DefaultWindowRectangle, items)
+        public GLMenuStrip(string name, Size sizep, DockingType type, float dockpercentage, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) 
+                        : this(name, DefaultWindowRectangle, direction, items)
         {
             Dock = type;
             DockPercent = dockpercentage;
@@ -498,10 +502,10 @@ namespace OFC.GL4.Controls
         private bool openedascontextmenu = false;
     }
 
-    // Helper class - use Show() to make it visible. Do not attach to anything at creation
+    // Helper class - use Show() to make it visible. Do not attach to anything at creation. Note they always flow Down
     public class GLContextMenu : GLMenuStrip
     {
-        public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, items)
+        public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, items)
         {
             FlowDirection = GLFlowLayoutPanel.ControlFlowDirection.Down;
         }

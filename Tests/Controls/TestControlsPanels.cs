@@ -401,35 +401,6 @@ namespace TestOpenTk
 
         }
 
-        private void ConfDialog()
-        {
-            GLFormConfigurable c1 = new GLFormConfigurable();
-            c1.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT") { taborder = 1 });
-            c1.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }) { taborder = 2 });
-            c1.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT") { taborder = 3 });
-            c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { taborder = 4 });
-            // c1.Size = new Size(400, 400);
-            c1.Init(new Point(200, 200), "Config Form Test");
-            c1.Trigger += (cb, en, ctrlname, args) =>
-            {
-                if (ctrlname == "OK")
-                    c1.Close();
-            };
-            displaycontrol.Add(c1);
-        }
-
-        private void MsgDialog()
-        {
-            GLMessageBox msg = new GLMessageBox( displaycontrol, new Point(10, 10), MsgReturn, "text text\r\nwskwkkw\r\nsksksk\r\nskksks end", "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
-        }
-
-        private void MsgReturn(GLMessageBox msg, OFC.GL4.Controls.DialogResult res)
-        {
-            System.Diagnostics.Debug.WriteLine("!!! Message box " + res);
-        }
-
-
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.

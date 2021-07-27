@@ -90,7 +90,7 @@ namespace OFC.GL4.Controls
 
         #region Public interface
 
-        public GLFormConfigurable() : base("ConfigForm","ConfigForm",DefaultWindowRectangle)
+        public GLFormConfigurable(string name) : base(name, "TitleConfigDefault",DefaultWindowRectangle)     // title changed on Init
         {
             entries = new List<Entry>();
         }
@@ -104,9 +104,9 @@ namespace OFC.GL4.Controls
 
         public Entry Last { get { return entries.Last(); } }
 
-        public void Init(Point pos, string caption, string lname = null, Object callertag = null)
+        public void Init(Point pos, string caption, Object callertag = null)
         {
-            InitInt(pos, caption, lname, callertag);
+            InitInt(pos, caption, callertag);
         }
 
         public T GetControl<T>(string controlname) where T : GLBaseControl      // return value of dialog control
@@ -262,9 +262,8 @@ namespace OFC.GL4.Controls
 
         #region Implementation
 
-        private void InitInt(System.Drawing.Point pos, string caption, string lname, Object callertag)
+        private void InitInt(System.Drawing.Point pos, string caption, Object callertag)
         {
-            this.Name = lname;    // passed back to caller via trigger
             this.callertag = callertag;      // passed back to caller via trigger
             this.Text = caption;
 

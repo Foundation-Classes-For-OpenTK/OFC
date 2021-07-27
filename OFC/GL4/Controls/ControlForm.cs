@@ -41,7 +41,7 @@ namespace OFC.GL4.Controls
         public bool FormShown { get; set; } = false;        // only applies to top level forms
         public bool TabChangesFocus { get; set; } = true;   // tab works
         public bool ShowClose { get; set; } = true;         // show close symbol
-        public bool Resizable { get; set; } = true;         // resize works
+        public bool Resizeable { get; set; } = true;         // resize works
         public bool Moveable { get; set; } = true;          // move window works
 
         public Action<GLForm> Shown;
@@ -53,11 +53,11 @@ namespace OFC.GL4.Controls
 
         public GLForm(string name, string title, Rectangle location) : base(name, location)
         {
+            text = title;
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
             SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins), borderwidth: FormBorderWidth);
             BorderColorNI = DefaultBorderColor;
-            text = title;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
 
@@ -184,7 +184,7 @@ namespace OFC.GL4.Controls
                     Point capturedelta = new Point(curscrlocation.X - capturelocation.X, curscrlocation.Y - capturelocation.Y);
                     //System.Diagnostics.Debug.WriteLine("Form " + captured + " " + e.Location + " " + capturelocation + " " + capturedelta);
 
-                    if (Resizable)
+                    if (Resizeable)
                     {
                         if (captured == GLMouseEventArgs.AreaType.Right)
                         {
@@ -237,7 +237,7 @@ namespace OFC.GL4.Controls
                 {
                     // look at where we are pointing, and change cursor appropriately
 
-                    if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizable))
+                    if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizeable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizeable))
                     {
                         FindDisplay()?.SetCursor(GLCursorType.EW);
                         cursorindicatingmovement = true;
@@ -247,12 +247,12 @@ namespace OFC.GL4.Controls
                         FindDisplay()?.SetCursor(GLCursorType.Move);
                         cursorindicatingmovement = true;
                     }
-                    else if (Resizable && e.Area == GLMouseEventArgs.AreaType.Bottom)
+                    else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
                         FindDisplay()?.SetCursor(GLCursorType.NS);
                         cursorindicatingmovement = true;
                     }
-                    else if (Resizable && e.Area == GLMouseEventArgs.AreaType.NWSE)
+                    else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
                         FindDisplay()?.SetCursor(GLCursorType.NWSE);
                         cursorindicatingmovement = true;

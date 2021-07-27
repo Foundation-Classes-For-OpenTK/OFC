@@ -27,6 +27,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
+
 
 namespace TestOpenTk
 {
@@ -324,9 +326,11 @@ namespace TestOpenTk
                         MouseClick = (s, e) => {
                         var nl = NameLocationDescription(rightclickmenu.Tag);
                         System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
+                            // logical name is important as menu uses it to close down
+                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation,null, nl.Item3, nl.Item1, GLMessageBox.MessageBoxButtons.OK, null , Color.FromArgb(220, 60, 60, 70), Color.DarkOrange);
                         }
                     },
-                    new GLMenuItem("RCMGoto", "Goto Zoom In")
+                    new GLMenuItem("RCMZoomIn", "Goto Zoom In")
                     {
                         MouseClick = (s1, e1) => {
                             var nl = NameLocationDescription(rightclickmenu.Tag);
@@ -341,7 +345,7 @@ namespace TestOpenTk
                             gl3dcontroller.SlewToPosition(nl.Item2, -1);
                         }
                     },
-                    new GLMenuItem("RCMZoom", "Look At") {
+                    new GLMenuItem("RCMLookAt", "Look At") {
                         MouseClick = (s1, e1) => {
                             var nl = NameLocationDescription(rightclickmenu.Tag);
                             gl3dcontroller.PanTo(nl.Item2, -1);
@@ -638,15 +642,19 @@ namespace TestOpenTk
             var gmo = obj as GalacticMapObject;
             if (he != null)
             {
+
                 return new Tuple<string, Vector3, string>(he.System.Name,
                                                           new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z),
                                                           $"{he.System.Name} @ {he.System.X:#.##},{he.System.Y:#.##},{he.System.Z:#.##}");
             }
             else if (gmo != null)
             {
+  
+                string t1 = gmo.description;
+
                 return new Tuple<string, Vector3, string>(gmo.name,
                                                           new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z),
-                                                          gmo.description);
+                                                          t1);
             }
             else
             {

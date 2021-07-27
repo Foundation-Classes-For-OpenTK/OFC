@@ -846,7 +846,7 @@ namespace OFC.GL4.Controls
 
                         if (s.Length > 0)
                         {
-                            System.Diagnostics.Debug.WriteLine("Paint with " + Font);
+                            //System.Diagnostics.Debug.WriteLine($"Text: '{s}'");
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
                         }
 

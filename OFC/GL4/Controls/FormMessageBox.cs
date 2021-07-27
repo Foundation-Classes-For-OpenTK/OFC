@@ -30,17 +30,28 @@ namespace OFC.GL4.Controls
             RetryCancel = 5
         }
 
-        public GLMessageBox( GLBaseControl attachto, Point offsetinparent, Action<GLMessageBox, DialogResult> callback, string text, string caption, 
-                            MessageBoxButtons buttons = MessageBoxButtons.OK, Font fnt = null )
+        public GLMessageBox( string logicalname, 
+                            GLBaseControl attachto, Point offsetinparent, 
+                            Action<GLMessageBox, DialogResult> callback, 
+                            string text, string caption, 
+                            MessageBoxButtons buttons = MessageBoxButtons.OK, Font fnt = null , 
+                            Color? backcolor = null, Color? forecolor = null, bool resizeable = false, bool moveable = true,
+                            bool readonlymarked = true )
         {
             callbackfunc = callback;
 
             if (fnt == null)
                 fnt = new Font("Ms Sans Serif", 12);
 
-            GLFormConfigurable cf = new GLFormConfigurable();
+            GLFormConfigurable cf = new GLFormConfigurable(logicalname);
             cf.TopMost = true;
             cf.Font = fnt;
+            if (backcolor != null)
+                cf.BackColor = backcolor.Value;
+            if (forecolor != null)
+                cf.ForeColor = forecolor.Value;
+            cf.Resizeable = resizeable;
+            cf.Moveable = moveable;
 
             const int butwidth = 80;
             const int butheight = 20;
@@ -59,19 +70,24 @@ namespace OFC.GL4.Controls
 
             using (var fmt = new StringFormat())
             {
+                fmt.Alignment = StringAlignment.Near;
+                fmt.LineAlignment = StringAlignment.Near;
+
                 var textsize = BitMapHelpers.MeasureStringInBitmap(text + (text.EndsWith(Environment.NewLine) ? "AAAA" : ""), fnt, fmt);
 
                 int buts = (buttons == MessageBoxButtons.AbortRetryIgnore || buttons == MessageBoxButtons.YesNoCancel) ? 3 : 2;     // guess of how many, just to set min but width
-                int estwidth = Math.Max((butwidth + butxspacing) * buts + butxspacing, (int)textsize.Width + butxspacing);
+
+                int contentwidth = Math.Max((butwidth + butxspacing) * buts + butxspacing, (int)textsize.Width + fnt.Height/4);       // add on a little nerf
+                int windowextrawidth =  textmargin + tb.Margin.TotalWidth + tb.Padding.TotalWidth + cf.BorderWidth + cf.ExtraClientMargin.Width;
+                int estwidth = contentwidth + windowextrawidth;
 
                 if ( estwidth > availablespace.Width - windowmargin * 2)
                 {
-                    estwidth = availablespace.Width - windowmargin * 2;
+                    contentwidth = availablespace.Width - windowmargin * 2 - windowextrawidth;
+                    estwidth = contentwidth + windowextrawidth;
                     horzscrollon = true;
                     horzscrollbarheight = fnt.Height;
                 }
-                horzscrollon = true;
-                horzscrollbarheight = fnt.Height;
 
                 int tbheight = tb.NumberOfLines * fnt.Height + fnt.Height / 4 + horzscrollbarheight;   // font is added to nerf up a little to account for rounding
 
@@ -86,12 +102,17 @@ namespace OFC.GL4.Controls
                     estheight += tbheight;
                 }
 
-                if ( offsetinparent.Y + estheight > availablespace.Height)      // make sure not off the bottom
+                if (offsetinparent.Y + estheight > availablespace.Height)      // make sure not off the bottom
                 {
-                    offsetinparent.Y = Math.Max(0,availablespace.Height - estheight);
+                    offsetinparent.Y = Math.Max(0, availablespace.Height - estheight - windowmargin);
                 }
 
-                textboxpos = new Rectangle(textmargin, textoffsettop, estwidth, tbheight);
+                if (offsetinparent.X + estwidth > availablespace.Width)      // make sure not off the right
+                {
+                    offsetinparent.X = Math.Max(0, availablespace.Width - estwidth - windowmargin);
+                }
+
+                textboxpos = new Rectangle(textmargin, textoffsettop, contentwidth, tbheight);
             }
 
             int butright = textboxpos.Right - butwidth;
@@ -130,17 +151,16 @@ namespace OFC.GL4.Controls
             }
 
             tb.Bounds = textboxpos;
-            tb.ScrollBarWidth = horzscrollbarheight;
             tb.BackColor = Color.Transparent;
-            tb.ForeColor = GLBaseControl.DefaultFormTextColor;
-            //tb.ReadOnly = true;
+            tb.ForeColor = cf.ForeColor;
+            tb.ScrollBarWidth = horzscrollbarheight;
+            tb.ReadOnly = readonlymarked;
             tb.EnableHorizontalScrollBar = horzscrollon;
             tb.EnableVerticalScrollBar = true;
             tb.CursorToTop();
             cf.Add(new GLFormConfigurable.Entry(tb));
 
             cf.Init(offsetinparent, caption);
-            System.Diagnostics.Debug.WriteLine("Cf bounds" + cf.Bounds);
             cf.DialogCallback = DialogCallback;
             cf.Tag = this;
             cf.Trigger += (cfg, en, ctrlname, args) =>

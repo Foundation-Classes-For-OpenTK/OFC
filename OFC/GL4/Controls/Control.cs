@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace OFC.GL4.Controls
 {
@@ -451,19 +452,23 @@ namespace OFC.GL4.Controls
             return true;
         }
 
-        // Easy way, using naming, to address controls. wildcards ? * 
+        // Easy way, using naming, to address controls. wildcards ? *. Will work with closing/removing items since we take a list first
         public void ApplyToControlOfName(string wildcardname,Action<GLBaseControl> act, bool recurse = false)
         {
-            foreach( var c in ControlsZ)
+            if (recurse)
             {
-                if (recurse)
+                foreach (var c in ControlsZ)
+                {
                     c.ApplyToControlOfName(wildcardname, act, recurse);
-                if ( c.Name.WildCardMatch(wildcardname))
-                    act(c);
+                }
             }
+
+            List<GLBaseControl> list = ControlsZ.Where(x => x.Name.WildCardMatch(wildcardname)).ToList();
+            foreach (var c in list)
+                act(c);
         }
 
-        // p = co-coords finds including margin/padding/border area, so inside bounds
+         // p = co-coords finds including margin/padding/border area, so inside bounds
         // if control found, return offset within bounds left
 
         public GLBaseControl FindControlOver(Point coords, out Point offset)

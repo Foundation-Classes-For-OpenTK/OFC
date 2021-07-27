@@ -363,26 +363,49 @@ public static class ObjectExtensionsStrings
         }
     }
 
+    // function to word wrap to linelen, ignoring current line feeds and doing the best fill it can, with hyphenation.
+
     static public string WordWrap(this string input, int linelen)
     {
-        String[] split = input.Split(new char[] { ' ' });
+        input = input.Replace(Environment.NewLine, " ");
+        string res = "";
+        int resll = 0;
+        int nextspace = input.IndexOf(' ', 0);
+        int i = 0;
 
-        string ans = "";
-        int l = 0;
-        for (int i = 0; i < split.Length; i++)
+        while(true)
         {
-            ans += split[i];
-            l += split[i].Length;
-            if (l > linelen)
-            {
-                ans += Environment.NewLine;
-                l = 0;
-            }
-            else
-                ans += " ";
-        }
+            if (nextspace == -1)
+                nextspace = input.Length;
 
-        return ans;
+            int chars = nextspace - i;
+
+            if (chars > linelen)    // if too many, hyphen it.
+            {
+                int cutpoint = linelen - 1;
+                input = input.Substring(0, i) + input.Substring(i, cutpoint) + "- " + input.Substring(i+cutpoint);
+                nextspace = input.IndexOf(' ', i);
+                chars = nextspace - i;
+            }
+
+            if (res.HasChars())
+            {
+                bool shortenough = (resll + chars + 1 < linelen);           // short enough for a space add
+                string separ = shortenough ? " " : Environment.NewLine;
+                res += separ;
+                resll = shortenough ? resll + separ.Length : 0;                        // reset line length if LF added, else inc by separ
+            }
+
+            res += input.Substring(i, chars);       // add on this chunk
+            resll += chars;
+            i += chars + 1;                         // +1 to skip space
+
+            if (i >= input.Length)                  // this may break it
+                break;
+
+            nextspace = input.IndexOf(' ', i);
+        }
+        return res;
     }
 
     static public int IndexOf(this string s, string[] array, out int fi)   // in array, find one with first occurance, return which one in i

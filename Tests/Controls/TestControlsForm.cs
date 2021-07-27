@@ -348,7 +348,7 @@ namespace TestOpenTk
 
         private void ConfDialog()
         {
-            GLFormConfigurable c1 = new GLFormConfigurable();
+            GLFormConfigurable c1 = new GLFormConfigurable("test");
             c1.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
             c1.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
             c1.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
@@ -370,7 +370,7 @@ namespace TestOpenTk
             for (int i = 0; i < 30; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
-            GLMessageBox msg = new GLMessageBox( displaycontrol, new Point(100, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(100, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
         }
 
         private void MsgReturn(GLMessageBox msg, OFC.GL4.Controls.DialogResult res)
