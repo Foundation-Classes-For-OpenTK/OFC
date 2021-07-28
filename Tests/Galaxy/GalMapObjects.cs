@@ -102,7 +102,7 @@ namespace TestOpenTk
             var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
 
 
-       //     List<Vector3> posset = new List<Vector3>();
+            List<Vector3> posset = new List<Vector3>();
 
             Font fnt = new Font("Arial", 8.5F);
             using (StringFormat fmt = new StringFormat())
@@ -113,23 +113,24 @@ namespace TestOpenTk
                     var o = renderablegalmapobjects[i];
                     float offset = -6;
 
-                    //tbd
-                    //for( int j = 0; j < i; j++)
-                    //{
-                    //    var d1 = new Vector3(o.points[0].X, o.points[0].Y+offset, o.points[0].Z);
-                    //    var d2 = posset[j];     // where it was placed.
-                    //    var diff = d1 - d2;
+                    for (int j = 0; j < i; j++)
+                    {
+                        var d1 = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
+                        var d2 = posset[j];     // where it was placed.
+                        var diff = d1 - d2;
 
-                    //    if (diff.Length < 5)
-                    //    {
-                    //        offset -= 5;
-                    //        System.Diagnostics.Debug.WriteLine($"{d1} {d2} close {renderablegalmapobjects[i].name} {renderablegalmapobjects[j].name} {offset}");
-                    //    }
-                    //}
-                    //offset = -4;
+                        if (diff.Length < 4)
+                        {
+                            if (offset > 0)
+                                offset = -offset - 6;
+                            else
+                                offset *= -1;
+                            System.Diagnostics.Debug.WriteLine($"close {renderablegalmapobjects[i].name} {d1} to {renderablegalmapobjects[j].name} {d2} {diff} select {offset}");
+                        }
+                    }
 
                     Vector3 pos = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
-                   // posset.Add(pos);
+                    posset.Add(pos);
                     //System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
                     textrenderer.Add(o.id, o.name, fnt, 
                         Color.White,Color.FromArgb(0,255,0,0),//Color.Red,//Color.Transparent, 

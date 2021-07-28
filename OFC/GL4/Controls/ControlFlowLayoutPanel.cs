@@ -94,10 +94,10 @@ namespace OFC.GL4.Controls
 
             Flow(ClientSize, true, (c, p) => 
             {
-                System.Diagnostics.Debug.WriteLine(".. set pos Control " + c.Name + " to " + p + c.Size);
+              //  System.Diagnostics.Debug.WriteLine(".. set pos Control " + c.Name + " to " + p + c.Size);
                 c.SetNI(location:p);
                 c.CallPerformRecursiveLayout();
-                System.Diagnostics.Debug.WriteLine(".... " + c.Size);
+              //  System.Diagnostics.Debug.WriteLine(".... " + c.Size);
             });
         }
 
