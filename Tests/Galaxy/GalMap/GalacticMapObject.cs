@@ -14,11 +14,14 @@
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
 
+using BaseUtils;
 using Newtonsoft.Json.Linq;
 using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace EliteDangerousCore.EDSM
@@ -44,13 +47,13 @@ namespace EliteDangerousCore.EDSM
         public void PrintElement(XElement x, int level)
         {
             string pad = "                    ".Substring(0, level);
-            System.Diagnostics.Debug.WriteLine(pad+ $"{x.NodeType} {x.Name} {x.HasElements} : {x.Value}");
+            System.Diagnostics.Debug.WriteLine(pad+ $"{x.NodeType} {x.Name} : {x.Value}");
             //                if (x.NodeType == System.Xml.XmlNodeType.Element)
             if (x.HasAttributes)
             {
                 foreach (var y in x.Attributes())
                 {
-                    System.Diagnostics.Debug.WriteLine(pad + $"  .. {y.NodeType} {y.Name} : {y.Value}");
+                    System.Diagnostics.Debug.WriteLine(pad + $" {x.Name} attr {y.NodeType} {y.Name} : {y.Value}");
                 }
             }
             if (x.HasElements)
@@ -76,57 +79,9 @@ namespace EliteDangerousCore.EDSM
 
             if (descriptionhtml != null)
             {
-                string t = "<Body>" + descriptionhtml + "</Body>";
-
-                try
-                {
-                    XElement xml = XElement.Parse(t);
-                    string totaltext = "";
-                    foreach (XElement x in xml.Elements())
-                    {
-                      //  System.Diagnostics.Debug.WriteLine($"Node {x.NodeType} {x.Name} {x.Value}");
-                        if (x.Name == "ul")
-                        {
-                            try
-                            {
-                                List<XNode> nlist = x.Nodes().ToList();
-                                var nlist1 = nlist.Select(x1 => ((XElement)x1).Value).ToList();
-                                totaltext += Environment.NewLine + string.Join(Environment.NewLine, nlist1);
-                            }
-                            catch       // don't care if it fails - trapping due to forced XElement conversion
-                            {
-                            }
-                        }
-                        else if (x.Value.HasChars())
-                        {
-                            string tww = x.Value.WordWrap(120);
-                            //System.Diagnostics.Debug.WriteLine($"Line {tww}");
-                            totaltext = totaltext.AppendPrePad(tww, Environment.NewLine) + Environment.NewLine;
-
-                            if (x.HasElements)
-                            {
-                                foreach (var y in x.Elements())
-                                {
-                                    if (y.Name == "a")
-                                    {
-                                        var href = y.Attributes().Where(aa => aa.Name == "href").FirstOrDefault();
-                                        if (href != null)
-                                        {
-                                            totaltext += Environment.NewLine + href.Value;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    description = totaltext;
-                  //  System.Diagnostics.Debug.WriteLine($"\r\n{name} : {description}");
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"For {name} xml parse failed {ex}");
-                }
+                string res = ("<Body>" + descriptionhtml + "</Body>").XMLtoText();
+                if (res != null)
+                    description = res;
             }
 
             points = new List<Vector3>();

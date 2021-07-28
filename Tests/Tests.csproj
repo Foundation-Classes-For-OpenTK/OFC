@@ -54,6 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseUtils\StringObjectExtensions.cs" />
+    <Compile Include="BaseUtils\xml.cs" />
     <Compile Include="Controls\TestControlsForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -18,22 +18,7 @@ using System;
 using System.Collections.Generic;
 
 public static class ObjectExtensionsStringsLists
-{
-    // does comparision exists in list
-    public static int ContainsIn(this IEnumerable<string> list, string comparision, StringComparison c = StringComparison.CurrentCulture)        //extend for case
-    {
-        int i = 0;
-        foreach (var s in list)
-        {
-            if (s.Contains(comparision, c))
-                return i;
-
-            i++;
-        }
-
-        return -1;
-    }
-
+{ 
     public static int ContainsIn(this string refs, IEnumerable<string> list, StringComparison c = StringComparison.CurrentCulture)        //extend for case
     {
         int i = 0;
