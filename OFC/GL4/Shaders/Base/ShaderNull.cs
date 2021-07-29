@@ -43,14 +43,14 @@ namespace OFC.GL4
             StartAction = sa;
         }
 
-        public virtual void Start(GLMatrixCalc c)     
+        public virtual void Start(GLMatrixCalc c)
         {
-            StartAction?.Invoke(this,c);
+            StartAction?.Invoke(this, c);
         }
 
-        public virtual void Finish(GLMatrixCalc c)                 
+        public virtual void Finish(GLMatrixCalc c)
         {
-            FinishAction?.Invoke(this,c);                           // any shader hooks get a chance.
+            FinishAction?.Invoke(this, c);                           // any shader hooks get a chance.
         }
 
         public virtual void Dispose()
@@ -58,5 +58,19 @@ namespace OFC.GL4
             program.Dispose();
         }
 
+    }
+
+    // Helper class null shaders to insert into RenderLists
+
+    public class GLShaderClearDepthBuffer : GLShaderNull
+    {
+        public GLShaderClearDepthBuffer()
+        {
+            StartAction += (s, mc) =>
+                {
+                    GLStatics.ClearDepthBuffer();
+                    System.Diagnostics.Debug.WriteLine("Clear Depth Buffer");
+                };
+        }
     }
 }

@@ -44,10 +44,11 @@ namespace TestOpenTk
 
         // tested to 50K+ stars, tested updating a single one
 
-        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, int bufferfindbinding)
+        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, int bufferfindbinding, bool depthtest)
         {
             this.sunsize = sunsize;
             this.tapesize = tapesize;
+            this.depthtest = depthtest;
 
             unfilteredlist = incomingsys;
 
@@ -105,7 +106,7 @@ namespace TestOpenTk
                 items.Add(tapeshader);
 
                 GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
-                rts.DepthTest = false;  // no depth test so always appears
+                rts.DepthTest = depthtest;  // no depth test so always appears
 
                 // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
                 ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
@@ -129,7 +130,7 @@ namespace TestOpenTk
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
 
                 GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-                rt.DepthTest = false;
+                rt.DepthTest = depthtest;
                 renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
                 rObjects.Add(sunshader, renderersun);
 
@@ -140,7 +141,7 @@ namespace TestOpenTk
                 rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
                 // Sun names, handled by textrenderer
-                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: false, cullface: false);
+                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
                 items.Add(textrenderer);
             }
             else
@@ -279,6 +280,8 @@ namespace TestOpenTk
 
         private float sunsize;
         private float tapesize;
+
+        private bool depthtest;
     }
 
 }

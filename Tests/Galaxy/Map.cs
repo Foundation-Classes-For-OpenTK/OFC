@@ -77,9 +77,6 @@ namespace TestOpenTk
         private const int findstarblock = 3;
         private const int findgeomapblock = 4;
 
-        public const int LYScale = 1;           // scale down points by this
-
-
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
         public Map()
@@ -104,9 +101,9 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
-            int front = -20000 / LYScale, back = front + 90000 / LYScale, left = -45000 / LYScale, right = left + 90000 / LYScale, vsize = 2000 / LYScale;
+            int front = -20000, back = front + 90000 , left = -45000 , right = left + 90000 , vsize = 2000;
 
-            if (true)     // debug bounding box
+            if (false)     // debug bounding box
             {
                 Vector4[] displaylines = new Vector4[]
                    {
@@ -136,7 +133,7 @@ namespace TestOpenTk
 
                 float h = 0;
 
-                int dist = 1000 / LYScale;
+                int dist = 1000 ;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
                              GLRenderableItem.CreateVector4Color4(items, rl,
@@ -208,7 +205,30 @@ namespace TestOpenTk
                 rObjects.Add(galaxyshader, galaxyrenderable);
             }
 
-            if (false) // star points
+            if (true)       // Gal map regions
+            {
+                var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
+                    new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
+                    new GalMapRegions.ManualCorrections("The Abyss", y: +3000 ),
+                    new GalMapRegions.ManualCorrections("Eurus", y: -3000 ),
+                    new GalMapRegions.ManualCorrections("The Perseus Transit", x: -3000, y: -3000 ),
+                    new GalMapRegions.ManualCorrections("Zephyrus", x: 0, y: 2000 ),
+                };
+
+                edsmgalmapregions = new GalMapRegions();
+                edsmgalmapregions.CreateObjects(items, rObjects, edsmmapping, 8000, corr: corr);
+            }
+
+            if (true)           // Elite regions
+            {
+                elitemapregions = new GalMapRegions();
+                elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
+                EliteRegionsEnable = false;
+            }
+
+            rObjects.Add(new GLShaderClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
+
+            if (true) // star points
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -244,7 +264,7 @@ namespace TestOpenTk
 
                             int c = Math.Min(Math.Max(i * i * i / 120000, 1), 40);
 
-                            dist *= 2000;
+                            dist *= 2000 ;
                             //System.Diagnostics.Debug.WriteLine("{0} {1} : dist {2} c {3}", x, z, dist, c);
                             //System.Diagnostics.Debug.Write(c);
                             GLPointsFactory.RandomStars4(buf, c, gx, gx + xcw, gz, gz + zch, (int)dist, (int)-dist, rnd, w: 0.8f);
@@ -260,34 +280,31 @@ namespace TestOpenTk
                 stardots = new GalaxyStarDots();
 
                 items.Add(stardots);
-                GLRenderControl rp = GLRenderControl.Points(1);
-                rp.DepthTest = false;
-                rObjects.Add(stardots,
-                                GLRenderableItem.CreateVector4(items, rp, buf, points));
+                GLRenderControl rc = GLRenderControl.Points(1,false);       // point smooth seems to do strange things here to x direction, need to investigate further
+                rObjects.Add(stardots, GLRenderableItem.CreateVector4(items, rc, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
-            if (false)  // point sprite
+            if (true)  // point sprite
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
 
-                GLRenderControl rps = GLRenderControl.PointSprites(depthtest: false);
+                GLRenderControl rps = GLRenderControl.PointSprites();
 
                 rObjects.Add(items.Shader("PS"),
                              GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
 
             }
 
-            if (false) // grids
+            if (true) // grids
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
                 items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
                 GLRenderControl rl = GLRenderControl.Lines(1);
-                rl.DepthTest = false;
 
                 items.Add(new GLShaderPipeline(items.PLShader("PLGRIDVertShader"), items.PLShader("PLGRIDFragShader")), "DYNGRID");
 
@@ -297,14 +314,13 @@ namespace TestOpenTk
 
             }
 
-            if (false)       // grid coords
+            if (true)       // grid coords
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
                 items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding 1
 
                 GLRenderControl rl = GLRenderControl.TriStrip(cullface: false);
-                rl.DepthTest = false;
 
                 GLTexture2DArray gridtexcoords = new GLTexture2DArray();
                 items.Add(gridtexcoords, "PLGridBitmapTextures");
@@ -316,29 +332,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
             }
 
-            if (false)       // Gal map regions
-            {
-                var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
-                    new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
-                    new GalMapRegions.ManualCorrections("The Abyss", y: +3000 ),
-                    new GalMapRegions.ManualCorrections("Eurus", y: -3000 ),
-                    new GalMapRegions.ManualCorrections("The Perseus Transit", x: -3000, y: -3000 ),
-                    new GalMapRegions.ManualCorrections("Zephyrus", x: 0, y: 2000 ),
-                };
-
-                edsmgalmapregions = new GalMapRegions();
-                edsmgalmapregions.CreateObjects(items, rObjects, edsmmapping, 8000, corr: corr);
-            }
-
-            if (false)           // Elite regions
-            {
-                elitemapregions = new GalMapRegions();
-                elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
-                EliteRegionsEnable = false;
-            }
-
-
-            if (false)       // travel path
+            if (true)       // travel path
             {
                 Random rnd = new Random(52);
                 List<HistoryEntry> pos = new List<HistoryEntry>();
@@ -362,7 +356,7 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, 2, 0.8f, findstarblock);
+                travelpath.Create(items, rObjects, pos, 2, 0.8f, findstarblock, true);
                 travelpath.SetSystem(0);
             }
 
@@ -414,7 +408,7 @@ namespace TestOpenTk
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
-            matrixcalc.PerspectiveFarZDistance = 120000f / LYScale;
+            matrixcalc.PerspectiveFarZDistance = 120000f ;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
@@ -428,7 +422,7 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 3000F/LYScale;
+            gl3dcontroller.ZoomDistance = 3000F;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.EliteMovement = true;
@@ -587,9 +581,11 @@ namespace TestOpenTk
                 }
 
                 gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, gridrenderable.InstanceCount);
+            }
 
-                // set the coords fader
-
+            // set the coords fader
+            if ( gridbitmapvertshader != null)
+            { 
                 float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
                 Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
                 gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
@@ -599,7 +595,7 @@ namespace TestOpenTk
 
             if (galaxyrenderable != null)
             {
-                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f / LYScale : 0);        // set up the volumentric uniform
+                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f  : 0);        // set up the volumentric uniform
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
                 galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
             }

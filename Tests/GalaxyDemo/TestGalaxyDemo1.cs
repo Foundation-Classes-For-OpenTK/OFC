@@ -420,7 +420,8 @@ namespace TestOpenTk
                 int dist = 20000;
                 var p = GLPointsFactory.RandomStars4(100, -dist, dist, 25899 - dist, 25899 + dist, 2000, -2000);
 
-                GLRenderControl rps = GLRenderControl.PointSprites(depthtest:false);
+                GLRenderControl rps = GLRenderControl.PointSprites();
+                rps.DepthTest = false;
 
                 rObjects.Add(items.Shader("PS1"),
                              GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));

@@ -299,7 +299,8 @@ namespace TestOpenTk
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"),64,40), "PS1");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
 
-                GLRenderControl rps = GLRenderControl.PointSprites(depthtest:false);
+                GLRenderControl rps = GLRenderControl.PointSprites();
+                rps.DepthTest = false;
 
                 rObjects.Add(items.Shader("PS1"),
                              GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));

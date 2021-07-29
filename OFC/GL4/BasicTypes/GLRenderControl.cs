@@ -99,11 +99,11 @@ namespace OFC.GL4
         { return new GLRenderControl(prev, PrimitiveType.Points) { PointSize = 0, PointSprite = false, PointSmooth = smooth }; }
 
 
-        static public GLRenderControl PointSprites(bool depthtest = true)
-        { return new GLRenderControl(PrimitiveType.Points) { PointSize = 0, PointSprite = true, DepthTest = depthtest }; }
+        static public GLRenderControl PointSprites()
+        { return new GLRenderControl(PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
 
-        static public GLRenderControl PointSprites(GLRenderControl prev, bool depthtest = true)
-        { return new GLRenderControl(prev,PrimitiveType.Points) { PointSize = 0, PointSprite = true, DepthTest = depthtest }; }
+        static public GLRenderControl PointSprites(GLRenderControl prev)
+        { return new GLRenderControl(prev,PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
 
 
         static public GLRenderControl Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
