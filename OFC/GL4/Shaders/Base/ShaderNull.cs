@@ -21,7 +21,7 @@ namespace OFC.GL4
     // The null shader is used to insert operations in the RenderList pipeline, so it can do some operations
     // outside of the GLRenderControl at the appropriate point (scissoring, stenciling)
     // Use StartAction to hook to supply more start functionality
-    // Use can use FinishAction, but it executes after StartAction so there is no real point
+    // Use can use FinishAction, but it executes right after StartAction so there is no real point
 
     public class GLShaderNull : IGLProgramShader
     {

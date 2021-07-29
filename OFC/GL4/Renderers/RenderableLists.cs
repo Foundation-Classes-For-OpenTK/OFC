@@ -20,11 +20,11 @@ namespace OFC.GL4
 {
     // this is a render list, holding a list of Shader programs
     // each shader program is associated with zero or more RenderableItems 
-    // This Start() each program, goes thru the render list Binding and Rendering each item
+    // The shader calls Start() for each shader, then goes thru the render list (if it has one) Binding and Rendering each item
     // then it Finish() the program
     // Shaders are executed in the order added
     // Renderable items are ordered by shader, then in the order added.
-    // if you add a compute shader to the list, then the renderable item must be null.  
+    // if you add a compute shader or a null shader to the list, then the renderable item must be null.  
     // adding a compute shader in the middle of other renderable items may be useful - but remember to use a memory barrier if required in the shader FinishAction routine
 
     public class GLRenderProgramSortedList
@@ -99,19 +99,21 @@ namespace OFC.GL4
         {
             GLRenderControl lastapplied = null;
 
+            System.Diagnostics.Debug.WriteLine("***Begin RList");
+
             foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
                 // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute/null shader would be)
                 if (kvp.Key.Enable && kvp.Value.Find((x)=>x.Item2 == null || x.Item2.Visible)!=null)      
                 {
-                   // System.Diagnostics.Debug.WriteLine("Shader " + kvp.Key.GetType().Name);
+                    //System.Diagnostics.Debug.WriteLine("Shader " + kvp.Key.GetType().Name);
                     kvp.Key.Start(c);                                                  // start the program - if compute shader, this executes the code
 
                     foreach (var g in kvp.Value)
                     {
                         if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
                         {
-                          //  System.Diagnostics.Debug.WriteLine("Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
+                            System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
                             if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
@@ -131,6 +133,7 @@ namespace OFC.GL4
                 }
             }
 
+            System.Diagnostics.Debug.WriteLine("***End RList");
             GL.UseProgram(0);           // final clean up
             GL.BindProgramPipeline(0);
         }
@@ -174,12 +177,12 @@ namespace OFC.GL4
     {
         public new void Add(IGLProgramShader prog, string name, IGLRenderableItem r)
         {
-            System.Diagnostics.Debug.Assert(false);
+            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a shader list");
         }
 
         public new  void Add(IGLProgramShader prog, IGLRenderableItem r)
         {
-            System.Diagnostics.Debug.Assert(false);
+            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a shader list");
         }
 
         public void Run()      

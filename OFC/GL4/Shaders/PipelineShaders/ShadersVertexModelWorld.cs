@@ -67,7 +67,7 @@ void main(void)
     // Pipeline shader, Common Model Translation, Seperate World pos, transform
     // Requires:
     //      location 0 : position: vec4 vertex array of positions model coords
-    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced. W is ignored in case its carrying other data
+    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced. W if < 0 means cull it
     //      uniform buffer 0 : GL MatrixCalc
     //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
     // Out:
@@ -92,6 +92,7 @@ out gl_PerVertex {
         vec4 gl_Position;
         float gl_PointSize;
         float gl_ClipDistance[];
+        float gl_CullDistance[];
     };
 
 layout (location = 1) out vec3 modelpos;
@@ -99,11 +100,20 @@ layout (location = 2) out int instance;
 
 void main(void)
 {
-    modelpos = modelposition.xyz;
-    vec4 modelrot = transform * modelposition;
-    vec4 wp = modelrot + vec4(worldposition.xyz,0);
-	gl_Position = mc.ProjectionModelMatrix * wp;        // order important
-    instance = gl_InstanceID;
+    float ctrl = worldposition.w;
+
+    if ( ctrl < 0 )                     // -1 cull
+    {
+        gl_CullDistance[0] = -1;        // all vertex culled
+    }
+    else 
+    {
+        modelpos = modelposition.xyz;
+        vec4 modelrot = transform * modelposition;
+        vec4 wp = modelrot + vec4(worldposition.xyz,0);
+    	gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+        instance = gl_InstanceID;
+    }
 }
 ";
         }

@@ -41,12 +41,17 @@ namespace OFC
             }
         }
 
-        public static void SetEnable( EnableCap c , bool state)
+        public static void SetEnable(EnableCap c, bool state)
         {
             if (state)
                 GL.Enable(c);
             else
                 GL.Disable(c);
+        }
+
+        public static void ClearDepthBuffer()       // nicer name
+        {
+            GL.Clear(ClearBufferMask.DepthBufferBit);
         }
 
         public static string[] Extensions()

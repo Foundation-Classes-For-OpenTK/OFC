@@ -66,5 +66,10 @@ namespace OFC.GL4
         {
             GL.Disable(EnableCap.StencilTest);
         }
+
+        static public void ClearStencilBuffer()       // nicer name
+        {
+            GL.Clear(ClearBufferMask.StencilBufferBit);
+        }
     }
 }
