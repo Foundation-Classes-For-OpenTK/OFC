@@ -58,14 +58,14 @@ namespace TestOpenTk
 
             map = new Map();
             map.Start(glwfc, edsmmapping, eliteRegions);
-            map.LoadDefaults(mapdefaults);
+        //    map.LoadDefaults(mapdefaults);
 
             systemtimer.Start();
         }
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
-            map.SaveState(mapdefaults);
+          // map.SaveState(mapdefaults);
             mapdefaults.WriteToDisk(@"c:\code\mapdef.txt");
             map.Dispose();
         }

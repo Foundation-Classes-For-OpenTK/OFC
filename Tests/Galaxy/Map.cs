@@ -96,27 +96,76 @@ namespace TestOpenTk
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
-            volumetricboundingbox = new Vector4[]
-            {
-                new Vector4(left,-vsize,front,1),
-                new Vector4(left,vsize,front,1),
-                new Vector4(right,vsize,front,1),
-                new Vector4(right,-vsize,front,1),
 
-                new Vector4(left,-vsize,back,1),
-                new Vector4(left,vsize,back,1),
-                new Vector4(right,vsize,back,1),
-                new Vector4(right,-vsize,back,1),
-            };
+            if (true)     // debug bounding box
+            {
+                Vector4[] displaylines = new Vector4[]
+                   {
+                new Vector4(left,-vsize,front,1),   new Vector4(left,+vsize,front,1),
+                new Vector4(left,+vsize,front,1),      new Vector4(right,+vsize,front,1),
+                new Vector4(right,+vsize,front,1),     new Vector4(right,-vsize,front,1),
+                new Vector4(right,-vsize,front,1),  new Vector4(left,-vsize,front,1),
+
+                new Vector4(left,-vsize,back,1),    new Vector4(left,+vsize,back,1),
+                new Vector4(left,+vsize,back,1),       new Vector4(right,+vsize,back,1),
+                new Vector4(right,+vsize,back,1),      new Vector4(right,-vsize,back,1),
+                new Vector4(right,-vsize,back,1),   new Vector4(left,-vsize,back,1),
+
+                new Vector4(left,-vsize,front,1),   new Vector4(left,-vsize,back,1),
+                new Vector4(left,+vsize,front,1),      new Vector4(left,+vsize,back,1),
+                new Vector4(right,-vsize,front,1),  new Vector4(right,-vsize,back,1),
+                new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
+                   };
+
+                GLRenderControl rl = GLRenderControl.Lines(1);
+
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(Color.Yellow)), "LINEYELLOW");
+                rObjects.Add(items.Shader("LINEYELLOW"),
+                GLRenderableItem.CreateVector4(items, rl, displaylines));
+
+                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+
+                float h = 0;
+
+                int dist = 1000;
+                Color cr = Color.FromArgb(100, Color.White);
+                rObjects.Add(items.Shader("COS-1L"),    // horizontal
+                             GLRenderableItem.CreateVector4Color4(items, rl,
+                                                        GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(left, h, back), new Vector3(dist, 0, 0), (back - front) / dist + 1),
+                                                        new OpenTK.Graphics.Color4[] { cr })
+                                   );
+
+                rObjects.Add(items.Shader("COS-1L"),
+                             GLRenderableItem.CreateVector4Color4(items, rl,
+                                                        GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(right, h, front), new Vector3(0, 0, dist), (right - left) / dist + 1),
+                                                        new OpenTK.Graphics.Color4[] { cr })
+                                   );
+
+                rObjects.Add(new GLShaderNull((sh, mc) => { System.Diagnostics.Debug.WriteLine("Clear DB"); GLStatics.ClearDepthBuffer(); }));
+            }
 
             // global buffer blocks used
             const int volumenticuniformblock = 2;
             const int findstarblock = 3;
             const int findgeomapblock = 4;
 
-            if (true) // galaxy
+            if (false) // galaxy
             {
-                const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
+                volumetricboundingbox = new Vector4[]
+                    {
+                        new Vector4(left,-vsize,front,1),
+                        new Vector4(left,vsize,front,1),
+                        new Vector4(right,vsize,front,1),
+                        new Vector4(right,-vsize,front,1),
+
+                        new Vector4(left,-vsize,back,1),
+                        new Vector4(left,vsize,back,1),
+                        new Vector4(right,vsize,back,1),
+                        new Vector4(right,-vsize,back,1),
+                    };
+
+
+                    const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
                 const int gdisttexbinding = 4;
                 const int galtexbinding = 1;
 
@@ -154,7 +203,7 @@ namespace TestOpenTk
                 rObjects.Add(galaxyshader, galaxyrenderable);
             }
 
-            if (true) // star points
+            if (false) // star points
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -213,7 +262,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
-            if (true)  // point sprite
+            if (false)  // point sprite
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
@@ -226,7 +275,7 @@ namespace TestOpenTk
 
             }
 
-            if (true) // grids
+            if (false) // grids
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
@@ -243,7 +292,7 @@ namespace TestOpenTk
 
             }
 
-            if (true)       // grid coords
+            if (false)       // grid coords
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
@@ -262,7 +311,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
             }
 
-            if (true)       // Gal map regions
+            if (false)       // Gal map regions
             {
                 var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
                     new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
@@ -276,7 +325,7 @@ namespace TestOpenTk
                 edsmgalmapregions.CreateObjects(items, rObjects, edsmmapping, 8000, corr: corr);
             }
 
-            if (true)           // Elite regions
+            if (false)           // Elite regions
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
@@ -284,7 +333,7 @@ namespace TestOpenTk
             }
 
 
-            if (true)       // travel path
+            if (false)       // travel path
             {
                 Random rnd = new Random(52);
                 List<HistoryEntry> pos = new List<HistoryEntry>();
@@ -312,7 +361,7 @@ namespace TestOpenTk
                 travelpath.SetSystem(0);
             }
 
-            if (true)       // Gal map objects
+            if (false)       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock);
@@ -581,29 +630,29 @@ namespace TestOpenTk
 
         #region Turn on/off, move, etc.
 
-        public bool GalaxyDisplay { get { return galaxyshader.Enable; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
-        public bool StarDotsDisplay { get { return stardots.Enable; } set { stardots.Enable = value; glwfc.Invalidate(); } }
-        public bool TravelPathDisplay { get { return travelpath.Enable; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+        public bool GalaxyDisplay { get { return galaxyshader?.Enable ?? false; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
+        public bool StarDotsDisplay { get { return stardots?.Enable ?? false; } set { stardots.Enable = value; glwfc.Invalidate(); } }
+        public bool TravelPathDisplay { get { return travelpath?.Enable ?? false; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
 
         public void TravelPathRefresh() { travelpath.Refresh(); }   // travelpath.Refresh() manually after these have changed
-        public DateTime TravelPathStartDate { get { return travelpath.TravelPathStartDate; } set { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } }
-        public bool TravelPathStartDateEnable { get { return travelpath.TravelPathStartDateEnable; } set { if (travelpath.TravelPathStartDateEnable != value) { travelpath.TravelPathStartDateEnable = value; } } }
-        public DateTime TravelPathEndDate { get { return travelpath.TravelPathEndDate; } set { if (travelpath.TravelPathEndDate != value) { travelpath.TravelPathEndDate = value;  } } }
-        public bool TravelPathEndDateEnable { get { return travelpath.TravelPathEndDateEnable; } set { if (travelpath.TravelPathEndDateEnable != value) { travelpath.TravelPathEndDateEnable = value; } } }
+        public DateTime TravelPathStartDate { get { return travelpath?.TravelPathStartDate ?? DateTime.MinValue; } set { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } }
+        public bool TravelPathStartDateEnable { get { return travelpath?.TravelPathStartDateEnable ?? false; } set { if (travelpath.TravelPathStartDateEnable != value) { travelpath.TravelPathStartDateEnable = value; } } }
+        public DateTime TravelPathEndDate { get { return travelpath?.TravelPathEndDate ?? DateTime.MinValue; } set { if (travelpath.TravelPathEndDate != value) { travelpath.TravelPathEndDate = value; } } }
+        public bool TravelPathEndDateEnable { get { return travelpath?.TravelPathEndDateEnable ?? false; } set { if (travelpath.TravelPathEndDateEnable != value) { travelpath.TravelPathEndDateEnable = value; } } }
 
-        public bool GalObjectDisplay { get { return galmapobjects.Enable; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
+        public bool GalObjectDisplay { get { return galmapobjects?.Enable ?? false; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
         public void SetGalObjectTypeEnable(string id, bool state) { galmapobjects.SetGalObjectTypeEnable(id, state); glwfc.Invalidate(); }
-        public bool GetGalObjectTypeEnable(string id) { return galmapobjects.GetGalObjectTypeEnable(id); }
+        public bool GetGalObjectTypeEnable(string id) { return galmapobjects?.GetGalObjectTypeEnable(id) ?? false; }
         public void SetAllGalObjectTypeEnables(string set) { galmapobjects.SetAllEnables(set); glwfc.Invalidate(); }
         public string GetAllGalObjectTypeEnables() { return galmapobjects.GetAllEnables(); }
-        public bool EDSMRegionsEnable { get { return edsmgalmapregions.Enable; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions.Outlines; } set { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions.Regions; } set { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions.Text; } set { edsmgalmapregions.Text = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsEnable { get { return elitemapregions.Enable; } set { elitemapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsOutlineEnable { get { return elitemapregions.Outlines; } set { elitemapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsShadingEnable { get { return elitemapregions.Regions; } set { elitemapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsTextEnable { get { return elitemapregions.Text; } set { elitemapregions.Text = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsEnable { get { return edsmgalmapregions?.Enable ?? false; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions?.Outlines ?? false; } set { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions?.Regions ?? false; } set { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } }
+        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions?.Text ?? false; } set { edsmgalmapregions.Text = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsEnable { get { return elitemapregions?.Enable ?? false; } set { elitemapregions.Enable = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsOutlineEnable { get { return elitemapregions?.Outlines ?? false; } set { elitemapregions.Outlines = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsShadingEnable { get { return elitemapregions?.Regions ?? false; } set { elitemapregions.Regions = value; glwfc.Invalidate(); } }
+        public bool EliteRegionsTextEnable { get { return elitemapregions?.Text ?? false; } set { elitemapregions.Text = value; glwfc.Invalidate(); } }
 
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {
