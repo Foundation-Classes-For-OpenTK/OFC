@@ -72,6 +72,14 @@ namespace TestOpenTk
 
         private GLBuffer debugbuffer;
 
+        // global buffer blocks used
+        private const int volumenticuniformblock = 2;
+        private const int findstarblock = 3;
+        private const int findgeomapblock = 4;
+
+        public const int LYScale = 1;           // scale down points by this
+
+
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
         public Map()
@@ -82,6 +90,7 @@ namespace TestOpenTk
         {
             items.Dispose();
         }
+
 
         #region Initialise
 
@@ -95,7 +104,7 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
-            int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
+            int front = -20000 / LYScale, back = front + 90000 / LYScale, left = -45000 / LYScale, right = left + 90000 / LYScale, vsize = 2000 / LYScale;
 
             if (true)     // debug bounding box
             {
@@ -127,7 +136,7 @@ namespace TestOpenTk
 
                 float h = 0;
 
-                int dist = 1000;
+                int dist = 1000 / LYScale;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
                              GLRenderableItem.CreateVector4Color4(items, rl,
@@ -144,12 +153,8 @@ namespace TestOpenTk
                 rObjects.Add(new GLShaderNull((sh, mc) => { System.Diagnostics.Debug.WriteLine("Clear DB"); GLStatics.ClearDepthBuffer(); }));
             }
 
-            // global buffer blocks used
-            const int volumenticuniformblock = 2;
-            const int findstarblock = 3;
-            const int findgeomapblock = 4;
 
-            if (false) // galaxy
+            if (true) // galaxy
             {
                 volumetricboundingbox = new Vector4[]
                     {
@@ -165,7 +170,7 @@ namespace TestOpenTk
                     };
 
 
-                    const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
+                const int gnoisetexbinding = 3;     //tex bindings are attached per shaders so are not global
                 const int gdisttexbinding = 4;
                 const int galtexbinding = 1;
 
@@ -409,7 +414,7 @@ namespace TestOpenTk
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
-            matrixcalc.PerspectiveFarZDistance = 120000f;
+            matrixcalc.PerspectiveFarZDistance = 120000f / LYScale;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
@@ -423,7 +428,7 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 2000F;
+            gl3dcontroller.ZoomDistance = 3000F/LYScale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.EliteMovement = true;
@@ -594,7 +599,7 @@ namespace TestOpenTk
 
             if (galaxyrenderable != null)
             {
-                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f : 0);        // set up the volumentric uniform
+                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f / LYScale : 0);        // set up the volumentric uniform
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
                 galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
             }
