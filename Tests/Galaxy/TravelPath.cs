@@ -120,14 +120,16 @@ namespace TestOpenTk
                 // now the stars
 
                 starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
-                starposbuf.AllocateFill(positionsv4);
 
-                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
+                starposbuf.AllocateFill(positionsv4);
+                //Vector4[] vectors = starposbuf.ReadVector4s(0, starposbuf.Length / 16);
+
+                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255,230,230,1) });
                 items.Add(sunvertex);
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
                 items.Add(sunshader);
 
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
+                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
 
                 GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                 rt.DepthTest = depthtest;
@@ -143,6 +145,7 @@ namespace TestOpenTk
                 // Sun names, handled by textrenderer
                 textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
                 items.Add(textrenderer);
+
             }
             else
             {

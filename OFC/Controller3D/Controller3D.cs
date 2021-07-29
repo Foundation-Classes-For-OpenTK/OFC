@@ -231,12 +231,6 @@ namespace OFC.Controller
                     int dx = mousepos.X - mouseStartRotate.X;
                     int dy = mousepos.Y - mouseStartRotate.Y;
                    // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
-                    if (dx > 50 || dy> 50)
-                    {
-
-                    }
-
-
 
                     KillSlew();    // all slews
 

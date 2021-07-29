@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using OpenTK;
@@ -167,7 +168,7 @@ namespace OFC.GL4
                         code += line + Environment.NewLine;
 
                         if (constcode != null)      // take the opportunity to introduce any constant values to the source
-                            code += string.Join(Environment.NewLine, constcode);
+                            code += string.Join(Environment.NewLine, constcode) + Environment.NewLine;
 
                         doneversion = true;
                     }
@@ -204,7 +205,7 @@ namespace OFC.GL4
                 {
                     slist.Add("const int " + name + " = " + ((int)o).ToStringInvariant() + ";");
                 }
-                else if (o is System.Drawing.Color)
+                else if (o is Color)
                 {
                     System.Drawing.Color c = (System.Drawing.Color)o;
                     slist.Add("const vec4 " + name + " = vec4(" + ((float)c.R / 255).ToStringInvariant() + "," + ((float)c.G / 255).ToStringInvariant() + "," + ((float)c.B / 255).ToStringInvariant() + "," + ((float)c.A / 255).ToStringInvariant() + ");");
@@ -240,6 +241,15 @@ namespace OFC.GL4
                 {
                     Vector4[] p = o as Vector4[];
                     slist.Add("const vec4[] " + name + " = " + p.ToDefinition() + ";");
+                }
+                else if (o is Color[])
+                {
+                    Color[] p = o as Color[];
+                    string exp = "const vec4 " + name + "[] = {";
+                    foreach (Color c in p)
+                        exp += $"vec4({(float)c.R/255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f}),";
+
+                    slist.Add(exp + "};");
                 }
                 else
                     System.Diagnostics.Debug.Assert(false);

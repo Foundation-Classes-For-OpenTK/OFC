@@ -24,6 +24,7 @@ namespace OFC.GL4
 @"
 #version 450 core
 layout (location = 1) in vec3 modelpos;
+layout (location = 3) in vec4 basecolor;
 out vec4 color;
 
 layout (location = 10) uniform float frequency;
@@ -52,9 +53,9 @@ void main(void)
     vec3 p1 = vec3(position.x+unDTsurface,position.y,position.z);   // moving the noise across x produces a more realistic look
     float n = (simplexnoise(p1, 4, 40.0, 0.7) + 1.0) * 0.5;      // noise of surface..
 
-    vec3 baseColor = vec3(0.9, 0.9 ,0.0);
-    baseColor = baseColor - ss - n/4;
-    color = vec4(baseColor, 1.0);
+    vec3 b = basecolor.xyz;
+    b = b - ss - n/4;
+    color = vec4(b, basecolor.w);
 }
 ";
         }

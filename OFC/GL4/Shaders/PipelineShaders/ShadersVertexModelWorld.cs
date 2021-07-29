@@ -67,13 +67,14 @@ void main(void)
     // Pipeline shader, Common Model Translation, Seperate World pos, transform
     // Requires:
     //      location 0 : position: vec4 vertex array of positions model coords
-    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced. W if < 0 means cull it
+    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced. W selects the base colour to present
     //      uniform buffer 0 : GL MatrixCalc
     //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
     // Out:
     //      gl_Position
     //      location 1 modelpos
     //      location 2 instance id
+    //      location 3 basecolor for fragment shader
 
     public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
     {
@@ -97,21 +98,25 @@ out gl_PerVertex {
 
 layout (location = 1) out vec3 modelpos;
 layout (location = 2) out int instance;
+layout (location = 3) out vec4 basecolor;
+
+const vec4 colours[] = { vec4(1,1,0,1), vec4(0.8,0,0,1)};   
 
 void main(void)
 {
-    float ctrl = worldposition.w;
-
-    if ( ctrl < 0 )                     // -1 cull
+    if ( worldposition.w <= -1 )
     {
-        gl_CullDistance[0] = -1;        // all vertex culled
+        gl_CullDistance[0] = -1;
     }
-    else 
+    else
     {
+        gl_CullDistance[0] = 1;
+        basecolor = colours[int(worldposition.w)];
+
         modelpos = modelposition.xyz;
         vec4 modelrot = transform * modelposition;
         vec4 wp = modelrot + vec4(worldposition.xyz,0);
-    	gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+        gl_Position = mc.ProjectionModelMatrix * wp;        // order important
         instance = gl_InstanceID;
     }
 }
@@ -120,9 +125,13 @@ void main(void)
 
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
-        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation()
+        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            object[] cvalues = null;
+            if (basecolours != null)
+                cvalues = new object[] { "colours", basecolours };
+
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues:cvalues);
         }
 
         public override void Start(GLMatrixCalc c)
