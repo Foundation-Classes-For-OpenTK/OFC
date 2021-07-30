@@ -14,11 +14,8 @@ namespace TestOpenTk
 {
     class GalaxyStars
     {
-        public GalaxyStars()
-        {
-        }
 
-        public void Create(GLItemsList items, float sunsize, int bufferfindbinding)
+        public GalaxyStars(GLItemsList items, float sunsize, int bufferfindbinding)
         {
             sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
             items.Add(sunvertex);
@@ -38,9 +35,9 @@ namespace TestOpenTk
             renderersunlist = new List<GLRenderableItem>();
         }
 
-        public void Fill(GLItemsList items, GLRenderProgramSortedList rObjects, Vector3 pos, int lyradius)
+        public void Fill(GLItemsList items, GLRenderProgramSortedList rObjects, Vector3 pos, int lyradius, bool depthtest)
         {
-            Vector4[] array = new Vector4[1];
+            Vector4[] array = new Vector4[100];
             Random rnd = new Random(21);
             for (int i = 0; i < array.Length; i++)
                 array[i] = new Vector4(pos.X + rnd.Next(lyradius), pos.Y + rnd.Next(lyradius), pos.Z + rnd.Next(lyradius),0);
@@ -53,7 +50,7 @@ namespace TestOpenTk
             starposbuflist.Add(starposbuf);
 
             GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-            rt.DepthTest = false;
+            rt.DepthTest = depthtest;
             rt.DepthClamp = true;
 
             var renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, starposbuf, null, deflist.Length,1);

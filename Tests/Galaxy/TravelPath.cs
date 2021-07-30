@@ -133,6 +133,7 @@ namespace TestOpenTk
 
                 GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                 rt.DepthTest = depthtest;
+                rt.DepthClamp = true;
                 renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
                 rObjects.Add(sunshader, renderersun);
 

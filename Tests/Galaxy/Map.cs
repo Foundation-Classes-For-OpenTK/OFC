@@ -67,6 +67,7 @@ namespace TestOpenTk
         private GalMapRegions edsmgalmapregions;
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
+        private GalaxyStars galaxystars;
 
         private GLContextMenu rightclickmenu;
 
@@ -76,6 +77,7 @@ namespace TestOpenTk
         private const int volumenticuniformblock = 2;
         private const int findstarblock = 3;
         private const int findgeomapblock = 4;
+        private const int findgalaxystars = 5;
 
         private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
 
@@ -101,7 +103,8 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
-            int front = -20000, back = front + 90000 , left = -45000 , right = left + 90000 , vsize = 2000;
+            int lyscale = 1;
+            int front = -20000 / lyscale, back = front + 90000/lyscale , left = -45000/lyscale , right = left + 90000/lyscale , vsize = 2000/lyscale;
 
             if (false)     // debug bounding box
             {
@@ -133,7 +136,7 @@ namespace TestOpenTk
 
                 float h = 0;
 
-                int dist = 1000 ;
+                int dist = 1000/lyscale ;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
                              GLRenderableItem.CreateVector4Color4(items, rl,
@@ -226,8 +229,6 @@ namespace TestOpenTk
                 EliteRegionsEnable = false;
             }
 
-            rObjects.Add(new GLShaderClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
-
             if (true) // star points
             {
                 int gran = 8;
@@ -263,8 +264,9 @@ namespace TestOpenTk
                             double dist = ObjectExtensionsNumbersBool.GaussianDist(d, 1, 1.4);
 
                             int c = Math.Min(Math.Max(i * i * i / 120000, 1), 40);
+                            //int c = Math.Min(Math.Max(i * i * i / 24000000, 1), 40);
 
-                            dist *= 2000 ;
+                            dist *= 2000/lyscale ;
                             //System.Diagnostics.Debug.WriteLine("{0} {1} : dist {2} c {3}", x, z, dist, c);
                             //System.Diagnostics.Debug.Write(c);
                             GLPointsFactory.RandomStars4(buf, c, gx, gx + xcw, gz, gz + zch, (int)dist, (int)-dist, rnd, w: 0.8f);
@@ -278,23 +280,29 @@ namespace TestOpenTk
                 buf.StopReadWrite();
 
                 stardots = new GalaxyStarDots();
+                //stardots.StartAction += (e, s) => {
+                //    GL.BlendFuncSeparate(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha, BlendingFactorSrc.SrcAlpha, BlendingFactorDest.SrcColor);
+                //};
 
                 items.Add(stardots);
-                GLRenderControl rc = GLRenderControl.Points(1,false);       // point smooth seems to do strange things here to x direction, need to investigate further
+                GLRenderControl rc = GLRenderControl.Points(1);       
+                rc.DepthTest = false; // note, if this is true, there is a wierd different between left and right in view.. not sure why
                 rObjects.Add(stardots, GLRenderableItem.CreateVector4(items, rc, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
+
+            rObjects.Add(new GLShaderClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
+
 
             if (true)  // point sprite
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
-                var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
+                var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
 
                 GLRenderControl rps = GLRenderControl.PointSprites();
 
-                rObjects.Add(items.Shader("PS"),
-                             GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
+                rObjects.Add(items.Shader("PS"), GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
 
             }
 
@@ -366,6 +374,12 @@ namespace TestOpenTk
                 galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock,true);
             }
 
+            if (true)
+            {
+                galaxystars = new GalaxyStars(items, 2.0f, findgalaxystars);
+                galaxystars.Fill(items, rObjects, new Vector3(0, 0, 0), 100, true);
+
+            }
             if ( true)
             {
                 rightclickmenu = new GLContextMenu("RightClickMenu",    
@@ -408,7 +422,7 @@ namespace TestOpenTk
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
-            matrixcalc.PerspectiveFarZDistance = 120000f ;
+            matrixcalc.PerspectiveFarZDistance = 120000f / lyscale ;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
@@ -422,7 +436,7 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 3000F;
+            gl3dcontroller.ZoomDistance = 3000F/lyscale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.EliteMovement = true;
@@ -501,7 +515,7 @@ namespace TestOpenTk
             }
         }
 
-        public void LoadDefaults(MapSaver defaults)
+        public void LoadState(MapSaver defaults)
         {
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
@@ -599,12 +613,15 @@ namespace TestOpenTk
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
                 galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
             }
-            
+
             if ( travelpath != null)
                 travelpath.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
             if ( galmapobjects != null)
                 galmapobjects.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
+
+            if (galaxystars != null)
+                galaxystars.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -627,9 +644,9 @@ namespace TestOpenTk
             //            this.Text = "FPS " + fpsavg.ToString("N0") + " Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.Pos.ZoomFactor;
         }
 
-        #endregion
+#endregion
 
-        #region Turn on/off, move, etc.
+#region Turn on/off, move, etc.
 
         public bool GalaxyDisplay { get { return galaxyshader?.Enable ?? false; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
         public bool StarDotsDisplay { get { return stardots?.Enable ?? false; } set { stardots.Enable = value; glwfc.Invalidate(); } }
@@ -665,9 +682,9 @@ namespace TestOpenTk
             }
         }
 
-        #endregion
+#endregion
 
-        #region Helpers
+#region Helpers
 
         private void SetEntryText(string text)
         {
@@ -714,9 +731,9 @@ namespace TestOpenTk
         }
 
 
-        #endregion
+#endregion
 
-        #region UI
+#region UI
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
@@ -808,7 +825,7 @@ namespace TestOpenTk
         }
 
         int newsys = 1;
-        #endregion
+#endregion
 
 
     }

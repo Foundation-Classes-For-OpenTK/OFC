@@ -77,11 +77,14 @@ namespace TestOpenTk
             DynamicGridCoordVertexShader bs = items.PLShader("PLGRIDBitmapVertShader") as DynamicGridCoordVertexShader;
             bs.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
 
-            galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
+            if (galaxy != null)
+            {
+                galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
 
-            IGLProgramShader p = items.Shader("Galaxy");
-            var fsgalaxy = p.Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
-            fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
+                IGLProgramShader p = items.Shader("Galaxy");
+                var fsgalaxy = p.Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
+                fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
+            }
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -193,7 +196,7 @@ namespace TestOpenTk
                              ));
             }
 
-            if (true) // galaxy
+            if (false) // galaxy
             {
                 volumetricblock = new GLVolumetricUniformBlock();
                 items.Add(volumetricblock, "VB");
