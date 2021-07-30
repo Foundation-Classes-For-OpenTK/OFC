@@ -360,10 +360,10 @@ namespace TestOpenTk
                 travelpath.SetSystem(0);
             }
 
-            if (false)       // Gal map objects
+            if (true)       // Gal map objects
             {
                 galmapobjects = new GalMapObjects();
-                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock);
+                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock,true);
             }
 
             if ( true)

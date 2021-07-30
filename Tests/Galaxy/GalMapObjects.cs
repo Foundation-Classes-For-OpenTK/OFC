@@ -44,7 +44,7 @@ namespace TestOpenTk
             return s;
         }
 
-        public void CreateObjects(GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, int bufferfindbinding)
+        public void CreateObjects(GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, int bufferfindbinding, bool depthtest)
         {
             this.galmap = galmap;
 
@@ -66,7 +66,7 @@ namespace TestOpenTk
             };
 
             GLRenderControl rt = GLRenderControl.Patches(4);
-            rt.DepthTest = false;
+            rt.DepthTest = depthtest;
 
             // create a quad and all entries of the renderable map objects, zero at this point, with a zero instance count. UpdateEnables will fill it in later
             // but we need to give it the maximum buffer length at this point
@@ -96,11 +96,10 @@ namespace TestOpenTk
             GLStatics.Check();
 
             // Text renderer
-            textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: false, cullface: false);
+            textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
             items.Add(textrenderer);
 
             var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
-
 
             List<Vector3> posset = new List<Vector3>();
 

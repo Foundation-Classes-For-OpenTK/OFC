@@ -106,8 +106,8 @@ void main(void)
 {
     if ( worldposition.w <= -1 )
     {
-        gl_CullDistance[0] = -1;
-    }
+        gl_CullDistance[0] = -1;        // so, if we set it once, we need to set it always, for somereason the compiler if its sees it set and you
+    }                                   // don't do it everywhere it can get into an interderminate state per vertex
     else
     {
         gl_CullDistance[0] = 1;
