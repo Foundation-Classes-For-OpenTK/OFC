@@ -246,10 +246,11 @@ namespace OFC.GL4
                 {
                     Color[] p = o as Color[];
                     string exp = "const vec4 " + name + "[] = {";
+                    string vec = "";
                     foreach (Color c in p)
-                        exp += $"vec4({(float)c.R/255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f}),";
+                        vec = vec.AppendPrePad($"vec4({(float)c.R/255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f})", ",");
 
-                    slist.Add(exp + "};");
+                    slist.Add(exp + vec + "};");
                 }
                 else
                     System.Diagnostics.Debug.Assert(false);

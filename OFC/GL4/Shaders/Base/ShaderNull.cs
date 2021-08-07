@@ -69,7 +69,7 @@ namespace OFC.GL4
             StartAction += (s, mc) =>
                 {
                     GLStatics.ClearDepthBuffer();
-                    System.Diagnostics.Debug.WriteLine("Clear Depth Buffer");
+                    //System.Diagnostics.Debug.WriteLine("Clear Depth Buffer");
                 };
         }
     }

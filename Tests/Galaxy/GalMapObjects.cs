@@ -80,7 +80,7 @@ namespace TestOpenTk
             int modelpos = modelworldbuffer.Positions[0];
             worldpos = modelworldbuffer.Positions[1];
 
-            rObjects.Add(objectshader,  ridisplay);
+            rObjects.Add(objectshader, "galmapobj", ridisplay);
 
             // find
 
@@ -96,7 +96,7 @@ namespace TestOpenTk
             GLStatics.Check();
 
             // Text renderer
-            textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
+            textrenderer = new GLBitmaps("bm-galmapobjects", rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
             items.Add(textrenderer);
 
             var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
@@ -124,7 +124,7 @@ namespace TestOpenTk
                                 offset = -offset - 6;
                             else
                                 offset *= -1;
-                            System.Diagnostics.Debug.WriteLine($"close {renderablegalmapobjects[i].name} {d1} to {renderablegalmapobjects[j].name} {d2} {diff} select {offset}");
+                           // System.Diagnostics.Debug.WriteLine($"close {renderablegalmapobjects[i].name} {d1} to {renderablegalmapobjects[j].name} {d2} {diff} select {offset}");
                         }
                     }
 

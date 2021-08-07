@@ -67,6 +67,12 @@ namespace TestOpenTk
                 return (float)ms / 10.0f;
             };
 
+            {
+                System.Diagnostics.Debug.WriteLine($"UBS={GL4Statics.GetMaxUniformBlockSize()}");
+                GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
+                System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
+            }
+
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
             items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
@@ -858,7 +864,9 @@ namespace TestOpenTk
 
             #region Matrix Calc Uniform
 
-            items.Add(new GLMatrixCalcUniformBlock(),"MCUB");     // def binding of 0
+            var mcb = new GLMatrixCalcUniformBlock();
+
+            items.Add(mcb,"MCUB");     // def binding of 0
 
             #endregion
 

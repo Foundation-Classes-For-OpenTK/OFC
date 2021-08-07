@@ -28,14 +28,14 @@ namespace TestOpenTk
             public float x, y;
         }
 
-        public void CreateObjects(GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, float sizeofname = 5000, ManualCorrections[] corr = null)
+        public void CreateObjects(string name, GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, float sizeofname = 5000, ManualCorrections[] corr = null)
         {
             List<Vector4> vertexcolourregions = new List<Vector4>();
             List<Vector4> vertexregionsoutlines = new List<Vector4>();
             List<ushort> vertexregionoutlineindex = new List<ushort>();
 
             Size bitmapsize = new Size(250, 22);
-            textrenderer = new GLBitmaps(rObjects, bitmapsize,depthtest:false);
+            textrenderer = new GLBitmaps(name + "-bitmaps", rObjects, bitmapsize,depthtest:false);
             items.Add(textrenderer);
 
             StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
@@ -47,7 +47,7 @@ namespace TestOpenTk
             {
                 if (gmo.galMapType.Group == GalMapType.GalMapGroup.Regions)
                 {
-                    string name = gmo.name;
+                    string gmoname = gmo.name;
 
                     List<Vector2> polygonxz = new List<Vector2>();                              // needs it in x/z and in vector2's
                     foreach (var pd in gmo.points)
@@ -129,7 +129,7 @@ namespace TestOpenTk
             GLRenderControl rt = GLRenderControl.Tri();
             rt.DepthTest = false;
             var ridisplay = GLRenderableItem.CreateVector4(items, rt, vertexcolourregions.ToArray());
-            rObjects.Add(regionshader, ridisplay);
+            rObjects.Add(regionshader, name + "-regions", ridisplay);
 
             // outlines
 
@@ -145,7 +145,7 @@ namespace TestOpenTk
             var rioutline = GLRenderableItem.CreateVector4(items, ro, vertexregionsoutlines.ToArray());
             rioutline.CreateElementIndexUShort(items.NewBuffer(), vertexregionoutlineindex.ToArray());
 
-            rObjects.Add(outlineshader, rioutline);
+            rObjects.Add(outlineshader, name + "-outlines", rioutline);
 
             renderstate = 7;
         }

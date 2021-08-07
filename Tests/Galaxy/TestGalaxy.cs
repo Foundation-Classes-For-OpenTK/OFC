@@ -23,7 +23,7 @@ namespace TestOpenTk
 
             glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
 
-            systemtimer.Interval = 25;
+            systemtimer.Interval = 32;
             systemtimer.Tick += new EventHandler(SystemTick);
         }
 
@@ -65,7 +65,7 @@ namespace TestOpenTk
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
-           map.SaveState(mapdefaults);
+             map.SaveState(mapdefaults);
             mapdefaults.WriteToDisk(@"c:\code\mapdef.txt");
             map.Dispose();
         }

@@ -67,7 +67,7 @@ namespace OFC.GL4
             AddItem(nprog, n, null);
         }
 
-        public bool Remove(IGLRenderableItem r)
+        public bool Remove(IGLRenderableItem r)     
         {
             var f = Find(r);
             return r != null ? Remove(f.Item1, r) : false;
@@ -95,11 +95,11 @@ namespace OFC.GL4
         public IGLRenderableItem this[string renderitem] { get { return byname[renderitem]; } }
         public bool Contains(string renderitem) { return byname.ContainsKey(renderitem); }
 
-        public void Render(GLRenderControl currentstate, GLMatrixCalc c)
+        public void Render(GLRenderControl currentstate, GLMatrixCalc c, bool verbose = false)
         {
             GLRenderControl lastapplied = null;
 
-            System.Diagnostics.Debug.WriteLine("***Begin RList");
+            if (verbose ) System.Diagnostics.Debug.WriteLine("***Begin RList");
 
             foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
@@ -113,7 +113,8 @@ namespace OFC.GL4
                     {
                         if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
                         {
-                            System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
+                            if ( verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
+
                             if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
@@ -133,7 +134,7 @@ namespace OFC.GL4
                 }
             }
 
-            System.Diagnostics.Debug.WriteLine("***End RList");
+            if (verbose) System.Diagnostics.Debug.WriteLine("***End RList");
             GL.UseProgram(0);           // final clean up
             GL.BindProgramPipeline(0);
         }

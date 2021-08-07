@@ -115,7 +115,7 @@ namespace TestOpenTk
 
                 ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
 
-                rObjects.Add(tapeshader, ritape);   // add render to object list
+                rObjects.Add(tapeshader, "travelpath-tape", ritape);   // add render to object list
 
                 // now the stars
 
@@ -135,7 +135,7 @@ namespace TestOpenTk
                 rt.DepthTest = depthtest;
                 rt.DepthClamp = true;
                 renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
-                rObjects.Add(sunshader, renderersun);
+                rObjects.Add(sunshader,"travelpath-suns", renderersun);
 
                 // find compute
 
@@ -144,7 +144,7 @@ namespace TestOpenTk
                 rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
                 // Sun names, handled by textrenderer
-                textrenderer = new GLBitmaps(rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
+                textrenderer = new GLBitmaps("bm-travelmap",rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
                 items.Add(textrenderer);
 
             }

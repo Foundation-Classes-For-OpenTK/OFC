@@ -100,7 +100,7 @@ layout (location = 1) out vec3 modelpos;
 layout (location = 2) out int instance;
 layout (location = 3) out vec4 basecolor;
 
-const vec4 colours[] = { vec4(1,1,0,1), vec4(0.8,0,0,1)};   
+const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs
 
 void main(void)
 {

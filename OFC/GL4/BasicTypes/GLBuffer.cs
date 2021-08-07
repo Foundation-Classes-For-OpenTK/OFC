@@ -304,9 +304,10 @@ namespace OFC.GL4
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos + datasize <= Length); // catch double maps
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bam);
+
             CurrentPos = fillpos;
             mapmode = MapMode.Write;
-            OFC.GLStatics.Check();
+            // OFC.GLStatics.Check();
         }
 
         public void StartRead(int fillpos, int datasize = 0)        // read the buffer (datasize=0=all buffer)

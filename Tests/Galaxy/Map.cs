@@ -28,7 +28,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-
+using System.Diagnostics;
 
 namespace TestOpenTk
 {
@@ -79,7 +79,7 @@ namespace TestOpenTk
         private const int findgeomapblock = 4;
         private const int findgalaxystars = 5;
 
-        private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        private System.Diagnostics.Stopwatch hptimer = new System.Diagnostics.Stopwatch();
 
         public Map()
         {
@@ -87,6 +87,8 @@ namespace TestOpenTk
 
         public void Dispose()
         {
+            if (galaxystars != null)
+                galaxystars.Stop();
             items.Dispose();
         }
 
@@ -99,7 +101,7 @@ namespace TestOpenTk
             this.edsmmapping = edsmmapping;
             this.elitemapping = eliteregions;
 
-            sw.Start();
+            hptimer.Start();
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
@@ -205,7 +207,7 @@ namespace TestOpenTk
 
                 GLRenderControl rt = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
                 galaxyrenderable = GLRenderableItem.CreateNullVertex(rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
-                rObjects.Add(galaxyshader, galaxyrenderable);
+                rObjects.Add(galaxyshader, "galshader", galaxyrenderable);
             }
 
             if (true)       // Gal map regions
@@ -219,13 +221,13 @@ namespace TestOpenTk
                 };
 
                 edsmgalmapregions = new GalMapRegions();
-                edsmgalmapregions.CreateObjects(items, rObjects, edsmmapping, 8000, corr: corr);
+                edsmgalmapregions.CreateObjects("edsmregions", items, rObjects, edsmmapping, 8000, corr: corr);
             }
 
             if (true)           // Elite regions
             {
                 elitemapregions = new GalMapRegions();
-                elitemapregions.CreateObjects(items, rObjects, eliteregions, 8000);
+                elitemapregions.CreateObjects("eliteregions", items, rObjects, eliteregions, 8000);
                 EliteRegionsEnable = false;
             }
 
@@ -287,7 +289,7 @@ namespace TestOpenTk
                 items.Add(stardots);
                 GLRenderControl rc = GLRenderControl.Points(1);       
                 rc.DepthTest = false; // note, if this is true, there is a wierd different between left and right in view.. not sure why
-                rObjects.Add(stardots, GLRenderableItem.CreateVector4(items, rc, buf, points));
+                rObjects.Add(stardots, "stardots", GLRenderableItem.CreateVector4(items, rc, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
@@ -302,7 +304,7 @@ namespace TestOpenTk
 
                 GLRenderControl rps = GLRenderControl.PointSprites();
 
-                rObjects.Add(items.Shader("PS"), GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
+                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
 
             }
 
@@ -376,10 +378,12 @@ namespace TestOpenTk
 
             if (true)
             {
-                galaxystars = new GalaxyStars(items, 2.0f, findgalaxystars);
-                galaxystars.Fill(items, rObjects, new Vector3(0, 0, 0), 100, true);
-
+                galaxystars = new GalaxyStars(items, rObjects, 2.0f, findgalaxystars);
+                //Vector3 pos = new Vector3(50, 0, 0);
+              //  galaxystars.Request9Box(pos);
+                
             }
+
             if ( true)
             {
                 rightclickmenu = new GLContextMenu("RightClickMenu",    
@@ -508,6 +512,9 @@ namespace TestOpenTk
                 }
             };
 
+            if (galaxystars!= null)
+                galaxystars.Start();
+
             if ( false )        // enable for debug
             {
                 debugbuffer = new GLStorageBlock(31, true);
@@ -582,7 +589,12 @@ namespace TestOpenTk
 
         private void Controller3DDraw(Controller3D c3d, ulong time)
         {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            long t1 = hptimer.ElapsedTicks;
+            GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
+            long t2 = hptimer.ElapsedTicks;
+
+            GLMatrixCalcUniformBlock mcb = ((GLMatrixCalcUniformBlock)items.UB("MCUB"));
+            mcb.SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             // set up the grid shader size
 
@@ -614,6 +626,8 @@ namespace TestOpenTk
                 galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
             }
 
+            long t3 = hptimer.ElapsedTicks;
+
             if ( travelpath != null)
                 travelpath.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
@@ -623,7 +637,16 @@ namespace TestOpenTk
             if (galaxystars != null)
                 galaxystars.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+            if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400)
+                galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.Lookat);
+
+            long t4 = hptimer.ElapsedTicks;
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:false);
+
+            GL.Flush(); // ensure everything is in the grapghics pipeline
+            
+            long t5 = hptimer.ElapsedTicks;
 
             if (debugbuffer != null)
             {
@@ -632,17 +655,30 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine("{0},{1}, {2}", debugout[0], debugout[1], debugout[2]);
             }
 
-            long t = sw.ElapsedMilliseconds;
+            long t = hptimer.ElapsedMilliseconds;
             long diff = t - lastms;
+
+            for (int i = frametimes.Length - 1; i > 0; i--)
+                frametimes[i] = frametimes[i - 1];
+
+            frametimes[0] = diff;
+
             lastms = t;
             double fps = (1000.0 / diff);
             if (fpsavg <= 1)
                 fpsavg = fps;
             else
-                fpsavg = (fpsavg * 0.9) + fps * 0.1;
+                fpsavg = (fpsavg * 0.95) + fps * 0.05;
 
+            if (diff > 0)
+            {
+                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");
+                System.Diagnostics.Debug.WriteLine($" finish {(t2 - t1) * 1000000 / Stopwatch.Frequency,5} t3 {(t3 - t2) * 1000000 / Stopwatch.Frequency,4} t4 {(t4 - t3) * 1000000 / Stopwatch.Frequency,4} render {(t5 - t4) * 1000000 / Stopwatch.Frequency,5} tot {(t5 - t1) * 1000000 / Stopwatch.Frequency,5}");
+            }
             //            this.Text = "FPS " + fpsavg.ToString("N0") + " Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.Pos.ZoomFactor;
         }
+
+        long[] frametimes = new long[6];
 
 #endregion
 

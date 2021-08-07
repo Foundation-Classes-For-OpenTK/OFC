@@ -1658,7 +1658,7 @@ namespace OFC.GL4.Controls
 
         protected void Gc_KeyDown(object sender, GLKeyEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
+            //System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))

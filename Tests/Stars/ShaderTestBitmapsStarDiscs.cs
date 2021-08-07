@@ -93,7 +93,7 @@ namespace TestOpenTk
                 Vector3 bannersize = new Vector3(width, 0, 0);
                 Font f = new Font("MS sans serif", 8f);
 
-                tim = new GLBitmapsWithStarObjects(rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 2);      // group 2
+                tim = new GLBitmapsWithStarObjects("stardiscs", rObjects, bitmapsize, new Vector3(0,2,0), 2.0f, 3, false, true, 2);      // group 2
                 tim.CurrentGeneration = uint.MaxValue-10;
                 items.Add(tim);
                 tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 0, genpos), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadescalar: 10, alphaenddistance: 5);

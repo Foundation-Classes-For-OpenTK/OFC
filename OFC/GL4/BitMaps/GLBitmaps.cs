@@ -29,12 +29,16 @@ namespace OFC.GL4
     {
         public virtual bool Enable { get { return shader.Enable; } set { shader.Enable = value; } }
 
+        public string Name { get { return name;  } }
+
         public int TagCount { get { return matrixbuffers.TagCount; } }              // number of tags recorded
 
         public uint CurrentGeneration { get { return matrixbuffers.CurrentGeneration; } set { matrixbuffers.CurrentGeneration = value; } }
 
-        public GLBitmaps(GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
+        public GLBitmaps(string name, GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
+            this.name = name;
+
             int maxdepthpertexture = GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);       // limits the number of textures per 2darray
             int max = Math.Min(maxdepthpertexture, maxpergroup);        //note RI uses a VertexArray to load the matrix in, so not limited by that (max size of uniform buffer)
 
@@ -129,7 +133,7 @@ namespace OFC.GL4
 
             var rd = new RenderData(texture);
             var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);
-            renderlist.Add(shader, renderableItem);
+            renderlist.Add(shader, name + ":" + groupno, renderableItem);
             grouprenderlist.Add(renderableItem);
         }
 
@@ -213,6 +217,7 @@ namespace OFC.GL4
         private GLRenderControl rc;
         private GLShaderPipeline shader;
         private Bitmap textdrawbitmap;      // for drawing into alpha text
+        private string name;
     }
 }
 
