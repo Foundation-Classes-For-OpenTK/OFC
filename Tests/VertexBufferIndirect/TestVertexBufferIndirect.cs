@@ -36,7 +36,7 @@ namespace TestOpenTk
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
 
-        GLVertexBufferIndirect vertices;
+        GLVertexBufferIndirect dataindirectbuffer;
 
         public TestVertexBufferIndirect()
         {
@@ -122,7 +122,7 @@ namespace TestOpenTk
 
             {
 
-                vertices = new GLVertexBufferIndirect(65536, 1024, true);
+                dataindirectbuffer = new GLVertexBufferIndirect(65536, 1024, true);
 
                 var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
                 items.Add(sunvertex);
@@ -139,35 +139,38 @@ namespace TestOpenTk
 
                 {
                     Vector3 pos = new Vector3(0, 0, 0);
-                    Vector4[] array = new Vector4[2];
+                    Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    vertices.Fill(array, 0, shape.Length, 0, array.Length, instancestart);
+                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
                 }
                 {
-                    Vector3 pos = new Vector3(-20, 0, 0);
-                    Vector4[] array = new Vector4[2];
+                    Vector3 pos = new Vector3(-15, 0, 0);
+                    Vector4[] array = new Vector4[5];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    vertices.Fill(array, 0, shape.Length, 0, array.Length, 2);
+                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
                 }
+
+                dataindirectbuffer.Fill(new Matrix4[10], 1);      // dummy fill of indirect 1
+
                 {
-                    Vector3 pos = new Vector3(-40, 0, 0);
-                    Vector4[] array = new Vector4[2];
+                    Vector3 pos = new Vector3(-30, 0, 0);
+                    Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    vertices.Fill(array, 0, shape.Length, 0, array.Length, instancestart);
+                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
                 }
 
 
-                int[] indirectints = vertices.Indirects[0].ReadInts(0, 12);
-                float[] worldpos = vertices.Vertex.ReadFloats(0, 3*2*4);
+                int[] indirectints = dataindirectbuffer.Indirects[0].ReadInts(0, 12);
+                float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
 
                 GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                 rt.DepthTest = true;
@@ -175,11 +178,11 @@ namespace TestOpenTk
 
                 var renderer = GLRenderableItem.CreateVector4Vector4(items, rt, 
                                                                             shapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
-                                                                            vertices.Vertex, 0, // binding 1 is vertex's world positions, offset 0
+                                                                            dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
                                                                             null, 0, 1);        // no ic, second divisor 1
-                renderer.IndirectBuffer = vertices.Indirects[0];
+                renderer.IndirectBuffer = dataindirectbuffer.Indirects[0];
                 renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-                renderer.MultiDrawCount = 3;
+                renderer.DrawCount = 3;
                 renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
                 rObjects.Add(sunshader, "Sector1", renderer);

@@ -39,19 +39,23 @@ namespace OFC.GL4
 
         // fill vertex buffer with vector4's, and write an indirect to indirectbuffer N
         // vectexcount = <0 use vertices length, else use vertex count
+        // baseinstance = <0 use CurrentPos on vertex buffer to estimate instance number, else use this
 
-        public bool Fill(Vector4[] vertices, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = 0)
+        public bool Fill(Vector4[] vertices, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
         {
             CreateIndirect(indirectbuffer);
 
             if (Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Vec4size) >= vertices.Length * GLBuffer.Vec4size)
             {
                 Vertex.Fill(vertices);          // creates a position
-                int pos = (Vertex.Positions.Count - 1) * GLBuffer.WriteIndirectArrayStride;
+
+                vertexcount = vertexcount >= 0 ? vertexcount : vertices.Length;
+                baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
+
+                int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;
                 Indirects[indirectbuffer].AddPosition(pos);
                 Indirects[indirectbuffer].StartWrite(pos);
-                //Indirects[indirectbuffer].WriteIndirectArray(vertexcount < 0 ? vertices.Length : vertexcount, ic, Vertex.Positions.Last() / GLLayoutStandards.Vec4size, baseinstance);
-                Indirects[indirectbuffer].WriteIndirectArray(vertexcount < 0 ? vertices.Length : vertexcount, ic, vertexbaseindex, baseinstance);
+                Indirects[indirectbuffer].WriteIndirectArray(vertexcount, ic, vertexbaseindex, baseinstance);
                 Indirects[indirectbuffer].StopReadWrite();
                 return true;
             }
@@ -60,18 +64,21 @@ namespace OFC.GL4
         }
 
         // fill vertex buffer with mat4's, and write an indirect to indirectbuffer N
-        // vectexcount = <0 use vertices length, else use vertex count
 
-        public bool Fill(Matrix4[] mats, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = 0)
+        public bool Fill(Matrix4[] mats, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
         {
             CreateIndirect(indirectbuffer);
             if (Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Vec4size) >= mats.Length * GLBuffer.Mat4size)
-            { 
+            {
                 Vertex.Fill(mats);          // creates a position
-                int pos = (Vertex.Positions.Count - 1) * GLBuffer.WriteIndirectArrayStride;
+                vertexcount = vertexcount >= 0 ? vertexcount : mats.Length;
+                baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
+
+                int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;
                 Indirects[indirectbuffer].AddPosition(pos);
                 Indirects[indirectbuffer].StartWrite(pos);
-                Indirects[indirectbuffer].WriteIndirectArray(vertexcount < 0 ? mats.Length : vertexcount, ic, vertexbaseindex, baseinstance);
+                baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
+                Indirects[indirectbuffer].WriteIndirectArray(vertexcount, ic, vertexbaseindex, baseinstance);
                 Indirects[indirectbuffer].StopReadWrite();
                 return true;
             }

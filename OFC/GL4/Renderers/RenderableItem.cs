@@ -47,7 +47,7 @@ namespace OFC.GL4
         // we can draw either arrays (A); element index (E); indirect arrays (IA); indirect element index (IE)
         // type is controlled by if ElementBuffer and/or IndirectBuffer is non null
 
-        public int DrawCount { get; set; } = 0;                             // A+E : Draw count (not used in indirect - this comes from the buffer)
+        public int DrawCount { get; set; } = 0;                             // A+E : Draw count, IE+IA MultiDraw count
 
         public int InstanceCount { get; set; } = 1;                         // A+E: Instances (not used in indirect - this comes from the buffer)
         public int BaseInstance { get; set; } = 0;                          // A+E: Base Instance, normally 0 (not used in indirect - this comes from the buffer)
@@ -55,14 +55,13 @@ namespace OFC.GL4
         public GLBuffer ElementBuffer { get; set; }                         // E+IE: if non null, we doing a draw using a element buffer to control indexes
         public GLBuffer IndirectBuffer { get; set; }                        // IA+IE: if non null, we doing a draw using a indirect buffer to control draws
 
-        public DrawElementsType DrawType { get; set; }                      // E+IE: for element draws, its index type (byte/short/uint)
+        public DrawElementsType ElementIndexSize { get; set; }              // E+IE: for element draws, its index type (byte/short/uint)
 
         public int BaseIndexOffset { get; set; }                            // E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
-                                                                            // IE+IA: offset in buffe in bytes to first command entry 
+                                                                            // IE+IA: offset in buffer in bytes to first command entry 
 
         public int BaseVertex { get; set; }                                 // E: for element draws (but not indirect) first vertex to use in the buffer (not used in indirect - this comes from the buffer)
 
-        public int MultiDrawCount { get; set; } = 1;                        // IE+IA: number of draw command buffers 
         public int MultiDrawCountStride { get; set; } = 20;                 // IE+IA: distance between each command buffer entry (default is we use the maximum of elements+array structures) in bytes
 
         public IGLRenderItemData RenderData { get; set; }                   // may be null - no specific render data. Does not own.  called at bind
@@ -101,11 +100,11 @@ namespace OFC.GL4
             {
                 if (IndirectBuffer != null)                         // IE indirect element index
                 {               
-                    GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, DrawType, (IntPtr)BaseIndexOffset, MultiDrawCount, MultiDrawCountStride);
+                    GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
                 }
                 else
                 {                                                   // E element index
-                    GL.DrawElementsInstancedBaseVertexBaseInstance(RenderControl.PrimitiveType, DrawCount, DrawType, (IntPtr)BaseIndexOffset, 
+                    GL.DrawElementsInstancedBaseVertexBaseInstance(RenderControl.PrimitiveType, DrawCount, ElementIndexSize, (IntPtr)BaseIndexOffset, 
                                                                     InstanceCount, BaseVertex, BaseInstance);
                 }
             }
@@ -113,7 +112,7 @@ namespace OFC.GL4
             {
                 if (IndirectBuffer != null)                         // IA indirect buffer
                 {
-                    GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, MultiDrawCount, MultiDrawCountStride);
+                    GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
                 }
                 else
                 {                                                   // A no indirect or element buffer, direct draw
@@ -535,7 +534,7 @@ namespace OFC.GL4
         {
             ElementBuffer = elementbuf;
             ElementBuffer.FillRectangularIndicesBytes(reccount, restartindex);
-            DrawType = DrawElementsType.UnsignedByte;
+            ElementIndexSize = DrawElementsType.UnsignedByte;
             DrawCount = ElementBuffer.Length - 1;       // -1 because we do not need the last restart index to be processed
             //byte[] b = elementbuf.ReadBuffer(0, elementbuf.BufferSize); // test read back
         }
@@ -544,7 +543,7 @@ namespace OFC.GL4
         {
             ElementBuffer = elementbuf;
             ElementBuffer.FillRectangularIndicesShort(reccount, restartindex);
-            DrawType = DrawElementsType.UnsignedShort;
+            ElementIndexSize = DrawElementsType.UnsignedShort;
             DrawCount = ElementBuffer.Length - 1;
         }
 
@@ -554,7 +553,7 @@ namespace OFC.GL4
         {
             ElementBuffer = elementbuf;
             ElementBuffer.AllocateFill(indexes);
-            DrawType = DrawElementsType.UnsignedByte;
+            ElementIndexSize = DrawElementsType.UnsignedByte;
             BaseIndexOffset = base_index;
             DrawCount = indexes.Length;
         }
@@ -565,7 +564,7 @@ namespace OFC.GL4
         {
             ElementBuffer = elementbuf;
             ElementBuffer.AllocateFill(indexes);
-            DrawType = DrawElementsType.UnsignedShort;
+            ElementIndexSize = DrawElementsType.UnsignedShort;
             BaseIndexOffset = base_index;
             DrawCount = indexes.Length;
         }
@@ -590,15 +589,15 @@ namespace OFC.GL4
             else if (drawtype == DrawElementsType.UnsignedShort)
             {
                 ElementBuffer.AllocateFill(eids.Select(x => (ushort)x).ToArray());
-                DrawType = DrawElementsType.UnsignedShort;
+                ElementIndexSize = DrawElementsType.UnsignedShort;
             }
             else
             {
                 ElementBuffer.AllocateFill(eids.ToArray());
-                DrawType = DrawElementsType.UnsignedInt;
+                ElementIndexSize = DrawElementsType.UnsignedInt;
             }
 
-            DrawType = drawtype;
+            ElementIndexSize = drawtype;
             BaseIndexOffset = base_index;
             DrawCount = eids.Length;
         }

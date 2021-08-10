@@ -301,7 +301,7 @@ namespace OFC.GL4
             if (datasize == 0)
                 datasize = Length - fillpos;
 
-            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bam);
 
@@ -315,7 +315,7 @@ namespace OFC.GL4
             if (datasize == 0)
                 datasize = Length - fillpos;
 
-            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapReadBit);
             CurrentPos = fillpos;

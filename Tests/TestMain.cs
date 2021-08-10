@@ -625,8 +625,8 @@ namespace TestOpenTk
                 ri.CreateRectangleElementIndexByte(items.NewBuffer(), 2);  // put the primitive restart markers in, but we won't use them
 
                 ri.IndirectBuffer = new GLBuffer(std430:true);  // disable alignment to vec4 for arrays for this buffer.
-                ri.MultiDrawCount = 2;
-                ri.IndirectBuffer.AllocateBytes(ri.MultiDrawCountStride * ri.MultiDrawCount + 4);
+                ri.DrawCount = 2;
+                ri.IndirectBuffer.AllocateBytes(ri.MultiDrawCountStride * ri.DrawCount + 4);
                 ri.IndirectBuffer.StartWrite(0, ri.IndirectBuffer.Length);
                 ri.IndirectBuffer.Write(1.0f);        // dummy float to demo index offset
                 ri.BaseIndexOffset = 4;       // and indicate that the base command index is 4
