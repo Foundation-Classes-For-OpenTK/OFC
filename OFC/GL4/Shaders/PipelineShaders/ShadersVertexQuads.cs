@@ -134,6 +134,7 @@ namespace OFC.GL4
                                     bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
                                     float alphafadescalar = 0,
                                     float alphafadeend = 0,
+                                    int imagepos = 0,
                                     bool visible = true
             )
         {
@@ -146,6 +147,7 @@ namespace OFC.GL4
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
             }
             mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            mat[0, 3] = imagepos;
             mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
             mat[2, 3] = alphafadescalar;
             mat[3, 3] = alphafadeend;

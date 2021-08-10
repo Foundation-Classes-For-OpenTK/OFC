@@ -41,6 +41,8 @@ namespace OFC.GL4
         public Bitmap[] BitMaps { get; private set; }           // if keeping a list, bitmap, even if not owned
         public bool[] OwnBitMaps { get; private set; }          // if bitmap is owned
 
+        public int DepthIndex { get; set; } = 0;                // can be used to record what z depth we have got to on bitmap filling
+
         // normal sampler bind - for sampler2D access etc.
 
         public void Bind(int bindingpoint)
@@ -194,6 +196,28 @@ namespace OFC.GL4
                 OwnBitMaps[zoffset] = ownbmp;
             }
         }
+
+        public void LoadNextBitmap(Bitmap bmp, bool ownbmp = false, int bmpmipmaplevels = 1)
+        {
+            LoadBitmap(bmp, DepthIndex++, ownbmp, bmpmipmaplevels);
+        }
+
+        private Bitmap textdrawbitmap = null;   // until used its null, using no space. then its reused saving recreation
+
+        // draw text into zoffset (>=0, or -1 for next CurrentDepth bitmap)
+        public void DrawText(string text, Font f, Color fore, Color back, int zoffset, StringFormat fmt = null, float backscale = 1.0f)
+        {
+            if (textdrawbitmap == null)
+                textdrawbitmap = new Bitmap(Width, Height);
+
+            if (zoffset < 0)
+                zoffset = DepthIndex++;
+
+            BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
+
+            LoadBitmap(textdrawbitmap, zoffset, true, 1);
+        }
+
 
         // Return texture as a set of floats or byte only (others not supported as of yet)
         // use inverty to correct for any inversion if your getting the data from a framebuffer texture - it appears to be inverted when written

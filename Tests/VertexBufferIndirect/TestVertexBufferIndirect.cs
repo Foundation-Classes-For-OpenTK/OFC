@@ -121,14 +121,18 @@ namespace TestOpenTk
 
             #endregion
 
-            {
+            int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
-                dataindirectbuffer = new GLVertexBufferIndirect(65536, 1024, true);
+            {
+                dataindirectbuffer = new GLVertexBufferIndirect(maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
+                var textarray = new GLTexture2DArray(128, 32, maxstars);
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
 
                 int SectorSize = 10;
                 int instancestart = 0;
+
+                Font fnt = new Font("MS sans serif", 16f);
 
                 {
                     Vector3 pos = new Vector3(0, 0, 0);
@@ -142,9 +146,12 @@ namespace TestOpenTk
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for( int i = 0; i < array.Length; i++ )
                     {
-                        var mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(new Vector3(array[i].X, array[i].Y + 1, array[i].Z),
-                                        new Vector3(1, 0, 1),
-                                        new Vector3(-90F.Radians(), 0, 0));
+                        int imgpos = textarray.DepthIndex;
+                        textarray.DrawText("A" + i, fnt, Color.White, Color.Blue, -1);
+                        var mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(new Vector3(array[i].X, array[i].Y + 0.6f, array[i].Z),
+                                        new Vector3(1, 0, 0.2f),
+                                        new Vector3(-90F.Radians(), 0, 0),
+                                        imagepos:imgpos);
                         matrix[i] = mat;
                     }
 
@@ -170,6 +177,22 @@ namespace TestOpenTk
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
+
+                    Matrix4[] matrix = new Matrix4[array.Length];
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        int imgpos = textarray.DepthIndex;
+                        textarray.DrawText("C" + i, fnt, Color.White, Color.Red, -1);
+                        var mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(new Vector3(array[i].X, array[i].Y + 0.6f, array[i].Z),
+                                        new Vector3(1, 0, 0.2f),
+                                        new Vector3(-90F.Radians(), 0, 0),
+                                        imagepos: imgpos);
+                        matrix[i] = mat;
+                    }
+
+                    dataindirectbuffer.Vertex.AlignMat4();          // instancing countis in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
+                    dataindirectbuffer.Fill(matrix, 1, 4, 0, array.Length, -1);
+
                 }
 
 
@@ -214,11 +237,11 @@ namespace TestOpenTk
 
                     var renderer = GLRenderableItem.CreateMatrix4(items, rc, 
                                                                         dataindirectbuffer.Vertex, 0, //attach buffer with matrices, no draw count
-                                                                         null, 
+                                                                         new GLRenderDataTexture(textarray), 
                                                                          0,1);     //no ic, and matrix divide so 1 matrix per vertex set
                     renderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
                     renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-                    renderer.DrawCount = 1;
+                    renderer.DrawCount = 2;
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
                     rObjects.Add(textshader, "textshader", renderer);

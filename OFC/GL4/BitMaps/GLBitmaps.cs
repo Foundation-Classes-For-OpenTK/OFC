@@ -23,7 +23,8 @@ namespace OFC.GL4
     // Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
     // can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation
     // You can delete by tag name or clear all
-    // Holds as many text bitmaps as you need, it will grow to fit. It won't shrink, but it will reused deleted slot.
+    // you can add/remove by generation
+    // Holds as many text bitmaps as you need, it will grow to fit. It won't shrink, but it will reuse deleted slot.
 
     public class GLBitmaps : IDisposable
     {
@@ -103,7 +104,7 @@ namespace OFC.GL4
                             bool visible=  true
                          )
         {
-            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, visible);
+            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);

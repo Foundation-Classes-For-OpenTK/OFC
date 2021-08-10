@@ -33,7 +33,12 @@ namespace OFC.GL4
             CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
         }
 
-        public void CreateTexture( int width , int height, int depth , int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
+        public GLTexture2DArray(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
+        {
+            CreateTexture(width, height, depth, mipmaplevels, internalformat);
+        }
+
+        public void CreateTexture(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
         {
             if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)
             {
@@ -85,5 +90,5 @@ namespace OFC.GL4
 
             OFC.GLStatics.Check();
         }
-    }
+     }
 }

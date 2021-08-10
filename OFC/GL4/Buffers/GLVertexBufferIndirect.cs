@@ -20,8 +20,8 @@ using System.Linq;
 
 namespace OFC.GL4
 {
-    // Class holds a Buffer for a vertex, and an indirect buffer, both have a defined size
-    // you can add updates to it and remove sections from it
+    // Class holds a Buffer for a vertex, and an set of indirect buffer, both have a defined size
+    // you can add updates to it and mark sections as not drawable
 
     public class GLVertexBufferIndirect: IDisposable
     {
@@ -95,6 +95,9 @@ namespace OFC.GL4
 
         public void Dispose()
         {
+            Vertex.Dispose();
+            foreach (var d in Indirects)
+                d.Dispose();
         }
     }
 }
