@@ -103,18 +103,7 @@ namespace OFC.GL4
                             bool visible=  true
                          )
         {
-            Matrix4 mat = Matrix4.Identity;
-            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
-            if (rotatetoviewer == false)                                            // if autorotating, no rotation is allowed. matrix is just scaling/translation
-            {
-                mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
-                mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
-                mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
-            }
-            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
-            mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
-            mat[2, 3] = alphafadescalar;
-            mat[3, 3] = alphafadeend;
+            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);

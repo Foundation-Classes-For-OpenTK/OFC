@@ -19,6 +19,7 @@ using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -124,15 +125,7 @@ namespace TestOpenTk
 
                 dataindirectbuffer = new GLVertexBufferIndirect(65536, 1024, true);
 
-                var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
-                items.Add(sunvertex);
-                var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-                items.Add(sunshader);
-
-                var shapebuf = new GLBuffer();
-                items.Add(shapebuf);
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
-                shapebuf.AllocateFill(shape);
 
                 int SectorSize = 10;
                 int instancestart = 0;
@@ -145,7 +138,20 @@ namespace TestOpenTk
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
+
+                    Matrix4[] matrix = new Matrix4[array.Length];
+                    for( int i = 0; i < array.Length; i++ )
+                    {
+                        var mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(new Vector3(array[i].X, array[i].Y + 1, array[i].Z),
+                                        new Vector3(1, 0, 1),
+                                        new Vector3(-90F.Radians(), 0, 0));
+                        matrix[i] = mat;
+                    }
+
+                    dataindirectbuffer.Vertex.AlignMat4();          // instancing countis in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
+                    dataindirectbuffer.Fill(matrix, 1, 4, 0, array.Length, -1);
                 }
+
                 {
                     Vector3 pos = new Vector3(-15, 0, 0);
                     Vector4[] array = new Vector4[5];
@@ -155,8 +161,6 @@ namespace TestOpenTk
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
                     instancestart += array.Length;
                 }
-
-                dataindirectbuffer.Fill(new Matrix4[10], 1);      // dummy fill of indirect 1
 
                 {
                     Vector3 pos = new Vector3(-30, 0, 0);
@@ -169,23 +173,56 @@ namespace TestOpenTk
                 }
 
 
-                int[] indirectints = dataindirectbuffer.Indirects[0].ReadInts(0, 12);
+                int[] indirectints0 = dataindirectbuffer.Indirects[0].ReadInts(0, 12);
+                int[] indirectints1 = dataindirectbuffer.Indirects[1].ReadInts(0, 4);
                 float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
 
-                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-                rt.DepthTest = true;
-                rt.DepthClamp = true;
+                {
+                    var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
+                    items.Add(sunvertex);
+                    var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
+                    items.Add(sunshader);
 
-                var renderer = GLRenderableItem.CreateVector4Vector4(items, rt, 
-                                                                            shapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
-                                                                            dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
-                                                                            null, 0, 1);        // no ic, second divisor 1
-                renderer.IndirectBuffer = dataindirectbuffer.Indirects[0];
-                renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-                renderer.DrawCount = 3;
-                renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
+                    var shapebuf = new GLBuffer();
+                    items.Add(shapebuf);
+                    shapebuf.AllocateFill(shape);
 
-                rObjects.Add(sunshader, "Sector1", renderer);
+                    GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                    rt.DepthTest = true;
+                    rt.DepthClamp = true;
+
+                    var renderer = GLRenderableItem.CreateVector4Vector4(items, rt,
+                                                                                shapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
+                                                                                dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
+                                                                                null, 0, 1);        // no ic, second divisor 1
+                    renderer.IndirectBuffer = dataindirectbuffer.Indirects[0];
+                    renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
+                    renderer.DrawCount = 3;
+                    renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
+
+                    rObjects.Add(sunshader, "Sector1", renderer);
+                }
+
+                {
+                    var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
+                    items.Add(textshader);
+
+                    var rc = GLRenderControl.Quads();
+                    rc.CullFace = true;
+                    rc.DepthTest = true;
+                    rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+
+                    var renderer = GLRenderableItem.CreateMatrix4(items, rc, 
+                                                                        dataindirectbuffer.Vertex, 0, //attach buffer with matrices, no draw count
+                                                                         null, 
+                                                                         0,1);     //no ic, and matrix divide so 1 matrix per vertex set
+                    renderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
+                    renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
+                    renderer.DrawCount = 1;
+                    renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
+
+                    rObjects.Add(textshader, "textshader", renderer);
+                }
             }
 
             #region Matrix Calc Uniform

@@ -46,7 +46,8 @@ namespace OFC.GL4
         public const int Mat4size = 4 * 4 * sizeof(float);
 
         // std140 alignment: scalars are N, 2Vec = 2N, 3Vec = 4N, 4Vec = 4N. 
-        //                   array alignment is vec4 for all, stride vec4 
+        //                   array alignment is vec4 for all, stride vec4.  
+        //                   mat4 alignment is vec4
         // std430 alignment: scalars are N, 2Vec = 2N, 3Vec = 4N, 4Vec = 4N. 
         //                   array alignment is same as scalar, stride is as per scalar
 

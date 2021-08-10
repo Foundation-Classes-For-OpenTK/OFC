@@ -138,6 +138,7 @@ namespace OFC.GL4
             Fill(tex);
         }
 
+        // this will align
         public void Fill(Matrix4[] mats)
         {
             int datasize = mats.Length * Mat4size;
@@ -339,9 +340,22 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
-        public void AlignArray(int size)         // align to array boundary without writing
+        // move currentpos onto the alignment
+
+        public void AlignFloat()
         {
-            AlignArrayPtr(size, 0);
+            AlignArrayPtr(sizeof(float), 0);
+        }
+
+        public void AlignVec4()
+        {
+            AlignArrayPtr(Vec4size, 0);
+        }
+
+        // std140 dictates mat4 are aligned on vec4 boundaries.  But if your using instance offsets inside a buffer (where your picking 0+instance*sizeofmat4), you may want to align to a Mat4.
+        public void AlignMat4()
+        {
+            AlignArrayPtr(Mat4size, 0);
         }
 
         #endregion
@@ -538,7 +552,8 @@ namespace OFC.GL4
         // if you use it, MultiDrawCountStride = 16
         public void WriteIndirectArray(int vertexcount, int instancecount = 1, int firstvertex = 0, int baseinstance = 0)
         {
-            int[] i = new int[] { vertexcount, instancecount, firstvertex, baseinstance };       
+            int[] i = new int[] { vertexcount, instancecount, firstvertex, baseinstance };
+            System.Diagnostics.Debug.WriteLine($"WIA vc {i[0]} ic {i[1]} fv {i[2]} bi {i[3]}");
             Write(i);
         }
 

@@ -90,7 +90,7 @@ namespace OFC.GL4
             if (rnd == null)
                 rnd = new Random(seed);
 
-            b.AlignArray(sizeof(float));
+            b.AlignFloat();
 
             for (int s = 0; s < number; s++)
             {

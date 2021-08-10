@@ -127,6 +127,7 @@ void main(void)
     if ( enablealphablend )
         cx.w *= alpha;
     color = cx;
+color = vec4(0,1,0,1);
 }
 ";
         }

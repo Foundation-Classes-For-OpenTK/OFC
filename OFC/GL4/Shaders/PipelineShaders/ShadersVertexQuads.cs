@@ -13,6 +13,7 @@
  * governing permissions and limitations under the License.
  */
 
+using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
@@ -124,6 +125,31 @@ namespace OFC.GL4
         public GLPLVertexShaderQuadTextureWithMatrixTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        // create a matrix for this shader
+        static public Matrix4 CreateMatrix(Vector3 worldpos,
+                                    Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
+                                    Vector3 rotationradians,        // ignored if rotates are on
+                                    bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
+                                    float alphafadescalar = 0,
+                                    float alphafadeend = 0,
+                                    bool visible = true
+            )
+        {
+            Matrix4 mat = Matrix4.Identity;
+            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
+            if (rotatetoviewer == false)                                            // if autorotating, no rotation is allowed. matrix is just scaling/translation
+            {
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
+            }
+            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
+            mat[2, 3] = alphafadescalar;
+            mat[3, 3] = alphafadeend;
+            return mat;
         }
     }
 
