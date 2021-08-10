@@ -28,12 +28,15 @@ namespace OFC.GL4
 
         public int Length { get; protected set; } = 0;      // 0 means not allocated, otherwise allocated to this size.
 
+        public int Left { get { return Length - CurrentPos; } } // not accounting for alignment
+        public int LeftAfterAlign(int size) {  int cpos = (CurrentPos + size- 1) & (~(size - 1));  return Length - cpos; }      // align, then return whats left
+
         public bool IsAllocated { get { return Length > 0; } }
         public bool NotAllocated { get { return Length == 0; } }
 
         public bool Std430 { get; set; } = false;               // you can change your mind, in case of debugging etc.
 
-        public List<int> Positions = new List<int>();           // at each alignment during Fill, a position is stored.  Not for map alignments
+        public List<int> Positions = new List<int>();           // at each alignment using AlignArray, a position is stored.  Not for ptr map alignments
 
         public void AddPosition(int pos) { Positions.Add(pos);  }   // special to add positions in outside of normal Align
 
@@ -52,18 +55,6 @@ namespace OFC.GL4
             CurrentPos = 0;
             Length = 0;
             Std430 = std430;
-        }
-
-        protected int AlignScalar(int scalarsize, int datasize)           // align a scalar of scalarsize, move on by datasize
-        {
-            if ( scalarsize > 1 )
-                CurrentPos = (CurrentPos + scalarsize - 1) & (~(scalarsize - 1));
-
-            int pos = CurrentPos;
-            CurrentPos += datasize;
-            Positions.Add(pos);
-            System.Diagnostics.Debug.Assert(CurrentPos <= Length);
-            return pos;
         }
 
         protected int AlignArray(int elementsize, int datasize)              // align a vector of element size, move on by datasize
@@ -108,7 +99,7 @@ namespace OFC.GL4
             }
 
             IntPtr r = CurrentPtr;
-            CurrentPtr += arrayalign * count;
+            CurrentPtr += arrayalign * count;               // arrays are loosely packed in std140, with vec4 between them, so move on by arrayalign
             CurrentPos += arrayalign * count;
             System.Diagnostics.Debug.Assert(CurrentPos <= Length);
             return new Tuple<IntPtr, int>(r, arrayalign);

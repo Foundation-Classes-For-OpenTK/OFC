@@ -57,13 +57,13 @@ namespace OFC.GL4
 
         public DrawElementsType DrawType { get; set; }                      // E+IE: for element draws, its index type (byte/short/uint)
 
-        public int BaseIndex { get; set; }                                  // E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
-                                                                            // IE+IA: offset in buffer to first command entry in bytes
+        public int BaseIndexOffset { get; set; }                            // E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
+                                                                            // IE+IA: offset in buffe in bytes to first command entry 
 
         public int BaseVertex { get; set; }                                 // E: for element draws (but not indirect) first vertex to use in the buffer (not used in indirect - this comes from the buffer)
 
         public int MultiDrawCount { get; set; } = 1;                        // IE+IA: number of draw command buffers 
-        public int MultiDrawCountStride { get; set; } = 20;                 // IE+IA: distance between each command buffer entry (default is we use the maximum of elements+array structures)
+        public int MultiDrawCountStride { get; set; } = 20;                 // IE+IA: distance between each command buffer entry (default is we use the maximum of elements+array structures) in bytes
 
         public IGLRenderItemData RenderData { get; set; }                   // may be null - no specific render data. Does not own.  called at bind
 
@@ -101,11 +101,11 @@ namespace OFC.GL4
             {
                 if (IndirectBuffer != null)                         // IE indirect element index
                 {               
-                    GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, DrawType, (IntPtr)BaseIndex, MultiDrawCount, MultiDrawCountStride);
+                    GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, DrawType, (IntPtr)BaseIndexOffset, MultiDrawCount, MultiDrawCountStride);
                 }
                 else
                 {                                                   // E element index
-                    GL.DrawElementsInstancedBaseVertexBaseInstance(RenderControl.PrimitiveType, DrawCount, DrawType, (IntPtr)BaseIndex, 
+                    GL.DrawElementsInstancedBaseVertexBaseInstance(RenderControl.PrimitiveType, DrawCount, DrawType, (IntPtr)BaseIndexOffset, 
                                                                     InstanceCount, BaseVertex, BaseInstance);
                 }
             }
@@ -113,7 +113,7 @@ namespace OFC.GL4
             {
                 if (IndirectBuffer != null)                         // IA indirect buffer
                 {
-                    GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndex, MultiDrawCount, MultiDrawCountStride);
+                    GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, MultiDrawCount, MultiDrawCountStride);
                 }
                 else
                 {                                                   // A no indirect or element buffer, direct draw
@@ -555,7 +555,7 @@ namespace OFC.GL4
             ElementBuffer = elementbuf;
             ElementBuffer.AllocateFill(indexes);
             DrawType = DrawElementsType.UnsignedByte;
-            BaseIndex = base_index;
+            BaseIndexOffset = base_index;
             DrawCount = indexes.Length;
         }
 
@@ -566,7 +566,7 @@ namespace OFC.GL4
             ElementBuffer = elementbuf;
             ElementBuffer.AllocateFill(indexes);
             DrawType = DrawElementsType.UnsignedShort;
-            BaseIndex = base_index;
+            BaseIndexOffset = base_index;
             DrawCount = indexes.Length;
         }
 
@@ -599,7 +599,7 @@ namespace OFC.GL4
             }
 
             DrawType = drawtype;
-            BaseIndex = base_index;
+            BaseIndexOffset = base_index;
             DrawCount = eids.Length;
         }
 

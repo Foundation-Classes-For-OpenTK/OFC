@@ -94,6 +94,7 @@ void main(void)
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 2 : vs_in.vs_instance - instance id/texture offset
+    //      location 3 : alpha (if alpha blend enabled) float
     //      tex binding 1 : textureObject : 2D texture
 
     public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineShadersBase

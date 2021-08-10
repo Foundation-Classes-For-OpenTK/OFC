@@ -532,6 +532,8 @@ namespace OFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);
         }
 
+        public const int WriteIndirectArrayStride = 16;
+
         // write an Indirect Array draw command to the buffer
         // if you use it, MultiDrawCountStride = 16
         public void WriteIndirectArray(int vertexcount, int instancecount = 1, int firstvertex = 0, int baseinstance = 0)
@@ -539,6 +541,8 @@ namespace OFC.GL4
             int[] i = new int[] { vertexcount, instancecount, firstvertex, baseinstance };       
             Write(i);
         }
+
+        public const int WriteIndirectElementsStride = 16;
 
         // write an Indirect Element draw command to the buffer
         // if you use it, MultiDrawCountStride = 20

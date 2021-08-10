@@ -21,10 +21,7 @@ using System.Linq;
 
 namespace TestOpenTk
 {
-    // Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
-    // can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation
-    // You can delete by tag name or clear all
-    // Holds as many text bitmaps as you need, it will grow to fit. It won't shrink, but it will reused deleted slot.
+
 
     public class GLBitmapsWithStarObjects : GLBitmaps
     {
@@ -53,7 +50,7 @@ namespace TestOpenTk
             items.Add(sunshader);
 
             sunshapebuffer = new GLBuffer();
-            sunshapebuffer.AllocateFill(GLSphereObjectFactory.CreateSphereFromTriangles(3, starsize));
+            sunshapebuffer.AllocateFill(GLSphereObjectFactory.CreateSphereFromTriangles(2, starsize));
             items.Add(sunshapebuffer);
 
             rt = GLRenderControl.Tri();

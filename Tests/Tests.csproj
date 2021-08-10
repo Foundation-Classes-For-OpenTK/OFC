@@ -219,6 +219,12 @@
     <Compile Include="Uniformblocks\ShaderTestUniforms.Designer.cs">
       <DependentUpon>ShaderTestUniforms.cs</DependentUpon>
     </Compile>
+    <Compile Include="VertexBufferIndirect\TestVertexBufferIndirect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VertexBufferIndirect\TestVertexBufferIndirect.designer.cs">
+      <DependentUpon>TestVertexBufferIndirect.cs</DependentUpon>
+    </Compile>
     <Compile Include="Volumetrics\ShaderTestVolumetric.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -365,6 +371,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Uniformblocks\ShaderTestUniforms.resx">
       <DependentUpon>ShaderTestUniforms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VertexBufferIndirect\TestVertexBufferIndirect.resx">
+      <DependentUpon>TestVertexBufferIndirect.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Volumetrics\ShaderTestVolumetric.resx">
       <DependentUpon>ShaderTestVolumetric.cs</DependentUpon>

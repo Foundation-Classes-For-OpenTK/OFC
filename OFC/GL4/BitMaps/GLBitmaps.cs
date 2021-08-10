@@ -132,7 +132,7 @@ namespace OFC.GL4
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);
-            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);
+            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
             renderlist.Add(shader, name + ":" + groupno, renderableItem);
             grouprenderlist.Add(renderableItem);
         }

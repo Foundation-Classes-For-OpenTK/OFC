@@ -29,7 +29,7 @@ namespace TestOpenTk
 
             shapebuf = new GLBuffer();
             items.Add(shapebuf);
-            var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, sunsize);
+            var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
             shapebuf.AllocateFill(shape);
 
             findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);

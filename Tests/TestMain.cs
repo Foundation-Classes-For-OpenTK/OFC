@@ -629,7 +629,7 @@ namespace TestOpenTk
                 ri.IndirectBuffer.AllocateBytes(ri.MultiDrawCountStride * ri.MultiDrawCount + 4);
                 ri.IndirectBuffer.StartWrite(0, ri.IndirectBuffer.Length);
                 ri.IndirectBuffer.Write(1.0f);        // dummy float to demo index offset
-                ri.BaseIndex = 4;       // and indicate that the base command index is 4
+                ri.BaseIndexOffset = 4;       // and indicate that the base command index is 4
                 ri.IndirectBuffer.WriteIndirectElements(4, 1, 0, 0, 0);       // draw indexes 0-3
                 ri.IndirectBuffer.WriteIndirectElements(4, 1, 5, 0, 0);       // and 5-8
                 ri.IndirectBuffer.StopReadWrite();
