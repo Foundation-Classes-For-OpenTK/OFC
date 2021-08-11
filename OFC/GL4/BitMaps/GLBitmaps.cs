@@ -40,7 +40,7 @@ namespace OFC.GL4
         {
             this.name = name;
 
-            int maxdepthpertexture = GL4Statics.GetValue(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);       // limits the number of textures per 2darray
+            int maxdepthpertexture = GL4Statics.GetMaxTextureDepth();     // limits the number of textures per 2darray
             int max = Math.Min(maxdepthpertexture, maxpergroup);        //note RI uses a VertexArray to load the matrix in, so not limited by that (max size of uniform buffer)
 
             matrixbuffers = new GLSetOfMatrixBufferWithGenerations(items, max);
@@ -122,7 +122,7 @@ namespace OFC.GL4
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);
-            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
+            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 0, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
             renderlist.Add(shader, name + ":" + groupno, renderableItem);
             grouprenderlist.Add(renderableItem);
         }

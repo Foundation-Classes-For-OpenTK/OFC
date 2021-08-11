@@ -89,11 +89,10 @@ void main(void)
         }
     }
 
-
     // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      location 2 : vs_in.vs_instance - instance id/texture offset
+    //      location 2 : vs_in.vs_instance - instance id/texture offset. 
     //      location 3 : alpha (if alpha blend enabled) float
     //      tex binding 1 : textureObject : 2D texture
 
@@ -106,6 +105,7 @@ void main(void)
 #version 450 core
 layout (location=0) in vec2 vs_textureCoordinate;
 
+// supports up to four texture bindings
 const int texbinding = 1;
 layout (binding=texbinding) uniform sampler2DArray textureObject2D;
 
@@ -123,11 +123,12 @@ const int imageoffset = 0;
 
 void main(void)
 {
-    vec4 cx = texture(textureObject2D, vec3(vs_textureCoordinate,vs.vs_instanced+imageoffset));
+    int ii = vs.vs_instanced+imageoffset;
+    vec4 cx;
+    cx = texture(textureObject2D, vec3(vs_textureCoordinate,ii));
     if ( enablealphablend )
         cx.w *= alpha;
     color = cx;
-//color = vec4(0,1,0,1);
 }
 ";
         }
@@ -135,6 +136,58 @@ void main(void)
         public GLPLFragmentShaderTexture2DIndexed(int offset, int binding = 1, bool alphablend = false)
         {
             CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding",binding, "imageoffset",offset }, auxname: GetType().Name);
+        }
+    }
+
+    // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
+    // Requires:
+    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    //      location 2 : vs_in.vs_instance - instance id/texture offset. 
+    //                  bits 0..15 = image index in texture, bits 16.. texture index in bindings array
+    //      location 3 : alpha (if alpha blend enabled) float
+    //      tex binding [N..] : textureObject : 2D textures, multiple ones. select
+
+    public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineShadersBase
+    {
+        public string Code()
+        {
+            return
+@"
+#version 450 core
+layout (location=0) in vec2 vs_textureCoordinate;
+
+// supports up to N texture bindings
+const int texbinding = 1;
+const int texbindinglength = 10;
+layout (binding=texbinding) uniform sampler2DArray textureObject2D[texbindinglength];       // note use of [], allows you to array as set of bindings
+
+layout (location = 2) in VS_IN
+{
+    flat int vs_instanced;      // not sure why structuring is needed..
+} vs;
+
+layout (location = 3) in float alpha;
+
+out vec4 color;
+
+const bool enablealphablend = false;
+const int imageoffset = 0;
+
+void main(void)
+{
+    int ii = (vs.vs_instanced & 0xffff)+imageoffset;
+    int tx = (vs.vs_instanced >> 16);
+    vec4 cx = texture(textureObject2D[tx], vec3(vs_textureCoordinate,ii));
+    if ( enablealphablend )
+        cx.w *= alpha;
+    color = cx;
+}
+";
+        }
+
+        public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  // 16 is the opengl minimum textures supported
+        {
+            CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
         }
     }
 

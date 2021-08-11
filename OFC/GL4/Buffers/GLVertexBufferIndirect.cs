@@ -23,18 +23,31 @@ namespace OFC.GL4
     // Class holds a Buffer for a vertex, and an set of indirect buffer, both have a defined size
     // you can add updates to it and mark sections as not drawable
 
-    public class GLVertexBufferIndirect: IDisposable
+    public class GLVertexBufferIndirect
     {
         public GLBuffer Vertex { get; private set; }
         public List<GLBuffer> Indirects { get; private set; } = new List<GLBuffer>();
         private int indirectsize;
         private BufferUsageHint bufferusage;
+        private GLItemsList items;
 
-        public GLVertexBufferIndirect(int vertsize, int indirectsize, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw)
+        public GLVertexBufferIndirect(GLItemsList items, int vertsize, int indirectsize, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw)
         {
+            this.items = items;
             this.indirectsize = indirectsize;
             this.bufferusage = bh;
             Vertex = new GLBuffer(vertsize, std430, bh);
+            items.Add(Vertex);
+        }
+
+        public bool EnoughSpaceVertex(int length, int indirectbuffer)
+        {
+            return Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Vec4size) >= length * GLBuffer.Vec4size;
+        }
+
+        public bool EnoughSpaceMatrix(int length, int indirectbuffer)
+        {
+            return Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Mat4size) >= length * GLBuffer.Mat4size;
         }
 
         // fill vertex buffer with vector4's, and write an indirect to indirectbuffer N
@@ -45,10 +58,10 @@ namespace OFC.GL4
         {
             CreateIndirect(indirectbuffer);
 
-            if (Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Vec4size) >= vertices.Length * GLBuffer.Vec4size)
+            if (EnoughSpaceVertex(vertices.Length, indirectbuffer))
             {
                 Vertex.Fill(vertices);          // creates a position
-                System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
+            //    System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
                 vertexcount = vertexcount >= 0 ? vertexcount : vertices.Length;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
 
@@ -69,10 +82,10 @@ namespace OFC.GL4
         {
             CreateIndirect(indirectbuffer);
 
-            if (Indirects[indirectbuffer].Left >= GLBuffer.WriteIndirectArrayStride && Vertex.LeftAfterAlign(GLBuffer.Vec4size) >= mats.Length * GLBuffer.Mat4size)
+            if (EnoughSpaceMatrix(mats.Length, indirectbuffer))
             {
                 Vertex.Fill(mats);          // creates a position
-                System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {mats.Length * GLBuffer.Mat4size}");
+               // System.Diagnostics.Debug.WriteLine($"Matrix buf {Vertex.Positions.Last()} size {mats.Length * GLBuffer.Mat4size}");
                 vertexcount = vertexcount >= 0 ? vertexcount : mats.Length;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Mat4size);
 
@@ -90,14 +103,11 @@ namespace OFC.GL4
         private void CreateIndirect(int indirectbuffer)
         {
             while (Indirects.Count < indirectbuffer + 1)
-                Indirects.Add(new GLBuffer(indirectsize, true, bufferusage));
-        }
-
-        public void Dispose()
-        {
-            Vertex.Dispose();
-            foreach (var d in Indirects)
-                d.Dispose();
+            {
+                var buf = new GLBuffer(indirectsize, true, bufferusage);
+                items.Add(buf);
+                Indirects.Add(buf);
+            }
         }
     }
 }

@@ -54,15 +54,11 @@ namespace OFC.GL4
             return 0;
         }
 
-        public static int GetValue(GetPName p)
-        {
-            return GL.GetInteger(p);
-        }
-
         public static int GetMaxUniformBlockSize()
         {
             return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxUniformBlockSize);     // biggest uniform buffer (64k on Nvidia in 2020)
         }
+
 
         public static void GetMaxUniformBuffers(out int vertex, out int fragment, out int geo, out int tesscontrol, out int tesseval)
         {
@@ -73,6 +69,20 @@ namespace OFC.GL4
             tesseval = GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxTessEvaluationUniformBlocks);
         }
 
+        public static int GetMaxTextureDepth()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);
+        }
+
+        public static int GetMaxVertexAndFragmentTexturesCombined()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxCombinedTextureImageUnits);
+        }
+
+        public static int GetMaxFragmentTextures()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxTextureImageUnits);
+        }
     }
 }
 

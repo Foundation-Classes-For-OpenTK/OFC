@@ -553,7 +553,7 @@ namespace OFC.GL4
         public void WriteIndirectArray(int vertexcount, int instancecount = 1, int firstvertex = 0, int baseinstance = 0)
         {
             int[] i = new int[] { vertexcount, instancecount, firstvertex, baseinstance };
-            System.Diagnostics.Debug.WriteLine($"WIA vc {i[0]} ic {i[1]} fv {i[2]} bi {i[3]}");
+           // System.Diagnostics.Debug.WriteLine($"WIA vc {i[0]} ic {i[1]} fv {i[2]} bi {i[3]}");
             Write(i);
         }
 

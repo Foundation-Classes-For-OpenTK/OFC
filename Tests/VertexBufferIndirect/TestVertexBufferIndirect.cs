@@ -39,6 +39,8 @@ namespace TestOpenTk
 
         GLVertexBufferIndirect dataindirectbuffer;
 
+        StarsLabels sl;
+
         public TestVertexBufferIndirect()
         {
             InitializeComponent();
@@ -123,25 +125,35 @@ namespace TestOpenTk
 
             int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
+            var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
+            items.Add(sunvertex);
+            var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
+            items.Add(sunshader);
+            var shapebuf = new GLBuffer();
+            items.Add(shapebuf);
+            var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
+            shapebuf.AllocateFill(shape);
+
+            int texunitspergroup = 16;      // opengl minimum texture units per frag shader
+
+            var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
+            items.Add(textshader);
+            Font fnt = new Font("MS sans serif", 16f);
+
+
             {
-                dataindirectbuffer = new GLVertexBufferIndirect(maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
+                dataindirectbuffer = new GLVertexBufferIndirect(items,maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
                 var textarray = new GLTexture2DArray(128, 32, maxstars);
 
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
-
                 int SectorSize = 10;
-                int instancestart = 0;
-
-                Font fnt = new Font("MS sans serif", 16f);
 
                 {
-                    Vector3 pos = new Vector3(0, 0, 0);
+                    Vector3 pos = new Vector3(-20, 0, -10);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
-                    instancestart += array.Length;
 
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for( int i = 0; i < array.Length; i++ )
@@ -160,23 +172,21 @@ namespace TestOpenTk
                 }
 
                 {
-                    Vector3 pos = new Vector3(-15, 0, 0);
+                    Vector3 pos = new Vector3(-20, 0, 0);
                     Vector4[] array = new Vector4[5];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
-                    instancestart += array.Length;
                 }
 
                 {
-                    Vector3 pos = new Vector3(-30, 0, 0);
+                    Vector3 pos = new Vector3(-20, 0, 10);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
-                    instancestart += array.Length;
 
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for (int i = 0; i < array.Length; i++)
@@ -201,15 +211,6 @@ namespace TestOpenTk
                 float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
 
                 {
-                    var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
-                    items.Add(sunvertex);
-                    var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-                    items.Add(sunshader);
-
-                    var shapebuf = new GLBuffer();
-                    items.Add(shapebuf);
-                    shapebuf.AllocateFill(shape);
-
                     GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                     rt.DepthTest = true;
                     rt.DepthClamp = true;
@@ -227,8 +228,6 @@ namespace TestOpenTk
                 }
 
                 {
-                    var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
-                    items.Add(textshader);
 
                     var rc = GLRenderControl.Quads();
                     rc.CullFace = true;
@@ -236,7 +235,7 @@ namespace TestOpenTk
                     rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
                     var renderer = GLRenderableItem.CreateMatrix4(items, rc, 
-                                                                        dataindirectbuffer.Vertex, 0, //attach buffer with matrices, no draw count
+                                                                        dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
                                                                          new GLRenderDataTexture(textarray), 
                                                                          0,1);     //no ic, and matrix divide so 1 matrix per vertex set
                     renderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
@@ -245,6 +244,25 @@ namespace TestOpenTk
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
                     rObjects.Add(textshader, "textshader", renderer);
+                }
+            }
+
+            {
+                sl = new StarsLabels("SL",items,rObjects, -texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
+
+                int SectorSize = 10;
+                {
+                    Vector3 pos = new Vector3(0, 0, 0);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "Star" + i;
+                    }
+
+                    sl.DrawStars(null,array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f),new Vector3(-90F.Radians(), 0, 0), true,false, null, 0.5f, 0.6f );
                 }
             }
 

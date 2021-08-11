@@ -42,6 +42,7 @@ namespace OFC.GL4
         public bool[] OwnBitMaps { get; private set; }          // if bitmap is owned
 
         public int DepthIndex { get; set; } = 0;                // can be used to record what z depth we have got to on bitmap filling
+        public int DepthLeftIndex { get { return Depth - DepthIndex; } }    // how many are left
 
         // normal sampler bind - for sampler2D access etc.
 

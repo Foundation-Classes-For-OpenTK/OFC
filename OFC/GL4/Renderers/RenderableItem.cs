@@ -466,23 +466,13 @@ namespace OFC.GL4
         }
 
         // in 4-7 set up
-        public static GLRenderableItem CreateMatrix4(GLItemsList items, GLRenderControl pt, GLBuffer vb, int drawcount, 
+        public static GLRenderableItem CreateMatrix4(GLItemsList items, GLRenderControl pt, GLBuffer vb, int bufoffset, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
-            var ri = new GLRenderableItem(pt, drawcount, null, id, ic);
-            ri.CreateMatrix4(items, vb, matrixdivisor);
-            return ri;
-        }
-
-        // in 4-7 set up - create over the top of an existing RI
-        public void CreateMatrix4(GLItemsList items, GLBuffer vb, int matrixdivisor = 1)
-        {
-            VertexArray?.Dispose();
             var va = items.NewArray();
-            VertexArray = va;
-
-            vb.Bind(va, 2, vb.Positions[0], 64, matrixdivisor);     // use a binding 
+            vb.Bind(va, 2, bufoffset, 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
+            return new GLRenderableItem(pt, drawcount, va, id, ic);
         }
 
         // in 0 set up

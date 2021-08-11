@@ -71,6 +71,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine($"UBS={GL4Statics.GetMaxUniformBlockSize()}");
                 GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
                 System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
+                System.Diagnostics.Debug.WriteLine($"tex layers {GL4Statics.GetMaxTextureDepth()} ");
             }
 
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");

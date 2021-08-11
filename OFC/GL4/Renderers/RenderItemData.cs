@@ -168,18 +168,26 @@ namespace OFC.GL4
     {
         public int TextureBind { get; set; } = 1;
 
-        public GLRenderDataTexture(IGLTexture tex, int bind = 1)
+        // bind from bind N onwards
+        public GLRenderDataTexture(IGLTexture[] tex, int bind = 1)
         {
-            Texture = tex;
+            Textures = new int[tex.Length];
+            for (int i = 0; i < tex.Length; i++)
+                Textures[i] = tex[i].Id;
             TextureBind = bind;
+        }
+
+        // bind a single texture on bind
+        public GLRenderDataTexture(IGLTexture tex, int bind = 1) : this(new IGLTexture[] { tex }, bind)
+        {
         }
 
         public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
         {
-            Texture?.Bind(TextureBind);
+            GL.BindTextures(TextureBind, Textures.Length, Textures);
         }
 
-        private IGLTexture Texture;
+        private int[] Textures;
     }
 
     // colour only
