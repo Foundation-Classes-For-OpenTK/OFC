@@ -36,9 +36,11 @@ namespace OFC.GL4
 
         public bool Std430 { get; set; } = false;               // you can change your mind, in case of debugging etc.
 
-        public List<int> Positions = new List<int>();           // at each alignment using AlignArray, a position is stored.  Not for ptr map alignments
-
+        public List<int> Positions { get; set; } = new List<int>();           // at each alignment using AlignArray, a position is stored (GLBuffer Fills).  Not for ptr map alignments.
         public void AddPosition(int pos) { Positions.Add(pos);  }   // special to add positions in outside of normal Align
+
+        public List<object> Tags { get; set; }                  // user optional, you can assign tags to positions if required
+        public void AddTag(object tag) { if (Tags == null) Tags = new List<object>(); Tags.Add(tag); }
 
         public const int Vec4size = 4 * sizeof(float);
         public const int Vec3size = Vec4size;

@@ -20,7 +20,7 @@ using System.Linq;
 
 namespace OFC.GL4
 {
-    // Class holds a Buffer for a vertex, and an set of indirect buffer, both have a defined size
+    // Class holds a buffer for a vertex, and an set of indirect buffers, both have a defined size
     // you can add updates to it and mark sections as not drawable
 
     public class GLVertexBufferIndirect
@@ -67,7 +67,7 @@ namespace OFC.GL4
 
                 int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;
                 Indirects[indirectbuffer].AddPosition(pos);
-                Indirects[indirectbuffer].StartWrite(pos);
+                Indirects[indirectbuffer].StartWrite(pos, GLBuffer.WriteIndirectArrayStride);
                 Indirects[indirectbuffer].WriteIndirectArray(vertexcount, ic, vertexbaseindex, baseinstance);
                 Indirects[indirectbuffer].StopReadWrite();
                 return true;
@@ -91,13 +91,33 @@ namespace OFC.GL4
 
                 int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;
                 Indirects[indirectbuffer].AddPosition(pos);
-                Indirects[indirectbuffer].StartWrite(pos);
+                Indirects[indirectbuffer].StartWrite(pos, GLBuffer.WriteIndirectArrayStride);
                 Indirects[indirectbuffer].WriteIndirectArray(vertexcount, ic, vertexbaseindex, baseinstance);
                 Indirects[indirectbuffer].StopReadWrite();
                 return true;
             }
             else
                 return false;
+        }
+
+        // remove draw of indirectnumber in indirectbuffer
+
+        public bool Remove(int indirectnumber, int indirectbuffer)
+        {
+            if (indirectbuffer < Indirects.Count)
+            {
+                var ib = Indirects[indirectbuffer];
+                if (indirectnumber < ib.Positions.Count)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Remove indirect {indirectbuffer} at {indirectnumber} pos {Indirects[indirectbuffer].Positions[indirectnumber]}");
+                    Indirects[indirectbuffer].StartWrite(Indirects[indirectbuffer].Positions[indirectnumber], sizeof(int));
+                    Indirects[indirectbuffer].Write((int)0);        // zero the vertex count
+                    Indirects[indirectbuffer].StopReadWrite();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void CreateIndirect(int indirectbuffer)

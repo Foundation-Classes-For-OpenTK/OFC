@@ -39,7 +39,7 @@ namespace TestOpenTk
 
         GLVertexBufferIndirect dataindirectbuffer;
 
-        StarsLabels sl;
+        GLObjectsWithLabels sl;
 
         public TestVertexBufferIndirect()
         {
@@ -248,7 +248,8 @@ namespace TestOpenTk
             }
 
             {
-                sl = new StarsLabels("SL",items,rObjects, -texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
+                sl = new GLObjectsWithLabels("SL", rObjects, texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
+                items.Add(sl);
 
                 int SectorSize = 10;
                 {
@@ -259,10 +260,36 @@ namespace TestOpenTk
                     for (int i = 0; i < array.Length; i++)
                     {
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                        text[i] = "Star" + i;
+                        text[i] = "A.r" + i;
                     }
 
-                    sl.DrawStars(null,array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f),new Vector3(-90F.Radians(), 0, 0), true,false, null, 0.5f, 0.6f );
+                    sl.AddObjects("GA", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0,0.6f,0));
+                }
+                {
+                    Vector3 pos = new Vector3(20, 0, 0);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "B." + i;
+                    }
+
+                    sl.AddObjects("GB", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
+                }
+                {
+                    Vector3 pos = new Vector3(30, 0, 0);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "C." + i;
+                    }
+
+                    sl.AddObjects("GC", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0));
                 }
             }
 
@@ -333,27 +360,42 @@ namespace TestOpenTk
                 gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
+                sl.Remove("GA");
+                gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.Redraw();
-            }
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
-            {
+                sl.Remove("GB");
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F10, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
+                sl.Remove("GC");
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F11, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
+                {
+                    int SectorSize = 10;
+                    Vector3 pos = new Vector3(40, 0, 0);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "D." + i;
+                    }
+
+                    Font fnt = new Font("MS sans serif", 16f);
+                    sl.AddObjects("GD", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
+                }
                 gl3dcontroller.Redraw();
             }
 
