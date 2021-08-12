@@ -125,14 +125,11 @@ namespace OFC.GL4
             }
         }
 
-        public void Fill(Vector4[] vertices, int sourceoffset, int sourcelength = 0)
+        public void Fill(Vector4[] vertices, int sourceoffset, int sourcelength)
         {
-            if (sourcelength == 0)
-                sourcelength = vertices.Length - sourceoffset;
-
             if (sourcelength > 0)
             {
-                int datasize = sourceoffset * Vec4size;
+                int datasize = sourcelength * Vec4size;
                 int posv = AlignArray(Vec4size, datasize);
 
                 if (sourcelength == vertices.Length)        // if everything.. just a named buffer subdata
@@ -173,11 +170,9 @@ namespace OFC.GL4
             }
         }
 
-        public void Fill(Matrix4[] mats, int sourceoffset, int sourcelength = 0)
+        // more fancy version
+        public void Fill(Matrix4[] mats, int sourceoffset, int sourcelength)        
         {
-            if (sourcelength == 0)
-                sourcelength = mats.Length - sourceoffset;
-
             if (sourcelength > 0)
             {
                 int datasize = sourcelength * Mat4size;
@@ -190,7 +185,7 @@ namespace OFC.GL4
                 else
                 {
                     Matrix4[] subset = new Matrix4[sourcelength];
-                    Array.Copy(mats, sourceoffset, subset, 0, sourcelength);
+                    Array.Copy(mats, sourceoffset, subset, 0, sourcelength);    // copy seems to be the quickest solution - at least its inside the system
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
                 }
                 OFC.GLStatics.Check();

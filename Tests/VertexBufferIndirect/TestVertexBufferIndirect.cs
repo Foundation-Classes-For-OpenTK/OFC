@@ -40,6 +40,7 @@ namespace TestOpenTk
         GLVertexBufferIndirect dataindirectbuffer;
 
         GLObjectsWithLabels sl;
+        GLSetOfObjectsWithLabels slset;
 
         public TestVertexBufferIndirect()
         {
@@ -148,12 +149,12 @@ namespace TestOpenTk
                 int SectorSize = 10;
 
                 {
-                    Vector3 pos = new Vector3(-20, 0, -10);
+                    Vector3 pos = new Vector3(-20, 0, -15);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
 
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for( int i = 0; i < array.Length; i++ )
@@ -167,26 +168,28 @@ namespace TestOpenTk
                         matrix[i] = mat;
                     }
 
-                    dataindirectbuffer.Vertex.AlignMat4();          // instancing countis in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
-                    dataindirectbuffer.Fill(matrix, 1, 4, 0, array.Length, -1);
+                    dataindirectbuffer.Vertex.AlignMat4();          // instancing counts in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
+                    dataindirectbuffer.Fill(matrix, 0, matrix.Length, 1, 4, 0, array.Length, -1);
                 }
 
+                if (true)
                 {
                     Vector3 pos = new Vector3(-20, 0, 0);
                     Vector4[] array = new Vector4[5];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
                 }
 
+                if (true)
                 {
-                    Vector3 pos = new Vector3(-20, 0, 10);
+                    Vector3 pos = new Vector3(-20, 0, 15);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    dataindirectbuffer.Fill(array, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
 
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for (int i = 0; i < array.Length; i++)
@@ -201,8 +204,7 @@ namespace TestOpenTk
                     }
 
                     dataindirectbuffer.Vertex.AlignMat4();          // instancing countis in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
-                    dataindirectbuffer.Fill(matrix, 1, 4, 0, array.Length, -1);
-
+                    dataindirectbuffer.Fill(matrix, 0, matrix.Length, 1, 4, 0, array.Length, -1);
                 }
 
 
@@ -210,6 +212,7 @@ namespace TestOpenTk
                 int[] indirectints1 = dataindirectbuffer.Indirects[1].ReadInts(0, 4);
                 float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
 
+                if (true)
                 {
                     GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                     rt.DepthTest = true;
@@ -227,6 +230,7 @@ namespace TestOpenTk
                     rObjects.Add(sunshader, "Sector1", renderer);
                 }
 
+                if (true)
                 {
 
                     var rc = GLRenderControl.Quads();
@@ -236,7 +240,7 @@ namespace TestOpenTk
 
                     var renderer = GLRenderableItem.CreateMatrix4(items, rc, 
                                                                         dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
-                                                                         new GLRenderDataTexture(textarray), 
+                                                                         new GLRenderDataTexture(textarray,0), 
                                                                          0,1);     //no ic, and matrix divide so 1 matrix per vertex set
                     renderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
                     renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
@@ -247,13 +251,14 @@ namespace TestOpenTk
                 }
             }
 
+            if (false)
             {
                 sl = new GLObjectsWithLabels("SL", rObjects, texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
                 items.Add(sl);
 
                 int SectorSize = 10;
                 {
-                    Vector3 pos = new Vector3(0, 0, 0);
+                    Vector3 pos = new Vector3(0, 0, -15);
                     Vector4[] array = new Vector4[10];
                     string[] text = new string[array.Length];
                     Random rnd = new Random(31);
@@ -270,7 +275,7 @@ namespace TestOpenTk
                     BitMapHelpers.Dispose(bmps);
                 }
                 {
-                    Vector3 pos = new Vector3(20, 0, 0);
+                    Vector3 pos = new Vector3(0, 0, 0);
                     Vector4[] array = new Vector4[10];
                     string[] text = new string[array.Length];
                     Random rnd = new Random(31);
@@ -283,7 +288,7 @@ namespace TestOpenTk
                     sl.AddObjects("GB", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
                 }
                 {
-                    Vector3 pos = new Vector3(30, 0, 0);
+                    Vector3 pos = new Vector3(0, 0, 15);
                     Vector4[] array = new Vector4[10];
                     string[] text = new string[array.Length];
                     Random rnd = new Random(31);
@@ -294,6 +299,69 @@ namespace TestOpenTk
                     }
 
                     sl.AddObjects("GC", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0));
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Number} Removed {sl.Removed}");
+            }
+
+            // Sets of..
+
+            if (true)
+            {
+                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 3 : texunitspergroup, 50, sunshader, shapebuf, shape.Length, textshader, new Size(128, 32));
+                items.Add(slset);
+
+                int SectorSize = 10;
+                {
+                    Vector3 pos = new Vector3(20, 0, -15);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "S.A.r" + i;
+                    }
+
+                    var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    slset.AddObjects("GA", array, mats, bmps);
+                    BitMapHelpers.Dispose(bmps);
+                }
+                {
+                    Vector3 pos = new Vector3(20, 0, 0);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "S.B." + i;
+                    }
+
+                    var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    slset.AddObjects("GB", array, mats, bmps);
+                    BitMapHelpers.Dispose(bmps);
+                }
+                {
+                    Vector3 pos = new Vector3(20, 0, 15);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "S.C." + i;
+                    }
+
+                    var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    slset.AddObjects("GC", array, mats, bmps);
+                    BitMapHelpers.Dispose(bmps);
                 }
             }
 
@@ -346,40 +414,63 @@ namespace TestOpenTk
         {
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.PanZoomTo(new Vector3(0, 0, 0), 1, 2);
+                slset.Remove((t) => t.Equals("GA"));
+                gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.PanZoomTo(new Vector3(4, 0, 0), 1, 2);
+                slset.Remove((t) => t.Equals("GB"));
+                gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.PanZoomTo(new Vector3(10, 0, -10), 1, 2);
+                slset.Remove((t) => t.Equals("GC"));
+                gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
+                int SectorSize = 10;
+                Vector3 pos = new Vector3(20, 0, 30);
+                Vector4[] array = new Vector4[10];
+                string[] text = new string[array.Length];
+                Random rnd = new Random(31);
+                for (int i = 0; i < array.Length; i++)
+                {
+                    array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                    text[i] = "S.C." + i;
+                }
+
+                Font fnt = new Font("MS sans serif", 16f);
+                var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkGreen, 0.5f);
+
+                slset.AddObjects("GD", array, mats, bmps);
+                BitMapHelpers.Dispose(bmps);
+                gl3dcontroller.Redraw();
             }
 
 
             if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                sl.Remove("GA");
+                sl.Remove((t) => t.Equals("GA"));
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Number} Removed {sl.Removed}");
                 gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                sl.Remove("GB");
+                sl.Remove((t) => t.Equals("GB"));
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Number} Removed {sl.Removed}");
                 gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                sl.Remove("GC");
+                sl.Remove((t) => t.Equals("GC"));
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Number} Removed {sl.Removed}");
                 gl3dcontroller.Redraw();
             }
 
@@ -387,7 +478,7 @@ namespace TestOpenTk
             {
                 {
                     int SectorSize = 10;
-                    Vector3 pos = new Vector3(40, 0, 0);
+                    Vector3 pos = new Vector3(0, 0, 30);
                     Vector4[] array = new Vector4[10];
                     string[] text = new string[array.Length];
                     Random rnd = new Random(31);
@@ -401,6 +492,7 @@ namespace TestOpenTk
                     sl.AddObjects("GD", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
                 }
                 gl3dcontroller.Redraw();
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Number} Removed {sl.Removed}");
             }
 
             if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))

@@ -51,17 +51,21 @@ namespace OFC.GL4
         }
 
         // fill vertex buffer with vector4's, and write an indirect to indirectbuffer N
-        // vectexcount = <0 use vertices length, else use vertex count
-        // baseinstance = <0 use CurrentPos on vertex buffer to estimate instance number, else use this
-
-        public bool Fill(Vector4[] vertices, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
+        
+        public bool Fill(Vector4[] vertices, int sourceoffset, int sourcelength, 
+                                    int indirectbuffer, 
+                                    int vertexcount = -1,           // vectexcount = <0 use vertices length, else use vertex count
+                                    int vertexbaseindex = 0,        // normally 0, index into vertex  buffer in vec4
+                                    int ic = 1,                     // number of items to instance
+                                    int baseinstance = -1)          // baseinstance, <0 use CurrentPos on vertex buffer to estimate instance number, else use this
         {
             CreateIndirect(indirectbuffer);
 
             if (EnoughSpaceVertex(vertices.Length, indirectbuffer))
             {
-                Vertex.Fill(vertices);          // creates a position
-            //    System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
+                Vertex.Fill(vertices, sourceoffset, sourcelength);          // creates a position
+                //Vertex.Fill(vertices);          // creates a position
+                //    System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
                 vertexcount = vertexcount >= 0 ? vertexcount : vertices.Length;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
 
@@ -78,14 +82,16 @@ namespace OFC.GL4
 
         // fill vertex buffer with mat4's, and write an indirect to indirectbuffer N
 
-        public bool Fill(Matrix4[] mats, int indirectbuffer, int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
+        public bool Fill(Matrix4[] mats, int sourceoffset, int sourcelength, 
+                                    int indirectbuffer, 
+                                    int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
         {
             CreateIndirect(indirectbuffer);
 
             if (EnoughSpaceMatrix(mats.Length, indirectbuffer))
             {
-                Vertex.Fill(mats);          // creates a position
-               // System.Diagnostics.Debug.WriteLine($"Matrix buf {Vertex.Positions.Last()} size {mats.Length * GLBuffer.Mat4size}");
+                Vertex.Fill(mats, sourceoffset, sourcelength);          // creates a position
+                // System.Diagnostics.Debug.WriteLine($"Matrix buf {Vertex.Positions.Last()} size {mats.Length * GLBuffer.Mat4size}");
                 vertexcount = vertexcount >= 0 ? vertexcount : mats.Length;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Mat4size);
 

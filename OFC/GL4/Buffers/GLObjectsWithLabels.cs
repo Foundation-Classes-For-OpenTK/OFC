@@ -29,10 +29,12 @@ namespace OFC.GL4
     public class GLObjectsWithLabels : IDisposable
     {
         public Size LabelSize { get { return textures[0].Size; } }
+        public int Number { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }
+        public int Removed { get; private set; } = 0;
 
         private GLVertexBufferIndirect dataindirectbuffer;
         private GLTexture2DArray[] textures;
-        private int objectvertexes;
+        private int objectvertexescount;
         private GLRenderableItem objectrenderer;
         private GLRenderableItem textrenderer;
         private GLRenderProgramSortedList robjects;
@@ -47,13 +49,13 @@ namespace OFC.GL4
                                 IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes ,
                                 IGLProgramShader textshader, Size texturesize )
         {
-            this.objectvertexes = objectvertexes;
+            this.objectvertexescount = objectvertexes;
             this.robjects = robjects;
 
             // find gl parameters
             int maxtexturesbound = GL4Statics.GetMaxFragmentTextures();
             int maxtextper2darray = GL4Statics.GetMaxTextureDepth();
-            maxtextper2darray = 5;
+            maxtextper2darray = 3;
 
             // set up number of textmaps
             int textmaps = Math.Min(textures, maxtexturesbound);
@@ -116,72 +118,18 @@ namespace OFC.GL4
                                 Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,   // see GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix
                                 StringFormat fmt, float backscale, Vector3 textoffset)
         {
-            int pos = 0;
-
-            do
-            {
-                if (textmapinuse >= textures.Length)       // out of textures
-                    return pos;
-
-                // how many can we take..
-                int touse = Math.Min(array.Length - pos, textures[textmapinuse].DepthLeftIndex);
-
-                if ( pos == 0 )     // at pos 0, we can just directly fill
-                {
-                    if (!dataindirectbuffer.Fill(array, 0, objectvertexes, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
-                        return pos;
-                }
-                else
-                {                   // otherwise, horrible array copy because of lack of opentk interfaces
-                    Vector4[] subset = new Vector4[touse];
-                    Array.Copy(array, pos, subset,0,touse);
-                    if (!dataindirectbuffer.Fill(subset, 0, objectvertexes, 0, touse, -1))
-                        return pos;
-                }
-
-                dataindirectbuffer.Indirects[0].AddTag(tag);            // indirect draw buffer 0 holds the tags assigned by the user for identity purposes
-
-                Matrix4[] matrix = new Matrix4[touse];      // create the text bitmaps and the matrices
-                for (int i = 0; i < touse; i++)
-                {
-                    int imgpos = textures[textmapinuse].DepthIndex + textmapinuse * 65536;      // bits 16+ has textmap
-                    //System.Diagnostics.Debug.WriteLine($"Write Mat {pos} {pos + i}");
-                    textures[textmapinuse].DrawText(text[pos+i] + ":" + textmapinuse, fnt, fore,back, -1, fmt, backscale);
-
-                    Vector3 textpos = array[pos + i].Xyz + textoffset;
-                    var mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(textpos,
-                                    size,
-                                    rot,
-                                    rotatetoviewer, rotateelevation,
-                                    imagepos: imgpos);
-                    matrix[i] = mat;
-                }
-
-                dataindirectbuffer.Vertex.AlignMat4();          // instancing counts in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
-                if ( !dataindirectbuffer.Fill(matrix, 1, 4, 0, touse, -1) )     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
-                    return pos;
-
-                objectrenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
-                objectrenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
-
-                textrenderer.DrawCount = dataindirectbuffer.Indirects[1].Positions.Count;
-                textrenderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
-
-                if (textures[textmapinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
-                    textmapinuse++;
-
-                pos += touse;
-
-            } while (pos < array.Length);
-
-            return -1;
+            var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
+            var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, textoffset, size, rot, rotatetoviewer, rotateelevation,0,0,0,true);
+            int v = AddObjects(tag, array, mats, bmps);
+            BitMapHelpers.Dispose(bmps);
+            return v;
         }
 
+        // Add objects already drawn.  bitmaps are owned by caller, not by us
+        // pos = indicates one to start from
 
-        public int AddObjects(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        public int AddObjects(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0)
         {
-            int pos = 0;
-
             do
             {
                 if (textmapinuse >= textures.Length)       // out of textures
@@ -190,43 +138,27 @@ namespace OFC.GL4
                 // how many can we take..
                 int touse = Math.Min(array.Length - pos, textures[textmapinuse].DepthLeftIndex);
 
-                if (pos == 0)     // at pos 0, we can just directly fill
-                {
-                    if (!dataindirectbuffer.Fill(array, 0, objectvertexes, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
-                        return pos;
-                }
-                else
-                {                   // otherwise, horrible array copy because of lack of opentk interfaces
-                    Vector4[] subset = new Vector4[touse];
-                    Array.Copy(array, pos, subset, 0, touse);
-                    if (!dataindirectbuffer.Fill(subset, 0, objectvertexes, 0, touse, -1))
-                        return pos;
-                }
+                // fill in vertex array entries from pos .. pos+touse-1
+
+                if (!dataindirectbuffer.Fill(array, pos, touse, 0, objectvertexescount, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
+                    return pos;
 
                 dataindirectbuffer.Indirects[0].AddTag(tag);            // indirect draw buffer 0 holds the tags assigned by the user for identity purposes
 
+                // now fill in the texture by loading bitmaps into each slot, and update the matrix image position
                 for (int i = 0; i < touse; i++)
                 {
                     int imgpos = textures[textmapinuse].DepthIndex + textmapinuse * 65536;      // bits 16+ has textmap
-                    System.Diagnostics.Debug.WriteLine($"Obj2 Write Mat {pos} {pos + i} tx {textmapinuse} = {imgpos}");
+                   // System.Diagnostics.Debug.WriteLine($"Obj2 Write Mat {pos} {pos + i} tx {textmapinuse} = {imgpos}");
                     matrix[pos + i][0,3] = imgpos;
-                    textures[textmapinuse].LoadBitmap(bitmaps[pos + i], textures[textmapinuse].DepthIndex++, true, 1);
+                    textures[textmapinuse].LoadBitmap(bitmaps[pos + i], textures[textmapinuse].DepthIndex++, false, 1);
                 }
 
+                // now write in the matrices to the vertex buffers
                 dataindirectbuffer.Vertex.AlignMat4();          // instancing counts in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
 
-                if ( pos == 0 )     // at pos 0, we can just directly fill
-                {
-                    if (!dataindirectbuffer.Fill(matrix, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
-                        return pos;
-                }
-                else
-                {
-                    Matrix4[] subset = new Matrix4[touse];
-                    Array.Copy(matrix, pos, subset, 0, touse);
-                    if (!dataindirectbuffer.Fill(subset, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
-                        return pos;
-                }
+                if (!dataindirectbuffer.Fill(matrix, pos, touse, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
+                    return pos;
 
                 objectrenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
                 objectrenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
@@ -244,22 +176,28 @@ namespace OFC.GL4
             return -1;
         }
 
-
-        public void Remove(Object tag)
+        public bool Remove(Predicate<object> test)
         {
-            for( int i = 0; i < dataindirectbuffer.Indirects[0].Tags.Count; i++ )
+            bool removed = false;
+
+            for (int i = 0; i < dataindirectbuffer.Indirects[0].Tags.Count; i++)
             {
-                if (dataindirectbuffer.Indirects[0].Tags[i] == tag )
+                if (test(dataindirectbuffer.Indirects[0].Tags[i]))
                 {
                     System.Diagnostics.Debug.WriteLine($"Found tag at {i}");
                     dataindirectbuffer.Remove(i, 0);
                     dataindirectbuffer.Remove(i, 1);
+                    Removed++;
+                    removed = true;
                 }
             }
+
+            return removed;
         }
 
         public void Dispose()
         {
+            System.Diagnostics.Debug.WriteLine($"Remove renderes ");
             robjects.Remove(objectrenderer);
             robjects.Remove(textrenderer);
             items.Dispose();
