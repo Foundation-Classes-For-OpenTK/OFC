@@ -15,6 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
+using System.Drawing;
 
 namespace OFC.GL4
 {
@@ -152,6 +153,20 @@ namespace OFC.GL4
             mat[2, 3] = alphafadescalar;
             mat[3, 3] = alphafadeend;
             return mat;
+        }
+
+        static public Matrix4[] CreateMatrices(Vector4[] worldpos, Vector3 offset,
+                                            Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,
+                                            float alphafadescalar = 0,
+                                            float alphafadeend = 0,
+                                            int imagepos = 0,
+                                            bool visible = true
+                                            )
+        {
+            Matrix4[] mats = new Matrix4[worldpos.Length];
+            for (int i = 0; i < worldpos.Length; i++)
+                mats[i] = CreateMatrix(worldpos[i].Xyz + offset, size, rot, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, imagepos, visible);
+            return mats;
         }
     }
 

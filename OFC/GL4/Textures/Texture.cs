@@ -31,6 +31,7 @@ namespace OFC.GL4
 
         public int Width { get; protected set; } = 0;           // W/H is always the width/height of the first bitmap in z=0.
         public int Height { get; protected set; } = 1;
+        public Size Size { get { return new Size(Width, Height); } }
         public int Depth { get; protected set; } = 1;           // Depth is no of bitmaps down for 2darray/3d
         public int MipMapLevels { get; protected set; } = 1;    // Mip maps levels of texture
         public bool MipMapAutoGenNeeded { get; set; } = false;  // set if you load a bitmap with mipmaps < MipMapLevels, you manually clear

@@ -107,7 +107,7 @@ namespace TestOpenTk
             #endregion
 
             #region Coloured triangles
-            if (true)
+            if (false)
             {
                 GLRenderControl rc = GLRenderControl.Tri();
                 rc.CullFace = false;
@@ -263,7 +263,11 @@ namespace TestOpenTk
                         text[i] = "A.r" + i;
                     }
 
-                    sl.AddObjects("GA", array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0,0.6f,0));
+                    var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(sl.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    sl.AddObjects("GA", array, mats, bmps);
+                    BitMapHelpers.Dispose(bmps);
                 }
                 {
                     Vector3 pos = new Vector3(20, 0, 0);

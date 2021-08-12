@@ -219,7 +219,6 @@
     <Compile Include="Uniformblocks\ShaderTestUniforms.Designer.cs">
       <DependentUpon>ShaderTestUniforms.cs</DependentUpon>
     </Compile>
-    <Compile Include="VertexBufferIndirect\ObjectsWithLabels.cs" />
     <Compile Include="VertexBufferIndirect\TestVertexBufferIndirect.cs">
       <SubType>Form</SubType>
     </Compile>

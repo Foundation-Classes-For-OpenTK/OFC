@@ -41,5 +41,6 @@ namespace OFC
                                         mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W };       // Matrix4 holds it in row order
             return r;
         }
+
     }
 }

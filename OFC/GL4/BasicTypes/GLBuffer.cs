@@ -125,6 +125,29 @@ namespace OFC.GL4
             }
         }
 
+        public void Fill(Vector4[] vertices, int sourceoffset, int sourcelength = 0)
+        {
+            if (sourcelength == 0)
+                sourcelength = vertices.Length - sourceoffset;
+
+            if (sourcelength > 0)
+            {
+                int datasize = sourceoffset * Vec4size;
+                int posv = AlignArray(Vec4size, datasize);
+
+                if (sourcelength == vertices.Length)        // if everything.. just a named buffer subdata
+                {
+                    GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, vertices);
+                }
+                else
+                {
+                    Vector4[] subset = new Vector4[sourcelength];
+                    Array.Copy(vertices, sourceoffset, subset, 0, sourcelength);
+                    GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
+                }
+            }
+        }
+
         public void AllocateFill(Vector4[] vertices)
         {
             AllocateBytes(Vec4size * vertices.Length);
@@ -146,6 +169,30 @@ namespace OFC.GL4
             if (mats.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, mats);
+                OFC.GLStatics.Check();
+            }
+        }
+
+        public void Fill(Matrix4[] mats, int sourceoffset, int sourcelength = 0)
+        {
+            if (sourcelength == 0)
+                sourcelength = mats.Length - sourceoffset;
+
+            if (sourcelength > 0)
+            {
+                int datasize = sourcelength * Mat4size;
+                int posv = AlignArray(Vec4size, datasize);
+
+                if (sourcelength == mats.Length)        // if everything.. just a named buffer subdata
+                {
+                    GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, mats);
+                }
+                else
+                {
+                    Matrix4[] subset = new Matrix4[sourcelength];
+                    Array.Copy(mats, sourceoffset, subset, 0, sourcelength);
+                    GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
+                }
                 OFC.GLStatics.Check();
             }
         }

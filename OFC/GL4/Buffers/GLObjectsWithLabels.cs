@@ -28,6 +28,8 @@ namespace OFC.GL4
 
     public class GLObjectsWithLabels : IDisposable
     {
+        public Size LabelSize { get { return textures[0].Size; } }
+
         private GLVertexBufferIndirect dataindirectbuffer;
         private GLTexture2DArray[] textures;
         private int objectvertexes;
@@ -51,7 +53,7 @@ namespace OFC.GL4
             // find gl parameters
             int maxtexturesbound = GL4Statics.GetMaxFragmentTextures();
             int maxtextper2darray = GL4Statics.GetMaxTextureDepth();
-            maxtextper2darray = 4;
+            maxtextper2darray = 5;
 
             // set up number of textmaps
             int textmaps = Math.Min(textures, maxtexturesbound);
@@ -174,6 +176,74 @@ namespace OFC.GL4
 
             return -1;
         }
+
+
+        public int AddObjects(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        {
+            int pos = 0;
+
+            do
+            {
+                if (textmapinuse >= textures.Length)       // out of textures
+                    return pos;
+
+                // how many can we take..
+                int touse = Math.Min(array.Length - pos, textures[textmapinuse].DepthLeftIndex);
+
+                if (pos == 0)     // at pos 0, we can just directly fill
+                {
+                    if (!dataindirectbuffer.Fill(array, 0, objectvertexes, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
+                        return pos;
+                }
+                else
+                {                   // otherwise, horrible array copy because of lack of opentk interfaces
+                    Vector4[] subset = new Vector4[touse];
+                    Array.Copy(array, pos, subset, 0, touse);
+                    if (!dataindirectbuffer.Fill(subset, 0, objectvertexes, 0, touse, -1))
+                        return pos;
+                }
+
+                dataindirectbuffer.Indirects[0].AddTag(tag);            // indirect draw buffer 0 holds the tags assigned by the user for identity purposes
+
+                for (int i = 0; i < touse; i++)
+                {
+                    int imgpos = textures[textmapinuse].DepthIndex + textmapinuse * 65536;      // bits 16+ has textmap
+                    System.Diagnostics.Debug.WriteLine($"Obj2 Write Mat {pos} {pos + i} tx {textmapinuse} = {imgpos}");
+                    matrix[pos + i][0,3] = imgpos;
+                    textures[textmapinuse].LoadBitmap(bitmaps[pos + i], textures[textmapinuse].DepthIndex++, true, 1);
+                }
+
+                dataindirectbuffer.Vertex.AlignMat4();          // instancing counts in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
+
+                if ( pos == 0 )     // at pos 0, we can just directly fill
+                {
+                    if (!dataindirectbuffer.Fill(matrix, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
+                        return pos;
+                }
+                else
+                {
+                    Matrix4[] subset = new Matrix4[touse];
+                    Array.Copy(matrix, pos, subset, 0, touse);
+                    if (!dataindirectbuffer.Fill(subset, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
+                        return pos;
+                }
+
+                objectrenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
+                objectrenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
+
+                textrenderer.DrawCount = dataindirectbuffer.Indirects[1].Positions.Count;
+                textrenderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
+
+                if (textures[textmapinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
+                    textmapinuse++;
+
+                pos += touse;
+
+            } while (pos < array.Length);
+
+            return -1;
+        }
+
 
         public void Remove(Object tag)
         {

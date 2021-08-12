@@ -101,7 +101,7 @@ namespace OFC
         }
 
         public static Bitmap DrawTextIntoFixedSizeBitmap(ref Bitmap img, string text,Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
-                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90 , bool antialias = true)
+                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90 )
         { 
             using (Graphics dgr = Graphics.FromImage(img))
             {
@@ -141,6 +141,25 @@ namespace OFC
 
                 return img;
             }
+        }
+
+        public static Bitmap[] DrawTextIntoFixedSizeBitmaps(Size size, string[] text,
+                                                            Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
+                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90)
+        {
+            Bitmap[] bmp = new Bitmap[text.Length];
+            for( int i = 0; i < text.Length; i++)
+            {
+                bmp[i] = new Bitmap(size.Width,size.Height);
+                DrawTextIntoFixedSizeBitmap(ref bmp[i], text[i], dp, hint, c, b, backscale, centertext, frmt, angleback);
+            }
+            return bmp;
+        }
+
+        public static void Dispose(Bitmap[] array)
+        {
+            foreach (var x in array)
+                x.Dispose();
         }
 
         public static void FillBitmap(Bitmap img, Color c, float backscale = 1.0F)
