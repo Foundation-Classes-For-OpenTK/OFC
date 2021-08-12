@@ -53,6 +53,14 @@ namespace TestOpenTk
             systemtimer.Start();
         }
 
+        class TextShader : GLShaderPipeline
+        {
+            public TextShader(int texunitspergroup)
+            {
+                AddVertexFragment(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0, 0, true, texunitspergroup));
+            }
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -137,11 +145,13 @@ namespace TestOpenTk
 
             int texunitspergroup = 16;      // opengl minimum texture units per frag shader
 
-            var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
+            //var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
+            var textshader = new TextShader(texunitspergroup);
             items.Add(textshader);
             Font fnt = new Font("MS sans serif", 16f);
 
 
+            if ( false )
             {
                 dataindirectbuffer = new GLVertexBufferIndirect(items,maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
                 var textarray = new GLTexture2DArray(128, 32, maxstars);
@@ -227,7 +237,7 @@ namespace TestOpenTk
                     renderer.DrawCount = 3;
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
-                    rObjects.Add(sunshader, "Sector1", renderer);
+                    rObjects.Add(sunshader, "sunshader", renderer);
                 }
 
                 if (true)
@@ -308,7 +318,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 3 : texunitspergroup, 50, sunshader, shapebuf, shape.Length, textshader, new Size(128, 32));
+                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 2 : texunitspergroup, 50, sunshader, shapebuf, shape.Length, textshader, new Size(128, 32),3);
                 items.Add(slset);
 
                 int SectorSize = 10;
@@ -453,6 +463,11 @@ namespace TestOpenTk
             }
 
 
+            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                slset.Remove((t) => t.Equals("GD"));
+                gl3dcontroller.Redraw();
+            }
             if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 sl.Remove((t) => t.Equals("GA"));

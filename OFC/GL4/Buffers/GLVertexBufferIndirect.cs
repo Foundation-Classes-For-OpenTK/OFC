@@ -21,12 +21,13 @@ using System.Linq;
 namespace OFC.GL4
 {
     // Class holds a buffer for a vertex, and an set of indirect buffers, both have a defined size
-    // you can add updates to it and mark sections as not drawable
+    // you can add updates to it and mark sections by tag as not to be drawn
 
     public class GLVertexBufferIndirect
     {
         public GLBuffer Vertex { get; private set; }
         public List<GLBuffer> Indirects { get; private set; } = new List<GLBuffer>();
+
         private int indirectsize;
         private BufferUsageHint bufferusage;
         private GLItemsList items;
@@ -115,7 +116,7 @@ namespace OFC.GL4
                 var ib = Indirects[indirectbuffer];
                 if (indirectnumber < ib.Positions.Count)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Remove indirect {indirectbuffer} at {indirectnumber} pos {Indirects[indirectbuffer].Positions[indirectnumber]}");
+                    //System.Diagnostics.Debug.WriteLine($"Remove indirect {indirectbuffer} at {indirectnumber} pos {Indirects[indirectbuffer].Positions[indirectnumber]}");
                     Indirects[indirectbuffer].StartWrite(Indirects[indirectbuffer].Positions[indirectnumber], sizeof(int));
                     Indirects[indirectbuffer].Write((int)0);        // zero the vertex count
                     Indirects[indirectbuffer].StopReadWrite();

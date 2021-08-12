@@ -41,7 +41,9 @@ namespace OFC.GL4
         private int objectvertexescount;
         private IGLProgramShader textshader;
         private Size texturesize;
-        private int setnumber = 0;      // for debug naming
+        private int limittexturedepth;
+
+        private int setnumber = 0;      // for naming
 
         private List<GLObjectsWithLabels> set = new List<GLObjectsWithLabels>();
 
@@ -50,7 +52,7 @@ namespace OFC.GL4
         public GLSetOfObjectsWithLabels(string name, GLRenderProgramSortedList robjects,
                                         int textures, int maxgroups,
                                         IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes,
-                                        IGLProgramShader textshader, Size texturesize)
+                                        IGLProgramShader textshader, Size texturesize , int debuglimittexturedepth = 0)
         {
             this.name = name;
             this.robjects = robjects;
@@ -61,6 +63,7 @@ namespace OFC.GL4
             this.objectvertexescount = objectvertexes;
             this.textshader = textshader;
             this.texturesize = texturesize;
+            this.limittexturedepth = debuglimittexturedepth;
         }
 
 
@@ -69,7 +72,7 @@ namespace OFC.GL4
             if (set.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
-                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize));
+                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize, limittexturedepth));
             }
 
             int v = set.Last().AddObjects(tag, array, matrix, bitmaps);
@@ -77,7 +80,7 @@ namespace OFC.GL4
             if ( v >= 0)    // if can't addc
             {
                 System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
-                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize));
+                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize, limittexturedepth));
                 v = set.Last().AddObjects(tag, array, matrix, bitmaps, v);      // add the rest from v
             }
 
@@ -104,7 +107,7 @@ namespace OFC.GL4
                 s.Dispose();
                 set.Remove(s);
             }
-            System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
+           // System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
         }
 
         public void Dispose()

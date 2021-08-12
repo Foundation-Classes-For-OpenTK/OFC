@@ -33,6 +33,9 @@ namespace OFC.GL4
         public int Id { get { return pipelineid + 100000; } }            // to avoid clash with standard ProgramIDs, use an offset for pipeline IDs
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
 
+        // standard name is type name and pipeline shaders, override to give a better name if required
+        public virtual string Name { get { string s = ""; foreach (var sh in shaders) s = s.AppendPrePad(sh.Value.GetType().Name,",") ; return this.GetType().Name + ":"+ s; } } 
+
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
 

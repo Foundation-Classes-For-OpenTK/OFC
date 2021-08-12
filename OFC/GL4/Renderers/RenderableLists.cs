@@ -43,6 +43,7 @@ namespace OFC.GL4
         public void Add(IGLProgramShader prog, string name, IGLRenderableItem r)        // name is the id given to this renderable
         {
             name = EnsureName(name, prog, r);
+            //System.Diagnostics.Debug.WriteLine($"Add render {prog.Name} {name}");
             AddItem(prog, name, r);
             byname.Add(name, r);
         }
@@ -80,9 +81,14 @@ namespace OFC.GL4
                 var i = renderables[prog].FindIndex(x => Object.ReferenceEquals(x.Item2, r));
                 if ( i >= 0)
                 {
+                    byname.Remove(renderables[prog][i].Item1);
                     renderables[prog].RemoveAt(i);          // remove renderer
+
+                    //foreach (var s in renderables[prog]) System.Diagnostics.Debug.WriteLine($"left .. {prog.Name} {s.Item1}");
+
                     if ( renderables[prog].Count == 0 )     // if nothing more in shader
                     {
+                        //System.Diagnostics.Debug.WriteLine($"remove shader {prog.Name}");
                         renderables.Remove(prog);           // remove shader
                     }
                     return true;
@@ -99,7 +105,7 @@ namespace OFC.GL4
         {
             GLRenderControl lastapplied = null;
 
-            if (verbose ) System.Diagnostics.Debug.WriteLine("***Begin RList");
+            if (verbose) System.Diagnostics.Debug.WriteLine("***Begin RList");
 
             foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
@@ -113,7 +119,7 @@ namespace OFC.GL4
                     {
                         if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
                         {
-                            if ( verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
+                            if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
 
                             if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                             {

@@ -47,7 +47,8 @@ namespace OFC.GL4
         public GLObjectsWithLabels(string name, GLRenderProgramSortedList robjects,
                                 int textures, int maxgroups,
                                 IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes ,
-                                IGLProgramShader textshader, Size texturesize )
+                                IGLProgramShader textshader, Size texturesize,
+                                int debuglimittexture = 0)
         {
             this.objectvertexescount = objectvertexes;
             this.robjects = robjects;
@@ -55,7 +56,8 @@ namespace OFC.GL4
             // find gl parameters
             int maxtexturesbound = GL4Statics.GetMaxFragmentTextures();
             int maxtextper2darray = GL4Statics.GetMaxTextureDepth();
-            maxtextper2darray = 3;
+            if ( debuglimittexture > 0)
+                maxtextper2darray = debuglimittexture;
 
             // set up number of textmaps
             int textmaps = Math.Min(textures, maxtexturesbound);
@@ -81,7 +83,7 @@ namespace OFC.GL4
             objectrenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
             objectrenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
-            robjects.Add(objectshader, name + "Stars", objectrenderer);
+            robjects.Add(objectshader, name + ":objects", objectrenderer);
 
             // text
 
@@ -106,7 +108,7 @@ namespace OFC.GL4
             textrenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
             textrenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
-            robjects.Add(textshader, name + "text", textrenderer);
+            robjects.Add(textshader, name + ":text", textrenderer);
         }
 
         // array/text holds worldpositions and text of each object
@@ -184,7 +186,7 @@ namespace OFC.GL4
             {
                 if (test(dataindirectbuffer.Indirects[0].Tags[i]))
                 {
-                    System.Diagnostics.Debug.WriteLine($"Found tag at {i}");
+                   // System.Diagnostics.Debug.WriteLine($"Found tag at {i}");
                     dataindirectbuffer.Remove(i, 0);
                     dataindirectbuffer.Remove(i, 1);
                     Removed++;
@@ -197,7 +199,7 @@ namespace OFC.GL4
 
         public void Dispose()
         {
-            System.Diagnostics.Debug.WriteLine($"Remove renderes ");
+            //System.Diagnostics.Debug.WriteLine($"Remove renderes ");
             robjects.Remove(objectrenderer);
             robjects.Remove(textrenderer);
             items.Dispose();

@@ -27,6 +27,7 @@ namespace OFC.GL4
     {
         public int Id { get { return 0; } }
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
+        public string Name { get { return "NullShader"; } }
 
         public IGLShader Get(ShaderType t) { return this; }
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
