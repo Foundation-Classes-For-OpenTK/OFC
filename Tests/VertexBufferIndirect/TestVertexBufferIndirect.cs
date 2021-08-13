@@ -78,21 +78,8 @@ namespace TestOpenTk
                 return (float)ms / 40.0f;
             };
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
-
-            items.Add( new GLTexture2D(Properties.Resources.dotted)  ,           "dotted"    );
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
-            items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wooden");
-            items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
-            items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
-            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");    
 
             #region coloured lines
 
@@ -116,7 +103,7 @@ namespace TestOpenTk
             #endregion
 
             #region Coloured triangles
-            if (false)
+            if (true)
             {
                 GLRenderControl rc = GLRenderControl.Tri();
                 rc.CullFace = false;
@@ -131,8 +118,6 @@ namespace TestOpenTk
             }
 
             #endregion
-
-            int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
             var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
             items.Add(sunvertex);
@@ -150,9 +135,10 @@ namespace TestOpenTk
             items.Add(textshader);
             Font fnt = new Font("MS sans serif", 16f);
 
-
-            if ( false )
+            if ( true )
             {
+                int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
+
                 dataindirectbuffer = new GLVertexBufferIndirect(items,maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
                 var textarray = new GLTexture2DArray(128, 32, maxstars);
 
@@ -261,7 +247,7 @@ namespace TestOpenTk
                 }
             }
 
-            if (false)
+            if (true)
             {
                 sl = new GLObjectsWithLabels("SL", rObjects, texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
                 items.Add(sl);
