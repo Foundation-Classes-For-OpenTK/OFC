@@ -39,6 +39,8 @@ namespace OFC.GL4
         public List<int> Positions { get; set; } = new List<int>();           // at each alignment using AlignArray, a position is stored (GLBuffer Fills).  Not for ptr map alignments.
         public void AddPosition(int pos) { Positions.Add(pos);  }   // special to add positions in outside of normal Align
 
+        public void ResetPositions()   {  CurrentPos = 0; Positions.Clear(); }
+
         public List<object> Tags { get; set; }                  // user optional, you can assign tags to positions if required
         public void AddTag(object tag) { if (Tags == null) Tags = new List<object>(); Tags.Add(tag); }
 

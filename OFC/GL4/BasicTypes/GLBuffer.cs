@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -38,7 +38,7 @@ namespace OFC.GL4
             AllocateBytes(allocatesize, bh);
         }
 
-        #region Allocate first
+        #region Allocate/Resize/Copy
 
         public void AllocateBytes(int bytessize, BufferUsageHint uh = BufferUsageHint.StaticDraw)  // call first to set buffer size.. allow for alignment in your size
         {
@@ -46,25 +46,29 @@ namespace OFC.GL4
             {
                 Length = bytessize;
                 GL.NamedBufferData(Id, Length, (IntPtr)0, uh);               // set buffer size
-                CurrentPos = 0;                                                  // reset back to zero as this clears the buffer
-                Positions.Clear();
+                ResetPositions();
                 OFC.GLStatics.Check();
             }
         }
 
         // note this results in a new GL Buffer, so any VertexArrays will need remaking
+        // also note the Positions are maintained, you may want to delete those manually.
         public void Resize(int newlength, BufferUsageHint uh = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
         {
             if (Length != newlength)
             {
                 GL.CreateBuffers(1, out int newid);
                 if (newlength > 0)
+                {
                     GL.NamedBufferData(newid, newlength, (IntPtr)0, uh);               // set buffer size
-                if (newlength > 0 && Length > 0)
-                    GL.CopyNamedBufferSubData(Id, newid, (IntPtr)0, (IntPtr)0, Math.Min(Length, newlength));
-                Id = newid;
+                    if (Length > 0)                                                    // if previous buffer had data
+                        GL.CopyNamedBufferSubData(Id, newid, (IntPtr)0, (IntPtr)0, Math.Min(Length, newlength));
+                }
+
+                GL.DeleteBuffer(Id);        // delete old buffer
+
+                Id = newid;                 // swap to new
                 Length = newlength;
-                Positions.Clear();
                 OFC.GLStatics.Check();
             }
         }
@@ -77,6 +81,23 @@ namespace OFC.GL4
             System.Diagnostics.Debug.Assert(Length >= ourend && other.Length >= otherend);
             GL.CopyNamedBufferSubData(Id, other.Id, (IntPtr)pos, (IntPtr)otherpos, length);
         }
+
+        public void Zero(int pos, int length)
+        {
+            System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos + length <= Length);
+            GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
+            OFC.GLStatics.Check();
+        }
+
+        public void ZeroBuffer()    // zero whole of buffer, clear positions
+        {
+            Zero(0, Length);
+            ResetPositions();
+        }
+
+        #endregion
+
+        #region Fill - all perform alignment
 
         public void Fill(float[] floats)
         {
@@ -125,6 +146,7 @@ namespace OFC.GL4
             }
         }
 
+        // allowing a subset of the vertices to be filled
         public void Fill(Vector4[] vertices, int sourceoffset, int sourcelength)
         {
             if (sourcelength > 0)
@@ -158,7 +180,6 @@ namespace OFC.GL4
             Fill(tex);
         }
 
-        // this will align
         public void Fill(Matrix4[] mats)
         {
             int datasize = mats.Length * Mat4size;
@@ -170,7 +191,7 @@ namespace OFC.GL4
             }
         }
 
-        // more fancy version
+        // allowing a subset of the matrices to be filled
         public void Fill(Matrix4[] mats, int sourceoffset, int sourcelength)        
         {
             if (sourcelength > 0)
@@ -284,20 +305,7 @@ namespace OFC.GL4
             Fill(packeddata);
         }
 
-        public void ZeroArea(int pos, int length)
-        {
-            System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos+length <= Length);
-            GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
-            OFC.GLStatics.Check();
-        }
-
-        public void ZeroBuffer()    // zero whole of buffer, clear positions
-        {
-            ZeroArea(0, Length);
-            Positions.Clear();
-        }
-
-        public void FillRectangularIndicesBytes(int reccount, uint restartindex = 0xff)        // rectangular indicies with restart of 0xff
+        public void FillRectangularIndicesBytes(int reccount, uint restartindex = 0xff)        // rectangular indicies with restart
         {
             AllocateBytes(reccount * 5);
             StartWrite(0, Length);
@@ -310,7 +318,7 @@ namespace OFC.GL4
             StopReadWrite();
         }
 
-        public void FillRectangularIndicesShort(int reccount, uint restartindex = 0xffff)        // rectangular indicies with restart of 0xff
+        public void FillRectangularIndicesShort(int reccount, uint restartindex = 0xffff)        // rectangular indicies with restart
         {
             AllocateBytes(reccount * 5 * sizeof(short));     // lets use short because we don't have a marshall copy ushort.. ignore the overflow
             StartWrite(0, Length);
@@ -327,8 +335,8 @@ namespace OFC.GL4
 
         #region Map Read/Write Common
 
-        enum MapMode { None, Write, Read};
-        MapMode mapmode = MapMode.None;
+        private enum MapMode { None, Write, Read};
+        private MapMode mapmode = MapMode.None;
         
         // allocate and start write on buffer
         public void AllocateStartWrite(int datasize)        
@@ -774,7 +782,7 @@ namespace OFC.GL4
 
         #endregion
 
-        #region Fast Read functions
+        #region Fast Map and Read functions
 
         public byte[] ReadBuffer(int offset, int len)
         {
