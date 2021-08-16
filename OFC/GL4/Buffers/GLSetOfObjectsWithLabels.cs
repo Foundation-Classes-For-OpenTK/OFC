@@ -33,14 +33,21 @@ namespace OFC.GL4
         public Size LabelSize { get { return texturesize; } }
 
         private string name;
+
         private GLRenderProgramSortedList robjects;
+
         private int textures;
         private int maxgroups;
+
         private IGLProgramShader objectshader;
         private GLBuffer objectbuffer;
         private int objectvertexescount;
+        private GLRenderControl objrc;
+
         private IGLProgramShader textshader;
         private Size texturesize;
+        private GLRenderControl textrc;
+
         private int limittexturedepth;
 
         private int setnumber = 0;      // for naming
@@ -51,8 +58,9 @@ namespace OFC.GL4
 
         public GLSetOfObjectsWithLabels(string name, GLRenderProgramSortedList robjects,
                                         int textures, int maxgroups,
-                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes,
-                                        IGLProgramShader textshader, Size texturesize , int debuglimittexturedepth = 0)
+                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderControl objrc,
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderControl textrc,
+                                        int debuglimittexturedepth = 0)
         {
             this.name = name;
             this.robjects = robjects;
@@ -61,8 +69,10 @@ namespace OFC.GL4
             this.objectshader = objectshader;
             this.objectbuffer = objectbuffer;
             this.objectvertexescount = objectvertexes;
+            this.objrc = objrc;
             this.textshader = textshader;
             this.texturesize = texturesize;
+            this.textrc = textrc;
             this.limittexturedepth = debuglimittexturedepth;
         }
 
@@ -72,7 +82,7 @@ namespace OFC.GL4
             if (set.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
-                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize, limittexturedepth));
+                AddRIs();
             }
 
             int v = set.Last().AddObjects(tag, array, matrix, bitmaps);
@@ -80,11 +90,20 @@ namespace OFC.GL4
             if ( v >= 0)    // if can't addc
             {
                 System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
-                set.Add(new GLObjectsWithLabels(name + (setnumber++).ToString(), robjects, textures, maxgroups, objectshader, objectbuffer, objectvertexescount, textshader, texturesize, limittexturedepth));
+                AddRIs();
                 v = set.Last().AddObjects(tag, array, matrix, bitmaps, v);      // add the rest from v
             }
 
             return v;
+        }
+
+        private void AddRIs()
+        {
+            var owl = new GLObjectsWithLabels();
+            var ris = owl.Create(textures, maxgroups, objectbuffer, objectvertexescount, objrc, texturesize, textrc, limittexturedepth);
+            robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
+            robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
+            set.Add(owl);
         }
 
         public void Remove(Predicate<object> test)
@@ -104,6 +123,8 @@ namespace OFC.GL4
             foreach (var s in tobedisposed)
             {
                 System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(s)} with {s.Number}");
+                robjects.Remove(s.ObjectRenderer);
+                robjects.Remove(s.TextRenderer);
                 s.Dispose();
                 set.Remove(s);
             }
@@ -113,7 +134,12 @@ namespace OFC.GL4
         public void Dispose()
         {
             foreach (var s in set)
+            {
+                robjects.Remove(s.ObjectRenderer);
+                robjects.Remove(s.TextRenderer);
                 s.Dispose();
+            }
+            set.Clear();
         }
 
     }

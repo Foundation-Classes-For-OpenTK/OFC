@@ -249,7 +249,18 @@ namespace TestOpenTk
 
             if (true)
             {
-                sl = new GLObjectsWithLabels("SL", rObjects, texunitspergroup, 50, sunshader, shapebuf, shape.Length , textshader, new Size(128,32) );
+                GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                starrc.DepthTest = true;
+                starrc.DepthClamp = true;
+
+                var textrc = GLRenderControl.Quads();
+                textrc.DepthTest = true;
+                textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+
+                sl = new GLObjectsWithLabels();
+                var ris = sl.Create(texunitspergroup, 50, shapebuf, shape.Length , starrc, new Size(128,32), textrc );
+                rObjects.Add(sunshader, "SLsunshade", ris.Item1);
+                rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
 
                 int SectorSize = 10;
@@ -304,7 +315,18 @@ namespace TestOpenTk
 
             if (true)
             {
-                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 2 : texunitspergroup, 50, sunshader, shapebuf, shape.Length, textshader, new Size(128, 32),3);
+                GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                starrc.DepthTest = true;
+                starrc.DepthClamp = true;
+
+                var textrc = GLRenderControl.Quads();
+                textrc.DepthTest = true;
+                textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+
+                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 2 : texunitspergroup, 50, 
+                                                            sunshader, shapebuf, shape.Length, starrc,
+                                                            textshader, new Size(128, 32), textrc,
+                                                            3);
                 items.Add(slset);
 
                 int SectorSize = 10;
@@ -365,7 +387,7 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(),"MCUB");     // def binding of 0
 
-            #endregion
+#endregion
 
         }
 
@@ -454,6 +476,8 @@ namespace TestOpenTk
                 slset.Remove((t) => t.Equals("GD"));
                 gl3dcontroller.Redraw();
             }
+
+
             if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 sl.Remove((t) => t.Equals("GA"));

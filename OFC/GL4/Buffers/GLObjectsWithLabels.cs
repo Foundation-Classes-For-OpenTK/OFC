@@ -31,27 +31,24 @@ namespace OFC.GL4
         public Size LabelSize { get { return textures[0].Size; } }
         public int Number { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }
         public int Removed { get; private set; } = 0;
+        public GLRenderableItem ObjectRenderer { get; private set; }
+        public GLRenderableItem TextRenderer { get; private set; }
 
         private GLVertexBufferIndirect dataindirectbuffer;
         private GLTexture2DArray[] textures;
         private int objectvertexescount;
-        private GLRenderableItem objectrenderer;
-        private GLRenderableItem textrenderer;
-        private GLRenderProgramSortedList robjects;
         private int textmapinuse = 0;
 
         GLItemsList items = new GLItemsList();      // our own item list to hold disposes
 
-        // starsortextures, >0 stars, else -N = textures to use (therefore stars set by max texture depth)
-
-        public GLObjectsWithLabels(string name, GLRenderProgramSortedList robjects,
-                                int textures, int maxgroups,
-                                IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes ,
-                                IGLProgramShader textshader, Size texturesize,
+        public Tuple<GLRenderableItem,GLRenderableItem> Create(
+                                int textures,       // number of textures to allow
+                                int maxgroups,      // maximum number of groups of commands
+                                GLBuffer objectbuffer, int objectvertexes , GLRenderControl objrc,
+                                Size texturesize, GLRenderControl textrc,
                                 int debuglimittexture = 0)
         {
             this.objectvertexescount = objectvertexes;
-            this.robjects = robjects;
 
             // find gl parameters
             int maxtexturesbound = GL4Statics.GetMaxFragmentTextures();
@@ -63,27 +60,21 @@ namespace OFC.GL4
             int textmaps = Math.Min(textures, maxtexturesbound);
 
             // which then give us the number of stars we can do
-            int stars = textmaps * maxtextper2darray;
+            int objectcount = textmaps * maxtextper2darray;
 
             // estimate maximum vert buffer needed, allowing for extra due to the need to align the mat4
-            int vertbufsize = stars * (GLBuffer.Vec4size + GLBuffer.Mat4size) + maxgroups * GLBuffer.Mat4size;      
+            int vertbufsize = objectcount * (GLBuffer.Vec4size + GLBuffer.Mat4size) + maxgroups * GLBuffer.Mat4size;      
 
             // create the vertex indirect buffer
             dataindirectbuffer = new GLVertexBufferIndirect(items,vertbufsize, GLBuffer.WriteIndirectArrayStride * maxgroups, true);
 
-            // stars
-            GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-            starrc.DepthTest = true;
-            starrc.DepthClamp = true;
-
-            objectrenderer = GLRenderableItem.CreateVector4Vector4(items, starrc,
+            // objects
+            ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, objrc,
                                                                         objectbuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
                                                                         dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
                                                                         null, 0, 1);        // no ic, second divisor 1
-            objectrenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-            objectrenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
-
-            robjects.Add(objectshader, name + ":objects", objectrenderer);
+            ObjectRenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
+            ObjectRenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
             // text
 
@@ -91,24 +82,20 @@ namespace OFC.GL4
 
             for (int i = 0; i < this.textures.Length; i++)
             {
-                int n = Math.Min(stars, maxtextper2darray);
+                int n = Math.Min(objectcount, maxtextper2darray);
                 this.textures[i] = new GLTexture2DArray(texturesize.Width, texturesize.Height, n);
                 items.Add(this.textures[i]);
-                stars -= maxtextper2darray;
+                objectcount -= maxtextper2darray;
             }
 
-            var textrc = GLRenderControl.Quads();
-            textrc.DepthTest = true;
-            textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
-
-            textrenderer = GLRenderableItem.CreateMatrix4(items, textrc,
+            TextRenderer = GLRenderableItem.CreateMatrix4(items, textrc,
                                                                 dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
                                                                 new GLRenderDataTexture(this.textures,0),        // binding 0..N for textures
                                                                 0, 1);     //no ic, and matrix divide so 1 matrix per vertex set
-            textrenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-            textrenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
+            TextRenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
+            TextRenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
-            robjects.Add(textshader, name + ":text", textrenderer);
+            return new Tuple<GLRenderableItem, GLRenderableItem>(ObjectRenderer, TextRenderer);
         }
 
         // array/text holds worldpositions and text of each object
@@ -162,11 +149,11 @@ namespace OFC.GL4
                 if (!dataindirectbuffer.Fill(matrix, pos, touse, 1, 4, 0, touse, -1))     // indirect 1 holds text draws, 4 vertices per draw, touse objects, estimate base instance on position
                     return pos;
 
-                objectrenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
-                objectrenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
+                ObjectRenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
+                ObjectRenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
 
-                textrenderer.DrawCount = dataindirectbuffer.Indirects[1].Positions.Count;
-                textrenderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
+                TextRenderer.DrawCount = dataindirectbuffer.Indirects[1].Positions.Count;
+                TextRenderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
 
                 if (textures[textmapinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
                     textmapinuse++;
@@ -199,9 +186,6 @@ namespace OFC.GL4
 
         public void Dispose()
         {
-            //System.Diagnostics.Debug.WriteLine($"Remove renderes ");
-            robjects.Remove(objectrenderer);
-            robjects.Remove(textrenderer);
             items.Dispose();
         }
 
