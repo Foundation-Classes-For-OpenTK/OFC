@@ -62,12 +62,12 @@ namespace OFC.GL4
         {
             CreateIndirect(indirectbuffer);
 
-            if (EnoughSpaceVertex(vertices.Length, indirectbuffer))
+            if (EnoughSpaceVertex(sourcelength, indirectbuffer))
             {
                 Vertex.Fill(vertices, sourceoffset, sourcelength);          // creates a position
                 //Vertex.Fill(vertices);          // creates a position
                 //    System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
-                vertexcount = vertexcount >= 0 ? vertexcount : vertices.Length;
+                vertexcount = vertexcount >= 0 ? vertexcount : sourcelength;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);
 
                 int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;
@@ -89,11 +89,11 @@ namespace OFC.GL4
         {
             CreateIndirect(indirectbuffer);
 
-            if (EnoughSpaceMatrix(mats.Length, indirectbuffer))
+            if (EnoughSpaceMatrix(sourcelength, indirectbuffer))
             {
                 Vertex.Fill(mats, sourceoffset, sourcelength);          // creates a position
                 // System.Diagnostics.Debug.WriteLine($"Matrix buf {Vertex.Positions.Last()} size {mats.Length * GLBuffer.Mat4size}");
-                vertexcount = vertexcount >= 0 ? vertexcount : mats.Length;
+                vertexcount = vertexcount >= 0 ? vertexcount : sourcelength;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Mat4size);
 
                 int pos = Indirects[indirectbuffer].Positions.Count * GLBuffer.WriteIndirectArrayStride;

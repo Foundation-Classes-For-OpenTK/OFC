@@ -12,7 +12,6 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC.GL4;
 using OpenTK;
 using System;
 using System.Collections.Generic;
@@ -32,12 +31,107 @@ namespace OFC.GL4
     {
         public Size LabelSize { get { return texturesize; } }
 
+        public int Objects() { int t = 0;  foreach (var s in set) t += s.Objects; return t; }           // total number of objects being drawn
+        public int Sets { get { return set.Count; } }
+
+        public GLSetOfObjectsWithLabels(string name,        // need a name for the renders
+                                        GLRenderProgramSortedList robjects,     // need to give it a render list to add/remove renders to
+                                        int textures,       // number of textures to allow per set
+                                        int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
+                                        int mingroups,      // minimum number of groups
+                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderControl objrc,    // object shader, buffer, vertexes and its rendercontrol
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderControl textrc,    // text shader, text size, and rendercontrol
+                                        int debuglimittexturedepth = 0)     // set to limit texture depth per set
+        {
+            this.name = name;
+            this.robjects = robjects;
+            this.textures = textures;
+            this.estimateditemspergroup = estimateditemspergroup;
+            this.mingroups = mingroups;
+            this.objectshader = objectshader;
+            this.objectbuffer = objectbuffer;
+            this.objectvertexescount = objectvertexes;
+            this.objrc = objrc;
+            this.textshader = textshader;
+            this.texturesize = texturesize;
+            this.textrc = textrc;
+            this.limittexturedepth = debuglimittexturedepth;
+        }
+
+        public int Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        {
+            if (set.Count == 0)
+            {
+                System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
+                AddSet();
+            }
+
+            int v = set.Last().Add(tag, array, matrix, bitmaps);
+
+            while ( v >= 0)    // if can't add
+            {
+                System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
+                AddSet();
+                v = set.Last().Add(tag, array, matrix, bitmaps, v);      // add the rest from v
+            }
+
+            return v;
+        }
+
+        public void Remove(Predicate<object> test)
+        {
+            List<GLObjectsWithLabels> tobedisposed = new List<GLObjectsWithLabels>();
+
+            foreach (var s in set)
+            {
+                if (s.Remove(test))        // if removed something
+                {
+                    System.Diagnostics.Debug.WriteLine($".. in set {set.IndexOf(s)}");
+                    if (s.Blocks == s.BlocksRemoved)  // if all marked removed
+                        tobedisposed.Add(s);    
+                }
+            }
+
+            foreach (var s in tobedisposed)
+            {
+                System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(s)} with {s.Blocks}");
+                robjects.Remove(s.ObjectRenderer);      // remove renders
+                robjects.Remove(s.TextRenderer);
+                s.Dispose();        // then dispose
+                set.Remove(s);
+            }
+           // System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
+        }
+
+        public void Dispose()
+        {
+            foreach (var s in set)
+            {
+                robjects.Remove(s.ObjectRenderer);      // remove renders
+                robjects.Remove(s.TextRenderer);
+                s.Dispose();            // then dispose
+            }
+            set.Clear();
+        }
+
+        private void AddSet()       // add a new set
+        {
+            var owl = new GLObjectsWithLabels();
+            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, texturesize, textrc, limittexturedepth);
+            robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
+            robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
+            set.Add(owl);
+        }
+
+        #region Vars
+
         private string name;
 
         private GLRenderProgramSortedList robjects;
 
         private int textures;
-        private int maxgroups;
+        private int estimateditemspergroup;
+        private int mingroups;
 
         private IGLProgramShader objectshader;
         private GLBuffer objectbuffer;
@@ -54,93 +148,7 @@ namespace OFC.GL4
 
         private List<GLObjectsWithLabels> set = new List<GLObjectsWithLabels>();
 
-        // starsortextures, >0 stars, else -N = textures to use (therefore stars set by max texture depth)
-
-        public GLSetOfObjectsWithLabels(string name, GLRenderProgramSortedList robjects,
-                                        int textures, int maxgroups,
-                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderControl objrc,
-                                        IGLProgramShader textshader, Size texturesize ,  GLRenderControl textrc,
-                                        int debuglimittexturedepth = 0)
-        {
-            this.name = name;
-            this.robjects = robjects;
-            this.textures = textures;
-            this.maxgroups = maxgroups;
-            this.objectshader = objectshader;
-            this.objectbuffer = objectbuffer;
-            this.objectvertexescount = objectvertexes;
-            this.objrc = objrc;
-            this.textshader = textshader;
-            this.texturesize = texturesize;
-            this.textrc = textrc;
-            this.limittexturedepth = debuglimittexturedepth;
-        }
-
-
-        public int AddObjects(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
-        {
-            if (set.Count == 0)
-            {
-                System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
-                AddRIs();
-            }
-
-            int v = set.Last().AddObjects(tag, array, matrix, bitmaps);
-
-            if ( v >= 0)    // if can't addc
-            {
-                System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
-                AddRIs();
-                v = set.Last().AddObjects(tag, array, matrix, bitmaps, v);      // add the rest from v
-            }
-
-            return v;
-        }
-
-        private void AddRIs()
-        {
-            var owl = new GLObjectsWithLabels();
-            var ris = owl.Create(textures, maxgroups, objectbuffer, objectvertexescount, objrc, texturesize, textrc, limittexturedepth);
-            robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
-            robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
-            set.Add(owl);
-        }
-
-        public void Remove(Predicate<object> test)
-        {
-            List<GLObjectsWithLabels> tobedisposed = new List<GLObjectsWithLabels>();
-
-            foreach (var s in set)
-            {
-                if (s.Remove(test))        // if removed something
-                {
-                    System.Diagnostics.Debug.WriteLine($".. in set {set.IndexOf(s)}");
-                    if (s.Number == s.Removed)  // if all marked removed
-                        tobedisposed.Add(s);    
-                }
-            }
-
-            foreach (var s in tobedisposed)
-            {
-                System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(s)} with {s.Number}");
-                robjects.Remove(s.ObjectRenderer);
-                robjects.Remove(s.TextRenderer);
-                s.Dispose();
-                set.Remove(s);
-            }
-           // System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
-        }
-
-        public void Dispose()
-        {
-            foreach (var s in set)
-            {
-                robjects.Remove(s.ObjectRenderer);
-                robjects.Remove(s.TextRenderer);
-                s.Dispose();
-            }
-            set.Clear();
-        }
+        #endregion
 
     }
 }
