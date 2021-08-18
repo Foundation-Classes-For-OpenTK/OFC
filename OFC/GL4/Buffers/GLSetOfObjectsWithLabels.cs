@@ -114,6 +114,33 @@ namespace OFC.GL4
             set.Clear();
         }
 
+        public void Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
+        {
+            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            geo.SetScreenCoords(pos, size);
+
+            List<int> setstart = new List<int>();
+            int setnumber = 0;
+            foreach (var s in set)
+            {
+                setstart.Add(setnumber);
+                geo.SetGroup(setnumber);        // group 0 
+
+                s.ObjectRenderer.Execute(findshader, state, ExecuteAfterEachRun: (i) =>
+                {
+                    geo.SetGroup(++setnumber);  // set next group so we have a record of the group
+                }, discard: true);
+            }
+
+            var res = geo.GetResult();
+            if (res != null)
+            {
+                System.Diagnostics.Debug.WriteLine("Found something");
+                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+            }
+
+        }
+
         private void AddSet()       // add a new set
         {
             var owl = new GLObjectsWithLabels();

@@ -598,8 +598,10 @@ namespace OFC.GL4
 
         // Use Cases: if shader is not rendering to screen (such as a finder) and that would have discard=true
         // or to a framebuffer in stages
+        // ExecuteAfterEachRun is only used with a indirect draw and runs the RI one group at a time, calling the function after each group
+        // this will allow you to find out the group which did something.  OpenGL does not seem to include a gl_groupcount etc field to tell you which draw group its executing
 
-        public void Execute( IGLProgramShader shader , GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false  )
+        public void Execute(IGLProgramShader shader, GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false, Action<int> ExecuteAfterEachRun = null)
         {
             if (shader.Enable)
             {
@@ -610,7 +612,29 @@ namespace OFC.GL4
                     shader.Start(c);
 
                 Bind(state, shader, c);
-                Render();
+
+                if (ExecuteAfterEachRun != null)        // execute indirect buffer draws one at a time
+                {
+                    System.Diagnostics.Debug.Assert(IndirectBuffer != null);
+
+                    int orgdc = DrawCount;
+                    int orgbio = BaseIndexOffset;
+
+                    DrawCount = 1;
+                    for (int i = 0; i < orgdc; i++)
+                    {
+                        Render();
+                        ExecuteAfterEachRun?.Invoke(i);
+                        BaseIndexOffset += MultiDrawCountStride;
+                    }
+
+                    DrawCount = orgdc;
+                    BaseIndexOffset = orgbio;
+                }
+                else
+                {
+                    Render();
+                }
 
                 if (!noshaderstart)
                     shader.Finish(c);

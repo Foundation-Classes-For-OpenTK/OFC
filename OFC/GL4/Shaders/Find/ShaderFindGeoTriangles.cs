@@ -23,6 +23,7 @@ namespace OFC.GL4
     // combine with your chosen vertex shader feeding in ProjectionModelMatrix values
     // using a RenderableItem
     // call SetScreenCoords before render executes 
+    // optional call SetGroup to set an integer which is passed back in .W of each result
     // call GetResult after Executing the shader/RI combo
     // Inputs gl_in positions
     // Inputs (=2) instance[] instance number. 
@@ -35,6 +36,7 @@ namespace OFC.GL4
 @"
 #version 450 core
 #include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.trig.glsl
 
 layout (triangles) in;               // triangles come in
 layout (triangle_strip) out;        // norm op is not to sent them on
@@ -42,6 +44,7 @@ layout (max_vertices=3) out;	    // 1 triangle max
 
 layout (location = 10) uniform vec4 screencoords;
 layout (location = 11) uniform float pointdist;
+layout (location = 12) uniform int group;
 
 in gl_PerVertex
 {
@@ -66,11 +69,6 @@ out MP
 } MPOUT;
 
 layout (location = 2) in int instance[];
-
-float PMSquareS(vec4 l1, vec4 l2, vec4 p)
-{
-    return sign((p.x - l1.x) * (l2.y - l1.y) - (l2.x - l1.x) * (p.y - l1.y));
-}
 
 const int bindingoutdata = 20;
 layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock note - buffer
@@ -114,7 +112,7 @@ void main(void)
                 if ( ipos < maximumresults )
                 {
                     float avgz = (p0.z+p1.z+p2.z)/3;
-                    values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,1000+ipos);
+                    values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,group);
                 }
             }
             else 
@@ -131,7 +129,7 @@ void main(void)
                         if ( ipos < maximumresults )
                         {
                             float avgz = (p0.z+p1.z+p2.z)/3;
-                            values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,ipos);
+                            values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,group);
                         }
                     }
                 }   
@@ -159,19 +157,24 @@ void main(void)
             GL.ProgramUniform1(Id, 11, pixd);
         }
 
+        public void SetGroup(int i)         // if using a multi draw, you can set a group tag to return in each lookup in W value.
+        {
+            GL.ProgramUniform1(Id, 12, i);
+        }
+
         public override void Start(GLMatrixCalc c)
         {
             base.Start(c);
             vecoutbuffer.ZeroBuffer();
         }
 
-        // returns null or vec4 ( PrimitiveID, InstanceID, average Z of triangle points, result index)
+        // returns null or vec4 ( PrimitiveID, InstanceID, average Z of triangle points, group ID set by SetGroup (0 default))
         public Vector4[] GetResult()
         {
             GLMemoryBarrier.All();
 
             vecoutbuffer.StartRead(0);
-            int count = Math.Min(vecoutbuffer.ReadInt(),maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
+            int count = Math.Min(vecoutbuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
 
             Vector4[] d = null;
 

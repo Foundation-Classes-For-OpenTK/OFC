@@ -70,7 +70,6 @@
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
-    <Compile Include="Galaxy\GalaxyStarsGetFromDB.cs" />
     <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">

@@ -34,3 +34,10 @@ vec2 AzEl(vec3 curpos, vec3 target)
 
 	return vec2(inclination,azimuth);
 }
+
+// between a line defined by vertex l1 and l2, what side is p on?  returns -1,0,+1
+
+float PMSquareS(vec4 l1, vec4 l2, vec4 p)
+{
+    return sign((p.x - l1.x) * (l2.y - l1.y) - (l2.x - l1.x) * (p.y - l1.y));
+}

@@ -32,12 +32,8 @@ namespace TestOpenTk
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
             shapebuf.AllocateFill(shape);
 
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
-            items.Add(findshader);
-
             this.items = items;
             this.rObjects = rObjects;
-
         }
 
         public void Start()
@@ -88,64 +84,6 @@ namespace TestOpenTk
          //   System.Diagnostics.Debug.WriteLine($"Time search for sectors {sw.ElapsedMilliseconds}");
         }
 
-        // foreground, called on each frame, allows update of shader and queuing of new objects
-        public void Update(ulong time, float eyedistance)
-        {
-            int max = 4;        // arbitary, seems not to extend it too much
-            while( max-->0 && generatedsectors.TryDequeue(out Sector d))      // one per frame to prevent any mighty stalls
-            {
-                d.starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
-                d.starposbuf.AllocateFill(d.stars);
-
-                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
-                rt.DepthTest = true;
-                rt.DepthClamp = true;
-
-                d.renderer = GLRenderableItem.CreateVector4Vector4(items, rt, shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
-                rObjects.Add(sunshader, "Sector " + d.pos.ToString(), d.renderer);
-                System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} add items in foreground left {generatedsectors.Count}");
-
-                d.rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
-            }
-
-            while( removesectors.TryDequeue(out Sector d))      // if there are any sectors which needs disposing, do it
-            {
-                rObjects.Remove(d.renderer);
-                d.starposbuf.Dispose();
-            }
-
-            const int rotperiodms = 10000;
-            time = time % rotperiodms;
-            float fract = (float)time / rotperiodms;
-            float angle = (float)(2 * Math.PI * fract);
-            sunvertex.ModelTranslation = Matrix4.CreateRotationY(-angle);
-            float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
-            //     System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
-            sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
-        }
-
-        public bool FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
-        {
-            lock (displayedsectors)     // can't have anyone altering displayed sectors
-            {
-                var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-                geo.SetScreenCoords(viewportloc, viewportsize);
-
-                foreach (var sec in displayedsectors)
-                {
-                    sec.rifind.Execute(findshader, state, discard: true); // execute, discard
-                    var res = geo.GetResult();
-                    if (res != null)
-                    {
-                        //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                        return true; //tbd currentfilteredlist[(int)res[0].Y];
-                    }
-                }
-            }
-
-            return false;
-        }
-
         // send the request to the requestor using a blocking queue
         private void Request(Vector3 pos)
         {
@@ -169,13 +107,7 @@ namespace TestOpenTk
 
                     if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
                     {
-                        if ( displayedsectorsposhash.Count > MaxSectors )
-                        {
-                            // go thru and find furthest we can throw away
-                            // add to removedsector queue and remove from displayedsectors
-
-                        }
-                        //      System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, start sub thread");
+                          //      System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, start sub thread");
 
                         lock (displayedsectors)     // can't have anyone using displayed sectors until add complete
                         {
@@ -221,6 +153,38 @@ namespace TestOpenTk
             Interlocked.Add(ref subthreadsrunning, -1);
         }
 
+
+        // foreground, called on each frame, allows update of shader and queuing of new objects
+        public void Update(ulong time, float eyedistance)
+        {
+            int max = 4;        // arbitary, seems not to extend it too much
+            while (max-- > 0 && generatedsectors.TryDequeue(out Sector d))      // one per frame to prevent any mighty stalls
+            {
+                //d.starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
+                //d.starposbuf.AllocateFill(d.stars);
+
+                //GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                //rt.DepthTest = true;
+                //rt.DepthClamp = true;
+
+                //d.renderer = GLRenderableItem.CreateVector4Vector4(items, rt, shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
+                //rObjects.Add(sunshader, "Sector " + d.pos.ToString(), d.renderer);
+                //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} add items in foreground left {generatedsectors.Count}");
+
+                //d.rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
+            }
+
+            const int rotperiodms = 10000;
+            time = time % rotperiodms;
+            float fract = (float)time / rotperiodms;
+            float angle = (float)(2 * Math.PI * fract);
+            sunvertex.ModelTranslation = Matrix4.CreateRotationY(-angle);
+            float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
+            //     System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
+            sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
+        }
+
+
         private GLItemsList items;
         private GLRenderProgramSortedList rObjects;
 
@@ -228,15 +192,9 @@ namespace TestOpenTk
         private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
         private GLBuffer shapebuf;
 
-        private GLShaderPipeline findshader;        // finder
-
         private class Sector
         {
-            public GLBuffer starposbuf;         // needs dispose
-            public GLRenderableItem renderer;
-            public GLRenderableItem rifind;
             public Vector3 pos;
-
             public Vector4[] stars;
 
             public Sector(Vector3 pos) { this.pos = pos; }
@@ -252,11 +210,7 @@ namespace TestOpenTk
         // added to by subthread when sector is ready, picked up by foreground update. ones ready for final foreground processing
         private ConcurrentQueue<Sector> generatedsectors = new ConcurrentQueue<Sector>();      
 
-        // passed by requestors when sector needs to be removed. displayedsectors already has it removed. foreground removes GL elements and disposed
-        private ConcurrentQueue<Sector> removesectors = new ConcurrentQueue<Sector>();     
-
         private const int SectorSize = 100;
-        private const int MaxSectors = 100;
 
         private Thread requestorthread;
         private CancellationTokenSource stop =  new CancellationTokenSource();
@@ -264,3 +218,28 @@ namespace TestOpenTk
     }
 
 }
+
+//findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+//            items.Add(findshader);
+
+//        public bool FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
+//{
+//    lock (displayedsectors)     // can't have anyone altering displayed sectors
+//    {
+//        var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+//        geo.SetScreenCoords(viewportloc, viewportsize);
+
+//        foreach (var sec in displayedsectors)
+//        {
+//            sec.rifind.Execute(findshader, state, discard: true); // execute, discard
+//            var res = geo.GetResult();
+//            if (res != null)
+//            {
+//                //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+//                return true; //tbd currentfilteredlist[(int)res[0].Y];
+//            }
+//        }
+//    }
+
+//    return false;
+//}

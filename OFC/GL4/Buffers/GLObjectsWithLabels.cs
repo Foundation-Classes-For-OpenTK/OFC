@@ -15,6 +15,7 @@
 using OFC.GL4;
 using OpenTK;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace OFC.GL4
@@ -36,6 +37,9 @@ namespace OFC.GL4
 
         public GLRenderableItem ObjectRenderer { get; private set; }
         public GLRenderableItem TextRenderer { get; private set; }
+
+        // get tag list. Removed blocks will have a null tag
+        public List<object> Tags { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Tags : null; } }       
 
         private GLVertexBufferIndirect dataindirectbuffer;
         private GLTexture2DArray[] textures;
@@ -104,6 +108,7 @@ namespace OFC.GL4
             TextRenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
             TextRenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
+
             return new Tuple<GLRenderableItem, GLRenderableItem>(ObjectRenderer, TextRenderer);
         }
 
@@ -145,8 +150,6 @@ namespace OFC.GL4
                     return pos;
                 }
 
-                dataindirectbuffer.Indirects[0].AddTag(new Tuple<object, int>(tag,array.Length));     // indirect draw buffer 0 holds the tags assigned by the user for identity purposes and number of items
-
                 // now fill in the texture by loading bitmaps into each slot, and update the matrix image position
                 for (int i = 0; i < touse; i++)
                 {
@@ -164,6 +167,9 @@ namespace OFC.GL4
                     System.Diagnostics.Debug.WriteLine("GLObjectWithLabels failed to add text indirect");
                     return pos;
                 }
+
+                dataindirectbuffer.Indirects[0].AddTag(tag);              // indirect draw buffer 0 holds the tags assigned by the user for identity purposes 
+                dataindirectbuffer.Indirects[1].AddTag(array.Length);     // indirect draw buffer 1 holds the length
 
                 ObjectRenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
                 ObjectRenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
@@ -191,18 +197,17 @@ namespace OFC.GL4
             {
                 for (int i = 0; i < dataindirectbuffer.Indirects[0].Tags.Count; i++)        // all blocks
                 {
-                    var tg = dataindirectbuffer.Indirects[0].Tags[i];           // get tag (object,int)
+                    var tg = dataindirectbuffer.Indirects[0].Tags[i];           // get tag
 
                     if (tg != null)       // if not already removed
                     {
-                        Tuple<object, int> data = tg as Tuple<object, int>;
-
-                        if (test(data.Item1))       // if test passed, it wants it to be removed
+                        if (test(tg))       // if test passed, it wants it to be removed
                         {
+                            int count = (int)dataindirectbuffer.Indirects[1].Tags[i];
                             // System.Diagnostics.Debug.WriteLine($"Found tag at {i}");
                             dataindirectbuffer.Remove(i, 0);        // clear draw of both text and object
                             dataindirectbuffer.Remove(i, 1);
-                            Objects -= data.Item2;              // reduce objects count
+                            Objects -= count;                   // reduce objects count
                             BlocksRemoved++;                    // increment blocks removed
                             dataindirectbuffer.Indirects[0].Tags[i] = null;     // remove tag so it can't be found again!
                             removed = true;
