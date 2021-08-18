@@ -75,6 +75,7 @@ void main(void)
     //      location 1 modelpos
     //      location 2 instance id
     //      location 3 basecolor for fragment shader
+    //      location 4 drawid (4.6) for multidraws
 
     public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
     {
@@ -82,7 +83,7 @@ void main(void)
         {
             return
 @"
-#version 450 core
+#version 460 core
 #include UniformStorageBlocks.matrixcalc.glsl
 
 layout (location = 0) in vec4 modelposition;
@@ -99,6 +100,7 @@ out gl_PerVertex {
 layout (location = 1) out vec3 modelpos;
 layout (location = 2) out int instance;
 layout (location = 3) out vec4 basecolor;
+layout (location = 4) out int drawid;       // 4.6 item
 
 const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs
 
@@ -118,6 +120,7 @@ void main(void)
         vec4 wp = modelrot + vec4(worldposition.xyz,0);
         gl_Position = mc.ProjectionModelMatrix * wp;        // order important
         instance = gl_InstanceID;
+        drawid = gl_DrawID;
     }
 }
 ";

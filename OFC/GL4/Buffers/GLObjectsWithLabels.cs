@@ -189,6 +189,23 @@ namespace OFC.GL4
             return -1;
         }
 
+        // Find in objects.  Return render group and index into render group or null
+
+        public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
+        {
+            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            geo.SetScreenCoords(pos, size);
+            ObjectRenderer.Execute(findshader, state, discard: true); 
+            var res = geo.GetResult();
+            if (res != null)
+            {
+                //System.Diagnostics.Debug.WriteLine("Set Found something");  for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                return new Tuple<int,int>((int)res[0].W,(int)res[0].Y);
+            }
+            else
+                return null;
+        }
+
         public bool Remove(Predicate<object> test)
         {
             bool removed = false;

@@ -318,7 +318,7 @@ namespace TestOpenTk
 
             // Sets of..
 
-            if (false)
+            if (true)
             {
                 GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
@@ -350,7 +350,7 @@ namespace TestOpenTk
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                     var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
-                    slset.Add("GA", array, mats, bmps);
+                    slset.Add(new Tuple<string, string[]>("GA", text), array, mats, bmps);
                     BitMapHelpers.Dispose(bmps);
                 }
                 {
@@ -367,7 +367,7 @@ namespace TestOpenTk
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                     var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
-                    slset.Add("GB", array, mats, bmps);
+                    slset.Add(new Tuple<string, string[]>("GB", text), array, mats, bmps);
                     BitMapHelpers.Dispose(bmps);
                 }
                 {
@@ -384,7 +384,7 @@ namespace TestOpenTk
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                     var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
-                    slset.Add("GC", array, mats, bmps);
+                    slset.Add(new Tuple<string, string[]>("GC", text), array, mats, bmps);
                     BitMapHelpers.Dispose(bmps);
                 }
             }
@@ -438,21 +438,21 @@ namespace TestOpenTk
         {
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                slset.Remove((t) => t.Equals("GA"));
+                slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
             if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                slset.Remove((t) => t.Equals("GB"));
+                slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GB"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
             if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                slset.Remove((t) => t.Equals("GC"));
+                slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GC"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
@@ -467,26 +467,26 @@ namespace TestOpenTk
                 for (int i = 0; i < array.Length; i++)
                 {
                     array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    text[i] = "S.C." + i;
+                    text[i] = "S.D." + i;
                 }
 
                 Font fnt = new Font("MS sans serif", 16f);
                 var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                 var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkGreen, 0.5f);
 
-                slset.Add("GD", array, mats, bmps);
+                slset.Add(new Tuple<string, string[]>("GD", text), array, mats, bmps);
                 BitMapHelpers.Dispose(bmps);
                 gl3dcontroller.Redraw();
 
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Sets}");
+                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
             }
 
 
             if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                slset.Remove((t) => t.Equals("GD"));
+                slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GD"));
                 gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Sets}");
+                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
             }
 
 
@@ -549,36 +549,29 @@ namespace TestOpenTk
 
         protected void GLMouseClick(object v, GLMouseEventArgs e)
         {
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
+            var index = sl.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
 
-            geo.SetGroup(0);        // group 0 
-
-            sl.ObjectRenderer.Execute(findshader, glwfc.RenderState, ExecuteAfterEachRun:(i) => 
+            if (index != null)
             {
-                geo.SetGroup(i+1);  // set next group so we have a record of the group
-            },     discard: true);
-
-            foreach( var t in sl.Tags)
-            {
-                if (t != null)
+                Tuple<string, string[]> ginfo = sl.Tags[index.Item1] as Tuple<string, string[]>;
+                if (ginfo != null)
                 {
-                    Tuple<string, string[]> l = t as Tuple<string, string[]>;
-                    System.Diagnostics.Debug.WriteLine($"Tag {l.Item1} {string.Join(";", l.Item2)}");
-                }
-            }
-
-            var res = geo.GetResult();
-            if (res != null)
-            {
-                System.Diagnostics.Debug.WriteLine("Found something");
-                Tuple<string, string[]> ginfo = sl.Tags[(int)res[0].W] as Tuple<string, string[]>;
-                if ( ginfo != null)
-                {
-                    string name = ginfo.Item2[(int)res[0].Y];
+                    string name = ginfo.Item2[index.Item2];
                     System.Diagnostics.Debug.WriteLine($"... {name}");
                 }
-                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+            }
+            else
+            {
+                var find = slset.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
+                if ( find != null )
+                {
+                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2} {find.Item3}");
+
+                    var set = slset[find.Item1];
+                    Tuple<string, string[]> ginfo = set.Tags[find.Item2] as Tuple<string, string[]>;
+                    string name = ginfo.Item2[find.Item3];
+                    System.Diagnostics.Debug.WriteLine($"... {name}");
+                }
             }
 
         }

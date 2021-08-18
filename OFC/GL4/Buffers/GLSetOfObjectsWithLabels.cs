@@ -32,7 +32,9 @@ namespace OFC.GL4
         public Size LabelSize { get { return texturesize; } }
 
         public int Objects() { int t = 0;  foreach (var s in set) t += s.Objects; return t; }           // total number of objects being drawn
-        public int Sets { get { return set.Count; } }
+
+        public int Count { get { return set.Count; } }
+        public GLObjectsWithLabels this[int i] { get { return set[i]; } }
 
         public GLSetOfObjectsWithLabels(string name,        // need a name for the renders
                                         GLRenderProgramSortedList robjects,     // need to give it a render list to add/remove renders to
@@ -114,31 +116,31 @@ namespace OFC.GL4
             set.Clear();
         }
 
-        public void Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
+        // Return set, render group, and render index in group, or null
+        public Tuple<int,int,int> Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);
+            findshader.Start(null);     // this clears the buffer
 
-            List<int> setstart = new List<int>();
-            int setnumber = 0;
-            foreach (var s in set)
+            int setno = 0;
+
+            foreach (var s in set)      
             {
-                setstart.Add(setnumber);
-                geo.SetGroup(setnumber);        // group 0 
-
-                s.ObjectRenderer.Execute(findshader, state, ExecuteAfterEachRun: (i) =>
-                {
-                    geo.SetGroup(++setnumber);  // set next group so we have a record of the group
-                }, discard: true);
+                geo.SetGroup(setno << 18);      // set the group marker for 
+                s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
+
+            findshader.Finish(null);    // finish shader
 
             var res = geo.GetResult();
             if (res != null)
             {
-                System.Diagnostics.Debug.WriteLine("Found something");
-                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                //System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                return new Tuple<int,int, int>(((int)res[0].W)>>18,((int)res[0].W) & 0x3ffff, (int)res[0].Y);
             }
-
+            else
+                return null;
         }
 
         private void AddSet()       // add a new set

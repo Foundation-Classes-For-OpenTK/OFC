@@ -23,10 +23,12 @@ namespace OFC.GL4
     // combine with your chosen vertex shader feeding in ProjectionModelMatrix values
     // using a RenderableItem
     // call SetScreenCoords before render executes 
-    // optional call SetGroup to set an integer which is passed back in .W of each result
+    // optional call SetGroup to pass in a group number for the results to pass it back out
     // call GetResult after Executing the shader/RI combo
-    // Inputs gl_in positions
-    // Inputs (=2) instance[] instance number. 
+    // Inputs gl_in positions triangles
+    // Inputs (2) instance[] instance number. 
+    // Inputs (4) drawid[] instance number. 
+    // output to buffer bound structure Positions
 
     public class GLPLGeoShaderFindTriangles : GLShaderPipelineShadersBase
     {
@@ -41,6 +43,9 @@ namespace OFC.GL4
 layout (triangles) in;               // triangles come in
 layout (triangle_strip) out;        // norm op is not to sent them on
 layout (max_vertices=3) out;	    // 1 triangle max
+
+layout (location = 2) in int instance[];        // vertex shader pass in instance
+layout (location = 4) in int drawid[];          // vertex shader may pass in drawid
 
 layout (location = 10) uniform vec4 screencoords;
 layout (location = 11) uniform float pointdist;
@@ -68,7 +73,6 @@ out MP
     layout (location = 1) out vec3 modelpos;
 } MPOUT;
 
-layout (location = 2) in int instance[];
 
 const int bindingoutdata = 20;
 layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock note - buffer
@@ -112,7 +116,7 @@ void main(void)
                 if ( ipos < maximumresults )
                 {
                     float avgz = (p0.z+p1.z+p2.z)/3;
-                    values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,group);
+                    values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,drawid[0] | group);
                 }
             }
             else 
@@ -129,7 +133,7 @@ void main(void)
                         if ( ipos < maximumresults )
                         {
                             float avgz = (p0.z+p1.z+p2.z)/3;
-                            values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,group);
+                            values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,drawid[0] | group);
                         }
                     }
                 }   
@@ -157,9 +161,10 @@ void main(void)
             GL.ProgramUniform1(Id, 11, pixd);
         }
 
-        public void SetGroup(int i)         // if using a multi draw, you can set a group tag to return in each lookup in W value.
+        // OR in this group ID with this value to return extra info
+        public void SetGroup(int g)
         {
-            GL.ProgramUniform1(Id, 12, i);
+            GL.ProgramUniform1(Id, 12, g);
         }
 
         public override void Start(GLMatrixCalc c)
@@ -168,7 +173,7 @@ void main(void)
             vecoutbuffer.ZeroBuffer();
         }
 
-        // returns null or vec4 ( PrimitiveID, InstanceID, average Z of triangle points, group ID set by SetGroup (0 default))
+        // returns null or vec4: PrimitiveID, InstanceID, average Z of triangle points, draw ID | group 
         public Vector4[] GetResult()
         {
             GLMemoryBarrier.All();
