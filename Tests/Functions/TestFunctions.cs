@@ -76,7 +76,10 @@ void main(void)
     azel1 = AzEl(vec3(0,0,0),vec3(10,0,0));
     azel2 = vec2(0.5,0.6);
 
-    matrixout = mat4(1,2,3,4, 5,6,7,8 ,9,10,11,12, 13,14,15,16);        // demo memory order
+    matrixout = mat4(   1,2,3,4,            // row 1
+                        5,6,7,8,
+                        9,10,11,12, 
+                        13,14,15,16);        // demo memory order
     matrixout[2][3] = 20000;        // row 2, col 3 is 20000, demo its [row][col]
 
     identity = mat4identity();

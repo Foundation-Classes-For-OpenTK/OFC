@@ -33,11 +33,18 @@ namespace OFC
             return true;
         }
 
+        // opengl matrixes are layed out as
+        //  x.x x.y x.z 0       in row order in memory (locations 0,1,2,3 across)
+        //  y.x y.y y.z 0       x, y, z are 3-component vectors describing the matrix coordinate system(local coordinate system within relative to the global coordinate system).
+        //  z.x z.y z.z 0
+        //  p.x p.y p.z 1       p is a 3-component vector describing the origin of matrix coordinate system.
+        //  or in memory order: x.x x.y x.z 0 y.x y.y y.z 0 z.x z.y z.z 0 p.x p.y p.z 1
+
         static public float[] ToFloatArray(this Matrix4 mat)
         {
             float[] r = new float[] {   mat.Row0.X, mat.Row0.Y, mat.Row0.Z, mat.Row0.W ,        // row major order, 
                                         mat.Row1.X, mat.Row1.Y, mat.Row1.Z, mat.Row1.W ,        // as per https://stackoverflow.com/questions/17717600/confusion-between-c-and-opengl-matrix-order-row-major-vs-column-major
-                                        mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W ,        // which works with vtransform = M.V transforms which is what we uses
+                                        mat.Row2.X, mat.Row2.Y, mat.Row2.Z, mat.Row2.W ,        // which works with vtransform = Matrix.Vector order which is what we use
                                         mat.Row3.X, mat.Row3.Y, mat.Row3.Z, mat.Row3.W };       // Matrix4 holds it in row order
             return r;
         }

@@ -24,8 +24,8 @@ namespace OFC.GL4
     // The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength
     // Object shader will get vertex 0 = objectbuffer vector4s, and vertex 1 = worldpositions of items added (instance divided)
     // use with text shader GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
-    // multiple textures can be bound to carry the text labels, the number given by textures.
-    // dependent on the opengl, that gives the number of objects that can be produced (GetMaxTextureDepth())
+    // multiple textures can be bound to carry the text labels, the number given by textures, limited by opengl texture limit per fragment shader(GetMaxTextureDepth())
+    // that gives the number of objects that can be produced 
 
     public class GLObjectsWithLabels : IDisposable
     {
@@ -38,7 +38,7 @@ namespace OFC.GL4
         public GLRenderableItem ObjectRenderer { get; private set; }
         public GLRenderableItem TextRenderer { get; private set; }
 
-        // get tag list. Removed blocks will have a null tag
+        // get tag list. Removed blocks will have a null tag. Tag list is stored in Indirects[0]
         public List<object> Tags { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Tags : null; } }       
 
         private GLVertexBufferIndirect dataindirectbuffer;

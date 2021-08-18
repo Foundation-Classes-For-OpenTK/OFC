@@ -21,7 +21,7 @@ using System.Linq;
 namespace OFC.GL4
 {
     // Class holds a buffer for a vertex, and an set of indirect buffers, both have a defined size
-    // you can add updates to it and mark sections by tag as not to be drawn
+    // you can add updates to it and remove sections by index
 
     public class GLVertexBufferIndirect
     {
