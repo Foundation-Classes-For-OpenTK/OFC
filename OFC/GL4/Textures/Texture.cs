@@ -335,12 +335,16 @@ namespace OFC.GL4
             GL.GenerateTextureMipmap(Id);
         }
 
+        public void MipMapLevel(int basev, int max)
+        {
+            GL.TextureParameterI(Id, TextureParameterName.TextureBaseLevel, ref basev);
+            GL.TextureParameterI(Id, TextureParameterName.TextureMaxLevel, ref max);
+        }
+
         static public int MipMapHeight(Bitmap map, int bitmapmipmaplevels)
         {
             return (bitmapmipmaplevels == 1) ? map.Height : (map.Height / 3) * 2;        // if bitmap is mipped mapped, work out correct height.
         }
-
-
     }
 }
 

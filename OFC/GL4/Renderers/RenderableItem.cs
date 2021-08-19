@@ -30,6 +30,7 @@ namespace OFC.GL4
     // it is associated with an optional InstanceData which is instanced using Bind()
     // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
     // it is associated with an optional IndirectBuffer giving draw command groups - this then selected the draw type to use
+    // it is associated with an optional ParameterBuffer (4.6) giving draw data
 
     // Renderable items are normally put into a GLRenderProgramSortedList by shader, but can be executed directly
     // using Execute.  This is normally only done for renders which do not produce output but compute to a buffer.
@@ -47,18 +48,21 @@ namespace OFC.GL4
         // we can draw either arrays (A); element index (E); indirect arrays (IA); indirect element index (IE)
         // type is controlled by if ElementBuffer and/or IndirectBuffer is non null
 
-        public int DrawCount { get; set; } = 0;                             // A+E : Draw count, IE+IA MultiDraw count
+        public int DrawCount { get; set; } = 0;                             // A+E : Draw count, IE+IA MultiDraw count, ICA+ICE Maximum draw count(don't exceed buffer size when setting this)
 
         public int InstanceCount { get; set; } = 1;                         // A+E: Instances (not used in indirect - this comes from the buffer)
         public int BaseInstance { get; set; } = 0;                          // A+E: Base Instance, normally 0 (not used in indirect - this comes from the buffer)
 
         public GLBuffer ElementBuffer { get; set; }                         // E+IE: if non null, we doing a draw using a element buffer to control indexes
         public GLBuffer IndirectBuffer { get; set; }                        // IA+IE: if non null, we doing a draw using a indirect buffer to control draws
+        public GLBuffer ParameterBuffer { get; set; }                       // ICA+ICE: if non null, we doing a draw using a parameter buffer to indicate count (needs indirect buffer)
 
         public DrawElementsType ElementIndexSize { get; set; }              // E+IE: for element draws, its index type (byte/short/uint)
 
+        public int ParameterBufferOffset { get; set; }                      // ICA+ICE: Where in the parameter buffer is the control data
+
         public int BaseIndexOffset { get; set; }                            // E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
-                                                                            // IE+IA: offset in buffer in bytes to first command entry 
+                                                                            // IE+IA+ICA+ICE: offset in buffer in bytes to first command entry 
 
         public int BaseVertex { get; set; }                                 // E: for element draws (but not indirect) first vertex to use in the buffer (not used in indirect - this comes from the buffer)
 
@@ -87,6 +91,7 @@ namespace OFC.GL4
             RenderData?.Bind(this,shader,c);                    // optional render data supplied by the user to bind
             ElementBuffer?.BindElement();                       // if we have an element buffer, give it a chance to bind
             IndirectBuffer?.BindIndirect();                     // if we have an indirect buffer, give it a chance to bind
+            ParameterBuffer?.BindParameter();                   // if we have a parameter buffer, give it a chance to bind
         }
 
         // Render - execute shader program on render data supplied by vertex array, any uniforms, etc applied using Bind() above
@@ -98,9 +103,16 @@ namespace OFC.GL4
 
             if ( ElementBuffer != null )                            // we are picking the GL call, dependent on what is bound to the render
             {
-                if (IndirectBuffer != null)                         // IE indirect element index
-                {               
-                    GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                if (IndirectBuffer != null)                         // IE or ICE indirect element index
+                {
+                    if (ParameterBuffer != null)                    // 4.6 feature ICE
+                    {
+                        GL.MultiDrawElementsIndirectCount(RenderControl.PrimitiveType,(All)ElementIndexSize, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
+                    }
+                    else
+                    {                                               // IE
+                        GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                    }
                 }
                 else
                 {                                                   // E element index
@@ -110,9 +122,16 @@ namespace OFC.GL4
             }
             else
             {
-                if (IndirectBuffer != null)                         // IA indirect buffer
+                if (IndirectBuffer != null)                         // IA or ICA indirect buffer
                 {
-                    GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                    if (ParameterBuffer != null)                    // 4.6 feature ICA
+                    {
+                        GL.MultiDrawArraysIndirectCount(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
+                    }
+                    else
+                    {                                               // IA
+                        GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                    }
                 }
                 else
                 {                                                   // A no indirect or element buffer, direct draw

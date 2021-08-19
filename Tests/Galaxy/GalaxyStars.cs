@@ -18,22 +18,45 @@ namespace TestOpenTk
     class GalaxyStars
     {
         public Vector3 CurrentPos { get; set; } = new Vector3(-1000000, -1000000, -1000000);
-        public int Sectors { get { return displayedsectors.Count; } }
+        public int Sectors { get { return displayedsectorsposhash.Count; } }
+        public Font Font { get; set; } = new Font("Ms Sans Serif", 16f);
+        public Color ForeText { get; set; } = Color.White;
+        public Color BackText { get; set; } = Color.Red;
 
-        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int bufferfindbinding)
+        private GLSetOfObjectsWithLabels slset;
+        private GLShaderPipeline sunshader;     // sun drawer
+        private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
+        private GLBuffer shapebuf;
+
+        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
         {
             sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) } );
             items.Add(sunvertex);
             sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
             items.Add(sunshader);
-
             shapebuf = new GLBuffer();
             items.Add(shapebuf);
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
             shapebuf.AllocateFill(shape);
 
-            this.items = items;
-            this.rObjects = rObjects;
+            GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+            starrc.DepthTest = true;
+            starrc.DepthClamp = true;
+
+            var textrc = GLRenderControl.Quads();
+            textrc.DepthTest = true;
+            textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+
+            int texunitspergroup = 16;
+            var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0, 0, true, texunitspergroup));
+            items.Add(textshader);
+
+            slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
+                                                            sunshader, shapebuf, shape.Length, starrc,
+                                                            textshader, new Size(128, 32), textrc,
+                                                            10);
+
+            items.Add(slset);
         }
 
         public void Start()
@@ -109,9 +132,8 @@ namespace TestOpenTk
                     {
                           //      System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, start sub thread");
 
-                        lock (displayedsectors)     // can't have anyone using displayed sectors until add complete
+                        lock (displayedsectorsposhash)     // can't have anyone using displayed sectors until add complete
                         {
-                            displayedsectors.Add(sector);
                             displayedsectorsposhash.Add(sector.pos);
                         }
 
@@ -137,18 +159,24 @@ namespace TestOpenTk
             Interlocked.Add(ref subthreadsrunning, 1);      // count subthreads, on shutdown, we need to wait until they all complete
             Sector d = (Sector)seco;
 
-            //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} start");
-            Thread.Sleep(5000);
+            System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} start");
+            Thread.Sleep(500);
 
             Vector4[] array = new Vector4[100];
+            string[] text = new string[array.Length];
             Random rnd = new Random((int)(d.pos.X * d.pos.Y) + 1);
             for (int i = 0; i < array.Length; i++)
+            {
                 array[i] = new Vector4(d.pos.X + rnd.Next(SectorSize), d.pos.Y + rnd.Next(SectorSize), d.pos.Z + rnd.Next(SectorSize), 0);
+                text[i] = $"({d.pos.X},{d.pos.Y},{d.pos.Z})-{i}";
+            }
 
             d.stars = array;        // later more data
-            //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} end");
+            d.text = text;
+            d.bitmaps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f);
 
             generatedsectors.Enqueue(d);       // d has been filled
+            System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} end");
 
             Interlocked.Add(ref subthreadsrunning, -1);
         }
@@ -169,9 +197,12 @@ namespace TestOpenTk
 
                 //d.renderer = GLRenderableItem.CreateVector4Vector4(items, rt, shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
                 //rObjects.Add(sunshader, "Sector " + d.pos.ToString(), d.renderer);
-                //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} add items in foreground left {generatedsectors.Count}");
+                System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} add items in foreground left {generatedsectors.Count}");
 
                 //d.rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shapebuf, shapebuf.Length / GLLayoutStandards.Vec4size, d.starposbuf, null, d.stars.Length, 1);
+
+                BitMapHelpers.Dispose(d.bitmaps);
+                d.bitmaps = null;
             }
 
             const int rotperiodms = 10000;
@@ -185,26 +216,21 @@ namespace TestOpenTk
         }
 
 
-        private GLItemsList items;
-        private GLRenderProgramSortedList rObjects;
-
-        private GLShaderPipeline sunshader;     // sun drawer
-        private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
-        private GLBuffer shapebuf;
-
         private class Sector
         {
             public Vector3 pos;
-            public Vector4[] stars;
-
             public Sector(Vector3 pos) { this.pos = pos; }
+
+            // generated by thread
+            public Vector4[] stars;
+            public string[] text;
+            public Bitmap[] bitmaps;
         }
 
         // requested sectors from foreground to requestor
         private BlockingCollection<Sector> requestedsectors = new BlockingCollection<Sector>();
 
         //owned by requestor, only it can add/remove from this list. Lock it if used in foreground
-        List<Sector> displayedsectors = new List<Sector>();     // ones created..
         HashSet<Vector3> displayedsectorsposhash = new HashSet<Vector3>();  // quick lookup
 
         // added to by subthread when sector is ready, picked up by foreground update. ones ready for final foreground processing

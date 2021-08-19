@@ -21,7 +21,9 @@ namespace OFC.GL4
 
     public class GLMatrixCalcUniformBlock : GLUniformBlock 
     {
-        const int BindingPoint = 0;// 0 is the fixed binding block for matrixcalc
+        const int BindingPoint = 0;// 0 is the fixed binding block for matrixcal
+
+        private int lastmccount = int.MinValue;
 
         public GLMatrixCalcUniformBlock() : base(BindingPoint)         
         {
@@ -31,42 +33,54 @@ namespace OFC.GL4
 
         public void SetMinimal(GLMatrixCalc c)
         {
-            if (NotAllocated)
-                AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
+            if (lastmccount != c.CountMatrixCalcs)
+            {
+                if (NotAllocated)
+                    AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
 
-            StartWrite(0, Length);        // the whole schebang
-            Write(c.ProjectionModelMatrix);
-            StopReadWrite();                                // and complete..
+                StartWrite(0, Length);        // the whole schebang
+                Write(c.ProjectionModelMatrix);
+                StopReadWrite();                                // and complete..
+                lastmccount = c.CountMatrixCalcs;
+            }
         }
 
         public void Set(GLMatrixCalc c)
         {
-            if (NotAllocated)
-                AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
+            if (lastmccount != c.CountMatrixCalcs)
+            {
+                if (NotAllocated)
+                    AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
 
-            StartWrite(0, Length);        // the whole schebang
-            Write(c.ProjectionModelMatrix);
-            Write(c.ProjectionMatrix);
-            Write(c.ModelMatrix);
-            Write(c.TargetPosition, 0);
-            Write(c.EyePosition, 0);
-            Write(c.EyeDistance);
-            StopReadWrite();                                // and complete..
+                StartWrite(0, Length);        // the whole schebang
+                Write(c.ProjectionModelMatrix);
+                Write(c.ProjectionMatrix);
+                Write(c.ModelMatrix);
+                Write(c.TargetPosition, 0);
+                Write(c.EyePosition, 0);
+                Write(c.EyeDistance);
+                StopReadWrite();                                // and complete..
+                lastmccount = c.CountMatrixCalcs;
+            }
         }
 
-        public void SetFull(GLMatrixCalc c) 
+        public void SetText(GLMatrixCalc c) 
         {
-            if (NotAllocated)
-                AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
-            StartWrite(0, Length);        // the whole schebang
-            Write(c.ProjectionModelMatrix);     //0, 64 long
-            Write(c.ProjectionMatrix);          //64, 64 long
-            Write(c.ModelMatrix);               //128, 64 long
-            Write(c.TargetPosition, 0);         //192, vec4, 16 long
-            Write(c.EyePosition, 0);            // 208, vec3, 16 long
-            Write(c.EyeDistance);               // 224, float, 4 long
-            Write(c.MatrixScreenCoordToClipSpace());                // 240, into the project model matrix slot
-            StopReadWrite();                                // and complete..
+            if (lastmccount != c.CountMatrixCalcs)
+            {
+                if (NotAllocated)
+                    AllocateBytes(maxmcubsize, BufferUsageHint.DynamicCopy);
+                StartWrite(0, Length);        // the whole schebang
+                Write(c.ProjectionModelMatrix);     //0, 64 long
+                Write(c.ProjectionMatrix);          //64, 64 long
+                Write(c.ModelMatrix);               //128, 64 long
+                Write(c.TargetPosition, 0);         //192, vec4, 16 long
+                Write(c.EyePosition, 0);            // 208, vec4, 16 long
+                Write(c.EyeDistance);               // 224, float, 4 long
+                Write(c.MatrixScreenCoordToClipSpace());                // 240, into the project model matrix slot, used for text
+                StopReadWrite();   // and complete..
+                lastmccount = c.CountMatrixCalcs;
+            }
         }
     }
 

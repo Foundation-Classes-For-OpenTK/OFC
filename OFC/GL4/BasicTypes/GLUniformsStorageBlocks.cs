@@ -45,13 +45,12 @@ namespace OFC.GL4
         }
     }
 
-    // atomic blocks blocks. Storage blocks are global across shaders.  IDs really need to be unique or you will have to rebind
+    // atomic blocks. Storage blocks are global across shaders.  IDs really need to be unique or you will have to rebind
     public class GLAtomicBlock : GLDataBlock
     {
         public GLAtomicBlock(int bindingindex) : base(bindingindex, false, BufferRangeTarget.AtomicCounterBuffer)
         {
         }
     }
-
 }
 

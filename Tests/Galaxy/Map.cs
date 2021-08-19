@@ -590,11 +590,12 @@ namespace TestOpenTk
         private void Controller3DDraw(Controller3D c3d, ulong time)
         {
             long t1 = hptimer.ElapsedTicks;
+            //TBD
             GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
             long t2 = hptimer.ElapsedTicks;
 
             GLMatrixCalcUniformBlock mcb = ((GLMatrixCalcUniformBlock)items.UB("MCUB"));
-            mcb.SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            mcb.SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             // set up the grid shader size
 
@@ -672,8 +673,8 @@ namespace TestOpenTk
 
             if (diff > 0)
             {
-                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");
-                System.Diagnostics.Debug.WriteLine($" finish {(t2 - t1) * 1000000 / Stopwatch.Frequency,5} t3 {(t3 - t2) * 1000000 / Stopwatch.Frequency,4} t4 {(t4 - t3) * 1000000 / Stopwatch.Frequency,4} render {(t5 - t4) * 1000000 / Stopwatch.Frequency,5} tot {(t5 - t1) * 1000000 / Stopwatch.Frequency,5}");
+//                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");
+//                System.Diagnostics.Debug.WriteLine($" finish {(t2 - t1) * 1000000 / Stopwatch.Frequency,5} t3 {(t3 - t2) * 1000000 / Stopwatch.Frequency,4} t4 {(t4 - t3) * 1000000 / Stopwatch.Frequency,4} render {(t5 - t4) * 1000000 / Stopwatch.Frequency,5} tot {(t5 - t1) * 1000000 / Stopwatch.Frequency,5}");
             }
             //            this.Text = "FPS " + fpsavg.ToString("N0") + " Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.Pos.ZoomFactor;
         }

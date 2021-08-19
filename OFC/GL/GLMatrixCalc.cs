@@ -90,6 +90,9 @@ namespace OFC
         // after Projection calc
         public float ZNear { get; private set; }
 
+        // incremented when Model or Project matrix changed
+        public int CountMatrixCalcs { get; private set;  } = 0;
+        
         // Screen coords are different from windows cooreds. Used for controls
 
         // axis flip to set direction of +x,+y,+z.
@@ -144,6 +147,7 @@ namespace OFC
             //System.Diagnostics.Debug.WriteLine("MM\r\n{0}", ModelMatrix);
 
             ProjectionModelMatrix = Matrix4.Mult(ModelMatrix, ProjectionMatrix);        // order order order ! so important.
+            CountMatrixCalcs++;
         }
 
         // Projection matrix - projects the 3d model space to the 2D screen
@@ -175,6 +179,7 @@ namespace OFC
             }
 
             ProjectionModelMatrix = Matrix4.Mult(ModelMatrix, ProjectionMatrix);
+            CountMatrixCalcs++;
         }
 
         public bool FovScale(bool direction)        // direction true is scale up FOV - need to tell it its changed
@@ -220,17 +225,17 @@ namespace OFC
             return new Point(x - ViewPort.Left, y - ViewPort.Top);
         }
 
-        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)          // p is in windows coords (gl_Control), adjust 
+        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)          // p is in windows coords (gl_Control), adjust to view port/clip space
         {
             return new Point(p.X - ViewPort.Left, p.Y - ViewPort.Top);
         }
 
-        public virtual Point AdjustWindowCoordToScreenCoord(Point p)
+        public virtual Point AdjustWindowCoordToScreenCoord(Point p)            // p is window coords (gl_control), adjust to view port, then adjust to screen co-ord
         {
             return AdjustViewSpaceToScreenCoord(AdjustWindowCoordToViewPortClipSpace(p));
         }
 
-        public virtual PointF AdjustWindowCoordToViewPortClipSpace(Point p)     // p is in windows coords (gl_Control), adjust to clip space taking into account view port
+        public virtual PointF AdjustWindowCoordToViewPortClipSpace(Point p)     // p is in window co-ords (gl_control), adjust to clip space taking into account view port and scaling
         {
             float x = p.X - ViewPort.Left;
             float y = p.Y - ViewPort.Top;
@@ -239,7 +244,7 @@ namespace OFC
             return f;
         }
 
-        public virtual Point AdjustViewSpaceToScreenCoord(PointF cs)    // cs is in view port space, scale to ScreenCoords      
+        public virtual Point AdjustViewSpaceToScreenCoord(PointF cs)            //  cs is in view port space, scale to ScreenCoords      
         {
             Size scr = ScreenCoordMax;
             SizeF clipsize = ScreenCoordClipSpaceSize;
@@ -254,7 +259,7 @@ namespace OFC
         }
 
         
-        public Vector4 WorldToNormalisedClipSpace(Vector4 worldpos)     // World pos -> normalised clip space
+        public Vector4 WorldToNormalisedClipSpace(Vector4 worldpos)         // World pos -> normalised clip space
         {
             Vector4 m = Vector4.Transform(worldpos, ProjectionModelMatrix);  // go from world-> viewspace -> clip space
             Vector4 c = m / m.W;                                            // to normalised clip space

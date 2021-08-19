@@ -15,7 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -92,7 +92,7 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
 
             ulong ctrl = 0xffffffff;
-            //ctrl = 3 | (1 << 23);
+            //ctrl = 1;
 
 
 
@@ -863,6 +863,43 @@ namespace TestOpenTk
 
             #endregion
 
+            #region 4.6
+
+            // indirect multi draw with count from a parameter buffer (4.6) static moon at front
+            if ((ctrl & (1 << 25)) != 0 || true)
+            {
+                GLRenderableItem rit;
+                GLBuffer ritpara;
+                GLRenderControl rc1 = GLRenderControl.Tri();
+                rit = GLRenderableItem.CreateVector4Vector2(items, rc1,
+                            GLSphereObjectFactory.CreateTexturedSphereFromTriangles(2, 5.0f),
+                            new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(0, 0, -30)));
+
+                rit.IndirectBuffer = new GLBuffer(128,true);    
+                rit.IndirectBuffer.StartWrite(0);
+                rit.IndirectBuffer.WriteIndirectArray(rit.DrawCount, 1, 0, 0);      // set up an indirect buffer and store the command
+                rit.IndirectBuffer.StopReadWrite();
+                rit.DrawCount = 1;  // one draw
+                var data = rit.IndirectBuffer.ReadInts(0, 4);                            // notice both are red due to primitive ID=1
+
+                ritpara = new GLBuffer(128, true);
+                ritpara.StartWrite(0);
+                ritpara.Write((int)0);       // dummy to make an offset be needed
+                ritpara.Write((int)1);       // count 1
+                ritpara.StopReadWrite();
+                var data2 = ritpara.ReadInts(0, 1);                            // notice both are red due to primitive ID=1
+                rit.ParameterBuffer = ritpara;
+                rit.ParameterBufferOffset = 4;  // pick up at 4
+                rit.DrawCount = 8;      // maximum due to 128 buffer size in indirect buffer
+                rit.MultiDrawCountStride = 16;
+
+                rObjects.Add(items.Shader("TEXOT"), "ICA", rit);
+            }
+
+
+            #endregion
+
+
             #region Matrix Calc Uniform
 
             var mcb = new GLMatrixCalcUniformBlock();
@@ -938,7 +975,7 @@ namespace TestOpenTk
 
             GLStatics.Check();
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetFull(gl3dcontroller.MatrixCalc);
+            mcub.SetText(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 

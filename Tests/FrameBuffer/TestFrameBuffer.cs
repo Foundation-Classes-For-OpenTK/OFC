@@ -199,7 +199,7 @@ namespace TestOpenTk
                 mc.CalculateModelMatrix(lookat, camerapos, 20F, 0);
                 mc.CalculateProjectionMatrix();
 
-                ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(mc);
+                ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(mc);
 
                 var renderState = GLRenderControl.Start();
 
@@ -330,7 +330,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetFull(gl3dcontroller.MatrixCalc);
+            mcub.SetText(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 

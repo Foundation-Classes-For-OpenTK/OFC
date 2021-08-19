@@ -39,6 +39,8 @@ namespace OFC.GL4
                 Id = id;
 
                 GL.TextureStorage3D(Id, mipmaplevels, InternalFormat, Width, Height, Depth);
+
+                SetMinMagFilter();
             }
         }
 

@@ -212,7 +212,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetFull(gl3dcontroller.MatrixCalc);
+            mcub.SetText(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
             

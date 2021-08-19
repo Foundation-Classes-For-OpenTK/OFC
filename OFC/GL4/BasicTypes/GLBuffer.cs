@@ -884,6 +884,13 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
+        public void BindParameter()
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
+            GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
+            OFC.GLStatics.Check();
+        }
+
         public void Bind(int bindingindex,  BufferRangeTarget tgr)                           // Bind to a arbitary buffer target
         {
             GL.BindBufferBase(tgr, bindingindex, Id);       // binding point set to tgr
