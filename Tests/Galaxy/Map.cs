@@ -342,6 +342,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
             }
 
+            float sunsize = 2.0f;
             if (true)       // travel path
             {
                 Random rnd = new Random(52);
@@ -366,7 +367,7 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, 2, 0.8f, findstarblock, true);
+                travelpath.Create(items, rObjects, pos, sunsize, 0.8f, findstarblock, true);
                 travelpath.SetSystem(0);
             }
 
@@ -378,7 +379,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                galaxystars = new GalaxyStars(items, rObjects, 2.0f, findgalaxystars);
+                galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
                 //Vector3 pos = new Vector3(50, 0, 0);
               //  galaxystars.Request9Box(pos);
                 

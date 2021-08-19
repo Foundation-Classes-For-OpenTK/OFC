@@ -142,6 +142,7 @@ namespace OFC.GL4
                 // how many can we take..
                 int touse = Math.Min(array.Length - pos, textures[textmapinuse].DepthLeftIndex);
 
+                //System.Diagnostics.Debug.WriteLine($"Fill {pos} {touse}");
                 // fill in vertex array entries from pos .. pos+touse-1
 
                 if (!dataindirectbuffer.Fill(array, pos, touse, 0, objectvertexescount, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
