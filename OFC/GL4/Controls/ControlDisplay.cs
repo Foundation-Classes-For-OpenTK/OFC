@@ -42,6 +42,11 @@ namespace OFC.GL4.Controls
 
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
+        public void EnsureCurrentContext()
+        {
+            glwin.EnsureCurrentContext();
+        }
+
         // need items, need a window to attach to, need a MC
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc,
                                     bool depthtest = true,          // do depth testing or not

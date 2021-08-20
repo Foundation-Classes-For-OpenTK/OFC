@@ -60,18 +60,4 @@ namespace OFC.GL4
         }
 
     }
-
-    // Helper class null shaders to insert into RenderLists
-
-    public class GLShaderClearDepthBuffer : GLShaderNull
-    {
-        public GLShaderClearDepthBuffer()
-        {
-            StartAction += (s, mc) =>
-                {
-                    GLStatics.ClearDepthBuffer();
-                    //System.Diagnostics.Debug.WriteLine("Clear Depth Buffer");
-                };
-        }
-    }
 }

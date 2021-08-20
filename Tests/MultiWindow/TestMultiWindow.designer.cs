@@ -1,6 +1,6 @@
 ﻿namespace TestOpenTk
 {
-    partial class TestMain2
+    partial class TestMultiWindow
     {
         /// <summary>
         /// Required designer variable.

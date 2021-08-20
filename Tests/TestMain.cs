@@ -72,6 +72,7 @@ namespace TestOpenTk
                 GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
                 System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
                 System.Diagnostics.Debug.WriteLine($"tex layers {GL4Statics.GetMaxTextureDepth()} ");
+                System.Diagnostics.Debug.WriteLine($"Vertex attribs {GL4Statics.GetMaxVertexAttribs()} ");
             }
 
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
@@ -101,6 +102,8 @@ namespace TestOpenTk
             if( (ctrl & (1<<0)) != 0)
             {
                 GLRenderControl lines = GLRenderControl.Lines(1);
+
+                rObjects.Add(items.Shader("COSW"), new GLRIClearDepthBuffer());     // demo a RI operation inside a particular shader
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines,

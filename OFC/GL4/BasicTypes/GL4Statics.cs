@@ -83,6 +83,11 @@ namespace OFC.GL4
         {
             return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxTextureImageUnits);
         }
+
+        public static int GetMaxVertexAttribs()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxVertexAttribs);
+        }
     }
 }
 

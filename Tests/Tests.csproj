@@ -70,6 +70,18 @@
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
+    <Compile Include="MultiWindow\Window2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MultiWindow\Window2.designer.cs">
+      <DependentUpon>Window2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MultiWindow\TestMultiWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MultiWindow\TestMultiWindow.designer.cs">
+      <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">
@@ -158,11 +170,11 @@
     <Compile Include="Stencil\TestStencil.designer.cs">
       <DependentUpon>TestStencil.cs</DependentUpon>
     </Compile>
-    <Compile Include="TestMain2.cs">
+    <Compile Include="TestSimple.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TestMain2.designer.cs">
-      <DependentUpon>TestMain2.cs</DependentUpon>
+    <Compile Include="TestSimple.designer.cs">
+      <DependentUpon>TestSimple.cs</DependentUpon>
     </Compile>
     <Compile Include="TestMain.cs">
       <SubType>Form</SubType>
@@ -314,6 +326,12 @@
     <EmbeddedResource Include="Geometry\ShaderTestGeoTest1.resx">
       <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MultiWindow\Window2.resx">
+      <DependentUpon>Window2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MultiWindow\TestMultiWindow.resx">
+      <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -330,8 +348,8 @@
     <EmbeddedResource Include="Stencil\TestStencil.resx">
       <DependentUpon>TestStencil.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TestMain2.resx">
-      <DependentUpon>TestMain2.cs</DependentUpon>
+    <EmbeddedResource Include="TestSimple.resx">
+      <DependentUpon>TestSimple.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TestMain.resx">
       <DependentUpon>TestMain.cs</DependentUpon>

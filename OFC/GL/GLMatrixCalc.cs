@@ -194,6 +194,7 @@ namespace OFC
             return curfov != Fov;
         }
 
+        // WARNING ensure current context is selected
         public virtual void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
         {
             //System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
@@ -203,7 +204,8 @@ namespace OFC
             SetViewPort();
         }
 
-        public void SetViewPort()
+        // WARNING ensure current context is selected
+        public void SetViewPort()       
         {
             //System.Diagnostics.Debug.WriteLine("Set GL Viewport {0} {1} w {2} h {3}", ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
             OpenTK.Graphics.OpenGL.GL.Viewport(ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);

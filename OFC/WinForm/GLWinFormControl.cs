@@ -22,23 +22,6 @@ namespace OFC.WinForm
     // a win form control version of GLWindowControl
     // runs a GLControl from OpenTK, and vectors the GLControl events thru the GLWindowControl standard event interfaces.
     // events from GLControl are translated into GLWindowControl events for dispatch.
-   
-
-    public class GLControlKeyOverride : OpenTK.GLControl
-    {
-        public GLControlKeyOverride(OpenTK.Graphics.GraphicsMode m ) : base(m)
-        {
-
-        }
-
-        protected override bool IsInputKey(Keys keyData)    // disable normal windows control change
-        {
-            if (keyData == Keys.Tab || keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
-                return true;
-            else
-                return base.IsInputKey(keyData);
-        }
-    }
 
     public class GLWinFormControl : GLWindowControl
     {
@@ -50,9 +33,14 @@ namespace OFC.WinForm
         public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
         public Point MouseScreenPosition { get { return Control.MousePosition; } }
         public GL4.GLRenderControl RenderState { get; set; } = null;
-        public bool MakeCurrentOnPaint { get; set; } = false;           // set if using multiple opengl in one thread
-        public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;    // what buffers to clear
 
+        public bool EnsureCurrentPaintResize { get; set; } = false;         // must be set for multiple opengl windows in one thread
+        public bool EnsureCurrentKeyboardMouse { get; set; } = false;       // only if you try and do something like resizing the viewport
+
+        // what buffers to clear
+        public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;
+
+        // use EnsureCurrentKeyboardMouse to ensure context is selected if running multiple windows in one thread
         public Action<Object, GLMouseEventArgs> MouseDown { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseUp { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseMove { get; set; } = null;
@@ -64,6 +52,8 @@ namespace OFC.WinForm
         public Action<Object, GLKeyEventArgs> KeyDown { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
         public Action<Object, GLKeyEventArgs> KeyPress { get; set; } = null;
+
+        // use EnsureCurrentPaintResize to ensure context is selected if running multiple windows in one thread
         public Action<Object> Resize { get; set; } = null;
         public Action<Object,ulong> Paint { get; set; } = null;     // ulong is elapsed time in ms
 
@@ -109,6 +99,11 @@ namespace OFC.WinForm
             glControl.Invalidate();
         }
 
+        public void EnsureCurrentContext()
+        {
+            glControl.MakeCurrent();
+        }
+
         public void SetCursor(GLCursorType t)
         {
             if (t == GLCursorType.Wait)
@@ -141,6 +136,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseEnter(object sender, EventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             Point relcurpos = FindCursorFormCoords();
             var ev = new GLMouseEventArgs(relcurpos);
             MouseEnter?.Invoke(this, ev);
@@ -148,6 +145,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseLeave(object sender, EventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             Point relcurpos = FindCursorFormCoords();
             var ev = new GLMouseEventArgs(relcurpos);
             MouseLeave?.Invoke(this, ev);
@@ -155,6 +154,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -166,6 +167,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -177,6 +180,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -187,6 +192,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -197,6 +204,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -207,6 +216,8 @@ namespace OFC.WinForm
 
         private void Gc_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Right) != 0) ? GLMouseEventArgs.MouseButtons.Right : 0);
@@ -217,6 +228,8 @@ namespace OFC.WinForm
 
         private void Gc_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)      
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             //System.Diagnostics.Debug.WriteLine("GLWIN KD " + e.KeyCode);
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
             KeyDown?.Invoke(this, ka);
@@ -224,19 +237,25 @@ namespace OFC.WinForm
 
         private void Gc_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
             KeyUp?.Invoke(this, ka);
         }
 
         private void Gc_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
         {
+            if (EnsureCurrentKeyboardMouse)
+                glControl.MakeCurrent();
             GLKeyEventArgs ka = new GLKeyEventArgs(e.KeyChar);     
             KeyPress?.Invoke(this, ka);
         }
 
         private void Gc_Resize(object sender, EventArgs e)
         {
-           // GL.Viewport(0, 0, glControl.Width, glControl.Height);                        // Use all of the glControl painting area
+            if (EnsureCurrentPaintResize)
+                glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
+            EnsureCurrentContext();
             Resize?.Invoke(this);
         }
 
@@ -244,8 +263,8 @@ namespace OFC.WinForm
 
         private void GlControl_Paint(object sender, PaintEventArgs e)
         {
-            if ( MakeCurrentOnPaint )
-                glControl.MakeCurrent();    // only needed if running multiple GLs windows in same thread
+            if (EnsureCurrentPaintResize)
+                glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
 
             GL.Disable(EnableCap.ScissorTest);      // Scissors off by default at start of each render.
             GL.Disable(EnableCap.StencilTest);      // and stencil
@@ -263,5 +282,20 @@ namespace OFC.WinForm
             glControl.SwapBuffers();
         }
 
+    }
+
+    public class GLControlKeyOverride : OpenTK.GLControl
+    {
+        public GLControlKeyOverride(OpenTK.Graphics.GraphicsMode m) : base(m)
+        {
+        }
+
+        protected override bool IsInputKey(Keys keyData)    // disable normal windows control change
+        {
+            if (keyData == Keys.Tab || keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
+                return true;
+            else
+                return base.IsInputKey(keyData);
+        }
     }
 }

@@ -29,38 +29,42 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using OFC;
+using System.Threading;
 
 // A simpler main for testing
 
 namespace TestOpenTk
 {
-    public partial class TestMain2 : Form
+    public partial class TestMultiWindow : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
-        private Timer systemtimer = new Timer();
+        private System.Windows.Forms.Timer systemtimer = new System.Windows.Forms.Timer();
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
-        GLRenderProgramSortedList rObjectscw = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
-        GLStorageBlock dataoutbuffer;
 
-        public TestMain2()
+        public TestMultiWindow()
         {
             InitializeComponent();
 
             glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc.EnsureCurrentPaintResize = true;
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
             systemtimer.Start();
         }
 
+        Window2 frm;
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
+
+            glwfc.EnsureCurrentContext();       // paranoid check
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
@@ -74,21 +78,14 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
+            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
 
-            items.Add( new GLTexture2D(Properties.Resources.dotted)  ,           "dotted"    );
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
+            items.Add( new GLTexture2D(Properties.Resources.dotted)  , "dotted");
             items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wooden");
-            items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
-            items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
+            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
             items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");    
 
             #region coloured lines
 
@@ -107,22 +104,6 @@ namespace TestOpenTk
                              GLRenderableItem.CreateVector4Color4(items, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed }));
-            }
-            if (true)
-            {
-                GLRenderControl lines = GLRenderControl.Lines(1);
-
-                rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
-                                   GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
-                                                             new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
-                                   );
-
-                rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
-                                   GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
-                                                             new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
-                                   );
             }
 
             #endregion
@@ -160,31 +141,6 @@ namespace TestOpenTk
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
                             ));
 
-                rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(2,0,0))
-                            ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(4,0,0))
-                            ));
-
-                GLRenderControl rqnc = GLRenderControl.Quads(cullface: false);
-
-                rObjects.Add(items.Shader("TEXOT"), "EDDFlat",
-                    GLRenderableItem.CreateVector4Vector2(items, rqnc,
-                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(6, 0, 0))
-                            ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, rqnc,
-                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( 90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("smile"), new Vector3(8, 0, 0))
-                           ));
 
             }
 
@@ -197,8 +153,11 @@ namespace TestOpenTk
 
             #endregion
 
-            dataoutbuffer = items.NewStorageBlock(5);
-            dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back
+
+            //new Thread(() => new Window2().ShowDialog()).Start();       // in another thread, it works
+
+            frm = new Window2();
+            frm.Show();
 
         }
 
@@ -218,18 +177,7 @@ namespace TestOpenTk
             
             var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.Lookat, true);
 
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
-
-            //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-            //Vector4[] databack = dataoutbuffer.ReadVector4(0, 4);
-            //for (int i = 0; i < databack.Length; i += 1)
-            //{
-            //   // databack[i] = databack[i] / databack[i].W;
-            //   // databack[i].X = databack[i].X * gl3dcontroller.glControl.Width / 2 + gl3dcontroller.glControl.Width/2;
-            //   // databack[i].Y = gl3dcontroller.glControl.Height - databack[i].Y * gl3dcontroller.glControl.Height;
-            //    System.Diagnostics.Debug.WriteLine("{0}={1}", i, databack[i].ToStringVec(true));
-            //}
-            //GLStatics.Check();
+            this.Text = "Main Window Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
 
         }
 

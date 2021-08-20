@@ -107,6 +107,7 @@ namespace OFC
         Action<Object, GLKeyEventArgs> KeyUp { get; set; }
         Action<Object, GLKeyEventArgs> KeyPress { get; set; }
 
+        void EnsureCurrentContext();
         void Invalidate();
         Rectangle ClientScreenPos { get; }
         Point MouseScreenPosition { get; }
@@ -115,6 +116,7 @@ namespace OFC
         Size Size { get; }
         bool Focused { get; }
         void SetCursor(GLCursorType t);
-        ulong ElapsedTimems { get; }        
+        ulong ElapsedTimems { get; }      
+        
     }
 }

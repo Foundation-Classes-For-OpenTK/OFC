@@ -101,6 +101,9 @@
     <Compile Include="GL4\Controls\ControlDisplay.cs" />
     <Compile Include="GL4\Controls\Control.cs" />
     <Compile Include="GL4\Controls\ControlTabStyleCustom.cs" />
+    <Compile Include="GL4\Renderers\RenderableItemOperations.cs" />
+    <Compile Include="GL4\Renderers\RenderableItemNull.cs" />
+    <Compile Include="GL4\Shaders\Base\ShaderOperations.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderNull.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewaveInstanced.cs" />
     <Compile Include="GL4\Shaders\Find\ShaderFindGeoTriangles.cs" />
@@ -165,9 +168,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="WinForm\GLWinFormControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="WinForm\GLWinFormControl.cs" />
     <Compile Include="GL\GLVector2Statics.cs" />
     <Compile Include="GL\GLVector3Statics.cs" />
     <Compile Include="GL\GLVector4Statics.cs" />
