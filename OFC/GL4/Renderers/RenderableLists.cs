@@ -64,7 +64,7 @@ namespace OFC.GL4
         // a operation
         public void Add(GLOperationsBase nprog)
         {
-            string n = "NS " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            string n = "OP " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
             AddItem(nprog, n, null);
         }
 

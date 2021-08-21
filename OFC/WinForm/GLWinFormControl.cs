@@ -255,7 +255,6 @@ namespace OFC.WinForm
         {
             if (EnsureCurrentPaintResize)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
-            EnsureCurrentContext();
             Resize?.Invoke(this);
         }
 

@@ -870,25 +870,41 @@ namespace OFC.GL4
             //System.Diagnostics.Debug.WriteLine("BUFBIND " + bindingindex + " To B" + Id + " pos " + start + " stride " + stride + " divisor " + divisor);
         }
 
+        private static int elementbindindex = -1;       // static across renders and programs, like uniform buffers, so no need to keep on rebinding
+
         public void BindElement()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Id);
-            OFC.GLStatics.Check();
+            if (elementbindindex != Id)
+            {
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, Id);
+                OFC.GLStatics.Check();
+                elementbindindex = Id;
+            }
         }
 
+        private static int indirectbindindex = -1;
         public void BindIndirect()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Id);
-            OFC.GLStatics.Check();
+            if (indirectbindindex != Id)
+            {
+                GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Id);
+                OFC.GLStatics.Check();
+                indirectbindindex = Id;
+            }
         }
 
+        private static int parameterbindindex = -1;
         public void BindParameter()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
-            OFC.GLStatics.Check();
+            if (parameterbindindex != Id)
+            {
+                GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
+                OFC.GLStatics.Check();
+                parameterbindindex = Id;
+            }
         }
 
         public void Bind(int bindingindex,  BufferRangeTarget tgr)                           // Bind to a arbitary buffer target
