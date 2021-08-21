@@ -101,9 +101,11 @@ namespace TestOpenTk
 
             if( (ctrl & (1<<0)) != 0)
             {
+                rObjects.Add(new GLOperationClearDepthBuffer());     // demo the operation via the shader interface
+
                 GLRenderControl lines = GLRenderControl.Lines(1);
 
-                rObjects.Add(items.Shader("COSW"), new GLRIClearDepthBuffer());     // demo a RI operation inside a particular shader
+                rObjects.Add(items.Shader("COSW"), new GLOperationClearDepthBuffer());     // demo a RI operation inside a particular shader
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, lines,

@@ -88,8 +88,7 @@ namespace TestOpenTk
 
             if ( true )
             {
-                var sns = new GLShaderNull((sh1, c) => { GLStencil.SetStencil(); });        // add a null shader so at this point we can set the stencil
-                rObjects.Add(sns);
+                rObjects.Add(new GLOperationSetStencil());      // set default stencil
 
                 GLRenderControl rq = GLRenderControl.Quads(def);
 
@@ -101,8 +100,7 @@ namespace TestOpenTk
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 3, -6))
                             ));
 
-                var snf = new GLShaderNull((sh1, c) => { GLStencil.OnlyIfEqual(); });         // now turn it to overwrite mode.
-                rObjects.Add(snf);
+                rObjects.Add(new GLOperationStencilOnlyIfEqual());
             }
 
             #region Coloured triangles

@@ -61,8 +61,8 @@ namespace OFC.GL4
             AddItem(cprog, n, null);
         }
 
-        // a null shader
-        public void Add(GLShaderNull nprog)
+        // a operation
+        public void Add(GLOperationsBase nprog)
         {
             string n = "NS " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
             AddItem(nprog, n, null);
@@ -121,13 +121,17 @@ namespace OFC.GL4
                         {
                             if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
 
-                            if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                            if (g.Item2.RenderControl == null)                      // if no render control, do not change rendercontrol
+                            {
+                                g.Item2.Bind(null, kvp.Key, c);
+                            }
+                            else if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
                             }
                             else
                             {
-                                g.Item2.Bind(currentstate, kvp.Key, c);
+                                g.Item2.Bind(currentstate, kvp.Key, c);             // change and remember
                                 lastapplied = g.Item2.RenderControl;
                             }
 

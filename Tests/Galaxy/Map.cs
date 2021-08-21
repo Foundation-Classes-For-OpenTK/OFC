@@ -152,7 +152,7 @@ namespace TestOpenTk
                                                         new OpenTK.Graphics.Color4[] { cr })
                                    );
 
-                rObjects.Add(new GLShaderNull((sh, mc) => { System.Diagnostics.Debug.WriteLine("Clear DB"); GLStatics.ClearDepthBuffer(); }));
+                rObjects.Add(new GLOperationClearDepthBuffer());
             }
 
 
@@ -293,7 +293,7 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
-            rObjects.Add(new GLShaderClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
+            rObjects.Add(new GLOperationClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
 
 
             if (true)  // point sprite
