@@ -38,7 +38,7 @@ namespace OFC.GL4
         {
         }
 
-        public virtual void Finish(GLMatrixCalc c)
+        public virtual void Finish()
         {
         }
 

@@ -633,7 +633,7 @@ namespace OFC.GL4
                 Render();
 
                 if (!noshaderstart)
-                    shader.Finish(c);
+                    shader.Finish();
 
                 if (discard)
                     GL.Disable(EnableCap.RasterizerDiscard);

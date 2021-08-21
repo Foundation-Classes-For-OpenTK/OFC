@@ -27,7 +27,7 @@ namespace OFC.GL4
     {
         int Id { get; }
         void Start(GLMatrixCalc c);                         // Renders call this when program has just started
-        void Finish(GLMatrixCalc c);                        // Renders call this when program has ended
+        void Finish();                                      // Renders call this when program has ended
     }
 
     public interface IGLPipelineShader : IGLShader          // All pipeline shaders come from this
@@ -39,7 +39,7 @@ namespace OFC.GL4
         bool Enable { get; set; }
         IGLShader Get(OpenTK.Graphics.OpenGL4.ShaderType t);    // get a subcomponent.  if the shader does not have subcomponents, its should return itself.
         Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      // allow start and finish actions to be added to the shader..
-        Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
+        Action<IGLProgramShader> FinishAction { get; set; }
         string Name { get; }                                
     }
 

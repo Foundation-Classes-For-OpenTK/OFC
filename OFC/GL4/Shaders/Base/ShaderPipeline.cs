@@ -37,7 +37,7 @@ namespace OFC.GL4
         public virtual string Name { get { string s = ""; foreach (var sh in shaders) s = s.AppendPrePad(sh.Value.GetType().Name,",") ; return this.GetType().Name + ":"+ s; } } 
 
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
-        public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
+        public Action<IGLProgramShader> FinishAction { get; set; }
 
         public IGLShader Get(ShaderType t) { return shaders[t]; }
         public T Get<T>(ShaderType t) where T : IGLPipelineShader
@@ -52,13 +52,13 @@ namespace OFC.GL4
             shaders = new Dictionary<ShaderType, IGLPipelineShader>();
         }
 
-        public GLShaderPipeline(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
+        public GLShaderPipeline(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader> fa = null) : this()
         {
             StartAction = sa;
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
+        public GLShaderPipeline(IGLPipelineShader vertex, Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader> fa = null) : this()
         {
             AddVertex(vertex);
             StartAction = sa;
@@ -66,7 +66,7 @@ namespace OFC.GL4
         }
 
         public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader fragment, Action<IGLProgramShader, GLMatrixCalc> sa = null, 
-                                Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
+                                Action<IGLProgramShader> fa = null) : this()
         {
             AddVertexFragment(vertex, fragment);
             StartAction = sa;
@@ -74,7 +74,7 @@ namespace OFC.GL4
         }
 
         public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader tcs, IGLPipelineShader tes, IGLPipelineShader geo, IGLPipelineShader fragment, 
-                                Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader, GLMatrixCalc> fa = null) : this()
+                                Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader> fa = null) : this()
         {
             AddVertexTCSTESGeoFragment(vertex, tcs,tes,geo, fragment);
             StartAction = sa;
@@ -124,12 +124,12 @@ namespace OFC.GL4
             StartAction?.Invoke(this,c);                           // any shader hooks get a chance.
         }
 
-        public virtual void Finish(GLMatrixCalc c)                                        // and clean up afterwards
+        public virtual void Finish()                                        // and clean up afterwards
         {
             foreach (var x in shaders)
-                x.Value.Finish(c);
+                x.Value.Finish();
 
-            FinishAction?.Invoke(this,c);                           // any shader hooks get a chance.
+            FinishAction?.Invoke(this);                           // any shader hooks get a chance.
 
             GL.BindProgramPipeline(0);
         }

@@ -140,7 +140,7 @@ namespace OFC.GL4
                         }
                     }
 
-                    kvp.Key.Finish(c);
+                    kvp.Key.Finish();
                 }
             }
 

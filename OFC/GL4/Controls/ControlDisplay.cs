@@ -166,7 +166,7 @@ namespace OFC.GL4.Controls
                 shader.Start(MatrixCalc);
                 ri.Bind(currentstate, shader, MatrixCalc);        // binds VA AND the element buffer
                 ri.Render();                                // draw using primitive restart on element index buffer with bindless textures
-                shader.Finish(MatrixCalc);
+                shader.Finish();
                 GL.UseProgram(0);           // final clean up
                 GL.BindProgramPipeline(0);
                 GLScissors.Disable(0);

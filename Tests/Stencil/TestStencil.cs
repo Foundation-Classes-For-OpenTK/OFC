@@ -231,7 +231,7 @@ namespace TestOpenTk
 
         public class GLDirect : GLShaderPipeline
         {
-            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
+            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
                 AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
             }

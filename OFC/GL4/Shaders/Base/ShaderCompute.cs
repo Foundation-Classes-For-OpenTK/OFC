@@ -62,7 +62,7 @@ namespace OFC.GL4
         public void Run()                           // for compute shaders, we can just run them.  
         {
             Start(null);
-            Finish(null);
+            Finish();
         }
     }
 }

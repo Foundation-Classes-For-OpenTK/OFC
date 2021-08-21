@@ -131,7 +131,7 @@ namespace OFC.GL4
                 s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
-            findshader.Finish(null);    // finish shader
+            findshader.Finish();    // finish shader
 
             var res = geo.GetResult();
             if (res != null)

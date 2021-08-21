@@ -34,7 +34,7 @@ namespace OFC.GL4
 
         public IGLShader Get(ShaderType t) { return this; }
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
-        public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }
+        public Action<IGLProgramShader> FinishAction { get; set; }
 
         protected GLProgram program;
 
@@ -47,7 +47,7 @@ namespace OFC.GL4
             StartAction = sa;
         }
 
-        public GLShaderStandard(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader, GLMatrixCalc> fa) : this()
+        public GLShaderStandard(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader> fa) : this()
         {
             StartAction = sa;
             FinishAction = fa;
@@ -112,9 +112,9 @@ namespace OFC.GL4
             StartAction?.Invoke(this,c);
         }
 
-        public virtual void Finish(GLMatrixCalc c)                 
+        public virtual void Finish()                 
         {
-            FinishAction?.Invoke(this,c);                           // any shader hooks get a chance.
+            FinishAction?.Invoke(this);                           // any shader hooks get a chance.
         }
 
         public virtual void Dispose()

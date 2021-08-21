@@ -33,7 +33,7 @@ namespace OFC.GL4
 
         // when attached to shader
         public bool Enable { get => Visible; set => Visible = value; }      // use Visible
-        public Action<IGLProgramShader, GLMatrixCalc> FinishAction { get; set; }        // not used
+        public Action<IGLProgramShader> FinishAction { get; set; }        // not used
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      //  not used
         public string Name => "Operation";
         public IGLShader Get(ShaderType t) { throw new NotImplementedException(); }
@@ -62,7 +62,7 @@ namespace OFC.GL4
             DoOperation(c);
         }
 
-        public void Finish(GLMatrixCalc c)  // no action on finish
+        public void Finish()  // no action on finish
         {
         }
 

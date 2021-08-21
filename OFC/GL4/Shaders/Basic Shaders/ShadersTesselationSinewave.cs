@@ -119,9 +119,9 @@ void main(void)
             OFC.GLStatics.Check();
         }
 
-        public override void Finish(GLMatrixCalc c)
+        public override void Finish()
         {
-            base.Finish(c);
+            base.Finish();
         }
     }
 }

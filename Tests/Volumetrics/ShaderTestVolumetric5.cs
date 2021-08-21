@@ -159,7 +159,7 @@ namespace TestOpenTk
                 items.Add( array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
                 items.Shader("IC-2").StartAction += (s,m) => { items.Tex("Nums").Bind(1); GL.Disable(EnableCap.CullFace); };
-                items.Shader("IC-2").FinishAction += (s,m) => { GL.Enable(EnableCap.CullFace); };
+                items.Shader("IC-2").FinishAction += (s) => { GL.Enable(EnableCap.CullFace); };
 
                 // investigate why its wrapping when we asked for it TexQUAD 1 which should interpolate over surface..
 

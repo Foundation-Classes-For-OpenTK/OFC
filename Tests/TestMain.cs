@@ -1046,7 +1046,7 @@ namespace TestOpenTk
 
     public class GLDirect : GLShaderPipeline
     {
-        public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
+        public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
         }
@@ -1054,7 +1054,7 @@ namespace TestOpenTk
 
     public class GLColourShaderWithWorldCoordXX : GLShaderPipeline
     {
-        public GLColourShaderWithWorldCoordXX(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
+        public GLColourShaderWithWorldCoordXX(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentIDShaderColor(2));
         }
@@ -1062,7 +1062,7 @@ namespace TestOpenTk
 
     public class GLBindlessTextureShaderWithWorldCoord : GLShaderPipeline
     {
-        public GLBindlessTextureShaderWithWorldCoord(int arbbindingpoint, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader, GLMatrixCalc> finish = null) : base(start, finish)
+        public GLBindlessTextureShaderWithWorldCoord(int arbbindingpoint, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureTriangleStrip(arbbindingpoint));
         }
