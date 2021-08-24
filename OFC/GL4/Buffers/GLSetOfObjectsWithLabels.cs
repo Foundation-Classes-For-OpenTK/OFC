@@ -128,6 +128,7 @@ namespace OFC.GL4
             foreach (var s in set)      
             {
                 geo.SetGroup(setno << 18);      // set the group marker for 
+                s.ObjectRenderer.RenderControl.Discard = true;
                 s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 

@@ -12,71 +12,161 @@
  * governing permissions and limitations under the License.
  */
 
-
+using System;
 using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
-    public class GLOperationBeginQuery : GLOperationsBase
-    {
-        QueryTarget target;
-        int id;
-        public GLOperationBeginQuery(QueryTarget target, int id)
-        {
-            this.target = target;
-            this.id = id;
-        }
-        public override void DoOperation(GLMatrixCalc c)
-        {
-            GL.BeginQuery(target, id);
-        }
-    }
+    // attach query to render list or shader list, create first and use to get results
 
-    public class GLOperationBeginQueryIndexed : GLOperationsBase
+    public class GLOperationQuery : GLOperationsBase, IDisposable       
     {
-        QueryTarget target;
-        int id,index;
-        public GLOperationBeginQueryIndexed(QueryTarget target, int index, int id)
+        public QueryTarget Target { get; set; }
+        public int Index { get; set; }            // BeginQueryIndexied(target,0,id) == BeginQuery(target,id) GlSpec46. page 46
+        public Action<GLOperationQuery> QueryStart { get; set; }      
+
+        public GLOperationQuery(QueryTarget target, int index = 0, bool createnow = false)
         {
-            this.target = target;
-            this.index = index;
-            this.id = id;
+            this.Target = target;
+            this.Index = index;
+            int id = 0;
+            if (createnow)
+            {
+                GL.CreateQueries(Target, 1, out id);
+            }
+            else
+            {
+                GL.GenQueries(1, out id);
+            }
+            System.Diagnostics.Debug.Assert(id != 0);
+            GLStatics.Check();
+            this.Id = id;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
-            GL.BeginQueryIndexed(target, index, id);
+            GL.BeginQueryIndexed(Target, Index, Id);
+            QueryStart?.Invoke(this);
+            GLStatics.Check();
+        }
+
+        public override void Dispose()               // when dispose, delete query
+        {
+            GL.DeleteQuery(Id);
+            GLStatics.Check();
+        }
+
+        static public int GetQueryName(QueryTarget t, int index, GetQueryParam p = GetQueryParam.CurrentQuery) // only valid between begin and end..
+        {
+            GL.GetQueryIndexed(t, index, p, out int res);
+            GLStatics.Check();
+            return res;
+        }
+
+        static public bool IsQuery(int id)
+        {
+            return GL.IsQuery(id);
         }
     }
 
     public class GLOperationEndQuery : GLOperationsBase
     {
-        QueryTarget target;
+        public GLOperationQuery Query { get; private set; }
+        public Action<GLOperationEndQuery> QueryComplete { get; set; }       // called on EndQuery
 
-        public GLOperationEndQuery(QueryTarget target)
+        public GLOperationEndQuery(GLOperationQuery query, Action<GLOperationEndQuery> querycomplete = null)
         {
-            this.target = target;
+            this.Id = query.Id; // just for consistency
+            this.Query = query;
+            this.QueryComplete = querycomplete;
         }
-        public override void DoOperation(GLMatrixCalc c)
+
+        public override void Execute(GLMatrixCalc c)
         {
-            GL.EndQuery(target);
+            GL.EndQueryIndexed(Query.Target,Query.Index);
+            GLStatics.Check();
+            QueryComplete?.Invoke(this);
         }
+
+        public bool IsAvailable()
+        {
+            GL.GetQueryObject(Id, GetQueryObjectParam.QueryResultAvailable, out int p);
+            return p != 0;
+        }
+
+        public int GetQuery(GetQueryObjectParam p = GetQueryObjectParam.QueryResult)
+        {
+            GL.GetQueryObject(Query.Id, p, out int res);
+            GLStatics.Check();
+            return res;
+        }
+
+        public long GetQueryl(GetQueryObjectParam p = GetQueryObjectParam.QueryResult)    
+        {
+            GL.GetQueryObject(Query.Id, p, out long res);
+            return res;
+        }
+
+        public int[] GetQuerya(int length, GetQueryObjectParam p = GetQueryObjectParam.QueryResult)    
+        {
+            int[] array = new int[length];
+            GL.GetQueryObject(Query.Id, p, array);
+            return array;
+        }
+
+        public long[] GetQueryal(int length, GetQueryObjectParam p = GetQueryObjectParam.QueryResult)  
+        {
+            long[] array = new long[length];
+            GL.GetQueryObject(Query.Id, p, array);
+            return array;
+        }
+
+        public void UpdateBuffer(int bufid, int offset, QueryObjectParameterName p  = QueryObjectParameterName.QueryResult)     // store in buffer at offset the result
+        {
+            GL.GetQueryBufferObject(Query.Id, bufid, p, (IntPtr)offset);
+            GLStatics.Check();
+        }
+
     }
 
-    public class GLOperationEndQueryIndexed : GLOperationsBase
+    public class GLOperationQueryTimeStamp : GLOperationsBase, IDisposable
     {
-        QueryTarget target;
-        int index;
-        public GLOperationEndQueryIndexed(QueryTarget target, int index)
+        public Action<GLOperationQueryTimeStamp> QueryComplete { get; set; }       // called on EndQuery
+
+        public GLOperationQueryTimeStamp()
         {
-            this.target = target;
-            this.index = index;
+            //GL.CreateQueries(QueryTarget.Timestamp, 1, out int id);
+            this.Id = GL.GenQuery();
+//            this.Id = id;
+            System.Diagnostics.Debug.Assert(Id != 0);
+            GLStatics.Check();
         }
-        public override void DoOperation(GLMatrixCalc c)
+
+        public override void Execute(GLMatrixCalc c)
         {
-            GL.EndQueryIndexed(target, index);
+            GL.QueryCounter(Id, QueryCounterTarget.Timestamp);
+            QueryComplete?.Invoke(this);
+        }
+
+        public override void Dispose()               // when dispose, delete query
+        {
+            GL.DeleteQuery(Id);
+            GLStatics.Check();
+        }
+
+        public bool IsAvailable()
+        {
+            GL.GetQueryObject(Id, GetQueryObjectParam.QueryResultAvailable, out int p);
+            return p != 0;
+        }
+
+        public long GetCounter(GetQueryObjectParam p = GetQueryObjectParam.QueryResult)
+        {
+            GL.GetQueryObject(Id, p, out long res);
+            GLStatics.Check();
+            return res;
         }
     }
 
-  }
+}
 

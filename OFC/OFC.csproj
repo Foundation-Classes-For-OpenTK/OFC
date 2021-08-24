@@ -102,6 +102,8 @@
     <Compile Include="GL4\Controls\Control.cs" />
     <Compile Include="GL4\Controls\ControlTabStyleCustom.cs" />
     <Compile Include="GL4\Operations\OperationsConditional.cs" />
+    <Compile Include="GL4\Operations\OperationsScissors.cs" />
+    <Compile Include="GL4\Operations\OperationsTransformFeedback.cs" />
     <Compile Include="GL4\Operations\OperationsQuery.cs" />
     <Compile Include="GL4\Operations\OperationsStencil.cs" />
     <Compile Include="GL4\Operations\OperationsBasic.cs" />

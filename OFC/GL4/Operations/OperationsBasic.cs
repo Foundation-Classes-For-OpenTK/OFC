@@ -12,15 +12,54 @@
  * governing permissions and limitations under the License.
  */
 
+using System;
+using OpenTK.Graphics.OpenGL;
+
 namespace OFC.GL4
 {
     public class GLOperationClearDepthBuffer : GLOperationsBase
     {
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStatics.ClearDepthBuffer();
         }
     }
-  
-  }
+    public class GLOperationClearStencilBuffer : GLOperationsBase
+    {
+        public override void Execute(GLMatrixCalc c)
+        {
+            GLStatics.ClearStencilBuffer();
+        }
+    }
+    public class GLOperationClearBuffer : GLOperationsBase
+    {
+        private ClearBufferMask mask;
+        public GLOperationClearBuffer(ClearBufferMask mask)
+        {
+            this.mask = mask;
+        }
+        
+        public override void Execute(GLMatrixCalc c)
+        {
+            GLStatics.ClearBuffer(mask);
+        }
+    }
+
+    // for this one,set StartAction to action you want to execute
+    public class GLOperationAction: GLOperationsBase
+    {
+        public GLOperationAction() : base()
+        {
+        }
+        public GLOperationAction(Action<IGLProgramShader, GLMatrixCalc> sa) : base()
+        {
+            StartAction = sa;
+        }
+        public override void Execute(GLMatrixCalc c)        
+        {
+            StartAction?.Invoke(this, c);
+        }
+    }
+
+}
 

@@ -18,7 +18,7 @@ namespace OFC.GL4
 {
     // Wraps the openGL main state variables in a class so they get selected correctly for each render.
 
-    public class GLRenderControl 
+    public class GLRenderControl
     {
         // static creates of a GLRenderControl for the various OpenGL primitives
 
@@ -28,7 +28,7 @@ namespace OFC.GL4
 
         static public GLRenderControl Tri(GLRenderControl prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev,PrimitiveType.Triangles) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderControl(prev, PrimitiveType.Triangles) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
         static public GLRenderControl TriStrip(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
@@ -46,7 +46,7 @@ namespace OFC.GL4
 
         static public GLRenderControl TriStrip(GLRenderControl prev, uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev,PrimitiveType.TriangleStrip) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderControl(prev, PrimitiveType.TriangleStrip) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
         static public GLRenderControl TriStrip(DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
@@ -103,14 +103,14 @@ namespace OFC.GL4
         { return new GLRenderControl(PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
 
         static public GLRenderControl PointSprites(GLRenderControl prev)
-        { return new GLRenderControl(prev,PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
+        { return new GLRenderControl(prev, PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
 
 
         static public GLRenderControl Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
         { return new GLRenderControl(PrimitiveType.Patches) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
         static public GLRenderControl Patches(GLRenderControl prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
-        { return new GLRenderControl(prev,PrimitiveType.Patches) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
+        { return new GLRenderControl(prev, PrimitiveType.Patches) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
 
         static public GLRenderControl Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
@@ -124,14 +124,14 @@ namespace OFC.GL4
         { return new GLRenderControl(PrimitiveType.LineLoop) { LineWidth = linewidth, LineSmooth = smooth }; }
 
         static public GLRenderControl LineLoop(GLRenderControl prev, float linewidth = 1, bool smooth = true)     // vertex 0->1->2->0
-        { return new GLRenderControl(prev,PrimitiveType.LineLoop) { LineWidth = linewidth, LineSmooth = smooth }; }
+        { return new GLRenderControl(prev, PrimitiveType.LineLoop) { LineWidth = linewidth, LineSmooth = smooth }; }
 
 
         static public GLRenderControl LineStrip(float linewidth = 1, bool smooth = true)    // vertex 0->1->2
         { return new GLRenderControl(PrimitiveType.LineStrip) { LineWidth = linewidth, LineSmooth = smooth }; }
 
         static public GLRenderControl LineStrip(GLRenderControl prev, float linewidth = 1, bool smooth = true)    // vertex 0->1->2
-        { return new GLRenderControl(prev,PrimitiveType.LineStrip) { LineWidth = linewidth, LineSmooth = smooth }; }
+        { return new GLRenderControl(prev, PrimitiveType.LineStrip) { LineWidth = linewidth, LineSmooth = smooth }; }
 
         // geoshaders which change the primitive type need the values for the output, but a different input type
         // good for any triangle type at the geoshader output
@@ -171,6 +171,7 @@ namespace OFC.GL4
             BlendEquationRGB = prev.BlendEquationRGB;
             ColorMasking = prev.ColorMasking;
             PrimitiveType = p;
+            Discard = prev.Discard;
         }
 
         static public GLRenderControl Start()
@@ -205,6 +206,7 @@ namespace OFC.GL4
                 BlendEquationA = BlendEquationMode.Min,
                 BlendEquationRGB = BlendEquationMode.Min,
                 ColorMasking = 0,
+                Discard = true,
             };
 
             curstate.ApplyState(startstate);        // from curstate, apply state
@@ -212,7 +214,7 @@ namespace OFC.GL4
             return startstate;
         }
 
-        public void ApplyState( GLRenderControl newstate)      // apply deltas to GL
+        public void ApplyState(GLRenderControl newstate)      // apply deltas to GL
         {
             // general
 
@@ -311,11 +313,17 @@ namespace OFC.GL4
                                     (ColorMasking & ColorMask.Blue) == ColorMask.Blue, (ColorMasking & ColorMask.Alpha) == ColorMask.Alpha);
             }
 
+            if (newstate.Discard != Discard)
+            {
+                Discard = newstate.Discard;
+                GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.RasterizerDiscard, Discard);
+            }
+
             // ---------------------------------- Below are default null
 
             // Geo shaders
 
-            if (newstate.PatchSize.HasValue && PatchSize != newstate.PatchSize )
+            if (newstate.PatchSize.HasValue && PatchSize != newstate.PatchSize)
             {
                 PatchSize = newstate.PatchSize;
                 GL.PatchParameter(PatchParameterInt.PatchVertices, PatchSize.Value);
@@ -323,14 +331,14 @@ namespace OFC.GL4
 
             // points
 
-            if (newstate.PointSize.HasValue && PointSize != newstate.PointSize )
+            if (newstate.PointSize.HasValue && PointSize != newstate.PointSize)
             {
-                if ( newstate.PointSize>0 )     // if fixed point size
+                if (newstate.PointSize > 0)     // if fixed point size
                 {
-                    if ( PointSize == null || newstate.PointSize != PointSize.Value )
+                    if (PointSize == null || newstate.PointSize != PointSize.Value)
                         GL.PointSize(newstate.PointSize.Value); // set if different
 
-                    if ( PointSize == null || PointSize == 0 )       // if previous was off
+                    if (PointSize == null || PointSize == 0)       // if previous was off
                         GL.Disable(EnableCap.ProgramPointSize);
                 }
                 else
@@ -339,7 +347,7 @@ namespace OFC.GL4
                 PointSize = newstate.PointSize;
             }
 
-            if (newstate.PointSprite.HasValue && PointSprite != newstate.PointSprite )
+            if (newstate.PointSprite.HasValue && PointSprite != newstate.PointSprite)
             {
                 PointSprite = newstate.PointSprite;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PointSprite, PointSprite.Value);
@@ -391,6 +399,7 @@ namespace OFC.GL4
                 FrontFace = newstate.FrontFace;
                 GL.FrontFace(FrontFace.Value);
             }
+
         }
 
         public PrimitiveType PrimitiveType { get; set; }             // Draw type for front end - may not be draw type after geo shader note
@@ -401,7 +410,7 @@ namespace OFC.GL4
         public float? PointSize { get; set; } = null;               // points
         public bool? PointSprite { get; set; } = null;              // points
         public bool? PointSmooth { get; set; } = null;              // points
-        public float? LineWidth { get;  set;} = null;               // lines
+        public float? LineWidth { get; set; } = null;               // lines
         public bool? LineSmooth { get; set; } = null;               // lines
         public PolygonMode? PolygonModeFrontAndBack { get; set; } = null;        // triangles/quads
         public bool? PolygonSmooth { get; set; } = null;            // triangles/quads, not normally set
@@ -415,14 +424,15 @@ namespace OFC.GL4
         public bool DepthTest { get; set; } = true;
         public DepthFunction DepthFunctionMode { get; set; } = DepthFunction.Less;
         public bool WriteDepthBuffer { get; set; } = true;
-        public bool DepthClamp { get; set; } = false;              
-        public bool BlendEnable { get;  set; } = true;
+        public bool DepthClamp { get; set; } = false;
+        public bool BlendEnable { get; set; } = true;
         public BlendingFactorSrc BlendSourceRGB { get; set; } = BlendingFactorSrc.SrcAlpha;
         public BlendingFactorDest BlendDestRGB { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
         public BlendingFactorSrc BlendSourceA { get; set; } = BlendingFactorSrc.SrcAlpha;
         public BlendingFactorDest BlendDestA { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
         public BlendEquationMode BlendEquationRGB { get; set; } = BlendEquationMode.FuncAdd;
         public BlendEquationMode BlendEquationA { get; set; } = BlendEquationMode.FuncAdd;
+        public bool Discard {get;set;} = false;        // normal not to discard
        
         [System.Flags] public enum ColorMask { Red=1,Green=2,Blue=4,Alpha=8};
         public ColorMask ColorMasking = ColorMask.Red | ColorMask.Green | ColorMask.Blue | ColorMask.Alpha;

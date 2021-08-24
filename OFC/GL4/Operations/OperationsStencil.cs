@@ -32,7 +32,7 @@ namespace OFC.GL4
             this.stencilactivebits = stencilactivebits;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.SetStencil(v, mask, face, stencilactivebits);
         }
@@ -53,7 +53,7 @@ namespace OFC.GL4
             this.face = face;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.OnlyIf(f, v, mask, face);
         }
@@ -72,7 +72,7 @@ namespace OFC.GL4
             this.face = face;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.OnlyIfGreater(v, mask, face);
         }
@@ -90,7 +90,7 @@ namespace OFC.GL4
             this.face = face;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.OnlyIfLess(v, mask, face);
         }
@@ -108,7 +108,7 @@ namespace OFC.GL4
             this.face = face;
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.OnlyIfEqual(v, mask, face);
         }
@@ -120,7 +120,7 @@ namespace OFC.GL4
         {
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.Off();
         }
@@ -131,7 +131,7 @@ namespace OFC.GL4
         {
         }
 
-        public override void DoOperation(GLMatrixCalc c)
+        public override void Execute(GLMatrixCalc c)
         {
             GLStencil.ClearStencilBuffer();
         }

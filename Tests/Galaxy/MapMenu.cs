@@ -121,8 +121,8 @@ namespace TestOpenTk
 
                 GLCheckBox butelite = new GLCheckBox("Elite", new Rectangle(100, vpos, iconsize, iconsize), Properties.Resources.EliteMovement, null);
                 butelite.ToolTipText = "Select elite movement (on Y plain)";
-                butelite.Checked = map.gl3dcontroller.EliteMovement;
-                butelite.CheckChanged += (e1) => { map.gl3dcontroller.EliteMovement = butelite.Checked; };
+                butelite.Checked = map.gl3dcontroller.YHoldMovement;
+                butelite.CheckChanged += (e1) => { map.gl3dcontroller.YHoldMovement = butelite.Checked; };
                 pform.Add(butelite);
 
                 GLCheckBox butgal = new GLCheckBox("Galaxy", new Rectangle(150, vpos, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);

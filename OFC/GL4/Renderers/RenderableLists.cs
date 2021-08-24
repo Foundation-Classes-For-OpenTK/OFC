@@ -20,11 +20,12 @@ namespace OFC.GL4
 {
     // this is a render list, holding a list of Shader programs
     // each shader program is associated with zero or more RenderableItems 
-    // The shader calls Start() for each shader, then goes thru the render list (if it has one) Binding and Rendering each item
+    // The shader calls Start() for each shader, then goes thru the render list (if it has one) , setting up the render control, then Binding and Rendering each item
     // then it Finish() the program
     // Shaders are executed in the order added
     // Renderable items are ordered by shader, then in the order added.
-    // if you add a compute shader or a null shader to the list, then the renderable item must be null.  
+    // if you add a compute shader or a operation to the shader list, then the renderable items must be null 
+    // you can add an operation to the render list of a shader as well. The rendercontrol must be null
     // adding a compute shader in the middle of other renderable items may be useful - but remember to use a memory barrier if required in the shader FinishAction routine
 
     public class GLRenderProgramSortedList
@@ -149,13 +150,6 @@ namespace OFC.GL4
             GL.BindProgramPipeline(0);
         }
 
-        public void RenderDiscard(GLRenderControl currentstate, GLMatrixCalc c)     // discard rasterization - not normally done in lists
-        {
-            GL.Enable(EnableCap.RasterizerDiscard);
-            Render(currentstate, c);
-            GL.Disable(EnableCap.RasterizerDiscard);
-        }
-
         private void AddItem(IGLProgramShader prog, string name, IGLRenderableItem r)
         {
             if (!renderables.ContainsKey(prog))
@@ -188,12 +182,16 @@ namespace OFC.GL4
     {
         public new void Add(IGLProgramShader prog, string name, IGLRenderableItem r)
         {
-            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a shader list");
+            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
         }
 
         public new  void Add(IGLProgramShader prog, IGLRenderableItem r)
         {
-            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a shader list");
+            System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
+        }
+        public new void Add(GLOperationsBase nprog)
+        {
+            System.Diagnostics.Debug.Assert(false, "Cannot add an operation to a compute shader list");
         }
 
         public void Run()      

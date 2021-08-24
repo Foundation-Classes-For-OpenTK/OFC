@@ -38,7 +38,7 @@ namespace OFC.GL4
     {
         bool Enable { get; set; }
         IGLShader Get(OpenTK.Graphics.OpenGL4.ShaderType t);    // get a subcomponent.  if the shader does not have subcomponents, its should return itself.
-        Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      // allow start and finish actions to be added to the shader..
+        Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      // allow start and finish action events to be added to the shader..
         Action<IGLProgramShader> FinishAction { get; set; }
         string Name { get; }                                
     }

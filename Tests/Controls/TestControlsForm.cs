@@ -354,7 +354,7 @@ namespace TestOpenTk
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.EliteMovement = true;
+            gl3dcontroller.YHoldMovement = true;
             gl3dcontroller.PaintObjects = Controller3dDraw;
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>

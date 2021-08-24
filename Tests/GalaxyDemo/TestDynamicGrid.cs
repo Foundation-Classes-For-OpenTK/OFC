@@ -86,7 +86,7 @@ namespace TestOpenTk
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
             gl3dcontroller.MatrixCalc.PerspectiveFarZDistance = 500000f;
             gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.EliteMovement = true;
+            gl3dcontroller.YHoldMovement = true;
             gl3dcontroller.PaintObjects = ControllerDraw;
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>

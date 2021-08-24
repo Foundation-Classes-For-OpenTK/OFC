@@ -33,6 +33,7 @@ namespace OFC
                     errmsg += sourceFilePath + ":" + sourceLineNumber + Environment.NewLine;
 
                 errmsg += "Error : " + ec.ToString() + Environment.NewLine;
+                System.Diagnostics.Debug.WriteLine("GL error " + ec.ToString());
             }
 
             if (errmsg.HasChars())
@@ -52,6 +53,38 @@ namespace OFC
         public static void ClearDepthBuffer()       // nicer name
         {
             GL.Clear(ClearBufferMask.DepthBufferBit);
+        }
+
+        public static void ClearDepthBuffer(int s)       
+        {
+            GL.ClearDepth(s);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
+        }
+
+        public static void ClearStencilBuffer()       // nicer name
+        {
+            GL.Clear(ClearBufferMask.StencilBufferBit);
+        }
+
+        public static void ClearStencilBuffer(int s)       // clear to S
+        {
+            GL.ClearStencil(s);
+            GL.Clear(ClearBufferMask.StencilBufferBit);
+        }
+
+        public static void ClearBuffer(ClearBufferMask mask)       // nicer name
+        {
+            GL.Clear(mask);
+        }
+
+        public static void Flush()
+        {
+            GL.Flush();
+        }
+
+        public static void ColorMasks(bool red, bool green, bool blue, bool alpha)  // enable/disable frame buffer components
+        {
+            GL.ColorMask(red, green, blue, alpha);
         }
 
         public static string[] Extensions()

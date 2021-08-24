@@ -368,7 +368,7 @@ namespace OFC.Controller
 
         #region UI
 
-        public bool EliteMovement { get; set; } = true;
+        public bool YHoldMovement { get; set; } = true;
 
         public bool PositionKeyboard(KeyboardMonitor kbd, bool inperspectivemode, float movedistance)
         {
@@ -378,7 +378,7 @@ namespace OFC.Controller
                 movedistance *= 2.0F;
 
             if (kbd.HasBeenPressed(Keys.M, KeyboardMonitor.ShiftState.Ctrl))
-                EliteMovement = !EliteMovement;
+                YHoldMovement = !YHoldMovement;
 
             if (kbd.IsCurrentlyPressed(Keys.Left, Keys.A) != null)                // x axis
             {
@@ -413,7 +413,7 @@ namespace OFC.Controller
                 {
                     Vector2 cameraDir = CameraDirection;
 
-                    if (EliteMovement)  // elite movement means only the camera rotation around the Y axis is taken into account. 
+                    if (YHoldMovement)  // elite movement means only the camera rotation around the Y axis is taken into account. 
                     {
                         var cameramove = Matrix4.CreateTranslation(positionMovement);
                         var rotY = Matrix4.CreateRotationY(cameraDir.Y.Radians());      // rotate by Y, which is rotation around the Y axis, which is where your looking at horizontally

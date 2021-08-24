@@ -444,7 +444,7 @@ namespace TestOpenTk
             gl3dcontroller.ZoomDistance = 3000F/lyscale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
-            gl3dcontroller.EliteMovement = true;
+            gl3dcontroller.YHoldMovement = true;
             gl3dcontroller.PaintObjects = Controller3DDraw;
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {

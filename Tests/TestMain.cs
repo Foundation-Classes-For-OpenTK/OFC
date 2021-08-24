@@ -60,11 +60,12 @@ namespace TestOpenTk
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
             gl3dcontroller.MatrixCalc.PerspectiveFarZDistance= 1000f;
             gl3dcontroller.ZoomDistance = 60F;
+            gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(110f, 0, 0f), 1F);
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
-                return (float)ms / 10.0f;
+                return (float)ms / 30.0f;
             };
 
             {
@@ -92,6 +93,12 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
 
+            var dot2 = items.Tex("dotted2");
+            dot2.ClearSubImage(0, 50, 50, 0,   // x=0,y=0, texture 0 to clear     demo this
+                                    50, 50, 1,
+                                    1f, 1f, 0, 0.3f);
+
+
             ulong ctrl = 0xffffffff;
             //ctrl = 1;
 
@@ -101,6 +108,8 @@ namespace TestOpenTk
 
             if( (ctrl & (1<<0)) != 0)
             {
+                rObjects.Add(new GLOperationAction((s, m) => System.Diagnostics.Debug.WriteLine("Start render")));     // demo the operation action
+
                 rObjects.Add(new GLOperationClearDepthBuffer());     // demo the operation via the shader interface
 
                 GLRenderControl lines = GLRenderControl.Lines(1);
@@ -255,7 +264,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, rt,
                                 GLCubeObjectFactory.CreateSolidCubeFromTriangles(1f), GLCubeObjectFactory.CreateCubeTexTriangles(),
-                                new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 0, 0))
+                                new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 30, 0))
                                 ));
 
 

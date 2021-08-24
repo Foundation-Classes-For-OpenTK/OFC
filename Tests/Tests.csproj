@@ -82,6 +82,12 @@
     <Compile Include="MultiWindow\TestMultiWindow.designer.cs">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Queries\TestQueries.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Queries\TestQueries.designer.cs">
+      <DependentUpon>TestQueries.cs</DependentUpon>
+    </Compile>
     <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
     <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">
@@ -342,6 +348,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Queries\TestQueries.resx">
+      <DependentUpon>TestQueries.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Stars\ShaderTestBitmapsStarDiscs.resx">
       <DependentUpon>ShaderTestBitmapsStarDiscs.cs</DependentUpon>
     </EmbeddedResource>

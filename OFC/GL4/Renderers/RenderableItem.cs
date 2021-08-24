@@ -620,10 +620,13 @@ namespace OFC.GL4
 
         public void Execute(IGLProgramShader shader, GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false)
         {
+            System.Diagnostics.Debug.Assert(state != null && shader != null);
             if (shader.Enable)
             {
-                if (discard)
-                    GL.Enable(EnableCap.RasterizerDiscard);
+                bool curdiscard = RenderControl.Discard;        // remember
+
+                if (discard)        // if forced discard
+                    RenderControl.Discard = true;   // set RC to discard
 
                 if (!noshaderstart)
                     shader.Start(c);
@@ -635,8 +638,7 @@ namespace OFC.GL4
                 if (!noshaderstart)
                     shader.Finish();
 
-                if (discard)
-                    GL.Disable(EnableCap.RasterizerDiscard);
+                RenderControl.Discard = curdiscard;     // restore
             }
         }
 

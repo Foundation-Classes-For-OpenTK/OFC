@@ -18,23 +18,27 @@ using System;
 
 namespace OFC.GL4
 {
-    // Classes derived from this can be attached to either as a shader or as an renderable item in the queue
+    // operations are actions that can be inserted into the renderlist either as a shader (robjects.Add(new Operation())  )
+    // or as a Renderable item (robject.Add(shader, new Operation()) )
+    // Classes derived from this use DoOperation(matrixcalc) to perform work at that point in the render
 
     public abstract class GLOperationsBase : IGLRenderableItem, IGLProgramShader
     {
-        // when attached to render
-
+        // active inherited
         public bool Visible { get; set; } = true;                           // is visible (in this case active)
+        public bool Enable { get => Visible; set => Visible = value; }      // use Visible, so same as
+        public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; } // may be used by derived classes. Check your derived class
+        public int Id { get; set; }                                         // may be used by derived classes if its needs an Id
+
+        // inactive when attached to render
+
         public GLRenderControl RenderControl { get; set; } = null;          // Not used, must be null
         public IGLRenderItemData RenderData { get; set; }                   // Not used
         public int DrawCount { get; set; } = 0;                             // Not used
         public int InstanceCount { get; set; } = 0;                         // Not used
-        public int Id => 0;
 
-        // when attached to shader
-        public bool Enable { get => Visible; set => Visible = value; }      // use Visible
+        // inactive when attached to shader
         public Action<IGLProgramShader> FinishAction { get; set; }        // not used
-        public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      //  not used
         public string Name => "Operation";
         public IGLShader Get(ShaderType t) { throw new NotImplementedException(); }
 
@@ -42,13 +46,13 @@ namespace OFC.GL4
         {
         }
 
-        abstract public void DoOperation(GLMatrixCalc c);       // actual call to derived classes to do operation
+        abstract public void Execute(GLMatrixCalc c);       // actual call to derived classes to do operation
 
         // when attached as a render item
 
         public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
-            DoOperation(c);
+            Execute(c);
         }
 
         public void Render()        // no action on render
@@ -59,7 +63,7 @@ namespace OFC.GL4
 
         public void Start(GLMatrixCalc c)
         {
-            DoOperation(c);
+            Execute(c);
         }
 
         public void Finish()  // no action on finish

@@ -15,6 +15,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace OFC.GL4
 {
@@ -220,6 +221,28 @@ namespace OFC.GL4
             LoadBitmap(textdrawbitmap, zoffset, true, 1);
         }
 
+        public void ClearImage(int level, float red, float green, float blue, float alpha)  // confirmed
+        {
+            int size = Marshal.SizeOf<float>() * 4;
+
+            IntPtr pnt = Marshal.AllocHGlobal(size);
+            float[] a = new float[] { red, green, blue, alpha };
+            Marshal.Copy(a, 0, pnt, a.Length);
+            GL.ClearTexImage(Id, level, PixelFormat.Rgba, PixelType.Float, pnt);
+            Marshal.FreeHGlobal(pnt);
+            OFC.GLStatics.Check();
+        }
+
+        public void ClearSubImage(int level, int x, int y , int z, int width, int height, int depth, float red, float green, float blue, float alpha)  // confirmed
+        {
+            int size = Marshal.SizeOf<float>() * 4;
+            IntPtr pnt = Marshal.AllocHGlobal(size);
+            float[] a = new float[] { red, green, blue, alpha };
+            Marshal.Copy(a, 0, pnt, a.Length);
+            GL.ClearTexSubImage(Id, level, x, y, z, width,height,depth, PixelFormat.Rgba, PixelType.Float, pnt);
+            Marshal.FreeHGlobal(pnt);
+            OFC.GLStatics.Check();
+        }
 
         // Return texture as a set of floats or byte only (others not supported as of yet)
         // use inverty to correct for any inversion if your getting the data from a framebuffer texture - it appears to be inverted when written

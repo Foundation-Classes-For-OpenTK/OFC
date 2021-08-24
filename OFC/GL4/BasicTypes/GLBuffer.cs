@@ -907,6 +907,29 @@ namespace OFC.GL4
             }
         }
 
+        private static int querybindindex = -1;
+        public void BindQuery()
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
+            if (querybindindex != Id)
+            {
+                GL.BindBuffer(BufferTarget.QueryBuffer, Id);
+                OFC.GLStatics.Check();
+                querybindindex = Id;
+            }
+        }
+
+        static public void UnbindQuery()
+        {
+            if (querybindindex != -1)
+            {
+                GL.BindBuffer(BufferTarget.QueryBuffer, 0); // 0 is the unbind value
+                OFC.GLStatics.Check();
+                querybindindex = -1;
+            }
+        }
+
+
         public void Bind(int bindingindex,  BufferRangeTarget tgr)                           // Bind to a arbitary buffer target
         {
             GL.BindBufferBase(tgr, bindingindex, Id);       // binding point set to tgr

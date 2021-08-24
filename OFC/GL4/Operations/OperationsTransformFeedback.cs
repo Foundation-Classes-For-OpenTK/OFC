@@ -17,35 +17,30 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
-    public class GLOperationBeginConditionalRender : GLOperationsBase
+    public class GLOperationBeginTransformFeedback : GLOperationsBase
     {
-        int id;
-        ConditionalRenderType mode;
-
-        public GLOperationBeginConditionalRender(int id, ConditionalRenderType mode)
+        TransformFeedbackPrimitiveType mode;
+        public GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType mode)
         {
-            this.id = id;
             this.mode = mode;
         }
-
         public override void Execute(GLMatrixCalc c)
         {
-            GL.BeginConditionalRender(id, mode);
+            GL.BeginTransformFeedback(mode);
         }
     }
 
-    public class GLOperationEndConditionalRender : GLOperationsBase
+    public class GLOperationEndTransformFeedback : GLOperationsBase
     {
-        public GLOperationEndConditionalRender()
+        public GLOperationEndTransformFeedback()
         {
         }
 
         public override void Execute(GLMatrixCalc c)
         {
-            GL.EndConditionalRender();
+            GL.EndTransformFeedback();
         }
     }
 
-  
   }
 

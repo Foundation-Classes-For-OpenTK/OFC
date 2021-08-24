@@ -92,7 +92,7 @@ namespace OFC.Controller
 
         // Pos Direction interface
 
-        public bool EliteMovement { get { return PosCamera.EliteMovement; } set { PosCamera.EliteMovement = value; } }
+        public bool YHoldMovement { get { return PosCamera.YHoldMovement; } set { PosCamera.YHoldMovement = value; } }      // hold Y steady when moving, whatever the camera direction
         public void TranslatePosition(Vector3 posx) { PosCamera.Translate(posx); }
         public void SlewToPosition(Vector3 normpos, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoTo(normpos, timeslewsec, unitspersecond); }
         public void SlewToPositionZoom(Vector3 normpos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoToZoom(normpos, zoom,timeslewsec, unitspersecond); }
