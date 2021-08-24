@@ -19,6 +19,7 @@ namespace OFC.GL4
 {
     // attach query to render list or shader list, create first and use to get results
 
+    [System.Diagnostics.DebuggerDisplay("Query {Target} {Index}")]
     public class GLOperationQuery : GLOperationsBase, IDisposable       
     {
         public QueryTarget Target { get; set; }
@@ -69,6 +70,7 @@ namespace OFC.GL4
         }
     }
 
+    [System.Diagnostics.DebuggerDisplay("End Query {Query.Target} {Query.Index}")]
     public class GLOperationEndQuery : GLOperationsBase
     {
         public GLOperationQuery Query { get; private set; }
@@ -84,7 +86,6 @@ namespace OFC.GL4
         public override void Execute(GLMatrixCalc c)
         {
             GL.EndQueryIndexed(Query.Target,Query.Index);
-            GLStatics.Check();
             QueryComplete?.Invoke(this);
         }
 
@@ -127,6 +128,23 @@ namespace OFC.GL4
             GLStatics.Check();
         }
 
+        public void BeginConditional(ConditionalRenderType mode)        // on this data, conditionally render
+        {
+            GL.BeginConditionalRender(Query.Id, mode);
+        }
+
+    }
+
+    public class GLOperationEndConditional : GLOperationsBase
+    {
+        public override void Execute(GLMatrixCalc c)
+        {
+            GL.EndConditionalRender();
+        }
+        public static void EndConditional()
+        {
+            GL.EndConditionalRender();
+        }
     }
 
     public class GLOperationQueryTimeStamp : GLOperationsBase, IDisposable
@@ -135,9 +153,7 @@ namespace OFC.GL4
 
         public GLOperationQueryTimeStamp()
         {
-            //GL.CreateQueries(QueryTarget.Timestamp, 1, out int id);
             this.Id = GL.GenQuery();
-//            this.Id = id;
             System.Diagnostics.Debug.Assert(Id != 0);
             GLStatics.Check();
         }
@@ -163,7 +179,6 @@ namespace OFC.GL4
         public long GetCounter(GetQueryObjectParam p = GetQueryObjectParam.QueryResult)
         {
             GL.GetQueryObject(Id, p, out long res);
-            GLStatics.Check();
             return res;
         }
     }

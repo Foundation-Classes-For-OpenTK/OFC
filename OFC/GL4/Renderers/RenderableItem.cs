@@ -23,10 +23,8 @@ using System.Linq;
 namespace OFC.GL4
 {
     // Standard renderable item supporting Instancing and draw count, vertex arrays, instance data, element indexes, indirect command buffers
-    // A Renderable Item must implement Bind, Render and have a Primitive Type
-    // An item has a Draw count and Instance count
-    // It has a primitive type
-    // It may be associated with a RenderControl state, which is to be applied before executing
+    // It has a primitive type for Render
+    // It may be associated with a RenderControl state, which is to be applied before executing. If this is null, then the render state is not changed.
     // it is associated with an optional VertexArray which is bound using Bind()
     // it is associated with an optional InstanceData which is instanced using Bind()
     // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
@@ -38,6 +36,7 @@ namespace OFC.GL4
 
     // Supplied a large range of static creator functions which make a renderable item out of supplied vertex data
 
+    [System.Diagnostics.DebuggerDisplay("RI {PrimitiveType} d{DrawCount} i{InstanceCount}")]
     public class GLRenderableItem : IGLRenderableItem
     {
         public bool Visible { get; set; } = true;                           // is visible?
@@ -88,8 +87,8 @@ namespace OFC.GL4
         // RenderState may be null, meaning don't change
         public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
-            if (currentstate != null && RenderState != null)    // if called by null, it means the last render state applied is the same as our render state, so no need to apply
-                currentstate.ApplyState(RenderState);           // go to this state
+            if (currentstate != null && RenderState != null)    // if either null, it means the last render state applied is the same as our render state, so no need to apply
+                currentstate.ApplyState(RenderState);           // else go to this state
 
             VertexArray?.Bind();                                // give the VA a chance to bind to GL
             RenderData?.Bind(this,shader,c);                    // optional render data supplied by the user to bind
@@ -628,21 +627,21 @@ namespace OFC.GL4
             System.Diagnostics.Debug.Assert(state != null && shader != null);
             if (shader.Enable)
             {
+                if (!noshaderstart)
+                    shader.Start(c);
+
                 bool curdiscard = false;
 
                 if (discard)        // if forced discard
                 {
                     if (state != null && RenderState != null)
                     {
-                        RenderState.Discard = true;   // set RC to discard
                         curdiscard = RenderState.Discard;        // remember
+                        RenderState.Discard = true;   // set RC to discard
                     }
                     else
-                        GL.Enable(EnableCap.RasterizerDiscard);
+                        GL.Enable(EnableCap.RasterizerDiscard); // no RC will be applied, so set to discard manually
                 }
-
-                if (!noshaderstart)
-                    shader.Start(c);
 
                 Bind(state, shader, c);
 

@@ -141,7 +141,7 @@ namespace TestOpenTk
             items.Add(textshader);
             Font fnt = new Font("MS sans serif", 16f);
 
-            if ( true )
+            if ( false )
             {
                 int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
@@ -264,7 +264,7 @@ namespace TestOpenTk
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
                 sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 10, shapebuf, shape.Length , starrc, new Size(128,32), textrc);
+                var ris = sl.Create(texunitspergroup, 50, 10, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc);
                 rObjects.Add(sunshader, "SLsunshade", ris.Item1);
                 rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
@@ -331,7 +331,7 @@ namespace TestOpenTk
 
                 slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup, 
                                                             50, 10,
-                                                            sunshader, shapebuf, shape.Length, starrc,
+                                                            sunshader, shapebuf, shape.Length, starrc, PrimitiveType.Triangles,
                                                             textshader, new Size(128, 32), textrc,
                                                             10);
                 items.Add(slset);
@@ -432,11 +432,57 @@ namespace TestOpenTk
         private void SystemTick(object sender, EventArgs e )
         {
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
-            //  gl3dcontroller.Redraw();
+              gl3dcontroller.Redraw();
         }
 
         private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
         {
+
+            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
+                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
+                gl3dcontroller.Redraw();
+            }
+
+            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GB"));
+                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
+                gl3dcontroller.Redraw();
+            }
+
+            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GC"));
+                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
+                gl3dcontroller.Redraw();
+            }
+
+            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                {
+                    int SectorSize = 10;
+                    Vector3 pos = new Vector3(0, 0, 30);
+                    Vector4[] array = new Vector4[10];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        text[i] = "D." + i;
+                    }
+
+                    Font fnt = new Font("MS sans serif", 16f);
+                    sl.Add(new Tuple<string, string[]>("GD", text), array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0));
+                }
+                gl3dcontroller.Redraw();
+                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
+            }
+
+
+
+
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
@@ -490,49 +536,6 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
             }
 
-
-            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GB"));
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GC"));
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                {
-                    int SectorSize = 10;
-                    Vector3 pos = new Vector3(0, 0, 30);
-                    Vector4[] array = new Vector4[10];
-                    string[] text = new string[array.Length];
-                    Random rnd = new Random(31);
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                        text[i] = "D." + i;
-                    }
-
-                    Font fnt = new Font("MS sans serif", 16f);
-                    sl.Add(new Tuple<string,string[]>("GD",text), array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
-                }
-                gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
-            }
-
             if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to 90");
@@ -550,21 +553,25 @@ namespace TestOpenTk
 
         protected void GLMouseClick(object v, GLMouseEventArgs e)
         {
-            var index = sl.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
-
-            if (index != null)
+            if (sl != null)
             {
-                Tuple<string, string[]> ginfo = sl.Tags[index.Item1] as Tuple<string, string[]>;
-                if (ginfo != null)
+                var index = sl.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
+
+                if (index != null)
                 {
-                    string name = ginfo.Item2[index.Item2];
-                    System.Diagnostics.Debug.WriteLine($"... {name}");
+                    Tuple<string, string[]> ginfo = sl.Tags[index.Item1] as Tuple<string, string[]>;
+                    if (ginfo != null)
+                    {
+                        string name = ginfo.Item2[index.Item2];
+                        System.Diagnostics.Debug.WriteLine($"... {name}");
+                    }
                 }
             }
-            else
+
+            if (slset != null)
             {
                 var find = slset.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
-                if ( find != null )
+                if (find != null)
                 {
                     System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2} {find.Item3}");
 

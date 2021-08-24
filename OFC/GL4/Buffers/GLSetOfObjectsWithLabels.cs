@@ -13,6 +13,7 @@
  */
 
 using OpenTK;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -41,8 +42,8 @@ namespace OFC.GL4
                                         int textures,       // number of textures to allow per set
                                         int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
                                         int mingroups,      // minimum number of groups
-                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc,    // object shader, buffer, vertexes and its rendercontrol
-                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc,    // text shader, text size, and rendercontrol
+                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc, PrimitiveType objpt,   // object shader, buffer, vertexes and its rendercontrol
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc,   // text shader, text size, and rendercontrol
                                         int debuglimittexturedepth = 0)     // set to limit texture depth per set
         {
             this.name = name;
@@ -54,6 +55,7 @@ namespace OFC.GL4
             this.objectbuffer = objectbuffer;
             this.objectvertexescount = objectvertexes;
             this.objrc = objrc;
+            this.objpt = objpt;
             this.textshader = textshader;
             this.texturesize = texturesize;
             this.textrc = textrc;
@@ -128,7 +130,6 @@ namespace OFC.GL4
             foreach (var s in set)      
             {
                 geo.SetGroup(setno << 18);      // set the group marker for 
-                s.ObjectRenderer.RenderState.Discard = true;
                 s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
@@ -147,7 +148,7 @@ namespace OFC.GL4
         private void AddSet()       // add a new set
         {
             var owl = new GLObjectsWithLabels();
-            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, texturesize, textrc, limittexturedepth);
+            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, objpt, texturesize, textrc, limittexturedepth);
             robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
             robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
             set.Add(owl);
@@ -167,6 +168,7 @@ namespace OFC.GL4
         private GLBuffer objectbuffer;
         private int objectvertexescount;
         private GLRenderState objrc;
+        private PrimitiveType objpt;
 
         private IGLProgramShader textshader;
         private Size texturesize;

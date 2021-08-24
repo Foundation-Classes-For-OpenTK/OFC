@@ -27,7 +27,7 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
-    public partial class TestQueries : Form
+    public partial class TestQueries2 : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -39,7 +39,7 @@ namespace TestOpenTk
 
         GLOperationQueryTimeStamp ts1, ts2;
 
-        public TestQueries()
+        public TestQueries2()
         {
             InitializeComponent();
             var mode = new OpenTK.Graphics.GraphicsMode(32, 24, 8, 0, 0, 2, false);     // combined 32 max of depth/stencil
@@ -104,43 +104,46 @@ namespace TestOpenTk
                 q1.QueryStart += (t) => { System.Diagnostics.Debug.WriteLine($"What is Query for Primities Gen? {GLOperationQuery.GetQueryName(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0)}"); };
                 items.Add(q1);
                 rObjects.Add(q1);
+
                 var q2 = new GLOperationQuery(OpenTK.Graphics.OpenGL4.QueryTarget.SamplesPassed);
                 items.Add(q2);
                 rObjects.Add(q2);
-                var q3 = new GLOperationQuery(OpenTK.Graphics.OpenGL4.QueryTarget.TimeElapsed);
-                items.Add(q3);
-                rObjects.Add(q3);
 
-                System.Diagnostics.Debug.WriteLine($"Query 1? {GLOperationQuery.IsQuery(q1.Id)}");
-                
-
-                rObjects.Add(items.Shader("COSOT"), "Tri",
+                rObjects.Add(items.Shader("COSOT"), "Tri1",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
-                                            new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
+                                            new Color4[] { Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
                             ));
 
-                rObjects.Add(new GLOperationEndQuery(q3, querycomplete: (t) =>
-                {
-                    int v = t.GetQuery(OpenTK.Graphics.OpenGL4.GetQueryObjectParam.QueryResult);
-                    System.Diagnostics.Debug.WriteLine($"Time {v / 1} ns");
-                }));
-                rObjects.Add(new GLOperationEndQuery(q1, querycomplete: (t) =>
-                {
-                    int v = t.GetQuery(OpenTK.Graphics.OpenGL4.GetQueryObjectParam.QueryResult);
-                    System.Diagnostics.Debug.WriteLine($"Primitives {v}");
-                }));
                 rObjects.Add(new GLOperationEndQuery(q2, querycomplete: (t) =>
                 {
                     int v = t.GetQuery(OpenTK.Graphics.OpenGL4.GetQueryObjectParam.QueryResult);
-                    System.Diagnostics.Debug.WriteLine($"Samples {v}");
+                    System.Diagnostics.Debug.WriteLine($"Samples for first {v}");
+
+                    t.BeginConditional(ConditionalRenderType.QueryWait);
+                }));
+
+
+                rObjects.Add(items.Shader("COSOT"), "Tri2",
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
+                                            new Color4[] { Color4.Green, Color4.Green, Color4.Green, Color4.Green, Color4.Cyan, Color4.Orange },
+                                            new GLRenderDataTranslationRotation(new Vector3(-50, 3, 20))
+                            ));
+
+                rObjects.Add(new GLOperationEndConditional());
+
+                rObjects.Add(new GLOperationEndQuery(q1, querycomplete: (t) =>
+                {
+                    int v = t.GetQuery(OpenTK.Graphics.OpenGL4.GetQueryObjectParam.QueryResult);
+                    System.Diagnostics.Debug.WriteLine($"Primitives for both boxes {v}");
                 }));
             }
 
 
 
-            for( int i = 0; i < 100; i++ )//if (true)
+            for ( int i = 0; i < 1; i++ )//if (true)
             {
                 GLRenderState lines = GLRenderState.Lines(def,5);
 

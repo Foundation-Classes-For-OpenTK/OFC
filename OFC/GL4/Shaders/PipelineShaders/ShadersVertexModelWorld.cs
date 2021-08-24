@@ -437,7 +437,7 @@ void main(void)
 
     // Pipeline shader, Common Model Translation, Seperate World pos as a matrix, transform of model, common worldpos offset from matrix
     // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords
+    //      location 0 : position: vec4 vertex array of positions model coords. 
     //      vertex 4-7 : transform: mat4 array of transforms, one per instance. Row[3,0-3] = xyz
     //              [col=3,row=1] -1 means cull primitive
     //      uniform buffer 0 : GL MatrixCalc
@@ -447,6 +447,7 @@ void main(void)
     //      gl_Position
     //      location 1 modelpos
     //      location 2 instance id
+    //      location 3 basecolour
 
 
     public class GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
@@ -499,9 +500,13 @@ void main(void)
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
         public Vector3 WorldPositionOffset { get; set; } = Vector3.Zero;
 
-        public GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation()
+        public GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            object[] cvalues = null;
+            if (basecolours != null)
+                cvalues = new object[] { "colours", basecolours };
+
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
         }
 
         public override void Start(GLMatrixCalc c)

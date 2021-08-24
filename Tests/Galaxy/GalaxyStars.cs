@@ -51,7 +51,7 @@ namespace TestOpenTk
             items.Add(textshader);
 
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
-                                                            sunshader, shapebuf, shape.Length, starrc,
+                                                            sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
                                                             textshader, new Size(128, 32), textrc);
 
             items.Add(slset);

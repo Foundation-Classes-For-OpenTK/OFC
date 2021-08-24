@@ -644,10 +644,38 @@ namespace TestOpenTk
 
             long t4 = hptimer.ElapsedTicks;
 
+            //int[] queryID = new int[2];
+            //GL.GenQueries(2, queryID);
+            //GL.QueryCounter(queryID[0], QueryCounterTarget.Timestamp);
+
+            var tmr1 = new GLOperationQueryTimeStamp();
+            var tmr2 = new GLOperationQueryTimeStamp();
+            tmr1.Execute(null);
+
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:false);
 
+            tmr2.Execute(null);
+
+            // GL.QueryCounter(queryID[1], QueryCounterTarget.Timestamp);
+
             GL.Flush(); // ensure everything is in the grapghics pipeline
-            
+
+            //while (tmr2.IsAvailable() == false)
+            //    ;
+
+            long a = tmr1.GetCounter();
+            long b = tmr2.GetCounter();
+
+            //int done = 0;
+            //while (done == 0)
+            //{
+            //    GL.GetQueryObject(queryID[1], GetQueryObjectParam.QueryResultAvailable, out done);
+            //}
+
+            //GL.GetQueryObject(queryID[0], GetQueryObjectParam.QueryResult, out long a);
+            //GL.GetQueryObject(queryID[1], GetQueryObjectParam.QueryResult, out long b);
+            System.Diagnostics.Debug.WriteLine($"timer {a} {b} {b-a}" );
+
             long t5 = hptimer.ElapsedTicks;
 
             if (debugbuffer != null)

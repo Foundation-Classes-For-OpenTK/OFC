@@ -182,7 +182,7 @@ void main(void)
 
                 Vector3[] stars = GLPointsFactory.RandomStars(10000, -200, 200, -100, 100, 20, -20);
 
-                GLRenderState rp = GLRenderState.Points();
+                GLRenderState rp = GLRenderState.PointsByProgram();
 
                 rObjects.Add(items.Shader("STARS"), "Stars", GLRenderableItem.CreateVector3Packed2(items, PrimitiveType.Points, rp,
                                             stars, new Vector3(50000, 50000, 50000), 16));

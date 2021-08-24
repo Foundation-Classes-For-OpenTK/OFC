@@ -65,6 +65,9 @@ namespace OFC.GL4
         static public GLRenderState Points(GLRenderState prev, float pointsize = 1, bool smooth = true)
         { return new GLRenderState(prev) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
+        static public GLRenderState PointsByProgram()
+        { return new GLRenderState() { PointSize = 0 }; }
+
         static public GLRenderState PointSprites()
         { return new GLRenderState() { PointSize = 0, PointSprite = true }; }
 

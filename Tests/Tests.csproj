@@ -82,6 +82,12 @@
     <Compile Include="MultiWindow\TestMultiWindow.designer.cs">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="Queries\TestQueries2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Queries\TestQueries2.designer.cs">
+      <DependentUpon>TestQueries2.cs</DependentUpon>
+    </Compile>
     <Compile Include="Queries\TestQueries.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -348,6 +354,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Queries\TestQueries2.resx">
+      <DependentUpon>TestQueries2.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Queries\TestQueries.resx">
       <DependentUpon>TestQueries.cs</DependentUpon>
     </EmbeddedResource>

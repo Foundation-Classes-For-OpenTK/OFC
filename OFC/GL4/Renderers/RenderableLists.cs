@@ -24,7 +24,7 @@ namespace OFC.GL4
     // then it Finish() the program
     // Shaders are executed in the order added
     // Renderable items are ordered by shader, then in the order added.
-    // if you add a compute shader or a operation to the shader list, then the renderable items must be null 
+    // if you add a compute shader to the shader list, then the renderable items must be null 
     // you can add an operation to the render list of a shader as well. The rendercontrol must be null
     // adding a compute shader in the middle of other renderable items may be useful - but remember to use a memory barrier if required in the shader FinishAction routine
 
@@ -122,7 +122,7 @@ namespace OFC.GL4
                         {
                             if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
 
-                            if (g.Item2.RenderState == null)                      // if no render control, do not change rendercontrol
+                            if (g.Item2.RenderState == null )                      // if no render control, do not change last applied.
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
                             }

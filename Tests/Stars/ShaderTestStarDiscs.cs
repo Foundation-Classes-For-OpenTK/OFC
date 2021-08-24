@@ -83,7 +83,7 @@ namespace TestOpenTk
 
 
                 rObjects.Add(items.Shader("COS"),
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, null,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(40, 0, -40), new Vector3(0, 0, 10), 9),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
@@ -103,7 +103,9 @@ namespace TestOpenTk
             }
 
             {
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithObjectTranslation(), new GLPLStarSurfaceFragmentShader()), "STAR");
+                var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) });
+
+                items.Add(new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader()), "STAR");
 
                 GLRenderState rt = GLRenderState.Tri();
 
@@ -124,6 +126,7 @@ namespace TestOpenTk
                                         new GLRenderDataTranslationRotation(new Vector3(20, 0, 0), new Vector3(0, 0, 0), 20f, calclookat:true)));
             }
 
+            if (true)
             {
                 Vector4[] pos = new Vector4[3];
                 pos[0] = new Vector4(-20, 0, 10, 0);
@@ -140,32 +143,7 @@ namespace TestOpenTk
                 rObjects.Add(shader, ri);
             }
 
-            {
-                Matrix4[] pos = new Matrix4[3];
-                pos[0] = Matrix4.CreateTranslation(-30, 0, 30);
-                pos[1] = Matrix4.CreateTranslation(0, 0, 30);
-                pos[2] = Matrix4.CreateTranslation(20, 0, 30);
-
-                pos[1][1,3] = -1;       // test clipping of vertex's from pos 1
-
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
-
-                GLRenderState rt = GLRenderState.Tri();
-                rt.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
-                GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
-
-                var fragshader = new GLPLStarSurfaceFragmentShader();
-                fragshader.Scutoff = 0.3f;
-
-                var vertshader = new GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation();
-                vertshader.WorldPositionOffset = new Vector3(0, 10, 0);
-
-                var shader = new GLShaderPipeline(vertshader, fragshader);
-                items.Add(shader, "STAR-M3");
-                rObjects.Add(shader, ri);
-            }
-
-            OFC.GLStatics.Check();
+             OFC.GLStatics.Check();
 
             GL.Enable(EnableCap.DepthClamp);
         }
