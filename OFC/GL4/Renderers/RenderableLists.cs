@@ -21,52 +21,61 @@ namespace OFC.GL4
     // this is a render list, holding a list of Shader programs
     // each shader program is associated with zero or more RenderableItems 
     // The shader calls Start() for each shader, then goes thru the render list (if it has one) , setting up the render control, then Binding and Rendering each item
-    // then it Finish() the program
-    // Shaders are executed in the order added
-    // Renderable items are ordered by shader, then in the order added.
-    // if you add a compute shader to the shader list, then the renderable items must be null 
-    // you can add an operation to the render list of a shader as well. The rendercontrol must be null
-    // adding a compute shader in the middle of other renderable items may be useful - but remember to use a memory barrier if required in the shader FinishAction routine
+    // then it Finish() the shader
+    // Shaders are executed in the order added, and all renderable items below them are executed in order added to that shader
+    // you can decide to force the normal renderable items to be added to the end of the list (creating a duplicate shader at the end if required) instead of the first instance of the shader
+    // Compute shaders are always added onto the end the end of the shader list
+    // Operations added in a shader slot are always added onto the end the end of the shader list
+    // you can add an operation to the render list of a shader as well.
 
     public class GLRenderProgramSortedList
     {
-        private Dictionary<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> renderables;
+        private List<Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>> renderables;
         private Dictionary<string,IGLRenderableItem> byname;
         private int unnamed = 0;
 
         public GLRenderProgramSortedList()
         {
-            renderables = new Dictionary<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>();
+            renderables = new List<Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>>();
             byname = new Dictionary<string, IGLRenderableItem>();
         }
 
         // name can be null if required, which gives it an autoname
-        public void Add(IGLProgramShader prog, string name, IGLRenderableItem r)        // name is the id given to this renderable
+        public void Add(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend = false)        // name is the id given to this renderable
         {
+            System.Diagnostics.Debug.Assert(r != null);
             name = EnsureName(name, prog, r);
             //System.Diagnostics.Debug.WriteLine($"Add render {prog.Name} {name}");
-            AddItem(prog, name, r);
+            AddItem(prog, name, r,atend, true);
             byname.Add(name, r);
         }
 
         // with autoname
-        public void Add(IGLProgramShader prog, IGLRenderableItem r)
+        public void Add(IGLProgramShader prog, IGLRenderableItem r, bool atend = false)
         {
-            AddItem(prog, EnsureName(null,prog,r), r);
+            System.Diagnostics.Debug.Assert(r != null);
+            AddItem(prog, EnsureName(null,prog,r), r, atend, true);
         }
 
-        // a compute shader
-        public void Add(GLShaderCompute cprog)
+        // a compute shader, always added at end
+        public void Add(GLShaderCompute cprog)  
         {
             string n = "CS " + cprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
-            AddItem(cprog, n, null);
+            AddItem(cprog, n, null,true,false);     // must be at end, and must not join
         }
 
-        // a operation
+        // a operation in a shader slot
         public void Add(GLOperationsBase nprog)
         {
             string n = "OP " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
-            AddItem(nprog, n, null);
+            AddItem(nprog, n, null, true, false);  // must be at end, and must not join
+        }
+
+        // a operation in a render item slot
+        public void Add(IGLProgramShader shader, GLOperationsBase nprog, bool atend = false)
+        {
+            string n = "OP-RI " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            AddItem(shader, n, nprog, atend, true);  // must be at end, and can join at end
         }
 
         public bool Remove(IGLRenderableItem r)     
@@ -77,20 +86,23 @@ namespace OFC.GL4
 
         public bool Remove(IGLProgramShader prog, IGLRenderableItem r)
         {
-            if ( renderables.ContainsKey(prog))
+            Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> found = renderables.Find(x => x.Item1 == prog); // find the shader
+            if ( found != null )
             {
-                var i = renderables[prog].FindIndex(x => Object.ReferenceEquals(x.Item2, r));
+                var list = found.Item2;  // list of tuples of <name,RI>
+                var i = list.FindIndex(x => Object.ReferenceEquals(x.Item2, r));        // find renderable in list
+
                 if ( i >= 0)
                 {
-                    byname.Remove(renderables[prog][i].Item1);
-                    renderables[prog].RemoveAt(i);          // remove renderer
+                    byname.Remove(list[i].Item1);   // remove name
+                    list.RemoveAt(i);
 
                     //foreach (var s in renderables[prog]) System.Diagnostics.Debug.WriteLine($"left .. {prog.Name} {s.Item1}");
 
-                    if ( renderables[prog].Count == 0 )     // if nothing more in shader
+                    if ( list.Count == 0 )     // if nothing more in shader
                     {
                         //System.Diagnostics.Debug.WriteLine($"remove shader {prog.Name}");
-                        renderables.Remove(prog);           // remove shader
+                        renderables.Remove(found);           // remove shader
                     }
                     return true;
                 }
@@ -104,60 +116,101 @@ namespace OFC.GL4
 
         public void Render(GLRenderState currentstate, GLMatrixCalc c, bool verbose = false)
         {
-            GLRenderState lastapplied = null;
-
             if (verbose) System.Diagnostics.Debug.WriteLine("***Begin RList");
 
-            foreach (var kvp in renderables)        // kvp of Key=Shader, Value = list of renderables
+            GLRenderState lastapplied = null;
+            IGLProgramShader curshader = null;
+
+            foreach (var shaderri in renderables)        // kvp of Key=Shader, Value = list of renderables
             {
-                // shader must be enabled and at least 1 renderable item visible (or set to null,as a compute/null shader would be)
-                if (kvp.Key.Enable && kvp.Value.Find((x)=>x.Item2 == null || x.Item2.Visible)!=null)      
+                // shader must be enabled
+                if (shaderri.Item1.Enable)
                 {
-                    //System.Diagnostics.Debug.WriteLine("Shader " + kvp.Key.GetType().Name);
-                    kvp.Key.Start(c);                                                  // start the program - if compute shader, this executes the code
-
-                    foreach (var g in kvp.Value)
+                    if (shaderri.Item2 == null)                             // indicating its a compute or operation             
                     {
-                        if (g.Item2 != null && g.Item2.Visible )                    // may have added a null renderable item if its a compute shader.  Make sure its visible.
+                        if (shaderri.Item1 is GLShaderCompute)              // if compute
                         {
-                            if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
-
-                            if (g.Item2.RenderState == null )                      // if no render control, do not change last applied.
+                            if (curshader != null)                          // turn off current shader
                             {
-                                g.Item2.Bind(null, kvp.Key, c);
-                            }
-                            else if (object.ReferenceEquals(g.Item2.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
-                            {
-                                g.Item2.Bind(null, kvp.Key, c);
-                            }
-                            else
-                            {
-                                g.Item2.Bind(currentstate, kvp.Key, c);             // change and remember
-                                lastapplied = g.Item2.RenderState;
+                                curshader.Finish();
+                                curshader = null;
                             }
 
-                            g.Item2.Render();
-                            //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
+                            shaderri.Item1.Start(c);                        // start/finish it
+                            shaderri.Item1.Finish();
+                        }
+                        else
+                        {
+                            shaderri.Item1.Start(c);                        // operations just start, but don't change the current shader
                         }
                     }
+                    else if (shaderri.Item2.Find(x=>x.Item2.Visible)!=null)      // must have a list, all must not be null, and some must be visible
+                    {
+                        if (curshader != shaderri.Item1)                                // if a different shader instance
+                        {
+                            if (curshader != null)                                      // finish the last one if present
+                                curshader.Finish();
+                            curshader = shaderri.Item1;
+                            curshader.Start(c);                                         // start the program - if compute shader, or operation, this executes the code
+                        }
+                        //System.Diagnostics.Debug.WriteLine("Shader " + kvp.Item1.GetType().Name);
 
-                    kvp.Key.Finish();
+                        foreach (var g in shaderri.Item2)
+                        {
+                            if (g.Item2 != null && g.Item2.Visible)                    // Make sure its visible and not empty slot
+                            {
+                                if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
+
+                                if (g.Item2.RenderState == null)                       // if no render control, do not change last applied.
+                                {
+                                    g.Item2.Bind(null, shaderri.Item1, c);
+                                }
+                                else if (object.ReferenceEquals(g.Item2.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                                {
+                                    g.Item2.Bind(null, shaderri.Item1, c);
+                                }
+                                else
+                                {
+                                    g.Item2.Bind(currentstate, shaderri.Item1, c);      // change and remember
+                                    lastapplied = g.Item2.RenderState;
+                                }
+
+                                g.Item2.Render();
+                                //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
+                            }
+                        }
+                    }
                 }
             }
+
+            if (curshader != null)
+                curshader.Finish();
 
             if (verbose) System.Diagnostics.Debug.WriteLine("***End RList");
             GL.UseProgram(0);           // final clean up
             GL.BindProgramPipeline(0);
         }
 
-        private void AddItem(IGLProgramShader prog, string name, IGLRenderableItem r)
+        // add a shader, under a name, indicate if at end, and if allowed to end join
+        private void AddItem(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend, bool allowendjoin)
         {
-            if (!renderables.ContainsKey(prog))
-                renderables.Add(prog, new List<Tuple<string, IGLRenderableItem>>());
+            Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> shaderpos = null;
+            if ( atend )        // must be at end
+            {
+                if ( allowendjoin && renderables.Count>0 && renderables[renderables.Count-1].Item1 == prog) // if its the last one, we can add to it, otherwise we must make new
+                    shaderpos = renderables[renderables.Count - 1]; 
+            }
+            else
+                shaderpos = renderables.Find(x => x.Item1 == prog); // find the shader, may be null
 
-            var list = renderables[prog];
+            if (shaderpos == null)
+            {
+                renderables.Add(new Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>(prog, r == null ? null : new List<Tuple<string, IGLRenderableItem>>()));
+                shaderpos = renderables[renderables.Count - 1];
+            }
 
-            renderables[prog].Add(new Tuple<string, IGLRenderableItem>(name, r));
+            if ( r != null )
+                shaderpos.Item2.Add(new Tuple<string, IGLRenderableItem>(name, r));
         }
 
         private string EnsureName(string name, IGLProgramShader prog, IGLRenderableItem r)
@@ -169,9 +222,9 @@ namespace OFC.GL4
         {
             foreach (var kvp in renderables)
             {
-                var i = kvp.Value.FindIndex(x => Object.ReferenceEquals(x.Item2, r));
+                var i = kvp.Item2.FindIndex(x => Object.ReferenceEquals(x.Item2, r));
                 if (i >= 0)
-                    return new Tuple<IGLProgramShader, int>(kvp.Key, i);
+                    return new Tuple<IGLProgramShader, int>(kvp.Item1, i);
             }
             return null;
         }
@@ -180,12 +233,12 @@ namespace OFC.GL4
     // use this to just have a compute shader list - same as above, but can only add compute shaders
     public class GLComputeShaderList : GLRenderProgramSortedList        
     {
-        public new void Add(IGLProgramShader prog, string name, IGLRenderableItem r)
+        public new void Add(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend = false)
         {
             System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
         }
 
-        public new  void Add(IGLProgramShader prog, IGLRenderableItem r)
+        public new  void Add(IGLProgramShader prog, IGLRenderableItem r, bool atend = false)
         {
             System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
         }

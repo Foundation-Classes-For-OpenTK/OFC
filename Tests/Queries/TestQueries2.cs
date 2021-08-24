@@ -124,15 +124,16 @@ namespace TestOpenTk
                     t.BeginConditional(ConditionalRenderType.QueryWait);
                 }));
 
+                // this box dissappears when other is not painted
 
                 rObjects.Add(items.Shader("COSOT"), "Tri2",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Green, Color4.Green, Color4.Green, Color4.Green, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(-50, 3, 20))
-                            ));
+                            ), atend: true);
 
-                rObjects.Add(new GLOperationEndConditional());
+                rObjects.Add(items.Shader("COSOT"), new GLOperationEndConditional(), true);     // note the attach as a renderable item, to demo it works
 
                 rObjects.Add(new GLOperationEndQuery(q1, querycomplete: (t) =>
                 {
