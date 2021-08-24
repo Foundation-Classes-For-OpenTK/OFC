@@ -1,5 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -114,17 +115,17 @@ void main(void)
             // this bit is eye candy just to show its working
 
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl = GLRenderControl.Lines(1);
+            GLRenderState rl = GLRenderState.Lines(1);
 
             rObjects.Add(items.Shader("COSW"),
-                         GLRenderableItem.CreateVector4Color4(items, rl,
+                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                     GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(-40, 0, 40), new Vector3(10, 0, 0), 9),
                                                     new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                );
 
 
             rObjects.Add(items.Shader("COSW"),
-                         GLRenderableItem.CreateVector4Color4(items, rl,
+                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(40, 0, -40), new Vector3(0, 0, 10), 9),
                                                          new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                );
@@ -133,9 +134,9 @@ void main(void)
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
             items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
-            GLRenderControl rt = GLRenderControl.Tri();
+            GLRenderState rt = GLRenderState.Tri();
             rObjects.Add(items.Shader("TEX"), "sphere7",
-                GLRenderableItem.CreateVector4Vector2(items, rt,
+                GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rt,
                         GLSphereObjectFactory.CreateTexturedSphereFromTriangles(4, 20.0f),
                         new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(0, 0, 0))
                         ));
@@ -155,8 +156,8 @@ void main(void)
 
             Vector4[] data = GLSphereObjectFactory.CreateSphereFromTriangles(0, 1.0f);
 
-            GLRenderControl rp = GLRenderControl.Points();
-            rObjects.Add(items.Shader("N1"), GLRenderableItem.CreateVector4(items, rp, data));
+            GLRenderState rp = GLRenderState.Points();
+            rObjects.Add(items.Shader("N1"), GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, data));
 
             for (double ang = -Math.PI / 2; ang <= Math.PI / 2 + 0.1; ang += 0.1)
             {

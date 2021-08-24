@@ -18,6 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -84,18 +85,18 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderControl def = new GLRenderControl() { DepthTest = false };      // set up default state for fixed values - no depth test, rely on stencil
+            GLRenderState def = new GLRenderState() { DepthTest = false };      // set up default state for fixed values - no depth test, rely on stencil
 
             if ( true )
             {
                 rObjects.Add(new GLOperationSetStencil());      // set default stencil
 
-                GLRenderControl rq = GLRenderControl.Quads(def);
+                GLRenderState rq = GLRenderState.Quads(def);
 
                 IGLProgramShader s = items.Shader("TEXOT");
 
                 rObjects.Add(s, "Quad",
-                            GLRenderableItem.CreateVector4Vector2(items, rq,
+                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                             GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 3, -6))
                             ));
@@ -106,11 +107,11 @@ namespace TestOpenTk
             #region Coloured triangles
             if (true)
             {
-                GLRenderControl rc = GLRenderControl.Tri(def);
+                GLRenderState rc = GLRenderState.Tri(def);
                 rc.CullFace = false;
 
                 rObjects.Add(items.Shader("COSOT"), "Tri",
-                            GLRenderableItem.CreateVector4Color4(items, rc,
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
@@ -119,29 +120,29 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(def,5);
+                GLRenderState lines = GLRenderState.Lines(def,5);
 
                 rObjects.Add(items.Shader("COSW"), "L1",
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderControl lines2 = GLRenderControl.Lines(def,1);
+                GLRenderState lines2 = GLRenderState.Lines(def,1);
 
                 rObjects.Add(items.Shader("COSW"), "L2",
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Orange, Color.Blue, Color.DarkRed, Color.DarkRed }));
 
                 rObjects.Add(items.Shader("COSW"), "L3",
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
 
                 rObjects.Add(items.Shader("COSW"), "L4",
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );

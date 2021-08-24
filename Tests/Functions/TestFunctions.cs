@@ -1,4 +1,5 @@
 ﻿using OpenTK;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Graphics;
 using OFC;
 using OFC.Controller;
@@ -136,17 +137,17 @@ void main(void)
             // this bit is eye candy just to show its working
 
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl = GLRenderControl.Lines(1);
+            GLRenderState rl = GLRenderState.Lines(1);
 
             rObjects.Add(items.Shader("COSW"),
-                         GLRenderableItem.CreateVector4Color4(items, rl,
+                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                     GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(-40, 0, 40), new Vector3(10, 0, 0), 9),
                                                     new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                );
 
 
             rObjects.Add(items.Shader("COSW"),
-                         GLRenderableItem.CreateVector4Color4(items, rl,
+                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(40, 0, -40), new Vector3(0, 0, 10), 9),
                                                          new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                );

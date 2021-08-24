@@ -26,6 +26,7 @@ namespace OFC.GL4
     // A Renderable Item must implement Bind, Render and have a Primitive Type
     // An item has a Draw count and Instance count
     // It has a primitive type
+    // It may be associated with a RenderControl state, which is to be applied before executing
     // it is associated with an optional VertexArray which is bound using Bind()
     // it is associated with an optional InstanceData which is instanced using Bind()
     // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
@@ -41,7 +42,9 @@ namespace OFC.GL4
     {
         public bool Visible { get; set; } = true;                           // is visible?
 
-        public GLRenderControl RenderControl { get; set; }                  // Draw type and other GL states needed for a correct render
+        public PrimitiveType PrimitiveType { get; set; }                    // for Render, the primitive to issue
+
+        public GLRenderState RenderState { get; set; }                      // may be null - if so no explicit render state to apply, use current state
 
         public IGLVertexArray VertexArray { get; set; }                     // may be null - if so no vertex data. Does not own
 
@@ -70,9 +73,10 @@ namespace OFC.GL4
 
         public IGLRenderItemData RenderData { get; set; }                   // may be null - no specific render data. Does not own.  called at bind
 
-        public GLRenderableItem(GLRenderControl rc, int drawcount, IGLVertexArray va, IGLRenderItemData id = null, int ic = 1)
+        public GLRenderableItem(PrimitiveType pt, GLRenderState rc, int drawcount, IGLVertexArray va, IGLRenderItemData id = null, int ic = 1)
         {
-            RenderControl = rc;
+            PrimitiveType = pt;
+            RenderState = rc;
             DrawCount = drawcount;
             VertexArray = va;
             RenderData = id;
@@ -81,11 +85,11 @@ namespace OFC.GL4
 
         // called before Render (normally by RenderList::Render) to set up data for the render.
         // currentstate may be null, meaning, don't apply
-        // RenderControl must be set for normal renders. 
-        public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
+        // RenderState may be null, meaning don't change
+        public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
-            if (currentstate != null)                           // if called by null, it means the last render state applied is the same as our render state, so no need to apply
-                currentstate.ApplyState(RenderControl);         // go to this state
+            if (currentstate != null && RenderState != null)    // if called by null, it means the last render state applied is the same as our render state, so no need to apply
+                currentstate.ApplyState(RenderState);           // go to this state
 
             VertexArray?.Bind();                                // give the VA a chance to bind to GL
             RenderData?.Bind(this,shader,c);                    // optional render data supplied by the user to bind
@@ -107,16 +111,16 @@ namespace OFC.GL4
                 {
                     if (ParameterBuffer != null)                    // 4.6 feature ICE
                     {
-                        GL.MultiDrawElementsIndirectCount(RenderControl.PrimitiveType,(All)ElementIndexSize, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
+                        GL.MultiDrawElementsIndirectCount(PrimitiveType,(All)ElementIndexSize, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
                     }
                     else
                     {                                               // IE
-                        GL.MultiDrawElementsIndirect(RenderControl.PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                        GL.MultiDrawElementsIndirect(PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
                     }
                 }
                 else
                 {                                                   // E element index
-                    GL.DrawElementsInstancedBaseVertexBaseInstance(RenderControl.PrimitiveType, DrawCount, ElementIndexSize, (IntPtr)BaseIndexOffset, 
+                    GL.DrawElementsInstancedBaseVertexBaseInstance(PrimitiveType, DrawCount, ElementIndexSize, (IntPtr)BaseIndexOffset, 
                                                                     InstanceCount, BaseVertex, BaseInstance);
                 }
             }
@@ -126,16 +130,16 @@ namespace OFC.GL4
                 {
                     if (ParameterBuffer != null)                    // 4.6 feature ICA
                     {
-                        GL.MultiDrawArraysIndirectCount(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
+                        GL.MultiDrawArraysIndirectCount(PrimitiveType, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
                     }
                     else
                     {                                               // IA
-                        GL.MultiDrawArraysIndirect(RenderControl.PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+                        GL.MultiDrawArraysIndirect(PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
                     }
                 }
                 else
                 {                                                   // A no indirect or element buffer, direct draw
-                    GL.DrawArraysInstancedBaseInstance(RenderControl.PrimitiveType, 0, DrawCount, InstanceCount, BaseInstance);       // Type A
+                    GL.DrawArraysInstancedBaseInstance(PrimitiveType, 0, DrawCount, InstanceCount, BaseInstance);       // Type A
                 }
             }
         }
@@ -144,7 +148,7 @@ namespace OFC.GL4
 
         // Vector4, Color4, optional instance data and count
         // in attribute 0 and 1 setup vector4 and vector4 colours
-        public static GLRenderableItem CreateVector4Color4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Color4[] colours, IGLRenderItemData id = null, int ic = 1)
+        public static GLRenderableItem CreateVector4Color4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Color4[] colours, IGLRenderItemData id = null, int ic = 1)
         {
             var vb = items.NewBuffer();                                     // they all follow this pattern, grab a buffer (unless supplied)
             vb.AllocateBytes(GLBuffer.Vec4size * vectors.Length * 2);       // allocate
@@ -158,11 +162,11 @@ namespace OFC.GL4
             vb.Bind(va, 1, vb.Positions[1], 16);                            // buffer bind to vertex array at bindingpoint 1, bufferpos, stride
             va.Attribute(1, 1, 4, VertexAttribType.Float);                  // bind bindingpoint 1 to attribute index 1 (in shader), 4 components, float
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);    // create new RI
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);    // create new RI
         }
 
         // in 0 set up
-        public static GLRenderableItem CreateVector4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, 
+        public static GLRenderableItem CreateVector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, 
                                         IGLRenderItemData id = null, int ic = 1)
         {
             var vb = items.NewBuffer();
@@ -171,21 +175,21 @@ namespace OFC.GL4
             var va = items.NewArray();
             vb.Bind(va, 0, vb.Positions[0], 16);        // bind buffer to binding point 0
             va.Attribute(0, 0, 4, VertexAttribType.Float);  // bind binding point 0 to attribute point 0 with 4 float components
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0 set up. Use a buffer, Must set up drawcount, or set to 0 and reset it later..
-        public static GLRenderableItem CreateVector4(GLItemsList items, GLRenderControl pt, GLBuffer vb, int drawcount, int pos = 0, 
+        public static GLRenderableItem CreateVector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int drawcount, int pos = 0, 
                                         IGLRenderItemData id = null, int ic = 1)
         {
             var va = items.NewArray();
             vb.Bind(va, 0, pos, 16);
             va.Attribute(0, 0, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // in 0,1 set up.  Second vector can be instance divided. Drawcount set to vectors length
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Vector4[] secondvector, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var vb = items.NewBuffer();
@@ -199,11 +203,11 @@ namespace OFC.GL4
 
             vb.Bind(va, 1, vb.Positions[1], 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up.  Second vector can be instance divided. 
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, GLRenderControl pt, GLBuffer buf1, int drawcount, GLBuffer buf2, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int drawcount, GLBuffer buf2, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var va = items.NewArray();
@@ -212,11 +216,11 @@ namespace OFC.GL4
 
             buf2.Bind(va, 1, buf2.Positions[0], 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // in 0,1 set up. Two seperate buffers.  Second vector can be instance divided
-        public static GLRenderableItem CreateVector4Vector4Buf2(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Vector4[] secondvector, 
+        public static GLRenderableItem CreateVector4Vector4Buf2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var v1 = items.NewBuffer();
@@ -233,11 +237,11 @@ namespace OFC.GL4
 
             v2.Bind(va, 1, v2.Positions[0], 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up. With second buffer given to us (with a possible bufoff offset). Second vector can be instance divided
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, GLBuffer buf2, int bufoff = 0, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, GLBuffer buf2, int bufoff = 0, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var vb = items.NewBuffer();
@@ -250,11 +254,11 @@ namespace OFC.GL4
 
             buf2.Bind(va, 1, bufoff, 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up. With two given buffers and positions, Second buffer can be instance divided
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, GLRenderControl pt, GLBuffer buf1, int buf1off, int drawcount, GLBuffer buf2, int buf2off = 0, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int buf1off, int drawcount, GLBuffer buf2, int buf2off = 0, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var va = items.NewArray();
@@ -263,11 +267,11 @@ namespace OFC.GL4
 
             buf2.Bind(va, 1, buf2off, 16, seconddivisor);   // binding index 1
             va.Attribute(1, 1, 4, VertexAttribType.Float);  // attribute 1
-            return new GLRenderableItem(pt,drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt,drawcount, va, id, ic);
         }
 
         // in 0,1 set up. Second vector can be instance divided
-        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Vector2[] coords, 
+        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector2[] coords, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var vb = items.NewBuffer();
@@ -280,11 +284,11 @@ namespace OFC.GL4
             va.Attribute(0, 0, 4, VertexAttribType.Float);
             vb.Bind(va, 1, vb.Positions[1], 8, seconddivisor);
             va.Attribute(1, 1, 2, VertexAttribType.Float);
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up. Second vector can be instance divided
-        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, GLRenderControl pt, GLBuffer vb, int pos1, int pos2, int drawcount, 
+        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int pos1, int pos2, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var va = items.NewArray();
@@ -292,40 +296,40 @@ namespace OFC.GL4
             va.Attribute(0, 0, 4, VertexAttribType.Float);
             vb.Bind(va, 1, vb.Positions[1], 8, seconddivisor);
             va.Attribute(1, 1, 2, VertexAttribType.Float);
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // using output of some shape generators
-        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, GLRenderControl pt, Tuple<Vector4[], Vector2[]> vectors, 
+        public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Tuple<Vector4[], Vector2[]> vectors, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
-            return CreateVector4Vector2(items, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
+            return CreateVector4Vector2(items, prim, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
         }
 
         // using output of some shape generators, with element buffer indices. Normally Vertex, UVs, element indexes.. Not using primitive restart here.
-        public static GLRenderableItem CreateVector4Vector2Indexed(GLItemsList items, GLRenderControl pt, Tuple<Vector4[], Vector2[], uint[]> vectors, 
+        public static GLRenderableItem CreateVector4Vector2Indexed(GLItemsList items, PrimitiveType prim, GLRenderState pt, Tuple<Vector4[], Vector2[], uint[]> vectors, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var dt = GL4Statics.DrawElementsTypeFromMaxEID((uint)vectors.Item1.Length - 1);
-            var ri = CreateVector4Vector2(items, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
+            var ri = CreateVector4Vector2(items, prim, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
             ri.CreateElementIndex(items.NewBuffer(), vectors.Item3, dt);
             return ri;
         }
 
-        public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, GLRenderControl pt,
+        public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                                                    Tuple<Vector4[],Vector2[]> pos, 
                                                                     Vector4[] instanceposition,
                                                                    IGLRenderItemData id = null, int ic = 1,
                                                                    bool separbuf = false, int divisorinstance = 1)
         {
-            return CreateVector4Vector2Vector4(items, pt, pos.Item1, pos.Item2, instanceposition, id, ic, separbuf, divisorinstance);
+            return CreateVector4Vector2Vector4(items, prim, pt, pos.Item1, pos.Item2, instanceposition, id, ic, separbuf, divisorinstance);
         }
 
         // in 0,1,4 set up.  
         // if separbuffer = true it makes as separate buffer for instanceposition
         // if separbuffer = true and instanceposition is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
         // You can get this buffer using items.LastBuffer()
-        public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, GLRenderControl pt,
+        public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                                                    Vector4[] vectors, Vector2[] coords, Vector4[] instanceposition,
                                                                    IGLRenderItemData id = null, int ic = 1,
                                                                    bool separbuf = false, int divisorinstance = 1)
@@ -364,7 +368,7 @@ namespace OFC.GL4
             vbuf2.Bind(va, 2, instanceposition!=null ? vbuf2.Positions[posi] : 0, 16, divisorinstance);
             va.Attribute(2, 2, 4, VertexAttribType.Float);
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1,4-7 set up.  if separbuffer = true and instancematrix is null, it makes a buffer for you to fill up externally.
@@ -372,7 +376,7 @@ namespace OFC.GL4
         // if separbuffer = true and instancematrix is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
         // You can get this buffer using items.LastBuffer()
 
-        public static GLRenderableItem CreateVector4Vector2Matrix4(GLItemsList items, GLRenderControl pt, 
+        public static GLRenderableItem CreateVector4Vector2Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, 
                                                                     Vector4[] vectors, Vector2[] coords, Matrix4[] instancematrix, 
                                                                     IGLRenderItemData id = null, int ic = 1, 
                                                                     bool separbuf = false, int matrixdivisor = 1)
@@ -412,11 +416,11 @@ namespace OFC.GL4
             va.MatrixAttribute(2, 4);                           // bp 2 at 4-7
             vbuf2.Bind(va, 2, instancematrix != null ? vbuf2.Positions[posi]: 0, 64, matrixdivisor);     // use a binding 
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,4-7 set up
-        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, Matrix4[] matrix, 
+        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Matrix4[] matrix, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
             var vb = items.NewBuffer();
@@ -433,11 +437,11 @@ namespace OFC.GL4
             vb.Bind(va, 2, vb.Positions[1], 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,4-7 set up
-        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, GLRenderControl pt, Vector4[] vectors, GLBuffer matrix, 
+        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, GLBuffer matrix, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
             var vb = items.NewBuffer();
@@ -450,11 +454,11 @@ namespace OFC.GL4
             matrix.Bind(va, 2, matrix.Positions[0], 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0,4-7 set up
-        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, GLRenderControl pt, GLBuffer shape, GLBuffer matrix, int drawcount, 
+        public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer shape, GLBuffer matrix, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
             var va = items.NewArray();
@@ -464,11 +468,11 @@ namespace OFC.GL4
             matrix.Bind(va, 2, matrix.Positions[0], 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
 
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // in 4-7 set up
-        public static GLRenderableItem CreateMatrix4(GLItemsList items, GLRenderControl pt, Matrix4[] matrix, int drawcount, 
+        public static GLRenderableItem CreateMatrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Matrix4[] matrix, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
             var vb = items.NewBuffer();
@@ -481,21 +485,21 @@ namespace OFC.GL4
             vb.Bind(va, 2, vb.Positions[0], 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
 
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // in 4-7 set up
-        public static GLRenderableItem CreateMatrix4(GLItemsList items, GLRenderControl pt, GLBuffer vb, int bufoffset, int drawcount, 
+        public static GLRenderableItem CreateMatrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int bufoffset, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
             var va = items.NewArray();
             vb.Bind(va, 2, bufoffset, 64, matrixdivisor);     // use a binding 
             va.MatrixAttribute(2, 4);                           // bp 2 at attribs 4-7
-            return new GLRenderableItem(pt, drawcount, va, id, ic);
+            return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
         // in 0 set up
-        public static GLRenderableItem CreateVector3Packed2(GLItemsList items, GLRenderControl pt, Vector3[] vectors, Vector3 offsets, float mult, 
+        public static GLRenderableItem CreateVector3Packed2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector3[] vectors, Vector3 offsets, float mult, 
                                                 IGLRenderItemData id = null, int ic = 1)
         {
             var vb = items.NewBuffer();
@@ -506,11 +510,11 @@ namespace OFC.GL4
             vb.Bind(va, 0, vb.Positions[0], 8);
             va.AttributeI(0, 0, 2, VertexAttribType.UnsignedInt);
 
-            return new GLRenderableItem(pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
         // in 0 set up floats with configurable components numbers
-        public static GLRenderableItem CreateFloats(GLItemsList items, GLRenderControl pt, float[] floats, int components, 
+        public static GLRenderableItem CreateFloats(GLItemsList items, PrimitiveType prim, GLRenderState pt, float[] floats, int components, 
                                                 IGLRenderItemData id = null, int ic = 1)
         {
             var vb = items.NewBuffer();
@@ -521,16 +525,16 @@ namespace OFC.GL4
             vb.Bind(va, 0, vb.Positions[0], sizeof(float)*components);    
             va.Attribute(0, 0, components, VertexAttribType.Float);
 
-            return new GLRenderableItem(pt, floats.Length / components, va, id, ic);
+            return new GLRenderableItem(prim,pt, floats.Length / components, va, id, ic);
         }
 
         // no data into GL pipeline.  
         // Used when a uniform buffer gives info for the vertex shader to create vertices
         // Or when the vertex shader makes up its own vertexes from draw/instance counts
 
-        public static GLRenderableItem CreateNullVertex(GLRenderControl pt, IGLRenderItemData id = null, int dc =1,  int ic = 1)
+        public static GLRenderableItem CreateNullVertex(PrimitiveType prim, GLRenderState pt, IGLRenderItemData id = null, int drawcount =1,  int instancecount = 1)
         {
-            return new GLRenderableItem(pt, dc, null, id, ic);  // no vertex data.
+            return new GLRenderableItem(prim, pt, drawcount, null, id, instancecount);  // no vertex data.
         }
 
         #endregion
@@ -617,16 +621,25 @@ namespace OFC.GL4
 
         // Use Cases: if shader is not rendering to screen (such as a finder) and that would have discard=true
         // or to a framebuffer in stages
+        // state may be null, or the RenderState may be null (for shaders/operations)
 
-        public void Execute(IGLProgramShader shader, GLRenderControl state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false)
+        public void Execute(IGLProgramShader shader, GLRenderState state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false)
         {
             System.Diagnostics.Debug.Assert(state != null && shader != null);
             if (shader.Enable)
             {
-                bool curdiscard = RenderControl.Discard;        // remember
+                bool curdiscard = false;
 
                 if (discard)        // if forced discard
-                    RenderControl.Discard = true;   // set RC to discard
+                {
+                    if (state != null && RenderState != null)
+                    {
+                        RenderState.Discard = true;   // set RC to discard
+                        curdiscard = RenderState.Discard;        // remember
+                    }
+                    else
+                        GL.Enable(EnableCap.RasterizerDiscard);
+                }
 
                 if (!noshaderstart)
                     shader.Start(c);
@@ -638,7 +651,15 @@ namespace OFC.GL4
                 if (!noshaderstart)
                     shader.Finish();
 
-                RenderControl.Discard = curdiscard;     // restore
+                if (discard)        // if forced discard
+                {
+                    if (state != null && RenderState != null)
+                    {
+                        RenderState.Discard = curdiscard;
+                    }
+                    else
+                        GL.Disable(EnableCap.RasterizerDiscard);
+                }
             }
         }
 

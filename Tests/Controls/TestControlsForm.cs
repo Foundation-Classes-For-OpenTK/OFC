@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -109,12 +109,12 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
             };
 
-            GLRenderControl rl = GLRenderControl.Lines(1);
+            GLRenderState rl = GLRenderState.Lines(1);
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
-                GLRenderableItem.CreateVector4(items, rl, displaylines));
+                GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
             float h = 0;
@@ -125,13 +125,13 @@ namespace TestOpenTk
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(left, h, back), new Vector3(dist, 0, 0), (back - front) / dist + 1),
                                                         new Color4[] { cr })
                                    );
 
                 rObjects.Add(items.Shader("COS-1L"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(right, h, front), new Vector3(0, 0, dist), (right - left) / dist + 1),
                                                         new Color4[] { cr })
                                    );

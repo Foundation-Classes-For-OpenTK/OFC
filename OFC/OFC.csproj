@@ -127,7 +127,7 @@
     <Compile Include="Models\WaveFrontObj\GLWavefrontObjReader.cs" />
     <Compile Include="GL4\Textures\BindlessTextureBlock.cs" />
     <Compile Include="GL\GLMesh.cs" />
-    <Compile Include="GL4\BasicTypes\GLRenderControl.cs" />
+    <Compile Include="GL4\BasicTypes\GLRenderState.cs" />
     <Compile Include="GL4\Shaders\Base\ShaderCompute.cs" />
     <Compile Include="GL4\Shaders\Compute\ComputeGaussian.cs" />
     <Compile Include="GL4\Shaders\Compute\ComputeNoise.cs" />

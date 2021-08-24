@@ -36,11 +36,11 @@ namespace TestOpenTk
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
             shapebuf.AllocateFill(shape);
 
-            GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+            GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
             starrc.DepthTest = true;
             starrc.DepthClamp = true;
 
-            var textrc = GLRenderControl.Quads();
+            var textrc = GLRenderState.Quads();
             textrc.DepthTest = true;
             textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 

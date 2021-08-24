@@ -140,9 +140,9 @@ namespace TestOpenTk
             regionshader = new GLShaderPipeline(vertregion, fragregion, null, null);
             items.Add(regionshader);
 
-            GLRenderControl rt = GLRenderControl.Tri();
+            GLRenderState rt = GLRenderState.Tri();
             rt.DepthTest = false;
-            var ridisplay = GLRenderableItem.CreateVector4(items, rt, vertexcolourregions.ToArray());
+            var ridisplay = GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rt, vertexcolourregions.ToArray());
             rObjects.Add(regionshader, name + "-regions", ridisplay);
 
             // outlines
@@ -153,10 +153,10 @@ namespace TestOpenTk
             outlineshader = new GLShaderPipeline(vertoutline, fragoutline, null, null);
             items.Add(outlineshader);
 
-            GLRenderControl ro = GLRenderControl.LineStrip();
+            GLRenderState ro = GLRenderState.Lines();
             ro.DepthTest = false;
             ro.PrimitiveRestart = 0xffff;
-            var rioutline = GLRenderableItem.CreateVector4(items, ro, vertexregionsoutlines.ToArray());
+            var rioutline = GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.LineStrip, ro, vertexregionsoutlines.ToArray());
             rioutline.CreateElementIndexUShort(items.NewBuffer(), vertexregionoutlineindex.ToArray());
 
             rObjects.Add(outlineshader, name + "-outlines", rioutline);

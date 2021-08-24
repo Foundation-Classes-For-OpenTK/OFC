@@ -53,10 +53,10 @@ namespace OFC.GL4
             shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
-            rc = GLRenderControl.Quads();      
-            rc.CullFace = cullface;
-            rc.DepthTest = depthtest;
-            rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+            renderstate = GLRenderState.Quads();      
+            renderstate.CullFace = cullface;
+            renderstate.DepthTest = depthtest;
+            renderstate.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
             texmipmaplevels = mipmaplevels;
         }
@@ -122,7 +122,7 @@ namespace OFC.GL4
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);
-            var renderableItem = GLRenderableItem.CreateMatrix4(items, rc, matrixbuffer, 0, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
+            var renderableItem = GLRenderableItem.CreateMatrix4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, renderstate, matrixbuffer, 0, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
             renderlist.Add(shader, name + ":" + groupno, renderableItem);
             grouprenderlist.Add(renderableItem);
         }
@@ -204,7 +204,7 @@ namespace OFC.GL4
         private List<GLTexture2DArray> grouptextureslist = new List<GLTexture2DArray>();
         private List<GLRenderableItem> grouprenderlist = new List<GLRenderableItem>();
         private GLRenderProgramSortedList renderlist;
-        private GLRenderControl rc;
+        private GLRenderState renderstate;
         private GLShaderPipeline shader;
         private Bitmap textdrawbitmap;      // for drawing into alpha text
         private string name;

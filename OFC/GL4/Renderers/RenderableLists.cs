@@ -102,9 +102,9 @@ namespace OFC.GL4
         public IGLRenderableItem this[string renderitem] { get { return byname[renderitem]; } }
         public bool Contains(string renderitem) { return byname.ContainsKey(renderitem); }
 
-        public void Render(GLRenderControl currentstate, GLMatrixCalc c, bool verbose = false)
+        public void Render(GLRenderState currentstate, GLMatrixCalc c, bool verbose = false)
         {
-            GLRenderControl lastapplied = null;
+            GLRenderState lastapplied = null;
 
             if (verbose) System.Diagnostics.Debug.WriteLine("***Begin RList");
 
@@ -122,18 +122,18 @@ namespace OFC.GL4
                         {
                             if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + kvp.Key.GetType().Name);
 
-                            if (g.Item2.RenderControl == null)                      // if no render control, do not change rendercontrol
+                            if (g.Item2.RenderState == null)                      // if no render control, do not change rendercontrol
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
                             }
-                            else if (object.ReferenceEquals(g.Item2.RenderControl, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                            else if (object.ReferenceEquals(g.Item2.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                             {
                                 g.Item2.Bind(null, kvp.Key, c);
                             }
                             else
                             {
                                 g.Item2.Bind(currentstate, kvp.Key, c);             // change and remember
-                                lastapplied = g.Item2.RenderControl;
+                                lastapplied = g.Item2.RenderState;
                             }
 
                             g.Item2.Render();

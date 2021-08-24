@@ -18,7 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -73,17 +73,17 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLColorShaderWithWorldCoord(), "COS");
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COS"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(-40, 0, 40), new Vector3(10, 0, 0), 9),
                                                         new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
 
 
                 rObjects.Add(items.Shader("COS"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(40, 0, -40), new Vector3(0, 0, 10), 9),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
@@ -93,10 +93,10 @@ namespace TestOpenTk
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
                 items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                GLRenderState rt = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("TEX"), "sphere7",
-                        GLRenderableItem.CreateVector4Vector2(items, rt,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rt,
                             GLSphereObjectFactory.CreateTexturedSphereFromTriangles(4, 10.0f),
                             new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(-30, 0, 0))
                         ));
@@ -105,10 +105,10 @@ namespace TestOpenTk
             {
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithObjectTranslation(), new GLPLStarSurfaceFragmentShader()), "STAR");
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                GLRenderState rt = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("STAR"), "sun",
-                       GLRenderableItem.CreateVector4(items,
+                       GLRenderableItem.CreateVector4(items, PrimitiveType.Triangles,
                                rt,
                                GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f),
                                new GLRenderDataTranslationRotation(new Vector3(20, 0, 0)),
@@ -116,9 +116,9 @@ namespace TestOpenTk
 
                 items.Add( new GLShaderStarCorona(), "CORONA");
 
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
 
-                rObjects.Add(items.Shader("CORONA"), GLRenderableItem.CreateVector4(items,
+                rObjects.Add(items.Shader("CORONA"), GLRenderableItem.CreateVector4(items, PrimitiveType.Quads,
                                         rq,
                                         GLShapeObjectFactory.CreateQuad(1f),
                                         new GLRenderDataTranslationRotation(new Vector3(20, 0, 0), new Vector3(0, 0, 0), 20f, calclookat:true)));
@@ -132,8 +132,8 @@ namespace TestOpenTk
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
 
-                GLRenderControl rt = GLRenderControl.Tri();
-                GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, rt, shape, pos, null, pos.Length, 1);
+                GLRenderState rt = GLRenderState.Tri();
+                GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
 
                 var shader = new GLShaderPipeline(new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), new GLPLStarSurfaceFragmentShader());
                 items.Add(shader, "STAR-M2");
@@ -150,9 +150,9 @@ namespace TestOpenTk
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                GLRenderState rt = GLRenderState.Tri();
                 rt.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
-                GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, rt, shape, pos, null, pos.Length, 1);
+                GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
 
                 var fragshader = new GLPLStarSurfaceFragmentShader();
                 fragshader.Scutoff = 0.3f;

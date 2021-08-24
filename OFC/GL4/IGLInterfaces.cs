@@ -54,9 +54,9 @@ namespace OFC.GL4
 
     public interface IGLRenderableItem                      // a renderable item inherits from this..
     {
-        void Bind(GLRenderControl rc, IGLProgramShader shader, GLMatrixCalc c);                 // Bind to context
+        void Bind(GLRenderState rc, IGLProgramShader shader, GLMatrixCalc c);                 // Bind to context
         void Render();                                      // and render - do the Draw.
-        GLRenderControl RenderControl { get; set; }         // must be set.
+        GLRenderState RenderState { get; set; }         // must be set.
         IGLRenderItemData RenderData { get; set; }          // may be null - no instance data/Control.  Allows instance data to be modified in the main program
         int DrawCount { get; set; }                         // Draw count
         int InstanceCount { get; set; }                     // Instances

@@ -18,6 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -126,16 +127,16 @@ void main(void)
             #region coloured lines
 
             {
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
                 rObjects.Add(items.Shader("COS"),    // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
 
 
                 rObjects.Add(items.Shader("COS"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
@@ -150,12 +151,12 @@ void main(void)
 
             items.Add(new GLPointSprite(), "PS1");
 
-            GLRenderControl rp = GLRenderControl.PointSprites();     // by program
+            GLRenderState rp = GLRenderState.PointSprites();     // by program
 
             GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("lensflare"),4);
 
             rObjects.Add(items.Shader("PS1"),
-                         GLRenderableItem.CreateVector4Color4(items, rp,
+                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rp,
                                p, new Color4[] { Color.Red, Color.Yellow, Color.Green },rt));
 
             #endregion

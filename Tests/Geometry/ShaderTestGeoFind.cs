@@ -18,7 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -66,19 +66,19 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(1);
+                GLRenderState lines = GLRenderState.Lines(1);
 
                 items.Add(new GLColorShaderWithWorldCoord(),"COSW" );
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines,lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines,lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green }));
             }
@@ -94,12 +94,12 @@ namespace TestOpenTk
 
             var worldpos = new Vector4[] { new Vector4(0, 0, 0, 0), new Vector4(0, 0, 12, 0) };
 
-            GLRenderControl rc = GLRenderControl.Tri();
+            GLRenderState rc = GLRenderState.Tri();
 
-            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, rc, triangles, worldpos, ic:2, seconddivisor:1));
+            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, rc, triangles, worldpos, ic:2, seconddivisor:1));
 
             findshader = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(11, 16), null, null, null);
-            findrender = GLRenderableItem.CreateVector4Vector4Buf2(items, GLRenderControl.Tri(), triangles, worldpos, ic:2, seconddivisor:1 );
+            findrender = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic:2, seconddivisor:1 );
 
             Closed += ShaderTest_Closed;
         }

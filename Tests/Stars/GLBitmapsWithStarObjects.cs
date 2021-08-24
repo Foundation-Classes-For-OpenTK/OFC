@@ -53,8 +53,8 @@ namespace TestOpenTk
             sunshapebuffer.AllocateFill(GLSphereObjectFactory.CreateSphereFromTriangles(2, starsize));
             items.Add(sunshapebuffer);
 
-            rt = GLRenderControl.Tri();
-            rt.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+            renderstate = GLRenderState.Tri();
+            renderstate.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
         }
 
         // add a bitmap, indicate if owned by class or you
@@ -79,7 +79,7 @@ namespace TestOpenTk
 
         private void AddedNewGroup(int groupno, GLBuffer matrixbuffer)      // callback due to new group added, we need a RI
         {
-            GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, rt, sunshapebuffer, matrixbuffer, 
+            GLRenderableItem ri = GLRenderableItem.CreateVector4Matrix4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, renderstate, sunshapebuffer, matrixbuffer, 
                                     sunshapebuffer.Length/GLLayoutStandards.Vec4size, null, 0, 1);      // ic set by Add..
             renderlist.Add(sunshader, ri);
             grouprenderlist.Add(ri);
@@ -97,7 +97,7 @@ namespace TestOpenTk
         private GLRenderProgramSortedList renderlist;
         private GLShaderPipeline sunshader;
         private GLBuffer sunshapebuffer;
-        private GLRenderControl rt;
+        private GLRenderState renderstate;
         private GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation vertshader;
         private GLPLStarSurfaceFragmentShader fragshader;
 

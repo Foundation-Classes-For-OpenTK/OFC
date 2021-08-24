@@ -18,143 +18,79 @@ namespace OFC.GL4
 {
     // Wraps the openGL main state variables in a class so they get selected correctly for each render.
 
-    public class GLRenderControl
+    public class GLRenderState
     {
         // static creates of a GLRenderControl for the various OpenGL primitives
 
-        static public GLRenderControl Tri(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Tri(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.Triangles) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        static public GLRenderControl Tri(GLRenderControl prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Tri(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.Triangles) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-
-        static public GLRenderControl TriStrip(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        
+        static public GLRenderState Tri(uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.TriangleStrip) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState() { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        static public GLRenderControl TriStrip(GLRenderControl prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Tri(GLRenderState prev, uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.TriangleStrip) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState(prev) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
-        static public GLRenderControl TriStrip(uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Tri(DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.TriangleStrip) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState() { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        static public GLRenderControl TriStrip(GLRenderControl prev, uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Tri(GLRenderState prev, DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.TriangleStrip) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState(prev) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
-        static public GLRenderControl TriStrip(DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        // same as Tri, but just kept for naming purposes 
+        static public GLRenderState Quads(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.TriangleStrip) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        static public GLRenderControl TriStrip(GLRenderControl prev, DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState Quads(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.TriangleStrip) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
-        static public GLRenderControl TriFan(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.TriangleFan) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState Points(float pointsize = 1, bool smooth = true)
+        { return new GLRenderState() { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
-        static public GLRenderControl TriFan(GLRenderControl prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.TriangleFan) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState Points(GLRenderState prev, float pointsize = 1, bool smooth = true)
+        { return new GLRenderState(prev) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
+        static public GLRenderState PointSprites()
+        { return new GLRenderState() { PointSize = 0, PointSprite = true }; }
 
-        static public GLRenderControl TriFan(DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.TriangleFan) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState PointSprites(GLRenderState prev)
+        { return new GLRenderState(prev) { PointSize = 0, PointSprite = true }; }
 
-        static public GLRenderControl TriFan(GLRenderControl prev, DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.TriangleFan) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
+        { return new GLRenderState() { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
+        static public GLRenderState Patches(GLRenderState prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
+        { return new GLRenderState(prev) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
-        static public GLRenderControl Quads(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(PrimitiveType.Quads) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
+        { return new GLRenderState() { LineWidth = linewidth, LineSmooth = smooth }; }
 
-        static public GLRenderControl Quads(GLRenderControl prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderControl(prev, PrimitiveType.Quads) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
+        static public GLRenderState Lines(GLRenderState prev, float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
+        { return new GLRenderState(prev) { LineWidth = linewidth, LineSmooth = smooth }; }
 
-
-        static public GLRenderControl Points(float pointsize = 1, bool smooth = true)
-        { return new GLRenderControl(PrimitiveType.Points) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
-
-        static public GLRenderControl Points(GLRenderControl prev, float pointsize = 1, bool smooth = true)
-        { return new GLRenderControl(prev, PrimitiveType.Points) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
-
-
-        static public GLRenderControl PointsByProgram(bool pointsprite = false, bool smooth = true)
-        { return new GLRenderControl(PrimitiveType.Points) { PointSize = 0, PointSprite = false, PointSmooth = smooth }; }
-
-        static public GLRenderControl PointsByProgram(GLRenderControl prev, bool pointsprite = false, bool smooth = true)
-        { return new GLRenderControl(prev, PrimitiveType.Points) { PointSize = 0, PointSprite = false, PointSmooth = smooth }; }
-
-
-        static public GLRenderControl PointSprites()
-        { return new GLRenderControl(PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
-
-        static public GLRenderControl PointSprites(GLRenderControl prev)
-        { return new GLRenderControl(prev, PrimitiveType.Points) { PointSize = 0, PointSprite = true }; }
-
-
-        static public GLRenderControl Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
-        { return new GLRenderControl(PrimitiveType.Patches) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
-
-        static public GLRenderControl Patches(GLRenderControl prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
-        { return new GLRenderControl(prev, PrimitiveType.Patches) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
-
-
-        static public GLRenderControl Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
-        { return new GLRenderControl(PrimitiveType.Lines) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-        static public GLRenderControl Lines(GLRenderControl prev, float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
-        { return new GLRenderControl(prev, PrimitiveType.Lines) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-
-        static public GLRenderControl LineLoop(float linewidth = 1, bool smooth = true)     // vertex 0->1->2->0
-        { return new GLRenderControl(PrimitiveType.LineLoop) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-        static public GLRenderControl LineLoop(GLRenderControl prev, float linewidth = 1, bool smooth = true)     // vertex 0->1->2->0
-        { return new GLRenderControl(prev, PrimitiveType.LineLoop) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-
-        static public GLRenderControl LineStrip(float linewidth = 1, bool smooth = true)    // vertex 0->1->2
-        { return new GLRenderControl(PrimitiveType.LineStrip) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-        static public GLRenderControl LineStrip(GLRenderControl prev, float linewidth = 1, bool smooth = true)    // vertex 0->1->2
-        { return new GLRenderControl(prev, PrimitiveType.LineStrip) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-        // geoshaders which change the primitive type need the values for the output, but a different input type
-        // good for any triangle type at the geoshader output
-
-        static public GLRenderControl ToTri(PrimitiveType t, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
-        { return new GLRenderControl(t) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
-
-        static public GLRenderControl ToTri(GLRenderControl prev, PrimitiveType t, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
-        { return new GLRenderControl(prev, t) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
-
+       
         // creators
 
-        public GLRenderControl()                                          // fully default 
+        public GLRenderState()                                          // fully default 
         {
-            PrimitiveType = PrimitiveType.Points;
         }
 
-        public GLRenderControl(PrimitiveType p)                           // use default fixed settings with primitive type
-        {
-            PrimitiveType = p;
-        }
-
-        public GLRenderControl(GLRenderControl prev, PrimitiveType p)      // copy previous fixed settings
+        public GLRenderState(GLRenderState prev)      // copy previous fixed settings
         {
             PrimitiveRestart = prev.PrimitiveRestart;
             ClipDistanceEnable = prev.ClipDistanceEnable;
@@ -170,13 +106,12 @@ namespace OFC.GL4
             BlendEquationA = prev.BlendEquationA;
             BlendEquationRGB = prev.BlendEquationRGB;
             ColorMasking = prev.ColorMasking;
-            PrimitiveType = p;
             Discard = prev.Discard;
         }
 
-        static public GLRenderControl Start()
+        static public GLRenderState Start()
         {
-            var startstate = new GLRenderControl(PrimitiveType.Points)        // Set the default state we want to be in at start (some state defaults are at bottom)
+            var startstate = new GLRenderState()        // Set the default state we want to be in at start (some state defaults are at bottom)
             {
                 FrontFace = FrontFaceDirection.Ccw,
                 CullFace = true,
@@ -190,7 +125,7 @@ namespace OFC.GL4
                 LineSmooth = true,
             };
 
-            var curstate = new GLRenderControl(PrimitiveType.Points)        // set to be purposely not default constructor state and the above state 
+            var curstate = new GLRenderState()        // set to be purposely not default constructor state and the above state 
             {                                                               // to make all get set.
                 PrimitiveRestart = 1,
                 ClipDistanceEnable = 1,
@@ -214,7 +149,7 @@ namespace OFC.GL4
             return startstate;
         }
 
-        public void ApplyState(GLRenderControl newstate)      // apply deltas to GL
+        public void ApplyState(GLRenderState newstate)      // apply deltas to GL
         {
             // general
 
@@ -401,8 +336,6 @@ namespace OFC.GL4
             }
 
         }
-
-        public PrimitiveType PrimitiveType { get; set; }             // Draw type for front end - may not be draw type after geo shader note
 
         // these are only set for particular primitive types - so the default construction is don't care.
 

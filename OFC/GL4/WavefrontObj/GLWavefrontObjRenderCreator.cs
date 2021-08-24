@@ -14,6 +14,7 @@
 
 using OFC.WaveFront;
 using OpenTK;
+using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -47,7 +48,7 @@ namespace OFC.GL4
                 return false;
 
             GLBuffer vert = null;
-            GLRenderControl rts = GLRenderControl.Tri();
+            GLRenderState rts = GLRenderState.Tri();
             bool okay = false;
 
             foreach (var obj in objects)
@@ -79,7 +80,7 @@ namespace OFC.GL4
 
                         obj.Indices.RefactorVertexIndiciesIntoTriangles();
 
-                        var ri = GLRenderableItem.CreateVector4Vector2(items, rts, vert, vert.Positions[0], vert.Positions[1], 0,
+                        var ri = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rts, vert, vert.Positions[0], vert.Positions[1], 0,
                                 new GLRenderDataTranslationRotationTexture(tex, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
 
                         ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
@@ -107,7 +108,7 @@ namespace OFC.GL4
 
                         obj.Indices.RefactorVertexIndiciesIntoTriangles();
 
-                        var ri = GLRenderableItem.CreateVector4(items, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(c, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
+                        var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.Triangles, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(c, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
                         ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
 
                         rlist.Add(shadercolor, name, ri);

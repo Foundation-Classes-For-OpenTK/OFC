@@ -41,8 +41,8 @@ namespace OFC.GL4
                                         int textures,       // number of textures to allow per set
                                         int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
                                         int mingroups,      // minimum number of groups
-                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderControl objrc,    // object shader, buffer, vertexes and its rendercontrol
-                                        IGLProgramShader textshader, Size texturesize ,  GLRenderControl textrc,    // text shader, text size, and rendercontrol
+                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc,    // object shader, buffer, vertexes and its rendercontrol
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc,    // text shader, text size, and rendercontrol
                                         int debuglimittexturedepth = 0)     // set to limit texture depth per set
         {
             this.name = name;
@@ -117,7 +117,7 @@ namespace OFC.GL4
         }
 
         // Return set, render group, and render index in group, or null
-        public Tuple<int,int,int> Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
+        public Tuple<int,int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);
@@ -128,7 +128,7 @@ namespace OFC.GL4
             foreach (var s in set)      
             {
                 geo.SetGroup(setno << 18);      // set the group marker for 
-                s.ObjectRenderer.RenderControl.Discard = true;
+                s.ObjectRenderer.RenderState.Discard = true;
                 s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
@@ -166,11 +166,11 @@ namespace OFC.GL4
         private IGLProgramShader objectshader;
         private GLBuffer objectbuffer;
         private int objectvertexescount;
-        private GLRenderControl objrc;
+        private GLRenderState objrc;
 
         private IGLProgramShader textshader;
         private Size texturesize;
-        private GLRenderControl textrc;
+        private GLRenderState textrc;
 
         private int limittexturedepth;
 

@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -158,39 +158,39 @@ namespace TestOpenTk
 
             {
                 items.Add( new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-                GLRenderControl rl = GLRenderControl.Lines(1);
-                rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, rl, displaylines));
+                GLRenderState rl = GLRenderState.Lines(1);
+                rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
 
             {
                 items.Add(new GLTexture2D(Properties.Resources.golden), "solmarker");
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
-                GLRenderControl rq = GLRenderControl.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Quads(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, rq,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, 1000, 0))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, rq,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, -1000, 0))
                              ));
                 items.Add( new GLTexture2D(Properties.Resources.dotted), "sag");
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, rq,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, 2000, 25899))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, rq,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, -2000, 25899))
                              ));
                 items.Add(new GLTexture2D(Properties.Resources.dotted2), "bp");
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, rq,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("bp"), new Vector3(-1111f, 0, 65269))
                              ));
@@ -235,8 +235,8 @@ namespace TestOpenTk
                 // bind the galaxy texture, the 3dnoise, and the gaussian 1-d texture for the shader
                 gs.StartAction = (a,m) => { galtex.Bind(1); noise3d.Bind(3); gaussiantex.Bind(4); };      // shader requires these, so bind using shader
 
-                GLRenderControl rt = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
-                galaxy = GLRenderableItem.CreateNullVertex(rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
+                GLRenderState rt = GLRenderState.Tri();
+                galaxy = GLRenderableItem.CreateNullVertex(PrimitiveType.Points, rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
                 rObjects.Add(items.Shader("Galaxy"), galaxy);
             }
 
@@ -289,10 +289,10 @@ namespace TestOpenTk
                 buf.StopReadWrite();
 
                 items.Add(new GalaxyStarDots(), "SD");
-                GLRenderControl rp = GLRenderControl.Points(1);
+                GLRenderState rp = GLRenderState.Points(1);
                 rp.DepthTest = false;
                 rObjects.Add(items.Shader("SD"),
-                                GLRenderableItem.CreateVector4(items, rp, buf, points));
+                                GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
@@ -302,11 +302,11 @@ namespace TestOpenTk
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"),64,40), "PS1");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
 
-                GLRenderControl rps = GLRenderControl.PointSprites();
+                GLRenderState rps = GLRenderState.PointSprites();
                 rps.DepthTest = false;
 
                 rObjects.Add(items.Shader("PS1"),
-                             GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
 
             }
 
@@ -314,11 +314,11 @@ namespace TestOpenTk
                 items.Add(new DynamicGridVertexShader(Color.Cyan), "PLGRIDVertShader");
                 items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
                 rl.DepthTest = false;
 
                 items.Add(new GLShaderPipeline(items.PLShader("PLGRIDVertShader"), items.PLShader("PLGRIDFragShader")), "DYNGRID");
-                rObjects.Add(items.Shader("DYNGRID"), "DYNGRIDRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 2));
+                rObjects.Add(items.Shader("DYNGRID"), "DYNGRIDRENDER", GLRenderableItem.CreateNullVertex(PrimitiveType.Lines, rl, drawcount: 2));
 
             }
 
@@ -327,7 +327,7 @@ namespace TestOpenTk
                 items.Add(new DynamicGridCoordVertexShader(), "PLGRIDBitmapVertShader");
                 items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding
 
-                GLRenderControl rl = GLRenderControl.TriStrip(cullface: false);
+                GLRenderState rl = GLRenderState.Tri(cullface: false);
                 rl.DepthTest = false;
 
                 gridtexcoords = new GLTexture2DArray();
@@ -337,7 +337,7 @@ namespace TestOpenTk
 
                 items.Add(sp, "DYNGRIDBitmap");
 
-                rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
+                rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
 

@@ -32,7 +32,7 @@ namespace OFC.GL4
 
         // inactive when attached to render
 
-        public GLRenderControl RenderControl { get; set; } = null;          // Not used, must be null
+        public GLRenderState RenderState { get; set; } = null;          // Not used, must be null
         public IGLRenderItemData RenderData { get; set; }                   // Not used
         public int DrawCount { get; set; } = 0;                             // Not used
         public int InstanceCount { get; set; } = 0;                         // Not used
@@ -50,7 +50,7 @@ namespace OFC.GL4
 
         // when attached as a render item
 
-        public void Bind(GLRenderControl currentstate, IGLProgramShader shader, GLMatrixCalc c)      
+        public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc c)      
         {
             Execute(c);
         }

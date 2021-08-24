@@ -18,6 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -87,17 +88,17 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(1);
+                GLRenderState lines = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed }));
             }
@@ -107,11 +108,11 @@ namespace TestOpenTk
             #region Coloured triangles
             if (true)
             {
-                GLRenderControl rc = GLRenderControl.Tri();
+                GLRenderState rc = GLRenderState.Tri();
                 rc.CullFace = false;
 
                 rObjects.Add(items.Shader("COSOT"), "scopen",
-                            GLRenderableItem.CreateVector4Color4(items, rc,
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 0, 20))
@@ -215,11 +216,11 @@ namespace TestOpenTk
 
                 if (true)
                 {
-                    GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                    GLRenderState rt = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                     rt.DepthTest = true;
                     rt.DepthClamp = true;
 
-                    var renderer = GLRenderableItem.CreateVector4Vector4(items, rt,
+                    var renderer = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt,
                                                                                 shapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
                                                                                 dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
                                                                                 null, 0, 1);        // no ic, second divisor 1
@@ -234,12 +235,12 @@ namespace TestOpenTk
                 if (true)
                 {
 
-                    var rc = GLRenderControl.Quads();
+                    var rc = GLRenderState.Quads();
                     rc.CullFace = true;
                     rc.DepthTest = true;
                     rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
-                    var renderer = GLRenderableItem.CreateMatrix4(items, rc, 
+                    var renderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.Quads, rc, 
                                                                         dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
                                                                          new GLRenderDataTexture(textarray,0), 
                                                                          0,1);     //no ic, and matrix divide so 1 matrix per vertex set
@@ -254,11 +255,11 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
 
-                var textrc = GLRenderControl.Quads();
+                var textrc = GLRenderState.Quads();
                 textrc.DepthTest = true;
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
@@ -320,11 +321,11 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl starrc = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
 
-                var textrc = GLRenderControl.Quads();
+                var textrc = GLRenderState.Quads();
                 textrc.DepthTest = true;
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 

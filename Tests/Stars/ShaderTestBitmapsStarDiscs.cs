@@ -18,7 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -70,17 +70,17 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLColorShaderWithWorldCoord(), "COS");
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COS"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(-40, 0, 40), new Vector3(10, 0, 0), 9),
                                                         new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
 
 
                 rObjects.Add(items.Shader("COS"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-40, 0, -40), new Vector3(40, 0, -40), new Vector3(0, 0, 10), 9),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );

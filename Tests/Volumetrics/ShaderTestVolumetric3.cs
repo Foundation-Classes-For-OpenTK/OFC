@@ -15,7 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -104,19 +104,10 @@ void main(void)
             }
         }
 
-        void DebugProc(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
-        {
-            string s = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(message);
-            System.Diagnostics.Debug.WriteLine("{0} {1} {2} {3} {4} {5}", source, type, id, severity, length, s);
-        }
-
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
-
-            GLStatics.EnableDebug(DebugProc);
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
@@ -131,19 +122,19 @@ void main(void)
             };
 
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl1 = GLRenderControl.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
 
                 rObjects.Add(items.Shader("COSW"), "L1",   // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Gray })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Gray })
                                    );
@@ -171,11 +162,11 @@ void main(void)
                 items.Add(array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0,4)), "IC-2");
 
-                GLRenderControl rq = GLRenderControl.Quads(cullface:false);
+                GLRenderState rq = GLRenderState.Quads(cullface:false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"),4);
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, rq,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
                                                 GLShapeObjectFactory.CreateQuad(1.0f), GLShapeObjectFactory.TexQuad, numberpos, rt, 
                                                 numberpos.Length));
             }
@@ -203,7 +194,7 @@ void main(void)
 
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
-                            GLRenderableItem.CreateVector4(items, rl1, lines2));
+                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, lines2));
             }
 
             items.Add(new ShaderV2(), "V2");
@@ -214,9 +205,8 @@ void main(void)
                 new Vector4(+40,+20,+40,1),     //P6
             };
 
-            GLRenderControl rltot = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Lines);
-
-            rObjects.Add(items.Shader("V2"), GLRenderableItem.CreateVector4(items, rltot, points, ic: 1));
+            GLRenderState rltot = GLRenderState.Tri();
+            rObjects.Add(items.Shader("V2"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rltot, points, ic: 1));
 
             dataoutbuffer = items.NewStorageBlock(5);
             dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back

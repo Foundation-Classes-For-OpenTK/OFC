@@ -15,7 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC.GL4;
 using OFC.Controller;
 using System;
@@ -125,9 +125,9 @@ void main(void)
 
             {
                 items.Add(new GLColorShaderWithWorldCoord(), "COS");
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
 
-                rObjects.Add(items.Shader("COS"), GLRenderableItem.CreateVector4Color4(items, rl,
+                rObjects.Add(items.Shader("COS"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                             GLShapeObjectFactory.CreateBox(400, 200, 40, new Vector3(0, 0, 0), new Vector3(0, 0, 0)),
                             new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green }));
             }
@@ -145,13 +145,13 @@ void main(void)
                     items.Add(new GLTexture2D(bmp), "-200,-100");
                 }
 
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
 
-                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, rq,
+                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                             GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("200,100"), new Vector3(200, 0, 100))));
 
-                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, rq,
+                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                             GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("-200,-100"), new Vector3(-200, 0, -100))));
             }
@@ -163,14 +163,12 @@ void main(void)
 
                 items.Add(new GLShaderPipeline(new GLShaderStars(), new GLPLFragmentShaderVSColor()), "STARS");
 
-                GLRenderControl rp = GLRenderControl.PointsByProgram();
+                GLRenderState rp = GLRenderState.Points();
 
-                rObjects.Add(items.Shader("STARS"), "Stars", GLRenderableItem.CreateVector3Packed2(items, rp,
+                rObjects.Add(items.Shader("STARS"), "Stars", GLRenderableItem.CreateVector3Packed2(items, PrimitiveType.Points, rp,
                                                 stars, new Vector3(50000, 50000, 50000), 16));
 
             }
-
-            GL.Enable(EnableCap.PointSmooth);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0
 

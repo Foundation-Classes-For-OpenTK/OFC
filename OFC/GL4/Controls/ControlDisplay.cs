@@ -64,14 +64,14 @@ namespace OFC.GL4.Controls
 
             vertexarray.Attribute(0, 0, vertexesperentry, OpenTK.Graphics.OpenGL4.VertexAttribType.Float); // bind 0 on attr 0, 2 components per vertex
 
-            GLRenderControl rc = GLRenderControl.TriStrip();
+            GLRenderState rc = GLRenderState.Tri();
             rc.PrimitiveRestart = 0xff;
             rc.DepthTest = depthtest;
 
             this.startz = startz;
             this.deltaz = deltaz;
 
-            ri = new GLRenderableItem(rc, 0, vertexarray);     // create a renderable item
+            ri = new GLRenderableItem(PrimitiveType.TriangleStrip,rc, 0, vertexarray);     // create a renderable item
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
             ri.DrawCount = 0;                               // nothing to draw at this point
 
@@ -127,7 +127,7 @@ namespace OFC.GL4.Controls
 
         // call this during your Paint to render.
 
-        public void Render(GLRenderControl currentstate, ulong ts)
+        public void Render(GLRenderState currentstate, ulong ts)
         {
             //System.Diagnostics.Debug.WriteLine("Render");
 

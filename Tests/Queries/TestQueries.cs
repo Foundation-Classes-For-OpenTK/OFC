@@ -18,6 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -91,12 +92,12 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderControl def = new GLRenderControl() { DepthTest = true };      // set up default state for fixed values - no depth test, rely on stencil
+            GLRenderState def = new GLRenderState() { DepthTest = true };      // set up default state for fixed values - no depth test, rely on stencil
 
             #region Coloured triangles
             if (true)
             {
-                GLRenderControl rc = GLRenderControl.Tri(def);
+                GLRenderState rc = GLRenderState.Tri(def);
                 rc.CullFace = true;
 
                 var q1 = new GLOperationQuery(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0, true);
@@ -114,7 +115,7 @@ namespace TestOpenTk
                 
 
                 rObjects.Add(items.Shader("COSOT"), "Tri",
-                            GLRenderableItem.CreateVector4Color4(items, rc,
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
@@ -139,31 +140,31 @@ namespace TestOpenTk
 
 
 
-            for( int i = 0; i < 100; i++ )//if (true)
+            for( int i = 0; i < 1; i++ )//if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(def,5);
+                GLRenderState lines = GLRenderState.Lines(def,5);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderControl lines2 = GLRenderControl.Lines(def,1);
+                GLRenderState lines2 = GLRenderState.Lines(def,1);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Orange, Color.Blue, Color.DarkRed, Color.DarkRed }));
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );

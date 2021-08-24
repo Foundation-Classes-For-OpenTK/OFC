@@ -32,7 +32,7 @@ namespace OFC.WinForm
         public bool Focused { get { return glControl.Focused; } }
         public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
         public Point MouseScreenPosition { get { return Control.MousePosition; } }
-        public GL4.GLRenderControl RenderState { get; set; } = null;
+        public GL4.GLRenderState RenderState { get; set; } = null;
 
         public bool EnsureCurrentPaintResize { get; set; } = false;         // must be set for multiple opengl windows in one thread
         public bool EnsureCurrentKeyboardMouse { get; set; } = false;       // only if you try and do something like resizing the viewport
@@ -273,7 +273,7 @@ namespace OFC.WinForm
 
             if ( RenderState == null )
             {
-                RenderState = GL4.GLRenderControl.Start();
+                RenderState = GL4.GLRenderState.Start();
             }
 
             Paint?.Invoke(glControl,(ulong)sw.ElapsedMilliseconds);

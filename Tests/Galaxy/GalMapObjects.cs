@@ -79,13 +79,13 @@ namespace TestOpenTk
                 texarray.Bind(1);   // bind tex array to 1, matching above
             };
 
-            GLRenderControl rt = GLRenderControl.Patches(4);
+            GLRenderState rt = GLRenderState.Patches(4);
             rt.DepthTest = depthtest;
 
             // create a quad and all entries of the renderable map objects, zero at this point, with a zero instance count. UpdateEnables will fill it in later
             // but we need to give it the maximum buffer length at this point
 
-            ridisplay = GLRenderableItem.CreateVector4Vector4(items, rt,
+            ridisplay = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, rt,
                                 GLShapeObjectFactory.CreateQuad2(50.0f, 50.0f),         // quad2 4 vertexts
                                 new Vector4[galmap.RenderableMapObjects.Length],        // world positions
                                 ic: 0, seconddivisor: 1);
@@ -104,7 +104,7 @@ namespace TestOpenTk
             findshader = items.NewShaderPipeline(null, vert, tcs, tes, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
 
             // hook to modelworldbuffer, at modelpos and worldpos.  UpdateEnables will fill in instance count
-            rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount, 
+            rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, GLRenderState.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount, 
                                                                             modelworldbuffer, worldpos, null, ic: 0, seconddivisor: 1);
 
             GLStatics.Check();
@@ -183,7 +183,7 @@ namespace TestOpenTk
         }
 
 
-        public GalacticMapObject FindPOI(Point viewportloc, GLRenderControl state, Size viewportsize)
+        public GalacticMapObject FindPOI(Point viewportloc, GLRenderState state, Size viewportsize)
         {
             if (!objectshader.Enable)
                 return null;

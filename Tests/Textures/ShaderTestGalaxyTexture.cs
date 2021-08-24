@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC.GL4;
 using OFC.Controller;
 using System;
@@ -100,19 +100,19 @@ void main(void)
 
 
             items.Add( new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl1 = GLRenderControl.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
 
                 rObjects.Add(items.Shader("COSW"), "L1",   // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Gray })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Gray })
                                    );
@@ -123,10 +123,10 @@ void main(void)
 
             items.Add(new GLGalShader(), "TEX-NC");
 
-            GLRenderControl rg = GLRenderControl.Quads(cullface: false);
+            GLRenderState rg = GLRenderState.Quads(cullface: false);
 
             rObjects.Add(items.Shader("TEX-NC"),
-                        GLRenderableItem.CreateVector4Vector2(items, rg,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rg,
                         GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("gal"), new Vector3(0, 0, 0))
                         ));

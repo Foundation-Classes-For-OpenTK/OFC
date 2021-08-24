@@ -139,19 +139,19 @@ void main(void)
 
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(1);
+                GLRenderState lines = GLRenderState.Lines(1);
 
                 items.Add(new GLColorShaderWithWorldCoord(), "COSW");
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green }));
             }
@@ -167,9 +167,9 @@ void main(void)
 
             var wpp4 = new Vector4[] { new Vector4(0, 0, 0, 0), new Vector4(0, 0, 12, 0) };
 
-            GLRenderControl rc = GLRenderControl.Tri();
+            GLRenderState rc = GLRenderState.Tri();
 
-            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, rc, vecp4, wpp4, ic:2, seconddivisor:1));
+            rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, rc, vecp4, wpp4, ic:2, seconddivisor:1));
 
             var uniformbuf = new GLUniformBlock(20);      
             uniformbuf.AllocateBytes(1024);

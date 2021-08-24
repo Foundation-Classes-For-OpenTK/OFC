@@ -15,7 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -90,18 +90,18 @@ namespace TestOpenTk
             gl3dcontroller.Start(glwfc,new Vector3(0, 0, -35000), new Vector3(126.75f, 0, 0), 0.31622F);
 
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl1 = GLRenderControl.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines(1);
 
             float h = 0;
             {
                 rObjects.Add(items.Shader("COSW"),    // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-35000, h, -35000), new Vector3(-35000, h, 35000), new Vector3(1000, 0, 0), 70),
                                                         new Color4[] { Color.Gray })
                                    );
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-35000, h, -35000), new Vector3(35000, h, -35000), new Vector3(0, 0, 1000), 70),
                                                         new Color4[] { Color.Gray })
                                    );
@@ -132,7 +132,7 @@ namespace TestOpenTk
 
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
-                            GLRenderableItem.CreateVector4(items, rl1, lines2));
+                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, lines2));
             }
 
             {
@@ -160,16 +160,16 @@ namespace TestOpenTk
                 items.Add( array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
-                GLRenderControl rq = GLRenderControl.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Quads(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, rq,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
                                                 GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuad, numberpos,
                                                 rt, numberpos.Length));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b2",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, rq,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
                                                 GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuad, numberpos2,
                                                 rt, numberpos.Length));
             }
@@ -192,8 +192,9 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.Galaxy_L), "gal");
 
             items.Add(new ShaderV2(items.Tex("gal")), "V2");
-            GLRenderControl rv = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
-            galaxy = GLRenderableItem.CreateNullVertex(rv);   // no vertexes, all data from bound volumetric uniform, no instances as yet
+
+            GLRenderState rv = GLRenderState.Tri();
+            galaxy = GLRenderableItem.CreateNullVertex(PrimitiveType.Points, rv);   // no vertexes, all data from bound volumetric uniform, no instances as yet
             rObjects.Add(items.Shader("V2"), galaxy);
 
             dataoutbuffer = items.NewStorageBlock(5);

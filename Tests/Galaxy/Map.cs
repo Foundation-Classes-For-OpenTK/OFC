@@ -128,11 +128,11 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
                    };
 
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
 
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(Color.Yellow)), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
-                GLRenderableItem.CreateVector4(items, rl, displaylines));
+                GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
 
                 items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
 
@@ -141,13 +141,13 @@ namespace TestOpenTk
                 int dist = 1000/lyscale ;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(left, h, back), new Vector3(dist, 0, 0), (back - front) / dist + 1),
                                                         new OpenTK.Graphics.Color4[] { cr })
                                    );
 
                 rObjects.Add(items.Shader("COS-1L"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(right, h, front), new Vector3(0, 0, dist), (right - left) / dist + 1),
                                                         new OpenTK.Graphics.Color4[] { cr })
                                    );
@@ -205,8 +205,8 @@ namespace TestOpenTk
                 // bind the galaxy texture, the 3dnoise, and the gaussian 1-d texture for the shader
                 galaxyshader.StartAction += (a, m) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
 
-                GLRenderControl rt = GLRenderControl.ToTri(OpenTK.Graphics.OpenGL4.PrimitiveType.Points);
-                galaxyrenderable = GLRenderableItem.CreateNullVertex(rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
+                GLRenderState rt = GLRenderState.Tri();
+                galaxyrenderable = GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.Points,rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
                 rObjects.Add(galaxyshader, "galshader", galaxyrenderable);
             }
 
@@ -287,9 +287,9 @@ namespace TestOpenTk
                 //};
 
                 items.Add(stardots);
-                GLRenderControl rc = GLRenderControl.Points(1);       
+                GLRenderState rc = GLRenderState.Points(1);       
                 rc.DepthTest = false; // note, if this is true, there is a wierd different between left and right in view.. not sure why
-                rObjects.Add(stardots, "stardots", GLRenderableItem.CreateVector4(items, rc, buf, points));
+                rObjects.Add(stardots, "stardots", GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Points, rc, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
@@ -302,9 +302,9 @@ namespace TestOpenTk
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
 
-                GLRenderControl rps = GLRenderControl.PointSprites();
+                GLRenderState rps = GLRenderState.PointSprites();
 
-                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items, rps, p, new Color4[] { Color.White }));
+                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
 
             }
 
@@ -314,11 +314,11 @@ namespace TestOpenTk
                 items.Add(gridvertshader, "PLGRIDVertShader");
                 items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
-                GLRenderControl rl = GLRenderControl.Lines(1);
+                GLRenderState rl = GLRenderState.Lines(1);
 
                 items.Add(new GLShaderPipeline(items.PLShader("PLGRIDVertShader"), items.PLShader("PLGRIDFragShader")), "DYNGRID");
 
-                gridrenderable = GLRenderableItem.CreateNullVertex(rl, dc: 2);
+                gridrenderable = GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.Lines, rl, drawcount: 2);
 
                 rObjects.Add(items.Shader("DYNGRID"), "DYNGRIDRENDER", gridrenderable);
 
@@ -330,7 +330,7 @@ namespace TestOpenTk
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
                 items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding 1
 
-                GLRenderControl rl = GLRenderControl.TriStrip(cullface: false);
+                GLRenderState rl = GLRenderState.Tri(cullface: false);
 
                 GLTexture2DArray gridtexcoords = new GLTexture2DArray();
                 items.Add(gridtexcoords, "PLGridBitmapTextures");
@@ -339,7 +339,7 @@ namespace TestOpenTk
 
                 items.Add(sp, "DYNGRIDBitmap");
 
-                rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(rl, dc: 4, ic: 9));
+                rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
             float sunsize = 2.0f;

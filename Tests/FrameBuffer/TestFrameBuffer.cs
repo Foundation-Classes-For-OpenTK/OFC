@@ -15,7 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC.GL4;
 using OFC.Controller;
 using System;
@@ -104,33 +104,33 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(5);
+                GLRenderState lines = GLRenderState.Lines(5);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderControl lines2 = GLRenderControl.Lines(1);
+                GLRenderState lines2 = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Orange, Color.Blue, Color.DarkRed, Color.DarkRed }));
             }
             if (true)
             {
-                GLRenderControl lines = GLRenderControl.Lines(1);
+                GLRenderState lines = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
 
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, lines,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
@@ -141,11 +141,11 @@ namespace TestOpenTk
             #region Coloured triangles
             if (true)
             {
-                GLRenderControl rc = GLRenderControl.Tri();
+                GLRenderState rc = GLRenderState.Tri();
                 rc.CullFace = false;
 
                 rObjects.Add(items.Shader("COSOT"), "scopen",
-                            GLRenderableItem.CreateVector4Color4(items, rc,
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
@@ -201,7 +201,7 @@ namespace TestOpenTk
 
                 ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(mc);
 
-                var renderState = GLRenderControl.Start();
+                var renderState = GLRenderState.Start();
 
                 Vector4[] p = new Vector4[4];
 
@@ -214,46 +214,46 @@ namespace TestOpenTk
 
                 items.Add(new GLDirect(), "fbds1");
 
-                GLRenderControl rts = GLRenderControl.TriStrip();
+                GLRenderState rts = GLRenderState.Tri();
                 GLRenderDataTexture rdt = new GLRenderDataTexture(items.Tex("dotted2"));
-                var ri = GLRenderableItem.CreateVector4(items, rts, p, rdt);
+                var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, rdt);
                 ri.Execute(items.Shader("fbds1"), renderState, mc);
 
-                GLRenderControl lines = GLRenderControl.Lines(1);
+                GLRenderState lines = GLRenderState.Lines(1);
 
-                var l1 = GLRenderableItem.CreateVector4Color4(items, lines,
+                var l1 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed });
 
                 l1.Execute(items.Shader("COSW"), renderState, mc);
 
-                var l2 =  GLRenderableItem.CreateVector4Color4(items, lines,
+                var l2 =  GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed });
 
                 l2.Execute(items.Shader("COSW"), renderState, mc);
 
-                var l3 = GLRenderableItem.CreateVector4Color4(items, lines,
+                var l3 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange });
 
                 l3.Execute(items.Shader("COSW"), renderState, mc);
-                var l4 = GLRenderableItem.CreateVector4Color4(items, lines,
+                var l4 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange });
                 l4.Execute(items.Shader("COSW"), renderState, mc);
 
-                GLRenderControl rc = GLRenderControl.Tri();
+                GLRenderState rc = GLRenderState.Tri();
                 rc.CullFace = false;
-                var ri2 = GLRenderableItem.CreateVector4Color4(items, rc,
+                var ri2 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20)));
                 ri2.Execute(items.Shader("COSOT"), renderState, mc);
 
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
                 
-                var ri3 = GLRenderableItem.CreateVector4Vector2(items, rq,
+                var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rq,
                         GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))  );
 
@@ -283,22 +283,22 @@ namespace TestOpenTk
 
                 items.Add(new GLDirect(), "ds1");
 
-                GLRenderControl rts = GLRenderControl.TriStrip();
+                GLRenderState rts = GLRenderState.Tri();
                 GLRenderDataTexture rdt = new GLRenderDataTexture(items.Tex("dotted2"));
 
-                rObjects.Add(items.Shader("ds1"), "ds1", GLRenderableItem.CreateVector4(items, rts, p, rdt));
+                rObjects.Add(items.Shader("ds1"), "ds1", GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, rdt));
             }
 
             if (true)
             {
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
 
                 float width = 20F;
                 float height = 20F / ctex.Width * ctex.Height;
 
                 // TexQuadInv corrects for the inverted FB texture
                 rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, rq,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                         GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadInv,
                         new GLRenderDataTranslationRotationTexture(ctex, new Vector3(-15, 0, 10))
                         ));
@@ -306,9 +306,9 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
                 rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, rq,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                         GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))
                         ));

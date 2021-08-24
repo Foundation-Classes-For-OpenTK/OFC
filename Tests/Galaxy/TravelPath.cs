@@ -105,11 +105,11 @@ namespace TestOpenTk
                 tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
                 items.Add(tapeshader);
 
-                GLRenderControl rts = GLRenderControl.TriStrip(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
+                GLRenderState rts = GLRenderState.Tri(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
                 rts.DepthTest = depthtest;  // no depth test so always appears
 
                 // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
-                ritape = GLRenderableItem.CreateVector4(items, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
+                ritape = GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
                 tapepointbuf = items.LastBuffer();  // keep buffer for refill
                 ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
@@ -131,17 +131,17 @@ namespace TestOpenTk
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
 
-                GLRenderControl rt = GLRenderControl.Tri();     // render is triangles, with no depth test so we always appear
+                GLRenderState rt = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 rt.DepthTest = depthtest;
                 rt.DepthClamp = true;
-                renderersun = GLRenderableItem.CreateVector4Vector4(items, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
+                renderersun = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
                 rObjects.Add(sunshader,"travelpath-suns", renderersun);
 
                 // find compute
 
                 findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
                 items.Add(findshader);
-                rifind = GLRenderableItem.CreateVector4Vector4(items, GLRenderControl.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
+                rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, GLRenderState.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
                 // Sun names, handled by textrenderer
                 textrenderer = new GLBitmaps("bm-travelmap",rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
@@ -151,7 +151,7 @@ namespace TestOpenTk
             else
             {
                 tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
-                ritape.RenderControl.PrimitiveRestart = GL4Statics.DrawElementsRestartValue(tape.Item3);        // IMPORTANT missing bit Robert, must set the primitive restart value to the new tape size
+                ritape.RenderState.PrimitiveRestart = GL4Statics.DrawElementsRestartValue(tape.Item3);        // IMPORTANT missing bit Robert, must set the primitive restart value to the new tape size
                 ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
                 ritape.Visible = tape.Item1.Count > 0;
 
@@ -197,7 +197,7 @@ namespace TestOpenTk
             tapeshader.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
-        public HistoryEntry FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
+        public HistoryEntry FindSystem(Point viewportloc, GLRenderState state, Size viewportsize)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(viewportloc, viewportsize);

@@ -1,6 +1,6 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -108,12 +108,12 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
             };
 
-            GLRenderControl rl = GLRenderControl.Lines(1);
+            GLRenderState rl = GLRenderState.Lines(1);
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
-                GLRenderableItem.CreateVector4(items, rl, displaylines));
+                GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
             float h = 0;
@@ -124,13 +124,13 @@ namespace TestOpenTk
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(left, h, back), new Vector3(dist, 0, 0), (back - front) / dist + 1),
                                                         new Color4[] { cr })
                                    );
 
                 rObjects.Add(items.Shader("COS-1L"),
-                             GLRenderableItem.CreateVector4Color4(items, rl,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(left, h, front), new Vector3(right, h, front), new Vector3(0, 0, dist), (right - left) / dist + 1),
                                                         new Color4[] { cr })
                                    );
@@ -142,10 +142,10 @@ namespace TestOpenTk
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
                 items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
 
-                GLRenderControl rt = GLRenderControl.Tri();
+                GLRenderState rt = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("TEX"),
-                    GLRenderableItem.CreateVector4Vector2(items, rt,
+                    GLRenderableItem.CreateVector4Vector2(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rt,
                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(2000f), GLCubeObjectFactory.CreateCubeTexTriangles(),
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 0, 0))
                             ));
@@ -155,13 +155,13 @@ namespace TestOpenTk
                 items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(150, Color.Green)), "FCS1");
                 items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(80, Color.Red)), "FCS2");
 
-                GLRenderControl rq = GLRenderControl.Quads();
+                GLRenderState rq = GLRenderState.Quads();
 
                 rObjects.Add(items.Shader("FCS1"),
-                    GLRenderableItem.CreateVector4(items, rq,
+                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, rq,
                                                 GLShapeObjectFactory.CreateQuad(1000, pos: new Vector3(4000, 500, 0))));
                 rObjects.Add(items.Shader("FCS2"),
-                    GLRenderableItem.CreateVector4(items, rq,
+                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, rq,
                                                 GLShapeObjectFactory.CreateQuad(1000, pos: new Vector3(4000, 1000, 0))));
             }
 

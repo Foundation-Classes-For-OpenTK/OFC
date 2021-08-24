@@ -18,7 +18,7 @@ using OFC.Controller;
 using OFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Windows.Forms;
 
@@ -165,8 +165,8 @@ void main(void)
             storagebuffer.AllocateFill(vertexes);
 
             items.Add(new ShaderT3(), "Shader");            // geo shader
-            GLRenderControl ri = GLRenderControl.PointsByProgram();
-            rObjects.Add(items.Shader("Shader"), "T1", new GLRenderableItem(ri, vertexes.Length, null, null, 1));
+            GLRenderState ri = GLRenderState.Points();
+            rObjects.Add(items.Shader("Shader"), "T1", new GLRenderableItem(PrimitiveType.Points, ri, vertexes.Length, null, null, 1));
 
             // list of rejected by geoshader above
 
@@ -178,8 +178,8 @@ void main(void)
             // redrawer of rejected items
 
             items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(new Color4(0.9f, 0.0f, 0.0f, 1.0f))), "ResultShader");
-            GLRenderControl rs = GLRenderControl.Points(30);
-            redraw = GLRenderableItem.CreateVector4(items, rs, rejectedbuffer, 0);
+            GLRenderState rs = GLRenderState.Points(30);
+            redraw = GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rs, rejectedbuffer, 0);
             rObjects2.Add(items.Shader("ResultShader"), redraw);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0

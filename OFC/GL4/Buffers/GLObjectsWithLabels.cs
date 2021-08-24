@@ -52,8 +52,8 @@ namespace OFC.GL4
                                 int textures,       // number of 2D textures to allow maximum (limited by GL)
                                 int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
                                 int mingroups,     // minimum groups to have
-                                GLBuffer objectbuffer, int objectvertexes , GLRenderControl objrc,   // object buffer, vertexes and its rendercontrol
-                                Size texturesize, GLRenderControl textrc,   // texturesize and render control
+                                GLBuffer objectbuffer, int objectvertexes , GLRenderState objrc,   // object buffer, vertexes and its rendercontrol
+                                Size texturesize, GLRenderState textrc,   // texturesize and render control
                                 int debuglimittexture = 0)  // use to limit texture map depth for debugging
         {
             this.objectvertexescount = objectvertexes;
@@ -81,8 +81,8 @@ namespace OFC.GL4
             // create the vertex indirect buffer
             dataindirectbuffer = new GLVertexBufferIndirect(items,vertbufsize, GLBuffer.WriteIndirectArrayStride * groupcount, true);
 
-            // objects
-            ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, objrc,
+            // objects (TBD PT)
+            ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, objrc,
                                                                         objectbuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
                                                                         dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
                                                                         null, 0, 1);        // no ic, second divisor 1
@@ -101,7 +101,7 @@ namespace OFC.GL4
                 objectcount -= maxtextper2darray;
             }
 
-            TextRenderer = GLRenderableItem.CreateMatrix4(items, textrc,
+            TextRenderer = GLRenderableItem.CreateMatrix4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, textrc,
                                                                 dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
                                                                 new GLRenderDataTexture(this.textures,0),        // binding 0..N for textures
                                                                 0, 1);     //no ic, and matrix divide so 1 matrix per vertex set
@@ -192,7 +192,7 @@ namespace OFC.GL4
 
         // Find in objects.  Return render group and index into render group or null
 
-        public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderControl state, Point pos, Size size)
+        public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
         {
             var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);

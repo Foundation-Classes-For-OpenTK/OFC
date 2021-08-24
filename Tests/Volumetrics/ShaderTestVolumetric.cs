@@ -15,6 +15,7 @@
 
 using OpenTK;
 using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using OFC;
 using OFC.Controller;
 using OFC.GL4;
@@ -81,19 +82,19 @@ namespace TestOpenTk
             };
 
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            GLRenderControl rl1 = GLRenderControl.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
 
                 rObjects.Add(items.Shader("COSW"), "L1",   // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Gray })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Gray })
                                    );
@@ -116,10 +117,10 @@ namespace TestOpenTk
 
 
             {
-                GLRenderControl rll = GLRenderControl.LineLoop(4);
+                GLRenderState rll = GLRenderState.Lines(4);
 
                 rObjects.Add(items.Shader("COSW"),
-                            GLRenderableItem.CreateVector4(items, rll, boundingbox));
+                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rll, boundingbox));
 
                 Vector4[] extralines = new Vector4[]
                 {
@@ -142,29 +143,29 @@ namespace TestOpenTk
                     new Vector4(hsize,-vsize,-zsize,1),
                 };
 
-                GLRenderControl rl = GLRenderControl.Lines(4);
+                GLRenderState rl = GLRenderState.Lines(4);
                 rObjects.Add(items.Shader("COSW"),
-                            GLRenderableItem.CreateVector4(items, rl, extralines));
+                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, extralines));
             }
 
             items.Add(new GLFixedShader(System.Drawing.Color.Purple), "LINEPURPLE");
 
             indicatorlinebuffer = new GLBuffer();           // new buffer
             indicatorlinebuffer.AllocateBytes(sizeof(float) * 4 * 2, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
-            rObjects.Add(items.Shader("LINEPURPLE"), GLRenderableItem.CreateVector4(items, rl1, indicatorlinebuffer, 2));
+            rObjects.Add(items.Shader("LINEPURPLE"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, indicatorlinebuffer, 2));
 
             items.Add(new GLFixedProjectionShader(System.Drawing.Color.Yellow), "DOTYELLOW");
             interceptpointbuffer = new GLBuffer();           // new buffer
             interceptpointbuffer.AllocateBytes(sizeof(float) * 4 * 12, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
-            GLRenderControl rp1 = GLRenderControl.Points(10);
-            interceptri = GLRenderableItem.CreateVector4(items, rp1, interceptpointbuffer, 0);
+            GLRenderState rp1 = GLRenderState.Points(10);
+            interceptri = GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp1, interceptpointbuffer, 0);
             rObjects.Add(items.Shader("DOTYELLOW"), interceptri);
 
             items.Add(new GLFixedProjectionShader(System.Drawing.Color.FromArgb(60,Color.Blue)), "SURFACEBLUE");
             surfacebuffer = new GLBuffer();           // new buffer
             surfacebuffer.AllocateBytes(sizeof(float) * 4 * (6+2), OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
-            GLRenderControl rtf = GLRenderControl.TriFan();
-            surfaceri = GLRenderableItem.CreateVector4(items, rtf, surfacebuffer, 0);
+            GLRenderState rtf = GLRenderState.Tri();
+            surfaceri = GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleFan, rtf, surfacebuffer, 0);
             rObjects.Add(items.Shader("SURFACEBLUE"), surfaceri);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
