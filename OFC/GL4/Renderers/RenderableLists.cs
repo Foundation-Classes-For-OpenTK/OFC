@@ -136,11 +136,14 @@ namespace OFC.GL4
                                 curshader = null;
                             }
 
+                            if (verbose) System.Diagnostics.Debug.WriteLine("  Compute Shader " + shaderri.Item1.GetType().Name);
+
                             shaderri.Item1.Start(c);                        // start/finish it
                             shaderri.Item1.Finish();
                         }
                         else
                         {
+                            if (verbose) System.Diagnostics.Debug.WriteLine("  Operation " + shaderri.Item1.GetType().Name);
                             shaderri.Item1.Start(c);                        // operations just start, but don't change the current shader
                         }
                     }

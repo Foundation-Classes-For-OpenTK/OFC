@@ -24,12 +24,16 @@ namespace OFC.GL4
     {
         public QueryTarget Target { get; set; }
         public int Index { get; set; }            // BeginQueryIndexied(target,0,id) == BeginQuery(target,id) GlSpec46. page 46
+        public GLBuffer QueryBuffer { get; set; }
+
         public Action<GLOperationQuery> QueryStart { get; set; }      
 
-        public GLOperationQuery(QueryTarget target, int index = 0, bool createnow = false)
+        public GLOperationQuery(QueryTarget target, int index = 0, bool createnow = false, GLBuffer querybuffer = null)
         {
             this.Target = target;
             this.Index = index;
+            this.QueryBuffer = querybuffer;
+
             int id = 0;
             if (createnow)
             {
@@ -39,6 +43,7 @@ namespace OFC.GL4
             {
                 GL.GenQueries(1, out id);
             }
+
             System.Diagnostics.Debug.Assert(id != 0);
             GLStatics.Check();
             this.Id = id;
@@ -46,6 +51,9 @@ namespace OFC.GL4
 
         public override void Execute(GLMatrixCalc c)
         {
+            if (QueryBuffer != null)
+                QueryBuffer.BindQuery();
+
             GL.BeginQueryIndexed(Target, Index, Id);
             QueryStart?.Invoke(this);
             GLStatics.Check();
@@ -122,9 +130,9 @@ namespace OFC.GL4
             return array;
         }
 
-        public void UpdateBuffer(int bufid, int offset, QueryObjectParameterName p  = QueryObjectParameterName.QueryResult)     // store in buffer at offset the result
+        public void UpdateBuffer(int offset, QueryObjectParameterName p  = QueryObjectParameterName.QueryResult)     // store in buffer at offset the result
         {
-            GL.GetQueryBufferObject(Query.Id, bufid, p, (IntPtr)offset);
+            GL.GetQueryBufferObject(Query.Id, Query.QueryBuffer.Id, p, (IntPtr)offset);
             GLStatics.Check();
         }
 
@@ -144,6 +152,14 @@ namespace OFC.GL4
         public static void EndConditional()
         {
             GL.EndConditionalRender();
+        }
+    }
+
+    public class GLOperationEndQueryBuffer : GLOperationsBase
+    {
+        public override void Execute(GLMatrixCalc c)
+        {
+            GLBuffer.UnbindQuery();
         }
     }
 
