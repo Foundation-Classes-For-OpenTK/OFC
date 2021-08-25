@@ -72,6 +72,9 @@ namespace OFC.GL4
 
         public IGLRenderItemData RenderData { get; set; }                   // may be null - no specific render data. Does not own.  called at bind
 
+        public GLTransformFeedbackObject TFObj { get; set; }                // TF: if set, do drawtransformfeedback.  Do not use any of the A,E,IA,IE,ICA,ICE variables
+        public int TFStream { get; set; } = 0;
+
         public GLRenderableItem(PrimitiveType pt, GLRenderState rc, int drawcount, IGLVertexArray va, IGLRenderItemData id = null, int ic = 1)
         {
             PrimitiveType = pt;
@@ -104,7 +107,11 @@ namespace OFC.GL4
         {
             //System.Diagnostics.Debug.WriteLine("Draw " + RenderControl.PrimitiveType + " " + DrawCount + " " + InstanceCount);
 
-            if ( ElementBuffer != null )                            // we are picking the GL call, dependent on what is bound to the render
+            if ( TFObj != null)                                     // transform feedback call
+            {
+                GL.DrawTransformFeedbackStreamInstanced(PrimitiveType, TFObj.Id,TFStream,InstanceCount);
+            }
+            else if ( ElementBuffer != null )                            // we are picking the GL call, dependent on what is bound to the render
             {
                 if (IndirectBuffer != null)                         // IE or ICE indirect element index
                 {

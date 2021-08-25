@@ -27,7 +27,7 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
-    public partial class TestTransformFeedback : Form
+    public partial class TestTransformFeedbackObject : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -40,8 +40,9 @@ namespace TestOpenTk
         GLOperationQueryTimeStamp ts1, ts2;
         GLBuffer varyingbuffer;
         Vector4[] shape;
+        GLTransformFeedbackObject tfobj;
 
-        public TestTransformFeedback()
+        public TestTransformFeedbackObject()
         {
             InitializeComponent();
             var mode = new OpenTK.Graphics.GraphicsMode(32, 24, 8, 0, 0, 2, false);     // combined 32 max of depth/stencil
@@ -77,9 +78,12 @@ namespace TestOpenTk
             var cosot = new GLShaderPipeline(vs, fs);
             items.Add(cosot,"COSOT");
 
+            tfobj = new GLTransformFeedbackObject();
+            items.Add(tfobj);
+
             varyingbuffer = new GLBuffer(10000, true, BufferUsageHint.DynamicCopy);
-            cosot.StartAction += (a, s) => { varyingbuffer.BindTransformFeedback(0); GLTransformFeedbackObject.BeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles); };
-            cosot.FinishAction += (s) => { GLTransformFeedbackObject.EndTransformFeedback(); GLBuffer.UnbindTransformFeedback(0);  };
+            //cosot.StartAction += (a, s) => { tfobj.Bind(); varyingbuffer.BindTransformFeedback(0,tfobj.Id); GLTransformFeedbackObject.BeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles); };
+           // cosot.FinishAction += (s) => { GLTransformFeedbackObject.EndTransformFeedback(); GLBuffer.UnbindTransformFeedback(0, tfobj.Id); GLTransformFeedbackObject.UnBind();  };
 
             ts1 = new GLOperationQueryTimeStamp();
             ts2 = new GLOperationQueryTimeStamp();
@@ -96,6 +100,8 @@ namespace TestOpenTk
                 GLRenderState rc = GLRenderState.Tri(def);
                 rc.CullFace = true;
 
+                rObjects.Add(cosot, new GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles, tfobj, varyingbuffer));     // must be in render queue, after shader start
+
                 shape = GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f);
                 rObjects.Add(cosot, "Tri1",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
@@ -104,6 +110,7 @@ namespace TestOpenTk
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
                             ));
 
+                rObjects.Add(cosot, new GLOperationEndTransformFeedback(tfobj, varyingbuffer));     // must be in render queue, after shader start
             }
 
 

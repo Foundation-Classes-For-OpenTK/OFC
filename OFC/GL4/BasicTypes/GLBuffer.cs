@@ -927,23 +927,22 @@ namespace OFC.GL4
             }
         }
 
-        public void BindTransformFeedback(int index)
+        // Bind to the default (xfb=0) or specific transform feedback buffer object
+
+        public void BindTransformFeedback(int index, int xfb = 0, int offset = 0, int size = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, index, Id);
+            if ( size == -1 )
+                GL.TransformFeedbackBufferBase(xfb, index, Id);
+            else
+                GL.TransformFeedbackBufferRange(xfb, index, Id, (IntPtr)offset, size);
             OFC.GLStatics.Check();
         }
 
-        public void BindTransformFeedback(int index, int offset, int size)              // bind a portion
+        // unbind from the default (xfb=0) or specific transform feedback buffer object
+        static public void UnbindTransformFeedback(int index, int xfb = 0)
         {
-            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            GL.BindBufferRange(BufferRangeTarget.TransformFeedbackBuffer, index, Id, (IntPtr)offset, size);
-            OFC.GLStatics.Check();
-        }
-
-        static public void UnbindTransformFeedback(int index)
-        {
-            GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, index, 0); // 0 is the unbind value
+            GL.TransformFeedbackBufferBase(xfb, index, 0); // 0 is the unbind value
         }
 
         private static int querybindindex = -1;

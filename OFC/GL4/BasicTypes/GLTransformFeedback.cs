@@ -1,4 +1,4 @@
-﻿/*
+﻿ /*
  * Copyright 2019-2020 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -14,14 +14,44 @@
 
 
 using OpenTK.Graphics.OpenGL4;
-using System.Drawing;
+using System;
 
 namespace OFC.GL4
 {
     // Simple functions to move GL into OFC namespace
 
-    public static class GLTransformFeedback
+    public class GLTransformFeedbackObject : IDisposable
     {
+        public int Id { get; set; } = -1;
+
+        public GLTransformFeedbackObject()
+        {
+            Id = GL.GenTransformFeedback();
+            GLStatics.Check();
+        }
+
+        public void Bind()
+        {
+            GL.BindTransformFeedback(TransformFeedbackTarget.TransformFeedback, Id);    // bind this
+        }
+
+        public static void UnBind()
+        {
+            GL.BindTransformFeedback(TransformFeedbackTarget.TransformFeedback, 0);     // back to default
+        }
+
+        public void Dispose()
+        {
+            if (Id != -1)
+            {
+                GL.DeleteTransformFeedback(Id);
+                GLStatics.Check();
+                Id = -1;
+            }
+        }
+
+        // use to start/end up the bound transform (either default or this one)
+
         public static void BeginTransformFeedback(TransformFeedbackPrimitiveType t)
         {
             GL.BeginTransformFeedback(t);
@@ -39,5 +69,6 @@ namespace OFC.GL4
         {
             GL.ResumeTransformFeedback();
         }
+
     }
 }

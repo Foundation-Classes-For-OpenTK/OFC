@@ -242,6 +242,12 @@
     <Compile Include="Textures\ShaderTestGalaxyTexture.designer.cs">
       <DependentUpon>ShaderTestGalaxyTexture.cs</DependentUpon>
     </Compile>
+    <Compile Include="TransformFeedback\TestTransformFeedbackObject.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TransformFeedback\TestTransformFeedbackObject.designer.cs">
+      <DependentUpon>TestTransformFeedbackObject.cs</DependentUpon>
+    </Compile>
     <Compile Include="TransformFeedback\TestTransformFeedback.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -418,6 +424,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Textures\ShaderTestGalaxyTexture.resx">
       <DependentUpon>ShaderTestGalaxyTexture.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TransformFeedback\TestTransformFeedbackObject.resx">
+      <DependentUpon>TestTransformFeedbackObject.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TransformFeedback\TestTransformFeedback.resx">
       <DependentUpon>TestTransformFeedback.cs</DependentUpon>
