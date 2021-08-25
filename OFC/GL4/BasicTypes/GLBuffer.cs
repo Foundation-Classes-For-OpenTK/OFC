@@ -934,6 +934,13 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
         }
 
+        public void BindTransformFeedback(int index, int offset, int size)              // bind a portion
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
+            GL.BindBufferRange(BufferRangeTarget.TransformFeedbackBuffer, index, Id, (IntPtr)offset, size);
+            OFC.GLStatics.Check();
+        }
+
         static public void UnbindTransformFeedback(int index)
         {
             GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, index, 0); // 0 is the unbind value

@@ -59,6 +59,7 @@
     <Compile Include="GL4\BasicTypes\GLLayoutStandards.cs" />
     <Compile Include="GL4\BasicTypes\GLBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
+    <Compile Include="GL4\BasicTypes\GLTransformFeedback.cs" />
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
     <Compile Include="GL4\Buffers\GLSetOfObjectsWithLabels.cs" />
