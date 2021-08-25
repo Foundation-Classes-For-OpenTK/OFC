@@ -88,6 +88,17 @@ namespace OFC.GL4
         {
             return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxVertexAttribs);
         }
+
+        public static void BeginTransformFeedback(TransformFeedbackPrimitiveType t)
+        {
+            GL.BeginTransformFeedback(t);
+        }
+
+        public static void EndTransformFeedback()
+        {
+            GL.EndTransformFeedback();
+        }
+
     }
 }
 

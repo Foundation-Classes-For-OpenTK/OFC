@@ -14,6 +14,7 @@
 
 
 using System;
+using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
@@ -25,12 +26,14 @@ namespace OFC.GL4
 
         protected GLProgram Program;
 
-        protected void CompileLink( OpenTK.Graphics.OpenGL4.ShaderType st, string code, Object[] constvalues = null, string auxname = "", string completeoutfile = null)
+        protected void CompileLink( OpenTK.Graphics.OpenGL4.ShaderType st, string code, 
+                                        Object[] constvalues = null, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs,
+                                        string auxname = "", string completeoutfile = null)
         {
             Program = new OFC.GL4.GLProgram();
             string ret = Program.Compile(st, code, constvalues, completeoutfile);
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
-            ret = Program.Link(separable: true);
+            ret = Program.Link(separable: true, varyings, varymode);
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
         }
 

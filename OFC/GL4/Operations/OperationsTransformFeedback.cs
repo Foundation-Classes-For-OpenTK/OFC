@@ -17,30 +17,63 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
-    public class GLOperationBeginTransformFeedback : GLOperationsBase
-    {
-        TransformFeedbackPrimitiveType mode;
-        public GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType mode)
-        {
-            this.mode = mode;
-        }
-        public override void Execute(GLMatrixCalc c)
-        {
-            GL.BeginTransformFeedback(mode);
-        }
-    }
+    //public class GLOperationBeginTransformFeedback : GLOperationsBase
+    //{
+    //    TransformFeedbackPrimitiveType mode;
+    //    public GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType mode)
+    //    {
+    //        this.mode = mode;
+    //    }
+    //    public override void Execute(GLMatrixCalc c)
+    //    {
+    //        GL.BeginTransformFeedback(mode);
+    //    }
+    //}
 
-    public class GLOperationEndTransformFeedback : GLOperationsBase
-    {
-        public GLOperationEndTransformFeedback()
-        {
-        }
+    //public class GLOperationEndTransformFeedback : GLOperationsBase
+    //{
+    //    public GLOperationEndTransformFeedback()
+    //    {
+    //    }
 
-        public override void Execute(GLMatrixCalc c)
-        {
-            GL.EndTransformFeedback();
-        }
-    }
+    //    public override void Execute(GLMatrixCalc c)
+    //    {
+    //        GL.EndTransformFeedback();
+    //    }
+    //}
 
-  }
+
+    //public class GLOperationBindTransformFeedback : GLOperationsBase
+    //{
+    //    public GLBuffer Buffer { get; set; }
+    //    public TransformFeedbackPrimitiveType Primitive { get; set; }
+    //    public GLOperationBindTransformFeedback(GLBuffer buf, TransformFeedbackPrimitiveType pt)
+    //    {
+    //        this.Buffer = buf;
+    //        this.Primitive = pt;
+    //    }
+    //    public override void Execute(GLMatrixCalc c)
+    //    {
+    //        Buffer.BindTransformFeedback(0);
+    //        GLStatics.Check();
+    //        GL.BeginTransformFeedback(Primitive);
+    //        GLStatics.Check();
+    //    }
+    //}
+
+    //public class GLOperationUnbindTransformFeedback : GLOperationsBase
+    //{
+    //    public GLOperationUnbindTransformFeedback()
+    //    {
+    //    }
+    //    public override void Execute(GLMatrixCalc c)
+    //    {
+    //        GL.EndTransformFeedback();
+    //        GLBuffer.UnbindTransformFeedback(0);
+    //        GLStatics.Check();
+    //    }
+    //}
+
+
+}
 

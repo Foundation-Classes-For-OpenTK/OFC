@@ -58,7 +58,7 @@ namespace OFC.GL4
                 return ret;
         }
 
-        public string Link( bool separable = false )            // link, seperable or not.  Disposes of shaders. null if okay
+        public string Link( bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs)            // link, seperable or not.  Disposes of shaders. null if okay
         {
             if (shaders.Count == 0)
                 return "No shaders attached";
@@ -68,6 +68,9 @@ namespace OFC.GL4
 
             if (separable)
                 GL.ProgramParameter(Id, ProgramParameterName.ProgramSeparable, 1);
+
+            if (varyings != null)
+                GL.TransformFeedbackVaryings(Id, varyings.Length, varyings, varymode);      // this indicate varyings.
 
             GL.LinkProgram(Id);
             var info = GL.GetProgramInfoLog(Id);

@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace OFC.GL4
 {
-    // attach query to render list or shader list, create first and use to get results
+    // attach query to render list or shader list, create Query and End
 
     [System.Diagnostics.DebuggerDisplay("Query {Target} {Index}")]
     public class GLOperationQuery : GLOperationsBase, IDisposable       

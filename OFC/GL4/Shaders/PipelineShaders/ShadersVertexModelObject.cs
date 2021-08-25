@@ -57,15 +57,16 @@ layout (location = 1) out vec3 modelpos;
 void main(void)
 {
     modelpos = position.xyz;
+//modelpos = vec3(gl_VertexID,gl_VertexID*10,gl_VertexID*20);
 	gl_Position = mc.ProjectionModelMatrix * transform * vec4(position.xyz,1);        // order important
 	vs_color = color;                                                   // pass to fragment shader
 }
 ";
         }
 
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation()
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), null,  varyings, varymode, auxname: GetType().Name);
         }
     }
 

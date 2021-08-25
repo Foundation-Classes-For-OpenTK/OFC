@@ -95,12 +95,8 @@ namespace OFC.GL4
                 System.Diagnostics.Debug.Assert(ret == null, "Fragment Shader", ret);
             }
 
-            if ( varyings != null )
-            {
-                GL.TransformFeedbackVaryings(program.Id, varyings.Length, varyings, varymode);      // this indicate varyings.
-            }
 
-            ret = program.Link();
+            ret = program.Link(false, varyings, varymode);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
 
             OFC.GLStatics.Check();

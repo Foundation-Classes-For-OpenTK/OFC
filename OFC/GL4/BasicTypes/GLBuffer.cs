@@ -722,7 +722,7 @@ namespace OFC.GL4
             return data;
         }
 
-        public Vector3[] ReadVector3s(int count)
+        public Vector3[] ReadVector3s(int count)        // normal alignment of vector3 is on vector4 boundaries
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
             var p = AlignArrayPtr(Vec3size, count);
@@ -731,6 +731,18 @@ namespace OFC.GL4
             Vector3[] data = new Vector3[count];
             for (int i = 0; i < count; i++)
                 data[i] = new Vector3(fdata[i * 4], fdata[i * 4 + 1], fdata[i * 4 + 2]);
+            return data;
+        }
+
+        public Vector3[] ReadVector3sPacked(int count)      // varyings seem to write vector3 tightly packed
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
+            var p = AlignArrayPtr(1, count);                // no aligned
+            float[] fdata = new float[count * 3];   
+            System.Runtime.InteropServices.Marshal.Copy(p.Item1, fdata, 0, count * 3);
+            Vector3[] data = new Vector3[count];
+            for (int i = 0; i < count; i++)
+                data[i] = new Vector3(fdata[i * 3], fdata[i * 3 + 1], fdata[i * 3 + 2]);
             return data;
         }
 
@@ -840,6 +852,14 @@ namespace OFC.GL4
             return v;
         }
 
+        public Vector3[] ReadVector3sPacked(int offset, int number) // varyings seem to write vector3 packed
+        {
+            StartRead(offset);
+            var v = ReadVector3sPacked(number);
+            StopReadWrite();
+            return v;
+        }
+
         public Vector4[] ReadVector4s(int offset, int number)
         {
             StartRead(offset);
@@ -905,6 +925,18 @@ namespace OFC.GL4
                 OFC.GLStatics.Check();
                 parameterbindindex = Id;
             }
+        }
+
+        public void BindTransformFeedback(int index)
+        {
+            System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
+            GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, index, Id);
+            OFC.GLStatics.Check();
+        }
+
+        static public void UnbindTransformFeedback(int index)
+        {
+            GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, index, 0); // 0 is the unbind value
         }
 
         private static int querybindindex = -1;
