@@ -82,7 +82,7 @@ namespace TestOpenTk
                 galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
 
                 IGLProgramShader p = items.Shader("Galaxy");
-                var fsgalaxy = p.Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
+                var fsgalaxy = p.GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
                 fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
             }
 

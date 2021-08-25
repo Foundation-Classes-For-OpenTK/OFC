@@ -59,6 +59,7 @@
     <Compile Include="GL4\BasicTypes\GLLayoutStandards.cs" />
     <Compile Include="GL4\BasicTypes\GLBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLMemoryBarrier.cs" />
+    <Compile Include="GL4\BasicTypes\GLSync.cs" />
     <Compile Include="GL4\BasicTypes\GLTransformFeedback.cs" />
     <Compile Include="GL4\BasicTypes\GLStencil.cs" />
     <Compile Include="GL4\BasicTypes\GLScissors.cs" />
@@ -104,6 +105,7 @@
     <Compile Include="GL4\Controls\ControlTabStyleCustom.cs" />
     <Compile Include="GL4\Operations\OperationsConditional.cs" />
     <Compile Include="GL4\Operations\OperationsScissors.cs" />
+    <Compile Include="GL4\Operations\OperationsSync.cs" />
     <Compile Include="GL4\Operations\OperationsTransformFeedback.cs" />
     <Compile Include="GL4\Operations\OperationsQuery.cs" />
     <Compile Include="GL4\Operations\OperationsStencil.cs" />

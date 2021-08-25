@@ -40,7 +40,7 @@ namespace OFC.GL4
         // inactive when attached to shader
         public Action<IGLProgramShader> FinishAction { get; set; }        // not used
         public string Name => "Operation";
-        public IGLShader Get(ShaderType t) { throw new NotImplementedException(); }
+        public IGLShader GetShader(ShaderType t) { throw new NotImplementedException(); }
 
         public GLOperationsBase()
         {

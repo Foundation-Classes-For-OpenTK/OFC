@@ -968,10 +968,10 @@ namespace TestOpenTk
                 (rObjects["sphere7"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degreesd4;
 
             if (items.Contains("TEXOCT"))
-                ((GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation)items.Shader("TEXOCT").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader)).Transform.YRotDegrees = degrees;
+                ((GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation)items.Shader("TEXOCT").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader)).Transform.YRotDegrees = degrees;
 
             if (items.Contains("TEX2DA"))
-                ((GLPLFragmentShaderTexture2DBlend)items.Shader("TEX2DA").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader)).Blend = zeroone;
+                ((GLPLFragmentShaderTexture2DBlend)items.Shader("TEX2DA").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader)).Blend = zeroone;
 
             if (items.Contains("tapeshader"))
                 ((GLTexturedShaderTriangleStripWithWorldCoord)items.Shader("tapeshader")).TexOffset = new Vector2(degrees / 360f, 0.0f);

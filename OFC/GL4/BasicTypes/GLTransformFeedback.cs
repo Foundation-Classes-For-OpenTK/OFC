@@ -18,7 +18,7 @@ using System;
 
 namespace OFC.GL4
 {
-    // Simple functions to move GL into OFC namespace
+    // Holds a transform feedback object and has statics for general TF operations
 
     public class GLTransformFeedbackObject : IDisposable
     {

@@ -93,7 +93,7 @@ namespace OFC.GL4
 
         public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
         {
-            int sid = shader.Get(ShaderType.VertexShader).Id;
+            int sid = shader.GetShader(ShaderType.VertexShader).Id;
             GL.ProgramUniformMatrix4(sid, TransformUniform, false, ref transform);
 
             if (lookatangle)
@@ -155,7 +155,7 @@ namespace OFC.GL4
         public override void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
         {
             base.Bind(ri, shader, c);
-            GL.ProgramUniform4(shader.Get(ShaderType.FragmentShader).Id,ColorBind, col.ToVector4());
+            GL.ProgramUniform4(shader.GetShader(ShaderType.FragmentShader).Id,ColorBind, col.ToVector4());
             GLStatics.Check();
         }
 
@@ -204,7 +204,7 @@ namespace OFC.GL4
 
         public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
         {
-            GL.ProgramUniform4(shader.Get(ShaderType.FragmentShader).Id, ColorBind, col.ToVector4());
+            GL.ProgramUniform4(shader.GetShader(ShaderType.FragmentShader).Id, ColorBind, col.ToVector4());
             GLStatics.Check();
         }
 

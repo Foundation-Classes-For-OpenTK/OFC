@@ -132,9 +132,9 @@ namespace TestOpenTk
 
             if (items.Contains("STAR-M3"))
             {
-                var vid = items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
+                var vid = items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
                 ((GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }

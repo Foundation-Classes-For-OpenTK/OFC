@@ -39,7 +39,7 @@ namespace OFC.GL4
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader> FinishAction { get; set; }
 
-        public IGLShader Get(ShaderType t) { return shaders[t]; }
+        public IGLShader GetShader(ShaderType t) { return shaders[t]; }
         public T Get<T>(ShaderType t) where T : IGLPipelineShader
         { return (T)shaders[t]; }
 

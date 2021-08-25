@@ -172,27 +172,27 @@ namespace TestOpenTk
 
             if (items.Contains("STAR"))
             {
-                int vid = items.Shader("STAR").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader).Id;
+                int vid = items.Shader("STAR").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader).Id;
                 ((GLRenderDataTranslationRotation)(rObjects["sun"].RenderData)).RotationDegrees = new Vector3(0, -zeroone100s * 360, 0);
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }
 
             if (items.Contains("STAR-M2"))
             {
-                var vid = items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
+                var vid = items.Shader("STAR-M2").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
                 ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M2").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M2").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }
 
             if (items.Contains("STAR-M3"))
             {
-                var vid = items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
+                var vid = items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
                 ((GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
-                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").Get(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
             }

@@ -32,7 +32,7 @@ namespace OFC.GL4
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
         public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
 
-        public IGLShader Get(ShaderType t) { return this; }
+        public IGLShader GetShader(ShaderType t) { return this; }
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader> FinishAction { get; set; }
 
