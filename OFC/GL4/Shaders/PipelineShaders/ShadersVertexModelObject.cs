@@ -64,9 +64,13 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs)
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), null,  varyings, varymode, auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), null, varyings, varymode, auxname: GetType().Name, saveable: saveable);
+        }
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation(byte[] bin, BinaryFormat bf)
+        {
+            Load(bin, bf);
         }
     }
 

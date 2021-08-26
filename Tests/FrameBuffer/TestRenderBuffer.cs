@@ -27,7 +27,7 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
-    public partial class TestFrameBuffer : Form
+    public partial class TestRenderBuffer : Form
     {
         private OFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -39,7 +39,7 @@ namespace TestOpenTk
         GLItemsList items = new GLItemsList();
         GLStorageBlock dataoutbuffer;
 
-        public TestFrameBuffer()
+        public TestRenderBuffer()
         {
             InitializeComponent();
 
@@ -55,14 +55,16 @@ namespace TestOpenTk
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
 
+            var ext = GLStatics.Extensions();
+
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
-            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance= 1000f;
+            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance = 1000f;
             gl3dcontroller.ZoomDistance = 20F;
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(110f, 0, 0f), 1F);
 
-            gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
                 return (float)ms / 100.0f;
             };
@@ -70,14 +72,14 @@ namespace TestOpenTk
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
             items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
+            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOT");
 
             {
                 Bitmap bmp = new Bitmap(Properties.Resources.dotted2);      // demo argb copy
                 byte[] argbbytes = bmp.GetARGBBytes();
                 Bitmap copy = BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
                 var tex = new GLTexture2D(copy);
-                items.Add(tex,"dotted2");
+                items.Add(tex, "dotted2");
                 Bitmap bmp2 = tex.GetBitmap(inverty: false);
                 bmp2.Save(@"c:\code\dotted2.bmp");
             }
@@ -161,13 +163,10 @@ namespace TestOpenTk
                 ctex.SetMinMagLinear();
                 fb.AttachColor(ctex, 0, 0);
 
-                // attach a depth texture
-                GLTexture2D dtex = new GLTexture2D();
-                items.Add(dtex, "depthtexture");
-                dtex.CreateDepthBuffer(ctex.Width,ctex.Height);
-                fb.AttachDepth(dtex, 0);
-                //dtex.CreateDepthStencilBuffer(ctex.Width,ctex.Height);
-                //fb.AttachDepthStensil(dtex, 0);
+                GLRenderBuffer rb = new GLRenderBuffer();
+                items.Add(rb);
+                rb.Allocate(RenderbufferStorage.DepthComponent32f, ctex.Width, ctex.Height);
+                fb.AttachDepth(rb, 0);
 
                 // bind Framebuffer to system for it to be the target to draw to, with a default back colour
                 fb.BindColor(new OpenTK.Graphics.Color4(40, 40, 40, 255));
@@ -175,7 +174,7 @@ namespace TestOpenTk
                 GLMatrixCalc mc = new GLMatrixCalc();
                 mc.PerspectiveNearZDistance = 1f;
                 mc.PerspectiveFarZDistance = 1000f;
-                mc.ResizeViewPort(this,new Size(ctex.Width, ctex.Height));
+                mc.ResizeViewPort(this, new Size(ctex.Width, ctex.Height));
                 Vector3 lookat = new Vector3(0, 0, 0);
                 Vector2 camerapos = new Vector2(110f, 0);
                 mc.CalculateModelMatrix(lookat, camerapos, 20F, 0);
@@ -209,7 +208,7 @@ namespace TestOpenTk
 
                 l1.Execute(items.Shader("COSW"), renderState, mc);
 
-                var l2 =  GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
+                var l2 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed });
 
@@ -234,10 +233,10 @@ namespace TestOpenTk
                 ri2.Execute(items.Shader("COSOT"), renderState, mc);
 
                 GLRenderState rq = GLRenderState.Quads();
-                
+
                 var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rq,
                         GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
-                        new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))  );
+                        new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0)));
 
                 ri3.Execute(items.Shader("TEXOT"), renderState, mc);
 
@@ -321,13 +320,13 @@ namespace TestOpenTk
             this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
         }
 
-        private void SystemTick(object sender, EventArgs e )
+        private void SystemTick(object sender, EventArgs e)
         {
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
         {
             if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
             {

@@ -195,7 +195,7 @@ namespace OFC.GL4
 
         public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
         {
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);
             ObjectRenderer.Execute(findshader, state, discard: true); 
             var res = geo.GetResult();

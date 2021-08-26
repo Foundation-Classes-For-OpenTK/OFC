@@ -21,11 +21,21 @@ namespace OFC.GL4
     // inherit from this to make a compute shader 
     // you can either run it directly, or you can add it to a RenderableList to mix it with renderable items
 
-    public abstract class GLShaderCompute : GLShaderStandard
+    public abstract class GLShaderCompute : IGLProgramShader
     {
-        int XWorkgroupSize { get; set; } = 1;
-        int YWorkgroupSize { get; set; } = 1;
-        int ZWorkgroupSize { get; set; } = 1;
+        public int Id { get { return Program.Id; } }
+        public GLProgram Program { get; private set; }
+
+        public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
+        public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
+
+        public IGLShader GetShader(ShaderType t) { return this; }
+        public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
+        public Action<IGLProgramShader> FinishAction { get; set; }
+
+        public int XWorkgroupSize { get; set; } = 1;
+        public int YWorkgroupSize { get; set; } = 1;
+        public int ZWorkgroupSize { get; set; } = 1;
 
         public GLShaderCompute()
         {
@@ -45,18 +55,34 @@ namespace OFC.GL4
         // completeoutfile is output of file for debugging
         public void CompileLink(string code, Object[] constvalues = null, string completeoutfile = null )
         {
-            program = new OFC.GL4.GLProgram();
-            string ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.ComputeShader, code, constvalues, completeoutfile);
+            Program = new GLProgram();
+            string ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.ComputeShader, code, constvalues, completeoutfile);
             System.Diagnostics.Debug.Assert(ret == null, "Compute Shader", ret);
-            ret = program.Link();
+            ret = Program.Link();
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
             OFC.GLStatics.Check();
         }
 
-        public override void Start(GLMatrixCalc c)                 // override.. but call back.  Executes compute.
+        protected void Load(byte[] bin, BinaryFormat binformat)
         {
-            base.Start(c);
+            Program = new GLProgram(bin, binformat);
+        }
+
+        public void Start(GLMatrixCalc c)                 // override.. but call back.  Executes compute.
+        {
+            GL.UseProgram(Id);
+            StartAction?.Invoke(this, c);
             GL.DispatchCompute(XWorkgroupSize, YWorkgroupSize, ZWorkgroupSize);
+        }
+
+        public virtual void Finish()
+        {
+            FinishAction?.Invoke(this);                           // any shader hooks get a chance.
+        }
+
+        public virtual void Dispose()
+        {
+            Program.Dispose();
         }
 
         public void Run()                           // for compute shaders, we can just run them.  

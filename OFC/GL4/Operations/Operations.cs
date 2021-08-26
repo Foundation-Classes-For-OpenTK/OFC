@@ -20,7 +20,7 @@ namespace OFC.GL4
 {
     // operations are actions that can be inserted into the renderlist either as a shader (robjects.Add(new Operation())  )
     // or as a Renderable item (robject.Add(shader, new Operation()) )
-    // Classes derived from this use DoOperation(matrixcalc) to perform work at that point in the render
+    // Classes derived from this use Execute(matrixcalc) to perform work at that point in the render
 
     public abstract class GLOperationsBase : IGLRenderableItem, IGLProgramShader
     {

@@ -82,6 +82,11 @@ namespace OFC
             GL.Flush();
         }
 
+        public static void Finish()
+        {
+            GL.Finish();
+        }
+
         public static void ColorMasks(bool red, bool green, bool blue, bool alpha)  // enable/disable frame buffer components
         {
             GL.ColorMask(red, green, blue, alpha);

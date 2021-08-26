@@ -30,7 +30,7 @@ namespace OFC.GL4
 
     public class GLShaderPipeline : IGLProgramShader
     {
-        public int Id { get { return pipelineid + 100000; } }            // to avoid clash with standard ProgramIDs, use an offset for pipeline IDs
+        public int Id { get { return pipelineid + 100000; } }           // to avoid clash with standard ProgramIDs, use an offset for pipeline IDs
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
 
         // standard name is type name and pipeline shaders, override to give a better name if required
@@ -40,7 +40,7 @@ namespace OFC.GL4
         public Action<IGLProgramShader> FinishAction { get; set; }
 
         public IGLShader GetShader(ShaderType t) { return shaders[t]; }
-        public T Get<T>(ShaderType t) where T : IGLPipelineShader
+        public T GetShader<T>(ShaderType t) where T : IGLPipelineShader
         { return (T)shaders[t]; }
 
         private int pipelineid;

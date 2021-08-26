@@ -13,11 +13,9 @@
  */
 
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using OpenTK.Graphics.OpenGL4;
+using System;
+using System.Drawing;
 
 namespace OFC.GL4
 {
@@ -89,12 +87,12 @@ namespace OFC.GL4
 
         public void CreateDepthBuffer(int width, int height)
         {
-            CreateOrUpdateTexturePixelFormat(width, height, OpenTK.Graphics.OpenGL4.PixelInternalFormat.DepthComponent32f, OpenTK.Graphics.OpenGL4.PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
         }
 
         public void CreateDepthStencilBuffer(int width, int height)
         {
-            CreateOrUpdateTexturePixelFormat(width, height, OpenTK.Graphics.OpenGL4.PixelInternalFormat.Depth32fStencil8, OpenTK.Graphics.OpenGL4.PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.Depth32fStencil8, PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
         }
 
         // You can reload the bitmap, it will create a new Texture if required
@@ -115,6 +113,20 @@ namespace OFC.GL4
             OFC.GLStatics.Check();
 
            // float[] tex = GetTextureImageAsFloats(end:100);
+        }
+
+        // from the bound read framebuffer (from sx/sy) into this texture at x/y
+        public void CopyFromReadFramebuffer(int miplevel, int x, int y, int sx, int sy, int width, int height)
+        {
+            GL.CopyTextureSubImage2D(Id, miplevel, x, y, sx, sy, width, height);
+            GLStatics.Check();
+        }
+
+        // from the any type of ImageTarget into this
+        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dlevel, int dx, int dy, int width, int height)
+        {
+            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Texture2D, dlevel, dx, dy, 0, width, height, 1);
+            GLStatics.Check();
         }
     }
 }

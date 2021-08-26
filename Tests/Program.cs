@@ -27,13 +27,13 @@ namespace TestOpenTk
 
                     Type t = Type.GetType("TestOpenTk." + arg1, false, true);
 
-                    if (t == null)
+                    if (t == null || t.BaseType.Name != "Form")
                         t = Type.GetType("TestOpenTk.Test" + arg1, false, true);
 
-                    if (t == null)
+                    if (t == null || t.BaseType.Name != "Form")
                         t = Type.GetType("TestOpenTk.Shader" + arg1, false, true);
 
-                    if (t == null)
+                    if (t == null || t.BaseType.Name != "Form")
                         t = Type.GetType("TestOpenTk.ShaderTest" + arg1, false, true);
 
                     if (t != null)

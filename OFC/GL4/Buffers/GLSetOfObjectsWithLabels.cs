@@ -121,7 +121,7 @@ namespace OFC.GL4
         // Return set, render group, and render index in group, or null
         public Tuple<int,int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
         {
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);
             findshader.Start(null);     // this clears the buffer
 

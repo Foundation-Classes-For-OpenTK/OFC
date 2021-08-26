@@ -199,7 +199,7 @@ namespace TestOpenTk
 
         public HistoryEntry FindSystem(Point viewportloc, GLRenderState state, Size viewportsize)
         {
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(viewportloc, viewportsize);
 
             rifind.Execute(findshader, state, discard:true); // execute, discard

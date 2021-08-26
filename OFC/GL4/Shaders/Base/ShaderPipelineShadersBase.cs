@@ -23,18 +23,23 @@ namespace OFC.GL4
     public abstract class GLShaderPipelineShadersBase : IGLPipelineShader
     {
         public int Id { get { return Program.Id; } }
-
-        protected GLProgram Program;
+        public GLProgram Program { get; private set; }
 
         protected void CompileLink( OpenTK.Graphics.OpenGL4.ShaderType st, string code, 
                                         Object[] constvalues = null, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs,
+                                        bool saveable = false,
                                         string auxname = "", string completeoutfile = null)
         {
-            Program = new OFC.GL4.GLProgram();
+            Program = new GLProgram();
             string ret = Program.Compile(st, code, constvalues, completeoutfile);
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
-            ret = Program.Link(separable: true, varyings, varymode);
+            ret = Program.Link(separable: true, varyings, varymode,saveable);
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
+        }
+
+        protected void Load(byte[] bin, BinaryFormat binformat)
+        {
+            Program = new GLProgram(bin, binformat);
         }
 
         public virtual void Start(GLMatrixCalc c)

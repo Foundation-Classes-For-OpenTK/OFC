@@ -188,7 +188,7 @@ namespace TestOpenTk
             if (!objectshader.Enable)
                 return null;
 
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(viewportloc, viewportsize);
 
             GLStatics.Check();

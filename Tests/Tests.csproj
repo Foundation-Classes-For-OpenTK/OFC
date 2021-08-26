@@ -44,6 +44,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -69,6 +70,12 @@
     <Compile Include="Controls\TestControlsMenu.designer.cs">
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrameBuffer\TestRenderBuffer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrameBuffer\TestRenderBuffer.designer.cs">
+      <DependentUpon>TestRenderBuffer.cs</DependentUpon>
+    </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="MultiWindow\Window2.cs">
       <SubType>Form</SubType>
@@ -81,6 +88,12 @@
     </Compile>
     <Compile Include="MultiWindow\TestMultiWindow.designer.cs">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program\TestProgram.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Program\TestProgram.designer.cs">
+      <DependentUpon>TestProgram.cs</DependentUpon>
     </Compile>
     <Compile Include="Queries\TestQueries3.cs">
       <SubType>Form</SubType>
@@ -332,6 +345,9 @@
     <EmbeddedResource Include="Controls\TestControlsMenu.resx">
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FrameBuffer\TestRenderBuffer.resx">
+      <DependentUpon>TestRenderBuffer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Functions\TestFunctions.resx">
       <DependentUpon>TestFunctions.cs</DependentUpon>
     </EmbeddedResource>
@@ -367,6 +383,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MultiWindow\TestMultiWindow.resx">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Program\TestProgram.resx">
+      <DependentUpon>TestProgram.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

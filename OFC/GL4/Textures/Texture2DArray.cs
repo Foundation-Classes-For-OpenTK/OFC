@@ -90,5 +90,21 @@ namespace OFC.GL4
 
             OFC.GLStatics.Check();
         }
-     }
+
+        // from the bound read framebuffer (from sx/sy) into this texture at x/y image z
+        public void CopyFromReadFramebuffer(int miplevel, int x, int y, int z, int sx, int sy, int width, int height)
+        {
+            GL.CopyTextureSubImage3D(Id, miplevel, x, y, z, sx, sy, width, height);
+            GLStatics.Check();
+        }
+
+        // from the any type of ImageTarget into this
+        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dlevel, int dx, int dy, int width, int height)
+        {
+            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Texture2DArray, dlevel, dx, dy, 0, width, height, 1);
+            GLStatics.Check();
+        }
+
+
+    }
 }

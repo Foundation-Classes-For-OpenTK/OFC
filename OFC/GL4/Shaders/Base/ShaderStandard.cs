@@ -28,15 +28,15 @@ namespace OFC.GL4
 
     public abstract class GLShaderStandard : IGLProgramShader
     {
-        public int Id { get { return program.Id; } }
+        public int Id { get { return Program.Id; } }
+        public GLProgram Program { get; private set; }
+
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
         public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
 
         public IGLShader GetShader(ShaderType t) { return this; }
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader> FinishAction { get; set; }
-
-        protected GLProgram program;
 
         public GLShaderStandard()
         {
@@ -59,47 +59,52 @@ namespace OFC.GL4
 
         public void CompileLink( string vertex=null, string tcs=null, string tes=null, string geo=null, string frag=null, 
                                  object[] vertexconstvars = null , object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
-                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs
+                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
                                 )
         {
-            program = new OFC.GL4.GLProgram();
+            Program = new OFC.GL4.GLProgram();
             string ret;
 
             if (vertex != null)
             {
-                ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vertex, vertexconstvars);
+                ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vertex, vertexconstvars);
                 System.Diagnostics.Debug.Assert(ret == null, "Vertex Shader", ret);
             }
 
             if (tcs != null)
             {
-                ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.TessControlShader, tcs, tcsconstvars);
+                ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.TessControlShader, tcs, tcsconstvars);
                 System.Diagnostics.Debug.Assert(ret == null, "Tesselation Control Shader", ret);
             }
 
             if (tes != null)
             {
-                ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.TessEvaluationShader, tes , tesconstvars );
+                ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.TessEvaluationShader, tes , tesconstvars );
                 System.Diagnostics.Debug.Assert(ret == null, "Tesselation Evaluation Shader", ret);
             }
 
             if (geo != null)
             {
-                ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader, geo, geoconstvars);
+                ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader, geo, geoconstvars);
                 System.Diagnostics.Debug.Assert(ret == null, "Geometry shader", ret);
             }
 
             if (frag != null)
             {
-                ret = program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, frag ,fragconstvars);
+                ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, frag ,fragconstvars);
                 System.Diagnostics.Debug.Assert(ret == null, "Fragment Shader", ret);
             }
 
 
-            ret = program.Link(false, varyings, varymode);
+            ret = Program.Link(false, varyings, varymode, saveable);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
 
             OFC.GLStatics.Check();
+        }
+
+        protected void Load(byte[] bin, BinaryFormat binformat)
+        {
+            Program = new GLProgram(bin, binformat);
         }
 
         public virtual void Start(GLMatrixCalc c)     
@@ -115,7 +120,7 @@ namespace OFC.GL4
 
         public virtual void Dispose()
         {
-            program.Dispose();
+            Program.Dispose();
         }
 
     }

@@ -36,7 +36,13 @@ namespace OFC.GL4
             shaders = new List<GLShader>();
         }
 
-        public void Add( GLShader s)
+        public GLProgram(byte[]bin, BinaryFormat binformat)
+        {
+            Id = GL.CreateProgram();        // no shader list on load this direct
+            Load(bin, binformat);
+        }
+
+        public void Add(GLShader s)
         {
             System.Diagnostics.Debug.Assert(s.Compiled);
             shaders.Add(s);
@@ -58,7 +64,7 @@ namespace OFC.GL4
                 return ret;
         }
 
-        public string Link( bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs)            // link, seperable or not.  Disposes of shaders. null if okay
+        public string Link( bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool wantbinary= false)            // link, seperable or not.  Disposes of shaders. null if okay
         {
             if (shaders.Count == 0)
                 return "No shaders attached";
@@ -72,6 +78,9 @@ namespace OFC.GL4
             if (varyings != null)
                 GL.TransformFeedbackVaryings(Id, varyings.Length, varyings, varymode);      // this indicate varyings.
 
+            if (wantbinary)
+                GL.ProgramParameter(Id, ProgramParameterName.ProgramBinaryRetrievableHint, 1);
+
             GL.LinkProgram(Id);
             var info = GL.GetProgramInfoLog(Id);
 
@@ -82,6 +91,21 @@ namespace OFC.GL4
             }
 
             return info.HasChars() ? info : null;
+        }
+
+        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        {
+            GL.GetProgram(Id, (GetProgramParameterName)0x8741, out int len);
+            byte[] array = new byte[len];
+            GL.GetProgramBinary(Id, len, out int binlen, out binformat, array);
+            GLStatics.Check();
+            return array;
+        }
+
+        public void Load(byte[] bin, BinaryFormat binformat)    // load program direct from bin
+        {
+            GL.ProgramBinary(Id, binformat, bin, bin.Length);
+            GLStatics.Check();
         }
 
         public void Use()

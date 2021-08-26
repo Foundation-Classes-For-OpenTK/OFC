@@ -56,6 +56,15 @@ namespace OFC.GL4
             GLStatics.Check();
         }
 
+        public void AttachColorLayered(GLTexture2DArray tex, int colourtarget = 0, int mipmaplevel = 0, int layer = 0)    // not tested.. page 401
+        {
+            ColorTarget = colourtarget;
+            Width = tex.Width;
+            Height = tex.Height;
+            GL.NamedFramebufferTextureLayer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget,tex.Id, mipmaplevel , layer);
+            GLStatics.Check();
+        }
+
         public void AttachDepth(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthAttachment, tex.Id, mipmaplevel);
@@ -73,6 +82,32 @@ namespace OFC.GL4
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthStencilAttachment, tex.Id, mipmaplevel);
             GLStatics.Check();
         }
+
+        public void AttachColor(GLRenderBuffer r, int colourtarget)
+        {
+            ColorTarget = colourtarget;
+            GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, RenderbufferTarget.Renderbuffer, r.Id);
+            GLStatics.Check();
+        }
+
+        public void AttachDepth(GLRenderBuffer r, int mipmaplevel = 0)
+        {
+            GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, r.Id);
+            GLStatics.Check();
+        }
+
+        public void AttachStensil(GLRenderBuffer r, int mipmaplevel = 0)
+        {
+            GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
+            GLStatics.Check();
+        }
+
+        public void AttachDepthStensil(GLRenderBuffer r, int mipmaplevel = 0)
+        {
+            GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
+            GLStatics.Check();
+        }
+
 
         public void BindRead()
         {
@@ -95,15 +130,32 @@ namespace OFC.GL4
             GLStatics.Check();
         }
 
-        public FramebufferStatus GetStatus()     // page 405 get status
+        public FramebufferStatus GetStatus(FramebufferTarget tb = FramebufferTarget.DrawFramebuffer)     // page 405 get status
         {
-            return GL.CheckNamedFramebufferStatus(Id, FramebufferTarget.DrawFramebuffer);
+            return GL.CheckNamedFramebufferStatus(Id, tb);
 
         }
 
         public static void UnBind()
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+        }
+
+        // Blit from read FB into this
+        public void Blit(GLFrameBuffer read, ReadBufferMode src, int x0, int y0, int x1, int y1, int dx0, int dy0, int dx1, int dy1, ClearBufferMask mask, BlitFramebufferFilter filt)
+        {
+            GL.NamedFramebufferReadBuffer(read.Id, src);
+            GL.BlitNamedFramebuffer(read.Id, Id, x0, y0, x1, y1, dx0, dy0, dx1, dy1, mask, filt);
+            GLStatics.Check();
+        }
+
+        // Read from bound Read Frame buffer target
+        public void ReadPixels(ReadBufferMode src, int x0, int y0, int x1, int y1, PixelFormat format, PixelType type , int bufsize )
+        {
+            GL.ReadBuffer(src);
+            byte[] array = new byte[bufsize];
+            GL.ReadnPixels(x0, y0, x1, y1, format, type, array.Length, array);
+            GLStatics.Check();
         }
 
         public void Dispose()           // you can double dispose.

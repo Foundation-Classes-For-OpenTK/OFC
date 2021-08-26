@@ -109,7 +109,7 @@ namespace TestOpenTk
          //  GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
            // mcub.Set(gl3dcontroller.MatrixCalc);
 
-            var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
 
             geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
 
