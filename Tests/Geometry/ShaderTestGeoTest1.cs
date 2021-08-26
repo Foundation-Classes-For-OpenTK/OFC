@@ -13,9 +13,9 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -26,7 +26,7 @@ namespace TestOpenTk
 {
     public partial class ShaderTestGeoTest1 : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -34,7 +34,7 @@ namespace TestOpenTk
         public ShaderTestGeoTest1()
         {
             InitializeComponent();
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

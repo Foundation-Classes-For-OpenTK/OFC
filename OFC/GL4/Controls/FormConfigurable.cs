@@ -19,7 +19,7 @@ using System.Drawing;
 using System.Linq;
 
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public class GLFormConfigurable : GLForm
     {

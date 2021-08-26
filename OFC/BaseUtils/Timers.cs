@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace OFC.Timers
+namespace GLOFC.Timers
 {
     // timer is thread safe
 

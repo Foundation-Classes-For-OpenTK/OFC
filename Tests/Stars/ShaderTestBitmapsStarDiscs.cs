@@ -13,9 +13,9 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -27,7 +27,7 @@ namespace TestOpenTk
 {
     public partial class ShaderTestBitmapsStarDiscs : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -36,7 +36,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -101,7 +101,7 @@ namespace TestOpenTk
                 tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 0, genpos), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
             }
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
 
         }
 
@@ -163,7 +163,7 @@ namespace TestOpenTk
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
             if ( kb.HasBeenPressed(Keys.F1))
             {

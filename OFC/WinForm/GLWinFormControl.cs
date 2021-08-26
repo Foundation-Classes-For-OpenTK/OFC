@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using OpenTK.Graphics.OpenGL;
 
-namespace OFC.WinForm
+namespace GLOFC.WinForm
 {
     // a win form control version of GLWindowControl
     // runs a GLControl from OpenTK, and vectors the GLControl events thru the GLWindowControl standard event interfaces.

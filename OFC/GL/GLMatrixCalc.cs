@@ -19,7 +19,7 @@ using OpenTK;
 using System;
 using System.Drawing;
 
-namespace OFC
+namespace GLOFC
 {
     // GL           World Space                         View Space                                  Clip Space
     //           p5----------p6		                  p5----------p6                     Zfar     p5----------p6 1 = far clip

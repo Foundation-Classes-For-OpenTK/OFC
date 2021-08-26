@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2016-2019 EDDiscovery development team + Robbyxp1 @ github.com
+ * Copyright © 2016-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -18,9 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OFC
+namespace GLOFC
 {
-    
     static public class PolygonTriangulator
     {
         // some of it is from https://gist.github.com/KvanTTT/3855122 but a lot of it has been added/changed

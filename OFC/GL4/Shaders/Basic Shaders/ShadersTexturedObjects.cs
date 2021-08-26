@@ -16,7 +16,7 @@
 using System;
 using OpenTK;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Texture, no translation
     // Requires:

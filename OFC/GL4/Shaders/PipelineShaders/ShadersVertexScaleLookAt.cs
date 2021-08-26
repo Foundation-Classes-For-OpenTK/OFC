@@ -15,7 +15,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Autoscale to size on model if required
     //      location 0 : position: vec4 vertex array of positions model coords, w is ignored

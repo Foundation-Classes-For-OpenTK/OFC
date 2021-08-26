@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Standard renderable item supporting Instancing and draw count, vertex arrays, instance data, element indexes, indirect command buffers
     // It has a primitive type for Render

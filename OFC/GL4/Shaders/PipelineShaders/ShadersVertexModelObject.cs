@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders, having a model input, objectransform 
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Pipeline shader, Translation, Colour, Modelpos, transform
     // Requires:

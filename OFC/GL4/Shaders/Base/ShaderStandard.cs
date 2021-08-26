@@ -16,7 +16,7 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // inherit from this is you have a shader which items makes its own set of vertext/fragment shaders all in one go, non pipelined
     // A program shader has a Start(), called by RenderableList when the shader is started
@@ -62,7 +62,7 @@ namespace OFC.GL4
                                  string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
                                 )
         {
-            Program = new OFC.GL4.GLProgram();
+            Program = new GLOFC.GL4.GLProgram();
             string ret;
 
             if (vertex != null)
@@ -99,7 +99,7 @@ namespace OFC.GL4
             ret = Program.Link(false, varyings, varymode, saveable);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         protected void Load(byte[] bin, BinaryFormat binformat)

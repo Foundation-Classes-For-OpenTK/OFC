@@ -20,7 +20,7 @@ using System.Linq;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // This is a GL shader object of type ShaderType
 
@@ -142,7 +142,7 @@ namespace OFC.GL4
                     {
                         if ( File.Exists(line))
                         {
-                            include = BaseUtils.FileHelpers.TryReadAllTextFromFile(line);
+                            include = GLOFC.FileHelpers.TryReadAllTextFromFile(line);
                         }
                         else
                         {
@@ -151,7 +151,7 @@ namespace OFC.GL4
                                 string path = Path.Combine(partial, line);
                                 if (File.Exists(path))
                                 {
-                                    include = BaseUtils.FileHelpers.TryReadAllTextFromFile(path);
+                                    include = GLOFC.FileHelpers.TryReadAllTextFromFile(path);
                                     break;
                                 }
                             }

@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Wraps the openGL main state variables in a class so they get selected correctly for each render.
 

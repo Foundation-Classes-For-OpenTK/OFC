@@ -18,7 +18,7 @@ using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Class holds a buffer for a vertex, and an set of indirect buffers, both have a defined size
     // you can add updates to it and remove sections by index

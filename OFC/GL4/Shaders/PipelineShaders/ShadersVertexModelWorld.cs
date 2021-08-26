@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders, having a model input, some with world input, some with a common transform
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Pipeline shader, Translation, Modelpos, transform
     // Requires:
@@ -141,7 +141,7 @@ void main(void)
         {
             Matrix4 a = ModelTranslation;
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 
@@ -305,7 +305,7 @@ void main(void)
             base.Start(c);
             Matrix4 t = Transform.Transform;
             GL.ProgramUniformMatrix4(Id, 23, false, ref t);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 
@@ -365,7 +365,7 @@ void main(void)
             base.Start(c);
             Matrix4 t = Transform.Transform;
             GL.ProgramUniformMatrix4(Id, 23, false, ref t);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 
@@ -430,7 +430,7 @@ void main(void)
         {
             Matrix4 a = ModelTranslation;
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 
@@ -515,7 +515,7 @@ void main(void)
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);
             Vector3 b = WorldPositionOffset;
             GL.ProgramUniform3(Id, 23, ref b);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 }

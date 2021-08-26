@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2016 - 2019 EDDiscovery development team + Robbyxp1 @ github.com
+ * Copyright © 2016-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -14,84 +14,83 @@
  * 
  */
 
-
-public static class ObjectExtensionsStringsNumbers
+namespace GLOFC
 {
-    public static string ToStringInvariant(this int v)
+    public static class ObjectExtensionsStringsNumbers
     {
-        return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        public static string ToStringInvariant(this int v)
+        {
+            return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this int v, string format)
+        {
+            return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this uint v)
+        {
+            return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this uint v, string format)
+        {
+            return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this long v)
+        {
+            return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this long v, string format)
+        {
+            return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringIntValue(this bool v)
+        {
+            return v ? "1" : "0";
+        }
+        public static string ToStringInvariant(this bool? v)
+        {
+            return (v.HasValue) ? (v.Value ? "1" : "0") : "";
+        }
+        public static string ToStringInvariant(this double v, string format)
+        {
+            return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this double v)
+        {
+            return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this float v, string format)
+        {
+            return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this float v)
+        {
+            return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        public static string ToStringInvariant(this double? v, string format)
+        {
+            return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
+        public static string ToStringInvariant(this float? v, string format)
+        {
+            return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
+        public static string ToStringInvariant(this int? v)
+        {
+            return (v.HasValue) ? v.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
+        public static string ToStringInvariant(this int? v, string format)
+        {
+            return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
+        public static string ToStringInvariant(this long? v)
+        {
+            return (v.HasValue) ? v.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
+        public static string ToStringInvariant(this long? v, string format)
+        {
+            return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
+        }
     }
-    public static string ToStringInvariant(this int v, string format)
-    {
-        return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this uint v)
-    {
-        return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this uint v, string format)
-    {
-        return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this long v)
-    {
-        return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this long v, string format)
-    {
-        return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringIntValue(this bool v)
-    {
-        return v ? "1" : "0";
-    }
-    public static string ToStringInvariant(this bool? v)
-    {
-        return (v.HasValue) ? (v.Value ? "1" : "0") : "";
-    }
-    public static string ToStringInvariant(this double v, string format)
-    {
-        return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this double v)
-    {
-        return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this float v, string format)
-    {
-        return v.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this float v)
-    {
-        return v.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    }
-    public static string ToStringInvariant(this double? v, string format)
-    {
-        return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-    public static string ToStringInvariant(this float? v, string format)
-    {
-        return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-    public static string ToStringInvariant(this int? v)
-    {
-        return (v.HasValue) ? v.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-    public static string ToStringInvariant(this int? v, string format)
-    {
-        return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-    public static string ToStringInvariant(this long? v)
-    {
-        return (v.HasValue) ? v.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-    public static string ToStringInvariant(this long? v, string format)
-    {
-        return (v.HasValue) ? v.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) : "";
-    }
-
- 
-
 }
 
 

@@ -16,7 +16,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLTexture1D : GLTextureBase          
     {

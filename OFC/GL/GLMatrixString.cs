@@ -15,7 +15,7 @@
 using OpenTK;
 using System;
 
-namespace OFC
+namespace GLOFC
 {
     //strictly for debugging, a string matrix multiplier so your mind does not get warped when trying to come up with compound matrix functions
     //for glsl

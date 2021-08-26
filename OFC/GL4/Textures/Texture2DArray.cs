@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLTexture2DArray : GLTextureBase          // load a 2D set of textures into open gl
     {
@@ -62,7 +62,7 @@ namespace OFC.GL4
 
                 SetMinMagFilter();
 
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -88,7 +88,7 @@ namespace OFC.GL4
             if (bitmapmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // from the bound read framebuffer (from sx/sy) into this texture at x/y image z

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Class holds a MatrixBuffer
     // You can delete by tag name or clear all

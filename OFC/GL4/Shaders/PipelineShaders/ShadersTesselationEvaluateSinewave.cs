@@ -14,7 +14,7 @@
 
  using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Pipeline shader, Tesselation Control, with sinewave
     // input gl_in
@@ -96,7 +96,7 @@ void main(void)
         {
             base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
     }

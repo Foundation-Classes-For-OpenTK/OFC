@@ -16,7 +16,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // local data block, writable in Vectors etc, supports std140 and std430
     // you can use Allocate then Fill direct
@@ -47,7 +47,7 @@ namespace OFC.GL4
                 Length = bytessize;
                 GL.NamedBufferData(Id, Length, (IntPtr)0, uh);               // set buffer size
                 ResetPositions();
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -69,7 +69,7 @@ namespace OFC.GL4
 
                 Id = newid;                 // swap to new
                 Length = newlength;
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -86,7 +86,7 @@ namespace OFC.GL4
         {
             System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos + length <= Length);
             GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         public void ZeroBuffer()    // zero whole of buffer, clear positions
@@ -106,7 +106,7 @@ namespace OFC.GL4
                 int datasize = floats.Length * sizeof(float);
                 int posv = AlignArray(sizeof(float), datasize);
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, floats);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -123,7 +123,7 @@ namespace OFC.GL4
             if (vertices.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, vertices);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -187,7 +187,7 @@ namespace OFC.GL4
             if (mats.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, mats);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -209,7 +209,7 @@ namespace OFC.GL4
                     Array.Copy(mats, sourceoffset, subset, 0, sourcelength);    // copy seems to be the quickest solution - at least its inside the system
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
                 }
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -237,7 +237,7 @@ namespace OFC.GL4
                 colstogo -= take;
                 colp += take * 16;
             }
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         public void Fill(ushort[] words)
@@ -247,7 +247,7 @@ namespace OFC.GL4
             if (words.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, words);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -264,7 +264,7 @@ namespace OFC.GL4
             if (data.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)pos, datasize, data);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -281,7 +281,7 @@ namespace OFC.GL4
             if (data.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)pos, datasize, data);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -358,7 +358,7 @@ namespace OFC.GL4
 
             CurrentPos = fillpos;
             mapmode = MapMode.Write;
-            // OFC.GLStatics.Check();
+            // GLOFC.GLStatics.Check();
         }
 
         public void StartRead(int fillpos, int datasize = 0)        // read the buffer (datasize=0=all buffer)
@@ -371,14 +371,14 @@ namespace OFC.GL4
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapReadBit);
             CurrentPos = fillpos;
             mapmode = MapMode.Read;
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         public void StopReadWrite()
         {
             GL.UnmapNamedBuffer(Id);
             mapmode = MapMode.None;
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         public void Skip(int p)
@@ -387,7 +387,7 @@ namespace OFC.GL4
             CurrentPtr += p;
             CurrentPos += p;
             System.Diagnostics.Debug.Assert(CurrentPos <= Length);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // move currentpos onto the alignment
@@ -886,7 +886,7 @@ namespace OFC.GL4
             va.Bind();
             GL.BindVertexBuffer(bindingindex, Id, (IntPtr)start, stride);      // this buffer to binding index
             GL.VertexBindingDivisor(bindingindex, divisor);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
             //System.Diagnostics.Debug.WriteLine("BUFBIND " + bindingindex + " To B" + Id + " pos " + start + " stride " + stride + " divisor " + divisor);
         }
 
@@ -898,7 +898,7 @@ namespace OFC.GL4
             if (elementbindindex != Id)
             {
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, Id);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
                 elementbindindex = Id;
             }
         }
@@ -910,7 +910,7 @@ namespace OFC.GL4
             if (indirectbindindex != Id)
             {
                 GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Id);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
                 indirectbindindex = Id;
             }
         }
@@ -922,7 +922,7 @@ namespace OFC.GL4
             if (parameterbindindex != Id)
             {
                 GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
                 parameterbindindex = Id;
             }
         }
@@ -936,7 +936,7 @@ namespace OFC.GL4
                 GL.TransformFeedbackBufferBase(xfb, index, Id);
             else
                 GL.TransformFeedbackBufferRange(xfb, index, Id, (IntPtr)offset, size);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // unbind from the default (xfb=0) or specific transform feedback buffer object
@@ -952,7 +952,7 @@ namespace OFC.GL4
             if (querybindindex != Id)
             {
                 GL.BindBuffer(BufferTarget.QueryBuffer, Id);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
                 querybindindex = Id;
             }
         }
@@ -962,7 +962,7 @@ namespace OFC.GL4
             if (querybindindex != -1)
             {
                 GL.BindBuffer(BufferTarget.QueryBuffer, 0); // 0 is the unbind value
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
                 querybindindex = -1;
             }
         }

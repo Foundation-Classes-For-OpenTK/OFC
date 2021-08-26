@@ -16,7 +16,7 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Class holds a MatrixBuffer, as used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
     // [0,3] = image index, [1,3] = ctrl word (<0 not shown, 0++ ctrl as per GLPL)

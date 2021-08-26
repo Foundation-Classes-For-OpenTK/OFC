@@ -17,7 +17,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Geo shader, find triangle under cursor
     // combine with your chosen vertex shader feeding in ProjectionModelMatrix values

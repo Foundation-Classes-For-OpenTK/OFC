@@ -17,7 +17,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public class GLCheckBox : GLCheckBoxBase
     {

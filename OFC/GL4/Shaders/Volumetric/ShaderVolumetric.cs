@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // vertex and geo shaders for volumetric shading.  You supply the fragment shader yourself, as its different for each use case.
     // join up using a shader pipelineL:

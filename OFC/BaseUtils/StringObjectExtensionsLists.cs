@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2016 - 2019 EDDiscovery development team + Robbyxp1 @ github.com
+ * Copyright © 2016-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -17,21 +17,22 @@
 using System;
 using System.Collections.Generic;
 
-public static class ObjectExtensionsStringsLists
-{ 
-    public static int ContainsIn(this string refs, IEnumerable<string> list, StringComparison c = StringComparison.CurrentCulture)        //extend for case
+namespace GLOFC
+{
+    public static class ObjectExtensionsStringsLists
     {
-        int i = 0;
-        foreach (var s in list)
+        public static int ContainsIn(this string refs, IEnumerable<string> list, StringComparison c = StringComparison.CurrentCulture)        //extend for case
         {
-            if (refs.Contains(s, c))
-                return i;
+            int i = 0;
+            foreach (var s in list)
+            {
+                if (refs.Contains(s, c))
+                    return i;
 
-            i++;
+                i++;
+            }
+
+            return -1;
         }
-
-        return -1;
     }
-
 }
-

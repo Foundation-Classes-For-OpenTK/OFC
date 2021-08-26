@@ -16,7 +16,7 @@ using OpenTK;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OFC
+namespace GLOFC
 {
     public class GLMeshVertices     // Vertex store for verts, normals, textures
     {

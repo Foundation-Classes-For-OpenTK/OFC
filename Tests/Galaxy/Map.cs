@@ -16,10 +16,10 @@ using EliteDangerousCore.EDSM;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
-using OFC.GL4.Controls;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
+using GLOFC.GL4.Controls;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -45,7 +45,7 @@ namespace TestOpenTk
         public GLControlDisplay displaycontrol;
         public GalacticMapping edsmmapping;
 
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
 
         private GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         private GLItemsList items = new GLItemsList();
@@ -95,7 +95,7 @@ namespace TestOpenTk
 
         #region Initialise
 
-        public void Start(OFC.WinForm.GLWinFormControl glwfc, GalacticMapping edsmmapping, GalacticMapping eliteregions)
+        public void Start(GLOFC.WinForm.GLWinFormControl glwfc, GalacticMapping edsmmapping, GalacticMapping eliteregions)
         {
             this.glwfc = glwfc;
             this.edsmmapping = edsmmapping;
@@ -845,43 +845,43 @@ namespace TestOpenTk
             gl3dcontroller.MouseWheel(s, e);
         }
 
-        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
+        private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
-            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 GalaxyDisplay = !GalaxyDisplay;
             }
-            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 StarDotsDisplay = !StarDotsDisplay;
             }
-            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 TravelPathDisplay = !TravelPathDisplay;
             }
-            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 GalObjectDisplay = !GalObjectDisplay;
             }
-            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F9, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 if (EDSMRegionsEnable)
                     edsmgalmapregions.Toggle();
                 else
                     elitemapregions.Toggle();
             }
-            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.Alt))
+            if (kb.HasBeenPressed(Keys.F9, GLOFC.Controller.KeyboardMonitor.ShiftState.Alt))
             {
                 bool edsm = EDSMRegionsEnable;
                 EDSMRegionsEnable = !edsm;
                 EliteRegionsEnable = edsm;
             }
 
-            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
+            if (kb.HasBeenPressed(Keys.F3, GLOFC.Controller.KeyboardMonitor.ShiftState.Shift))
             {
                 HistoryEntry prev = travelpath.CurrentList.Last();
                 travelpath.AddSystem(new HistoryEntry(DateTime.UtcNow, "new-" + newsys.ToString(), prev.System.X, prev.System.Y, prev.System.Z + 100));

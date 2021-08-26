@@ -14,8 +14,8 @@
 
 using EliteDangerousCore.EDSM;
 using OpenTK;
-using OFC;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.GL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

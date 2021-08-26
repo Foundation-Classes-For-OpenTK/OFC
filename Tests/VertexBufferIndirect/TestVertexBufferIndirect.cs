@@ -13,9 +13,9 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -30,7 +30,7 @@ namespace TestOpenTk
 {
     public partial class TestVertexBufferIndirect : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -48,7 +48,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -435,31 +435,31 @@ namespace TestOpenTk
               gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
 
-            if (kb.HasBeenPressed(Keys.F1, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F1, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
                 System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F2, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GB"));
                 System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F3, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F3, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 sl.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GC"));
                 System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 {
                     int SectorSize = 10;
@@ -483,28 +483,28 @@ namespace TestOpenTk
 
 
 
-            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GA"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
-            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GB"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
-            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GC"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
-            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 int SectorSize = 10;
                 Vector3 pos = new Vector3(20, 0, 30);
@@ -529,19 +529,19 @@ namespace TestOpenTk
             }
 
 
-            if (kb.HasBeenPressed(Keys.F9, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F9, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove((t) => (t as Tuple<string, string[]>).Item1.Equals("GD"));
                 gl3dcontroller.Redraw();
                 System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
             }
 
-            if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.O, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to 90");
                 gl3dcontroller.Pan(new Vector2(90, 0), 3);
             }
-            if (kb.HasBeenPressed(Keys.P, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.P, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to -180");
                 gl3dcontroller.Pan(new Vector2(90, 180), 3);

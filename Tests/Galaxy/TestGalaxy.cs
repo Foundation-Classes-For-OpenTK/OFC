@@ -1,14 +1,14 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using OFC.GL4.Controls;
+using GLOFC.GL4.Controls;
 using EliteDangerousCore.EDSM;
 using System.IO;
 using Newtonsoft.Json.Linq;
@@ -21,13 +21,13 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 32;
             systemtimer.Tick += new EventHandler(SystemTick);
         }
 
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
 
         private Timer systemtimer = new Timer();
 
@@ -72,7 +72,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            OFC.Timers.Timer.ProcessTimers();
+            GLOFC.Timers.Timer.ProcessTimers();
             map.Systick();
         }
     }

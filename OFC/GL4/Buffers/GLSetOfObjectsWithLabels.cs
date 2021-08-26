@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // class uses a GLVertexBufferIndirect to hold a vertex buffer and indirect commands, with multiple textures supplied to the shader
     // The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength

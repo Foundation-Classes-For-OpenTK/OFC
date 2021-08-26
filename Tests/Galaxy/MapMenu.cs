@@ -1,4 +1,5 @@
-﻿using OFC.GL4.Controls;
+﻿using GLOFC.GL4.Controls;
+using GLOFC;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -305,7 +306,7 @@ namespace TestOpenTk
             map.displaycontrol.Add(pform);
         }
 
-        public void UpdateCoords(OFC.GLMatrixCalc c)
+        public void UpdateCoords(GLOFC.GLMatrixCalc c)
         {
             status.Text = c.TargetPosition.X.ToStringInvariant("N1") + " ," + c.TargetPosition.Y.ToStringInvariant("N1") + " ,"
                          + c.TargetPosition.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +

@@ -17,7 +17,7 @@ using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Factory created Sphere Faces for use
 

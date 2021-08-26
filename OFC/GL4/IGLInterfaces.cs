@@ -15,7 +15,7 @@
 
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public interface IGLVertexArray : IDisposable           // to be attached to a renderableitem, vertex arrays need to be based on this
     {

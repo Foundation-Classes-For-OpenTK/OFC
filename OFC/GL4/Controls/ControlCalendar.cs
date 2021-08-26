@@ -12,13 +12,11 @@
  * governing permissions and limitations under the License.
  */
 
-using BaseUtils;
 using System;
 using System.Drawing;
 using System.Globalization;
-using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // a calendar control, single date selection
 
@@ -39,7 +37,7 @@ namespace OFC.GL4.Controls
             Focusable = true;
             InvalidateOnFocusChange = true;
 
-            ButLeft.Image = Properties.Resources.Left;
+            ButLeft.Image = GLOFC.Properties.Resources.Left;
             ButLeft.Click += GoLeft;
             ButLeft.Dock = DockingType.TopLeft;
             ButLeft.Size = new Size(24, 24);

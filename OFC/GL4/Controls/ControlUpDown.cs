@@ -17,7 +17,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public class GLUpDownControl: GLButtonBase
     {
@@ -202,8 +202,8 @@ namespace OFC.GL4.Controls
 
 
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
-        private OFC.Timers.Timer repeattimer = new Timers.Timer();
-        private OFC.Timers.Timer amitimer = new Timers.Timer();
+        private GLOFC.Timers.Timer repeattimer = new Timers.Timer();
+        private GLOFC.Timers.Timer amitimer = new Timers.Timer();
         private int repeatdir;
         private bool mouseoverbottom;
     }

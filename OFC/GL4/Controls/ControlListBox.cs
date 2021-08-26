@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // its a vertical scrollable list. Adding elements to it adds it to the 
     public class GLListBox : GLForeDisplayBase

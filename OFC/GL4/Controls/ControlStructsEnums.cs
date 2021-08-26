@@ -14,7 +14,7 @@
 
 using System;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
     public struct Padding

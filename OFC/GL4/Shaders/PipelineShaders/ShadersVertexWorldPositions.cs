@@ -18,7 +18,7 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders taking world positions
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // No extra translation, direct move
     // Requires:

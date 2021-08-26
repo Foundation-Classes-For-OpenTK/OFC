@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // This is the base for all programs
     // programs hold GLShaders which are compiled and linked into the Program

@@ -18,7 +18,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Base Class for vertex data to vertex shader..
 
@@ -66,7 +66,7 @@ namespace OFC.GL4
             GL.VertexArrayAttribBinding(Id, attribindex, bindingindex);     // bind atrib to binding    - do this after attrib format
             GL.EnableVertexArrayAttrib(Id, attribindex);
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
            // System.Diagnostics.Debug.WriteLine("ATTR " + attribindex + " to " + bindingindex + " Components " + components + " +" + reloffset + " divisor " + divisor);
         }
 
@@ -87,7 +87,7 @@ namespace OFC.GL4
             GL.VertexArrayAttribBinding(Id, attribindex, bindingindex);     // bind atrib to binding 
             GL.EnableVertexArrayAttrib(Id, attribindex);                    // enable attrib
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
            // System.Diagnostics.Debug.WriteLine("ATTRI " + attribindex + " to " + bindingindex + " Components " + components + " +" + reloffset + " divisor " + divisor);
         }
         

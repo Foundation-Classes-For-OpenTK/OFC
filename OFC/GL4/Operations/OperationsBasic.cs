@@ -15,7 +15,7 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLOperationClearDepthBuffer : GLOperationsBase
     {

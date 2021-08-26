@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using OpenTK;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // implements open GL standards on writing data to a GLBuffer.
     

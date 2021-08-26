@@ -16,7 +16,7 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public abstract class GLNumberBox<T> : GLTextBox
     {

@@ -16,7 +16,7 @@ using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Called per object, by the renderableitem, to bind any data needed to place/rotate the object etc
 

@@ -1,14 +1,14 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using OFC.GL4.Controls;
+using GLOFC.GL4.Controls;
 using System.Linq;
 using System.Globalization;
 
@@ -19,7 +19,7 @@ namespace TestOpenTk
 {
     public partial class TestControlsForm : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -28,7 +28,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -174,7 +174,7 @@ namespace TestOpenTk
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1");
                     b1.Margin = new Margin(2);
                     b1.TabOrder = taborder++;
-                    b1.Padding = new OFC.GL4.Controls.Padding(5);
+                    b1.Padding = new GLOFC.GL4.Controls.Padding(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
                     pform.Add(b1);
@@ -191,7 +191,7 @@ namespace TestOpenTk
                     GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Button 3");
                     b3.Margin = new Margin(2);
                     b3.TabOrder = taborder++;
-                    b3.Padding = new OFC.GL4.Controls.Padding(5);
+                    b3.Padding = new GLOFC.GL4.Controls.Padding(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
                     b3.Enabled = false;
                     pform.Add(b3);
@@ -247,7 +247,7 @@ namespace TestOpenTk
                 {
                     List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
                     GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
-                    lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                    lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     //lb1.FitToItemsHeight = false;
@@ -406,7 +406,7 @@ namespace TestOpenTk
             GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(100, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
         }
 
-        private void MsgReturn(GLMessageBox msg, OFC.GL4.Controls.DialogResult res)
+        private void MsgReturn(GLMessageBox msg, GLOFC.GL4.Controls.DialogResult res)
         {
             System.Diagnostics.Debug.WriteLine("!!! Message box " + res);
         }
@@ -423,7 +423,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            OFC.Timers.Timer.ProcessTimers();
+            GLOFC.Timers.Timer.ProcessTimers();
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();

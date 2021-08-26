@@ -16,7 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLTexture3D : GLTextureBase         // load a texture into open gl
     {

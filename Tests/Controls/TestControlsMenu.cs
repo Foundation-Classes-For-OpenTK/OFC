@@ -1,14 +1,14 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using OFC.GL4.Controls;
+using GLOFC.GL4.Controls;
 using System.Linq;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
@@ -18,7 +18,7 @@ namespace TestOpenTk
 {
     public partial class TestControlsMenu : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -27,7 +27,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -284,7 +284,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            OFC.Timers.Timer.ProcessTimers();
+            GLOFC.Timers.Timer.ProcessTimers();
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, Otherkeys);

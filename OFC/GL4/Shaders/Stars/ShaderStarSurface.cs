@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLPLStarSurfaceFragmentShader : GLShaderPipelineShadersBase
     {
@@ -92,7 +92,7 @@ void main(void)
             GL.ProgramUniform1(Id, 15, TimeDeltaSurface);
             GL.ProgramUniform1(Id, 16, TimeDeltaSpots);
 
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 }

@@ -15,7 +15,7 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Matrix calc UB block at 0 fixed. See matrixcalc.glsl for definition in glsl
 

@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public class GLMultiLineTextBox : GLForeDisplayTextBase
     {
@@ -755,7 +755,7 @@ namespace OFC.GL4.Controls
             cursorshowing = true;
         }
 
-        private void CursorTick(OFC.Timers.Timer t, long tick)
+        private void CursorTick(GLOFC.Timers.Timer t, long tick)
         {
             cursorshowing = !cursorshowing;
             Invalidate();
@@ -1275,7 +1275,7 @@ namespace OFC.GL4.Controls
 
         private bool cursorshowing = true;  // is cursor currently showing
 
-        private OFC.Timers.Timer cursortimer = new Timers.Timer();
+        private GLOFC.Timers.Timer cursortimer = new Timers.Timer();
 
         private GLScrollBar vertscroller;
         private GLScrollBar horzscroller;

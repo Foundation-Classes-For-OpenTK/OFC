@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
     // can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation

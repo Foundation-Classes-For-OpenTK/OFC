@@ -12,13 +12,13 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC.WaveFront;
+using GLOFC.WaveFront;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // class takes a list of waveform objects, and creates shaders/renderable items to represent them, adding them
     // to the GLItemsList and GLRenderProgramSortedList.

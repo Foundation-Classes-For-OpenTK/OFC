@@ -16,7 +16,7 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // inherit from this to make a compute shader 
     // you can either run it directly, or you can add it to a RenderableList to mix it with renderable items
@@ -60,7 +60,7 @@ namespace OFC.GL4
             System.Diagnostics.Debug.Assert(ret == null, "Compute Shader", ret);
             ret = Program.Link();
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         protected void Load(byte[] bin, BinaryFormat binformat)

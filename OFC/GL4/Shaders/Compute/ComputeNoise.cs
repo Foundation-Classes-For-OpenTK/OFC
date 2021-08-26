@@ -19,7 +19,7 @@ using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Compute shader, 3d noise, 8x8x8 multiple
     // Requires:

@@ -12,14 +12,14 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC.GL4;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // class uses a GLVertexBufferIndirect to hold a vertex buffer and indirect commands, with multiple textures supplied to the shader
     // The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength

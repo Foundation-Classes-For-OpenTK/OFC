@@ -16,7 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // this is a render list, holding a list of Shader programs
     // each shader program is associated with zero or more RenderableItems 

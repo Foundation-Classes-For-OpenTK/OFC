@@ -16,7 +16,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public static class GLMemoryBarrier
     {

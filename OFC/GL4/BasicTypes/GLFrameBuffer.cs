@@ -15,7 +15,7 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // local data block, writable in Vectors etc, supports std140 and std430
     // you can use Allocate then Fill direct

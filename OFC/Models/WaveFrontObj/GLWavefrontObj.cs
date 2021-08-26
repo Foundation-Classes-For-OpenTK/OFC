@@ -12,7 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
-namespace OFC.WaveFront
+namespace GLOFC.WaveFront
 {
     // wavefront object, pointing to vertices (may be shared with other objects) 
     // Indicies, and containing meta data like materials

@@ -1,14 +1,14 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using OFC.GL4.Controls;
+using GLOFC.GL4.Controls;
 using System.Linq;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
@@ -18,7 +18,7 @@ namespace TestOpenTk
 {
     public partial class TestControlsPanels: Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -27,7 +27,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -211,7 +211,7 @@ namespace TestOpenTk
                     {
                         GLPanel p1 = new GLPanel("P3", new Size(150, 150), DockingType.TopLeft, 0);
                         p1.BackColor = Color.Purple;
-                        p1.SetMarginBorderWidth(new OFC.GL4.Controls.Margin(10), 5, Color.Green, new OFC.GL4.Controls.Padding(5));
+                        p1.SetMarginBorderWidth(new GLOFC.GL4.Controls.Margin(10), 5, Color.Green, new GLOFC.GL4.Controls.Padding(5));
                         //p1.Animators.Add(new AnimateMove(glwfc.ElapsedTimems + 2000, glwfc.ElapsedTimems + 5000, new Point(500, 500)));
                         //p1.Animators.Add(new AnimateSize(glwfc.ElapsedTimems + 3000, glwfc.ElapsedTimems + 7000, new Size(300, 300)));
                         pform.Add(p1);
@@ -221,7 +221,7 @@ namespace TestOpenTk
                     {
                         GLTableLayoutPanel ptable = new GLTableLayoutPanel("tablelayout", new Rectangle(5, 200, 190,190));
                         ptable.SuspendLayout();
-                        ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
+                        ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
                         ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
                         ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
                         pform.Add(ptable);
@@ -244,8 +244,8 @@ namespace TestOpenTk
                     {
                         GLFlowLayoutPanel pflow1 = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190,190));
                         pflow1.SuspendLayout();
-                        pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                        pflow1.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 0);
+                        pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
+                        pflow1.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 0);
                         pform.Add(pflow1);
                         GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
                         pflow1.Add(pti1);
@@ -340,8 +340,8 @@ namespace TestOpenTk
                         pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col2,600,300,300));
                         pflow2.AutoSize = true;
                         pflow2.SuspendLayout();
-                        pflow2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new OFC.GL4.Controls.Padding(2));
-                        pflow2.FlowPadding = new OFC.GL4.Controls.Padding(10, 5, 0, 5);
+                        pflow2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
+                        pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
                         pform.Add(pflow2);
 
                         GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
@@ -412,7 +412,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            OFC.Timers.Timer.ProcessTimers();
+            GLOFC.Timers.Timer.ProcessTimers();
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();

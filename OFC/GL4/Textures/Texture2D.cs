@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLTexture2D : GLTextureBase          // load a texture into open gl
     {
@@ -56,7 +56,7 @@ namespace OFC.GL4
 
                 SetMinMagFilter();
 
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -81,7 +81,7 @@ namespace OFC.GL4
 
                 GL.TexImage2D(TextureTarget.Texture2D, 0, pi, width, height, 0, pf, pt, (IntPtr)0);     // we don't actually load data in, so its a null ptr.
 
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -110,7 +110,7 @@ namespace OFC.GL4
             if (bitmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
             
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
 
            // float[] tex = GetTextureImageAsFloats(end:100);
         }

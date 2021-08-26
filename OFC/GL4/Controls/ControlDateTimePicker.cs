@@ -12,14 +12,14 @@
  * governing permissions and limitations under the License.
  */
 
-using BaseUtils;
+using GLOFC;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     public class GLDateTimePicker: GLForeDisplayBase
     {

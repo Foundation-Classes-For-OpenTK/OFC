@@ -16,7 +16,7 @@
 
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Translation shader with vertex colours
     // Requires:

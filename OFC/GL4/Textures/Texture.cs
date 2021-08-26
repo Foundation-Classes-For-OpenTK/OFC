@@ -17,7 +17,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Textures are not autoloaded into shaders, you normally should do this by overriding the StartAction of the sampler and call a bind function
 
@@ -51,7 +51,7 @@ namespace OFC.GL4
         public void Bind(int bindingpoint)
         {
             GL.BindTextureUnit(bindingpoint, Id);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // image sampler bindings - you need to specify what access you want.  
@@ -59,21 +59,21 @@ namespace OFC.GL4
         public void BindImage(int bindingpoint, int mipmaplevel = 0, bool allarraylayersavailable = true, int layer = 0, TextureAccess tx = TextureAccess.ReadWrite)
         {
             GL.BindImageTexture(bindingpoint, Id, mipmaplevel, allarraylayersavailable, layer, tx, InternalFormat);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // this one is special, because you are allowed to use a different sized internal format to texture created type as long as they are in the same class (see page 185 of SuperBible)
         public void BindImage(int bindingpoint, SizedInternalFormat sioverride, int mipmaplevel = 0, bool allarraylayersavailable = true, int layer = 0, TextureAccess tx = TextureAccess.ReadWrite)
         {
             GL.BindImageTexture(bindingpoint, Id, mipmaplevel, allarraylayersavailable, layer, tx, sioverride);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // and a quick default one
         public void BindImage(int bindingpoint)
         {
             GL.BindImageTexture(bindingpoint, Id, 0, true, 0, TextureAccess.ReadWrite, InternalFormat);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         private long arbid = -1;
@@ -182,7 +182,7 @@ namespace OFC.GL4
 
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);      // back to off for safety
             bmp.UnlockBits(bmpdata);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
 
             if (ownbmp || KeepBitmapList)           // if we own the bmp, or we want to keep records..
             {
@@ -230,7 +230,7 @@ namespace OFC.GL4
             Marshal.Copy(a, 0, pnt, a.Length);
             GL.ClearTexImage(Id, level, PixelFormat.Rgba, PixelType.Float, pnt);
             Marshal.FreeHGlobal(pnt);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         public void ClearSubImage(int level, int x, int y , int z, int width, int height, int depth, float red, float green, float blue, float alpha)  // confirmed
@@ -241,7 +241,7 @@ namespace OFC.GL4
             Marshal.Copy(a, 0, pnt, a.Length);
             GL.ClearTexSubImage(Id, level, x, y, z, width,height,depth, PixelFormat.Rgba, PixelType.Float, pnt);
             Marshal.FreeHGlobal(pnt);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
 
         // Return texture as a set of floats or byte only (others not supported as of yet)
@@ -261,7 +261,7 @@ namespace OFC.GL4
 
             IntPtr unmanagedPointer = System.Runtime.InteropServices.Marshal.AllocHGlobal(bufsize); // get an unmanaged buffer
             GL.GetTextureImage(Id, level, pxformatback, (elementsizeT == 4) ? PixelType.Float : PixelType.UnsignedByte, bufsize, unmanagedPointer);  // fill
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
 
             if (elementsizeT == 4)
             {

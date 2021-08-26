@@ -16,7 +16,7 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // Forms are usually placed below DisplayControl, but can act as movable controls inside other controls
 

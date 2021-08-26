@@ -18,7 +18,7 @@ using System;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
 
     // Pipeline shader for a 2D texture bound with 2D vertexes

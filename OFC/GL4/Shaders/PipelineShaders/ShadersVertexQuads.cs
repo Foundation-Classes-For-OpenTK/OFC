@@ -17,7 +17,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Pipeline shader, Matrix Translation, Tex out, image selection out, Quads in, no vertex input, no tex input, Lookat control
     // Requires:

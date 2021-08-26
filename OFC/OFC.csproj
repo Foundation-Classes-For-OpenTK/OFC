@@ -7,8 +7,8 @@
     <ProjectGuid>{4CFA37D5-4182-4CAE-AFC3-7563A13B44EE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OFC</RootNamespace>
-    <AssemblyName>OFC</AssemblyName>
+    <RootNamespace>GLOFC</RootNamespace>
+    <AssemblyName>GLOFC</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -192,7 +192,7 @@
     <Compile Include="BaseUtils\LineReader.cs" />
     <Compile Include="BaseUtils\NativeMethods.cs" />
     <Compile Include="BaseUtils\NumberObjectExtensions.cs" />
-    <Compile Include="Utils\Polygon.cs" />
+    <Compile Include="BaseUtils\Polygon.cs" />
     <Compile Include="BaseUtils\ResourceHelpers.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\StringObjectExtensionsLines.cs" />

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     [System.Diagnostics.DebuggerDisplay("Control {Name} {window}")]
     public abstract class GLBaseControl : IDisposable

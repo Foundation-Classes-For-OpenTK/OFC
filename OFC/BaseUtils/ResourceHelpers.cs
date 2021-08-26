@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright © 2017-2019 EDDiscovery development team + Robbyxp1 @ github.com
+ * Copyright © 2016-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -14,14 +14,13 @@
  * 
  */
 using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace OFC
+namespace GLOFC
 {
     public static class ResourceHelpers
     {

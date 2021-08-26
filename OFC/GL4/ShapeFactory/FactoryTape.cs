@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Factory created Vector4 shapes..
 

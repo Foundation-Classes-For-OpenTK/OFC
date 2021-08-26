@@ -16,7 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // bindless texture buffers
     // this is a Data Block (a Buffer) with ArbID handles in it.
@@ -43,7 +43,7 @@ namespace OFC.GL4
             }
 
             StopReadWrite();
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 }

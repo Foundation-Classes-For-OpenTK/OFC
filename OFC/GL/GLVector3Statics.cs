@@ -15,7 +15,7 @@
 using OpenTK;
 using System;
 
-namespace OFC
+namespace GLOFC
 {
     public static class GLStaticsVector3
     {

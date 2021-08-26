@@ -14,7 +14,7 @@ namespace TestOpenTk
         [STAThread]
         static void Main(string[] stringargs)
         {
-            OFC.CommandArgs args = new OFC.CommandArgs(stringargs);
+            GLOFC.CommandArgs args = new GLOFC.CommandArgs(stringargs);
 
             using (OpenTK.Toolkit.Init(new OpenTK.ToolkitOptions { EnableHighResolution = false, Backend = OpenTK.PlatformBackend.PreferNative }))
             {

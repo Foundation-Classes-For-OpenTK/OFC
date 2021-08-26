@@ -15,6 +15,7 @@
  */
 
 using System;
+using GLOFC;
 
 public static class ObjectExtensionsStrings2
 {

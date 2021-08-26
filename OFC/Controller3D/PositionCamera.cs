@@ -19,7 +19,7 @@ using System;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace OFC.Controller
+namespace GLOFC.Controller
 {
     public class PositionCamera       // holds lookat and eyepositions and camera
     {

@@ -16,7 +16,7 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // base class for all pipeline shaders parts. these have to be compiled into a ShaderPipeline
 

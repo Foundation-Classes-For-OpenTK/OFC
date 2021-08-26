@@ -16,20 +16,20 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using OFC.WaveFront;
+using GLOFC.WaveFront;
 
 namespace TestOpenTk
 {
     public partial class TestMain : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -43,7 +43,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -1021,29 +1021,29 @@ namespace TestOpenTk
             gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
-            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(0, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(4, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(10, 0, -10), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }

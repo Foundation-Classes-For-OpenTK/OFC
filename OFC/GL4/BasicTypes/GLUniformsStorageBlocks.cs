@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // this takes a basic GLBuffer and adds on features for Uniform and storage blocks etc
 

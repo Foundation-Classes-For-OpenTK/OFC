@@ -17,7 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // This control display needs a GLWindowControl to get events from (in constructor)
     // it in turn passes on those events as its a GLWindowControl, adjusted to the controls in the window
@@ -285,7 +285,7 @@ namespace OFC.GL4.Controls
                 }
 
                 vertexes.StopReadWrite();
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
 
                 if ( tlist.Count>0)     // only if we had visible ones
                     texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order

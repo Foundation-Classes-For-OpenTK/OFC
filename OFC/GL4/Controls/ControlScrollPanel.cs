@@ -15,7 +15,7 @@
 using System;
 using System.Drawing;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // Scroll panel
     // must not be a child of GLForm as it needs a bitmap to paint into

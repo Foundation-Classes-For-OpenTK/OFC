@@ -15,7 +15,7 @@
  */
 using System;
 
-namespace BaseUtils
+namespace GLOFC
 {
     public static class ObjectExtensionsDates
     {

@@ -12,7 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC.GL4;
+using GLOFC.GL4;
 using OpenTK;
 using System;
 using System.Collections.Generic;

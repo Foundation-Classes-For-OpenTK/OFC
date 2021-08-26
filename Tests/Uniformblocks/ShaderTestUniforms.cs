@@ -1,6 +1,6 @@
-﻿using OFC;
-using OFC.Controller;
-using OFC.GL4;
+﻿using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 /*
  * Copyright 2019 Robbyxp1 @ github.com
  * Part of the EDDiscovery Project
@@ -27,7 +27,7 @@ namespace TestOpenTk
 {
     public partial class ShaderTestUniforms : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -35,7 +35,7 @@ namespace TestOpenTk
         public ShaderTestUniforms()
         {
             InitializeComponent();
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -114,7 +114,7 @@ void main(void)
             {
                 Matrix4 a = ModelTranslation;
                 GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-                OFC.GLStatics.Check();
+                GLOFC.GLStatics.Check();
             }
         }
 
@@ -209,7 +209,7 @@ void main(void)
             gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
         }
     }

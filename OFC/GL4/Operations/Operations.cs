@@ -16,7 +16,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // operations are actions that can be inserted into the renderlist either as a shader (robjects.Add(new Operation())  )
     // or as a Renderable item (robject.Add(shader, new Operation()) )

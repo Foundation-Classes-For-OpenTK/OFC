@@ -14,7 +14,7 @@
 
 using System.Drawing;
 
-namespace OFC.GL4.Controls
+namespace GLOFC.GL4.Controls
 {
     // tooltip, if added to GLControlDisplay, and AutomaticDelay>0 it acts as a global tooltip and displays the tooltip of the current mouseover control
     // if added to another form or AutomaticDelay = 0, its manual and you need to call Show() to display it and Hide() to remove it.
@@ -148,7 +148,7 @@ namespace OFC.GL4.Controls
             }
         }
 
-        private OFC.Timers.Timer timer = new Timers.Timer();
+        private GLOFC.Timers.Timer timer = new Timers.Timer();
         private Point entryloc;
         private Point showloc;
         private GLBaseControl mouseover = null;

@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace OFC.Controller
+namespace GLOFC.Controller
 {
     // hook Keydown/Keyup to it, then it keeps track of what keys are currently pressed
 

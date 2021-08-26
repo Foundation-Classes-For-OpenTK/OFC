@@ -16,7 +16,7 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Holds a transform feedback object and has statics for general TF operations
 

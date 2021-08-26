@@ -13,7 +13,7 @@
  * governing permissions and limitations under the License.
  */
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // Shader, with tesselation, and Y change in amp using sin, autoscale
 

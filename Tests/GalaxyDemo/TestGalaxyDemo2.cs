@@ -1,9 +1,9 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -14,7 +14,7 @@ namespace TestOpenTk
 {
     public partial class TestGalaxyDemo2 : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -23,7 +23,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -348,9 +348,9 @@ namespace TestOpenTk
             var cdmt = gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
         }
 
-        private void OtherKeys(OFC.Controller.KeyboardMonitor kb)
+        private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)
         {
-            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 IGLProgramShader ps = items.Shader("Galaxy");
                 if (ps != null)
@@ -359,7 +359,7 @@ namespace TestOpenTk
                     glwfc.Invalidate();
                 }
             }
-            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 IGLProgramShader ps = items.Shader("SD");
                 if (ps != null)

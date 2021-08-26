@@ -13,9 +13,9 @@
  * governing permissions and limitations under the License.
  */
 
-using OFC;
-using OFC.Controller;
-using OFC.GL4;
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -29,7 +29,7 @@ namespace TestOpenTk
 {
     public partial class TestBitmaps : Form
     {
-        private OFC.WinForm.GLWinFormControl glwfc;
+        private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
         private Timer systemtimer = new Timer();
@@ -41,7 +41,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new OFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -231,45 +231,45 @@ namespace TestOpenTk
             //  gl3dcontroller.Redraw();
         }
 
-        private void OtherKeys( OFC.Controller.KeyboardMonitor kb )
+        private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
-            if (kb.HasBeenPressed(Keys.F5, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(0, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F6, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(4, 0, 0), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F7, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F7, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(10, 0, -10), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F8, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F8, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
 
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F2, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 tim2.SetVisiblityRotation("j1", false);
                 gl3dcontroller.Redraw();
             }
-            if (kb.HasBeenPressed(Keys.F2, OFC.Controller.KeyboardMonitor.ShiftState.Shift))
+            if (kb.HasBeenPressed(Keys.F2, GLOFC.Controller.KeyboardMonitor.ShiftState.Shift))
             {
                 tim2.SetVisiblityRotation("j1", true);
                 gl3dcontroller.Redraw();
             }
 
-            if (kb.HasBeenPressed(Keys.F10, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F10, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("F10");
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
@@ -280,7 +280,7 @@ namespace TestOpenTk
                 }
             }
 
-            if (kb.HasBeenPressed(Keys.F11, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F11, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("F11");
                 tim.Remove("T2g");
@@ -289,12 +289,12 @@ namespace TestOpenTk
 
             //tbd why losing focus? why no key
 
-            if (kb.HasBeenPressed(Keys.O, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.O, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to 90");
                 gl3dcontroller.Pan(new Vector2(90, 0), 3);
             }
-            if (kb.HasBeenPressed(Keys.P, OFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.P, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 System.Diagnostics.Debug.WriteLine("Order to -180");
                 gl3dcontroller.Pan(new Vector2(90, 180), 3);

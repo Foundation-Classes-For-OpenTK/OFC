@@ -17,7 +17,7 @@ using System;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     // inherit from this to make a shader which uses a set of pipeline shaders (from ShaderPipelineShadersBase) to make up your whole shader
 

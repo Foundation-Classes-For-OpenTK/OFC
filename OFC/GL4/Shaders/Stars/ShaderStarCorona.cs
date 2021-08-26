@@ -14,7 +14,7 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace OFC.GL4
+namespace GLOFC.GL4
 {
     public class GLShaderStarCorona : GLShaderStandard
     {
@@ -116,7 +116,7 @@ void main(void)
             base.Start(c);
 
             GL.ProgramUniform1(Id, 15, TimeDelta);
-            OFC.GLStatics.Check();
+            GLOFC.GLStatics.Check();
         }
     }
 }
