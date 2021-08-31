@@ -51,7 +51,7 @@ void main(void)
         }
     }
 
-    // Pipeline shader for a 2D array texture
+    // Pipeline shader for a 2D array texture, discard if alpha is too small or imageno < 0
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 1 : flat in imageno to select, <0 discard
@@ -77,7 +77,10 @@ void main(void)
     else
     {   
         vec4 c = texture(textureObject2D, vec3(vs_textureCoordinate,imageno));       // vs_texture coords normalised 0 to 1.0f
-        color = c;
+        if ( c.w < 0.01)
+            discard;
+        else
+            color = c;
     }   
 }
 ";
@@ -90,6 +93,7 @@ void main(void)
     }
 
     // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
+    // discard if alpha is too small or imageno < 0
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 2 : vs_in.vs_instance - instance id/texture offset. 
@@ -128,7 +132,10 @@ void main(void)
     cx = texture(textureObject2D, vec3(vs_textureCoordinate,ii));
     if ( enablealphablend )
         cx.w *= alpha;
-    color = cx;
+    if ( cx.w < 0.01)
+        discard;
+    else
+        color = cx;
 }
 ";
         }

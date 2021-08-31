@@ -63,7 +63,7 @@ namespace TestOpenTk
             this.galmap = galmap;
 
             Bitmap[] images = galmap.RenderableMapTypes.Select(x => x.Image as Bitmap).ToArray();
-            IGLTexture texarray = items.Add(new GLTexture2DArray(images, mipmaplevel:1, genmipmaplevel:3), "GalObjTex");
+            IGLTexture texarray = items.Add(new GLTexture2DArray(images, mipmaplevel:1, genmipmaplevel:3, bmpsize:new Size(256,256)), "GalObjTex");     // 256 is defined normal size
 
             // a look at vertex shader
             var vert = new GLPLVertexScaleLookat(rotate:true, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);

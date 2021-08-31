@@ -233,6 +233,16 @@ namespace TestOpenTk.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap GeyserPOI {
+            get {
+                object obj = ResourceManager.GetObject("GeyserPOI", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap GoBackward {
             get {
                 object obj = ResourceManager.GetObject("GoBackward", resourceCulture);
@@ -433,6 +443,16 @@ namespace TestOpenTk.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap OrganicPOI {
+            get {
+                object obj = ResourceManager.GetObject("OrganicPOI", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Perspective {
             get {
                 object obj = ResourceManager.GetObject("Perspective", resourceCulture);
@@ -466,6 +486,16 @@ namespace TestOpenTk.Properties {
         internal static System.Drawing.Bitmap pulsar {
             get {
                 object obj = ResourceManager.GetObject("pulsar", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Regional {
+            get {
+                object obj = ResourceManager.GetObject("Regional", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

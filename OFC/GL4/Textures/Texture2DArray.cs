@@ -30,9 +30,9 @@ namespace GLOFC.GL4
         }
 
         // bitmap 0 gives the common width/height of the image.
-        public GLTexture2DArray(Bitmap[] bmps, int mipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)
+        public GLTexture2DArray(Bitmap[] bmps, int mipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false, Size? bmpsize = null)
         {
-            CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
+            CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps, bmpsize);
         }
 
         public GLTexture2DArray(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)

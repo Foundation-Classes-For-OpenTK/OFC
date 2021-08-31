@@ -674,5 +674,14 @@
   <ItemGroup>
     <None Include="Resources\EliteMovement.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GeyserPOI.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OrganicPOI.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Regional.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

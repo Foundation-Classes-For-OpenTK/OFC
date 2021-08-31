@@ -61,12 +61,17 @@ namespace EliteDangerousCore.EDSM
             {
                 if (json.HasChars())
                 {
+                    //Dictionary<string, int> counts = new Dictionary<string, int>();   foreach (var v in GalMapType.GetTypes())   counts[v.Typeid] = 0;
+
                     JArray galobjects = (JArray)JArray.Parse(json);
                     foreach (JObject jo in galobjects)
                     {
                         GalacticMapObject galobject = new GalacticMapObject(jo);
 
                         GalMapType ty = galacticMapTypes.Find(x => x.Typeid.Equals(galobject.type));
+
+                        //System.Diagnostics.Debug.WriteLine($"Type {galobject.type}");
+                        //counts[galobject.type]++;
 
                         if (ty == null)
                         {
