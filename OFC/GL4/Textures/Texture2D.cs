@@ -21,6 +21,8 @@ namespace GLOFC.GL4
 {
     public class GLTexture2D : GLTextureBase          // load a texture into open gl
     {
+        public int MultiSample { get; set; } = 0;           // if non zero, multisample texture
+
         public GLTexture2D()
         {
         }
@@ -32,10 +34,14 @@ namespace GLOFC.GL4
         }
 
         // You can call as many times to create textures. Only creates one if required
+        // mipmaplevels does not apply if multisample > 0 
 
-        public void CreateOrUpdateTexture(int width, int height, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
+        public void CreateOrUpdateTexture(int width, int height, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
+                                            int multisample = 0, bool fixedmultisampleloc = false)
         {
-            if (Id == -1 || Width != width || Height != height || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            // if not there, or changed, we can't just replace it, size is fixed. Delete it
+
+            if (Id == -1 || Width != width || Height != height || mipmaplevels != MipMapLevels || multisample != MultiSample)
             {
                 Dispose();
 
@@ -43,16 +49,31 @@ namespace GLOFC.GL4
                 Width = width;
                 Height = height;
                 MipMapLevels = mipmaplevels;
+                MultiSample = multisample;
 
-                GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
+                GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisample : TextureTarget.Texture2D, 1, out int id);
                 Id = id;
 
-                GL.TextureStorage2D(
+                if (MultiSample > 0)
+                {
+                    GL.TextureStorage2DMultisample(
+                                Id,
+                                MultiSample,
+                                InternalFormat,                 // format of texture - 4 floats is the normal, and is given in the constructor
+                                Width,                          // width and height of mipmap level 0
+                                Height,
+                                fixedmultisampleloc);
+
+                }
+                else
+                {
+                    GL.TextureStorage2D(
                                 Id,
                                 mipmaplevels,                    // levels of mipmapping
                                 InternalFormat,                 // format of texture - 4 floats is the normal, and is given in the constructor
                                 Width,                          // width and height of mipmap level 0
                                 Height);
+                }
 
                 SetMinMagFilter();
 

@@ -19,15 +19,17 @@ using System.Drawing;
 
 namespace GLOFC.GL4
 {
+    // 2d arrays do not interpolate between z pixels, unlike 3d textures
+
     public class GLTexture2DArray : GLTextureBase          // load a 2D set of textures into open gl
     {
-        // bitmap 0 gives the common width/height of the image.
-        // 2d arrays do not interpolate between z pixels, unlike 3d textures
+        public int MultiSample { get; set; } = 0;           // if non zero, multisample texture
 
         public GLTexture2DArray()
         {
         }
 
+        // bitmap 0 gives the common width/height of the image.
         public GLTexture2DArray(Bitmap[] bmps, int mipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false)
         {
             CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
@@ -38,9 +40,13 @@ namespace GLOFC.GL4
             CreateTexture(width, height, depth, mipmaplevels, internalformat);
         }
 
-        public void CreateTexture(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
+        // You can call as many times to create textures. Only creates one if required
+        // mipmaplevels does not apply if multisample > 0 
+
+        public void CreateTexture(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f,
+                                    int multisample = 0, bool fixedmultisampleloc = false)
         {
-            if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)
+            if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample )
             {
                 Dispose();
 
@@ -49,16 +55,31 @@ namespace GLOFC.GL4
                 Height = height;
                 Depth = depth;
                 MipMapLevels = mipmaplevels;
+                MultiSample = multisample;
 
-                GL.CreateTextures(TextureTarget.Texture2DArray, 1, out int id);
+                GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture2DArray, 1, out int id);
                 Id = id;
 
-                GL.TextureStorage3D(Id,
+                if (MultiSample > 0)
+                {
+                    GL.TextureStorage3DMultisample(
+                                Id,
+                                MultiSample,
+                                InternalFormat,                 // format of texture - 4 floats is the normal, and is given in the constructor
+                                Width,                          // width and height of mipmap level 0
+                                Height,
+                                Depth,                          // depth = number of bitmaps depth
+                                fixedmultisampleloc);
+                }
+                else
+                {
+                    GL.TextureStorage3D(Id,
                         mipmaplevels,        // miplevels.  Either given in the bitmap itself, or generated automatically
                         InternalFormat,         // format of texture - 4 floats is normal, given in constructor
                         Width,
                         Height,
                         Depth);       // depth = number of bitmaps depth
+                }
 
                 SetMinMagFilter();
 
