@@ -282,10 +282,6 @@ namespace TestOpenTk
                 buf.StopReadWrite();
 
                 stardots = new GalaxyStarDots();
-                //stardots.StartAction += (e, s) => {
-                //    GL.BlendFuncSeparate(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha, BlendingFactorSrc.SrcAlpha, BlendingFactorDest.SrcColor);
-                //};
-
                 items.Add(stardots);
                 GLRenderState rc = GLRenderState.Points(1);       
                 rc.DepthTest = false; // note, if this is true, there is a wierd different between left and right in view.. not sure why
@@ -674,7 +670,7 @@ namespace TestOpenTk
 
             //GL.GetQueryObject(queryID[0], GetQueryObjectParam.QueryResult, out long a);
             //GL.GetQueryObject(queryID[1], GetQueryObjectParam.QueryResult, out long b);
-            System.Diagnostics.Debug.WriteLine($"timer {a} {b} {b-a}" );
+            //System.Diagnostics.Debug.WriteLine($"timer {a} {b} {b-a}" );
 
             long t5 = hptimer.ElapsedTicks;
 

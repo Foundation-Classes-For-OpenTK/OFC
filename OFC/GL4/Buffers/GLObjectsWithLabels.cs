@@ -18,6 +18,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace GLOFC.GL4
 {
@@ -35,10 +36,10 @@ namespace GLOFC.GL4
         public int Blocks { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }      // how many blocks allocated
         public int BlocksRemoved { get; private set; } = 0;     // how many have been removed
         public int Objects { get; private set; } = 0;           // total number of objects being drawn currently
+        public Dictionary<object, int> TagsToBlock { get; private set; } = new Dictionary<object, int>();       // tag name to block index (in order of tags added)
+        public List<object> UserTags { get; private set; } = new List<object>();          // user tag data, indexed by block index
+        public List<int> Counts { get; private set; } = new List<int>();       // counts of items in each block
 
-        // get tag list. Removed blocks will have a null tag. Tag list is stored in Indirects[0]
-        public List<object> Tags { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Tags : null; } }       
-                
         private GLVertexBufferIndirect dataindirectbuffer;                  // buffer and its indirect buffers [0] = objects, [1] = labels. [1].tags holds the object tag, [1].Tags holds the count of objects
         public GLRenderableItem ObjectRenderer { get; private set; }
         public GLRenderableItem TextRenderer { get; private set; }
@@ -113,17 +114,17 @@ namespace GLOFC.GL4
         }
 
         // array/text holds worldpositions and text of each object
-        // tag gives a logical name to each group
+        // tag gives a logical name to each group - must be unique
         // returns position where it stopped, or -1 if all added
 
-        public int Add(Object tag, Vector4[] array, string[] text, 
+        public int Add(Object tag, Object userdata, Vector4[] array, string[] text, 
                                 Font fnt, Color fore, Color back, 
                                 Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,   // see GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix
                                 StringFormat fmt, float backscale, Vector3 textoffset)
         {
             var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
             var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, textoffset, size, rot, rotatetoviewer, rotateelevation,0,0,0,true);
-            int v = Add(tag, array, mats, bmps);
+            int v = Add(tag, userdata, array, mats, bmps);
             BitMapHelpers.Dispose(bmps);
             return v;
         }
@@ -134,7 +135,7 @@ namespace GLOFC.GL4
         // pos = indicates one to start from
         // -1 all added, else the pos where it failed on
 
-        public int Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0)
+        public int Add(Object tag, Object userdata, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0)
         {
             do
             {
@@ -171,8 +172,9 @@ namespace GLOFC.GL4
                     return pos;
                 }
 
-                dataindirectbuffer.Indirects[0].AddTag(tag);              // indirect draw buffer 0 holds the tags assigned by the user for identity purposes 
-                dataindirectbuffer.Indirects[1].AddTag(array.Length);     // indirect draw buffer 1 holds the length
+                TagsToBlock[tag] = dataindirectbuffer.Indirects[0].Positions.Count - 1;
+                Counts.Add(array.Length);
+                UserTags.Add(userdata);
 
                 ObjectRenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
                 ObjectRenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
@@ -209,33 +211,38 @@ namespace GLOFC.GL4
                 return null;
         }
 
-        public bool Remove(Predicate<object> test)
+        public bool Remove(object tag)
         {
-            bool removed = false;
-
-            if (dataindirectbuffer.Indirects.Count > 0)     // only if we added something..
+            if (TagsToBlock.TryGetValue(tag, out int i))
             {
-                for (int i = 0; i < dataindirectbuffer.Indirects[0].Tags.Count; i++)        // all blocks
-                {
-                    var tg = dataindirectbuffer.Indirects[0].Tags[i];           // get tag
-
-                    if (tg != null)       // if not already removed
-                    {
-                        if (test(tg))       // if test passed, it wants it to be removed
-                        {
-                            int count = (int)dataindirectbuffer.Indirects[1].Tags[i];
-                            // System.Diagnostics.Debug.WriteLine($"Found tag at {i}");
-                            dataindirectbuffer.Remove(i, 0);        // clear draw of both text and object
-                            dataindirectbuffer.Remove(i, 1);
-                            Objects -= count;                   // reduce objects count
-                            BlocksRemoved++;                    // increment blocks removed
-                            dataindirectbuffer.Indirects[0].Tags[i] = null;     // remove tag so it can't be found again!
-                            removed = true;
-                        }
-                    }
-                }
+                dataindirectbuffer.Remove(i, 0);        // clear draw of both text and object
+                dataindirectbuffer.Remove(i, 1);
+                Objects -= Counts[i];
+                TagsToBlock.Remove(tag);                // remove tag
+                BlocksRemoved++;                        // increment blocks removed
+                return true;
             }
+            return false;
+        }
 
+        public int RemoveOldest(int wanted)             // return number of objects removed, may remove in excess of wanted
+        {
+            int removed = 0;
+            List<object> toremove = new List<object>();
+            foreach (var kvp in TagsToBlock)                // Tags to block are stored in add order.
+            {
+                if (removed >= wanted)
+                    break;
+                dataindirectbuffer.Remove(kvp.Value, 0);        // clear draw of both text and object
+                dataindirectbuffer.Remove(kvp.Value, 1);
+                removed += Counts[kvp.Value];
+                Objects -= Counts[kvp.Value];
+                BlocksRemoved++;                        // increment blocks removed
+                toremove.Add(kvp.Key);
+                removed++;
+            }
+            foreach (var k in toremove)
+                TagsToBlock.Remove(k);
             return removed;
         }
 

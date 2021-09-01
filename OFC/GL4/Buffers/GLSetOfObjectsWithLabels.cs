@@ -65,7 +65,7 @@ namespace GLOFC.GL4
         // bitmaps are for each label.  Owned by caller
         // -1 if all added, else can't add from that pos on
 
-        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        public void Add(Object tag, Object userdata, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
         {
             if (set.Count == 0)
             {
@@ -73,39 +73,68 @@ namespace GLOFC.GL4
                 AddSet();
             }
 
-            int v = set.Last().Add(tag, array, matrix, bitmaps);
+            int v = set.Last().Add(tag, userdata, array, matrix, bitmaps);
 
             while ( v >= 0)    // if can't add
             {
                 System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
                 AddSet();
-                v = set.Last().Add(tag, array, matrix, bitmaps, v);      // add the rest from v
+                v = set.Last().Add(tag, userdata, array, matrix, bitmaps, v);      // add the rest from v
             }
         }
 
-        public void Remove(Predicate<object> test)
+        public bool Remove(object tag)
         {
-            List<GLObjectsWithLabels> tobedisposed = new List<GLObjectsWithLabels>();
+            bool res = false;
+            GLObjectsWithLabels removeit = null;
 
             foreach (var s in set)
             {
-                if (s.Remove(test))        // if removed something
+                if (s.Remove(tag))        // if removed something
                 {
-                    System.Diagnostics.Debug.WriteLine($".. in set {set.IndexOf(s)}");
+                    System.Diagnostics.Debug.WriteLine($"remove in set {set.IndexOf(s)}");
                     if (s.Blocks == s.BlocksRemoved)  // if all marked removed
-                        tobedisposed.Add(s);    
+                    {
+                        removeit = s;
+                    }
+                    res = true;
+                    break;
                 }
             }
 
-            foreach (var s in tobedisposed)
-            {
-                System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(s)} with {s.Blocks}");
-                robjects.Remove(s.ObjectRenderer);      // remove renders
-                robjects.Remove(s.TextRenderer);
-                s.Dispose();        // then dispose
-                set.Remove(s);
+            if ( removeit != null )
+            { 
+                System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(removeit)} with {removeit.Blocks}");
+                robjects.Remove(removeit.ObjectRenderer);      // remove renders
+                robjects.Remove(removeit.TextRenderer);
+                removeit.Dispose();        // then dispose
+                set.Remove(removeit);
             }
+
+            return res;
            // System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
+        }
+
+        public void RemoveOldest(int wanted )
+        {
+            List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
+            foreach( var s in set)
+            {
+                int done = s.RemoveOldest(wanted);
+                wanted -= done;
+                if (s.Blocks == s.BlocksRemoved)  // if all marked removed
+                    toremove.Add(s);
+                if (wanted <= 0)
+                    break;
+            }
+
+            foreach( var removeit in toremove )
+            {
+                robjects.Remove(removeit.ObjectRenderer);      // remove renders
+                robjects.Remove(removeit.TextRenderer);
+                removeit.Dispose();        // then dispose
+                set.Remove(removeit);
+            }
         }
 
         public void Dispose()

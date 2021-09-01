@@ -1,17 +1,12 @@
-﻿using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
-using GLOFC;
+﻿using GLOFC;
 using GLOFC.GL4;
+using OpenTK;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 using System.Threading;
-using System.Diagnostics;
 
 namespace TestOpenTk
 {
@@ -127,31 +122,46 @@ namespace TestOpenTk
                     //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} Requestor take");
                     var sector = requestedsectors.Take(stop.Token);       // blocks until take or told to stop
 
-                    if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
+                    lock (displayedsectorsposhash)      // lock since foreground can remove from it
                     {
-                          //      System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, start sub thread");
-                        displayedsectorsposhash.Add(sector.pos);
-
-                        if ( TotalObjects > MaxObjectsAllowed )
+                        do
                         {
-                            List<Vector3> indistorder = displayedsectorsposhash.ToList();
-                            indistorder.Sort( delegate(Vector3 l ,Vector3 r ) { return (l-CurrentPos).Length.CompareTo((r-CurrentPos).Length); });
-                            removesectors.Enqueue(indistorder[0]);
-                            if ( indistorder.Count>=2)
-                                removesectors.Enqueue(indistorder[1]);     // remove 2 for each extra fill..
-                        }
+                            if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
+                            {
+                                System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, To {TotalObjects}");
+                                displayedsectorsposhash.Add(sector.pos);
+                                Thread p = new Thread(FillSectorThread);
+                                p.Start(sector);
+                            }
 
-                        Thread p = new Thread(FillSectorThread);
-                        p.Start(sector);
+                        } while (requestedsectors.TryTake(out sector));     // until empty..
                     }
-                    else
-                    {
-                        // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} request denied");
-                    }
+
+                    //    if (TotalObjects > MaxObjectsAllowed)
+                    //    {
+                    //        List<Vector3> indistorder = displayedsectorsposhash.ToList();
+                    //        indistorder.Sort(delegate (Vector3 l, Vector3 r) { return (r - CurrentPos).Length.CompareTo((l - CurrentPos).Length); });
+                    //        removesectors.Enqueue(indistorder[0]);      // add to list to remove
+                    //        System.Diagnostics.Debug.WriteLine($".. requestor asks to delete {indistorder[0]}");
+                    //        //if ( indistorder.Count>=2)
+                    //        //    removesectors.Enqueue(indistorder[1]);     // remove 2 for each extra fill..
+                    //    }
+
+
+                    //    if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
+                    //    {
+
+
+                    //    }
+                    //    else
+                    //    {
+                    //        // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} request denied");
+                    //    }
+                    //}
 
                     while( cleanbitmaps.TryDequeue(out sector))         // bitmap cleaning is not high priority, so just do it when we get another request. No need to unblock on it
                     {
-                        System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sector.pos}");
+                        //System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sector.pos}");
                         BitMapHelpers.Dispose(sector.bitmaps);
                         sector.bitmaps = null;
                     }
@@ -200,19 +210,30 @@ namespace TestOpenTk
         {
             if (time - timelastadded > 50)
             {
-                if (removesectors.TryDequeue(out Vector3 r))
-                {
-                    System.Diagnostics.Debug.WriteLine($"Remove sector {r}");
-                    slset.Remove((x) => ((Tuple<Vector3, string[]>)x).Item1 == r);      // remove all with this vector
-                }
+                //while (removesectors.TryDequeue(out Vector3 r))
+                //{
+                //    if (slset.Remove(r))
+                //    {
+                //        System.Diagnostics.Debug.WriteLine($"Remove sector {r}");
+                //    }
+
+                //    lock (displayedsectorsposhash)      // lock so thread does not do it at the same time
+                //        displayedsectorsposhash.Remove(r);
+                //}
+
+                // HashSet is PINA - keeping it synced with the slset if horrible. Can we do a quick tag lookup on slset?
+
                 if (generatedsectors.TryDequeue(out Sector d))      // limit fill rate..
                 {
-                    System.Diagnostics.Debug.WriteLine($"Add sector {r}");
-                    slset.Add(new Tuple<Vector3, string[]>(d.pos, d.text), d.stars, d.textpos, d.bitmaps);
+                    slset.Add(d.pos, d.text, d.stars, d.textpos, d.bitmaps);
                     TotalObjects = slset.Objects();     // how many displaying
                     cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
                     timelastadded = time;
+                    System.Diagnostics.Debug.WriteLine($"Add sector {d.pos} total {TotalObjects}");
                 }
+
+                if (TotalObjects > MaxObjectsAllowed)
+                    slset.RemoveOldest(TotalObjects - MaxObjectsAllowed);
             }
 
             const int rotperiodms = 10000;
@@ -254,7 +275,7 @@ namespace TestOpenTk
         private ConcurrentQueue<Sector> generatedsectors = new ConcurrentQueue<Sector>();
 
         // added to by subthread when things need removing
-        private ConcurrentQueue<Vector3> removesectors = new ConcurrentQueue<Vector3>();
+  //      private ConcurrentQueue<Vector3> removesectors = new ConcurrentQueue<Vector3>();
 
         // added to by update when cleaned up bitmaps, requestor will clear these for it
         private ConcurrentQueue<Sector> cleanbitmaps = new ConcurrentQueue<Sector>();
