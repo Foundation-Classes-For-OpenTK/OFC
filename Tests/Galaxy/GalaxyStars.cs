@@ -18,10 +18,11 @@ namespace TestOpenTk
     class GalaxyStars
     {
         public Vector3 CurrentPos { get; set; } = new Vector3(-1000000, -1000000, -1000000);
-        public int Sectors { get { return displayedsectorsposhash.Count; } }
         public Font Font { get; set; } = new Font("Ms Sans Serif", 14f);
         public Color ForeText { get; set; } = Color.White;
         public Color BackText { get; set; } = Color.Red;
+
+        const int MaxObjectsAllowed = 1000;
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
         {
@@ -129,10 +130,15 @@ namespace TestOpenTk
                     if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
                     {
                           //      System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, start sub thread");
+                        displayedsectorsposhash.Add(sector.pos);
 
-                        lock (displayedsectorsposhash)     // can't have anyone using displayed sectors until add complete
+                        if ( TotalObjects > MaxObjectsAllowed )
                         {
-                            displayedsectorsposhash.Add(sector.pos);
+                            List<Vector3> indistorder = displayedsectorsposhash.ToList();
+                            indistorder.Sort( delegate(Vector3 l ,Vector3 r ) { return (l-CurrentPos).Length.CompareTo((r-CurrentPos).Length); });
+                            removesectors.Enqueue(indistorder[0]);
+                            if ( indistorder.Count>=2)
+                                removesectors.Enqueue(indistorder[1]);     // remove 2 for each extra fill..
                         }
 
                         Thread p = new Thread(FillSectorThread);
@@ -192,11 +198,21 @@ namespace TestOpenTk
         // foreground, called on each frame, allows update of shader and queuing of new objects
         public void Update(ulong time, float eyedistance)
         {
-            if ( time-timelastadded > 50 && generatedsectors.TryDequeue(out Sector d))      // limit fill rate..
-            { 
-                slset.Add(new Tuple<Vector3, string[]>(d.pos, d.text), d.stars, d.textpos, d.bitmaps);
-                cleanbitmaps.Enqueue(d);        // ask for cleaning of bitmaps
-                timelastadded = time;
+            if (time - timelastadded > 50)
+            {
+                if (removesectors.TryDequeue(out Vector3 r))
+                {
+                    System.Diagnostics.Debug.WriteLine($"Remove sector {r}");
+                    slset.Remove((x) => ((Tuple<Vector3, string[]>)x).Item1 == r);      // remove all with this vector
+                }
+                if (generatedsectors.TryDequeue(out Sector d))      // limit fill rate..
+                {
+                    System.Diagnostics.Debug.WriteLine($"Add sector {r}");
+                    slset.Add(new Tuple<Vector3, string[]>(d.pos, d.text), d.stars, d.textpos, d.bitmaps);
+                    TotalObjects = slset.Objects();     // how many displaying
+                    cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
+                    timelastadded = time;
+                }
             }
 
             const int rotperiodms = 10000;
@@ -237,8 +253,13 @@ namespace TestOpenTk
         // added to by subthread when sector is ready, picked up by foreground update. ones ready for final foreground processing
         private ConcurrentQueue<Sector> generatedsectors = new ConcurrentQueue<Sector>();
 
+        // added to by subthread when things need removing
+        private ConcurrentQueue<Vector3> removesectors = new ConcurrentQueue<Vector3>();
+
         // added to by update when cleaned up bitmaps, requestor will clear these for it
         private ConcurrentQueue<Sector> cleanbitmaps = new ConcurrentQueue<Sector>();
+
+        private int TotalObjects = 0;               // update sets this after each add, used by requestor to determine if need to delete
 
         private const int SectorSize = 100;
 

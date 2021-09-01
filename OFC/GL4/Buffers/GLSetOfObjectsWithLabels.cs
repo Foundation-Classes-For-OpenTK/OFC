@@ -21,18 +21,16 @@ using System.Linq;
 
 namespace GLOFC.GL4
 {
-    // class uses a GLVertexBufferIndirect to hold a vertex buffer and indirect commands, with multiple textures supplied to the shader
-    // The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength
-    // Object shader will get vertex 0 = objectbuffer vector4s, and vertex 1 = worldpositions of items added (instance divided)
-    // use with text shader GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
-    // multiple textures can be bound to carry the text labels, the number given by textures.
-    // dependent on the opengl, that gives the number of objects that can be produced (GetMaxTextureDepth())
+    // Set of ObjectWithLabels
+    // add and remove blocks of tagged objects, will clean up empty OWL when required
 
     public class GLSetOfObjectsWithLabels : IDisposable
     {
         public Size LabelSize { get { return texturesize; } }
 
-        public int Objects() { int t = 0;  foreach (var s in set) t += s.Objects; return t; }           // total number of objects being drawn
+        public int Blocks { get { int t = 0; foreach (var s in set) t += s.Blocks; return t; } }        // how many blocks allocated
+        public int BlocksRemoved { get { int t = 0; foreach (var s in set) t += s.BlocksRemoved; return t; } }  // how many have been removed
+        public int Objects() { int t = 0; foreach (var s in set) t += s.Objects; return t; }           // total number of objects being drawn
 
         public int Count { get { return set.Count; } }
         public GLObjectsWithLabels this[int i] { get { return set[i]; } }
@@ -62,7 +60,12 @@ namespace GLOFC.GL4
             this.limittexturedepth = debuglimittexturedepth;
         }
 
-        public int Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        // array holds worldpositions for objects
+        // matrix holds pos, orientation, etc for text
+        // bitmaps are for each label.  Owned by caller
+        // -1 if all added, else can't add from that pos on
+
+        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
         {
             if (set.Count == 0)
             {
@@ -78,8 +81,6 @@ namespace GLOFC.GL4
                 AddSet();
                 v = set.Last().Add(tag, array, matrix, bitmaps, v);      // add the rest from v
             }
-
-            return v;
         }
 
         public void Remove(Predicate<object> test)
@@ -158,27 +159,27 @@ namespace GLOFC.GL4
 
         private string name;
 
-        private GLRenderProgramSortedList robjects;
+        private GLRenderProgramSortedList robjects;         // render list
 
-        private int textures;
-        private int estimateditemspergroup;
-        private int mingroups;
+        private int textures;                               // number of textures to ask for 
+        private int estimateditemspergroup;                 // estimated items per group
+        private int mingroups;                              // minimum groups to ask for
 
-        private IGLProgramShader objectshader;
+        private IGLProgramShader objectshader;              // object data
         private GLBuffer objectbuffer;
         private int objectvertexescount;
         private GLRenderState objrc;
         private PrimitiveType objpt;
 
-        private IGLProgramShader textshader;
+        private IGLProgramShader textshader;                // text data
         private Size texturesize;
         private GLRenderState textrc;
 
-        private int limittexturedepth;
+        private int limittexturedepth;                      // debug, limit texture depth
 
-        private int setnumber = 0;      // for naming
+        private int setnumber = 0;                          // for naming
 
-        private List<GLObjectsWithLabels> set = new List<GLObjectsWithLabels>();
+        private List<GLObjectsWithLabels> set = new List<GLObjectsWithLabels>();        // finally the set of OWL
 
         #endregion
 

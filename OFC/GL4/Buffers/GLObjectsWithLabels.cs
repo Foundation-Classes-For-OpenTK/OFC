@@ -36,16 +36,15 @@ namespace GLOFC.GL4
         public int BlocksRemoved { get; private set; } = 0;     // how many have been removed
         public int Objects { get; private set; } = 0;           // total number of objects being drawn currently
 
-        public GLRenderableItem ObjectRenderer { get; private set; }
-        public GLRenderableItem TextRenderer { get; private set; }
-
         // get tag list. Removed blocks will have a null tag. Tag list is stored in Indirects[0]
         public List<object> Tags { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Tags : null; } }       
-
-        private GLVertexBufferIndirect dataindirectbuffer;
-        private GLTexture2DArray[] textures;
-        private int objectvertexescount;
-        private int textmapinuse = 0;
+                
+        private GLVertexBufferIndirect dataindirectbuffer;                  // buffer and its indirect buffers [0] = objects, [1] = labels. [1].tags holds the object tag, [1].Tags holds the count of objects
+        public GLRenderableItem ObjectRenderer { get; private set; }
+        public GLRenderableItem TextRenderer { get; private set; }
+        private GLTexture2DArray[] textures;                                // holds the text labels
+        private int objectvertexescount;                                    // vert count for object
+        private int textureinuse = 0;                                       // textures in use, up to max textures.
 
         GLItemsList items = new GLItemsList();      // our own item list to hold disposes
 
@@ -129,7 +128,9 @@ namespace GLOFC.GL4
             return v;
         }
 
-        // Add objects already drawn.  bitmaps are owned by caller, not by us
+        // array holds worldpositions for objects
+        // matrix holds pos, orientation, etc for text
+        // bitmaps are for each label.  Owned by caller
         // pos = indicates one to start from
         // -1 all added, else the pos where it failed on
 
@@ -137,11 +138,11 @@ namespace GLOFC.GL4
         {
             do
             {
-                if (textmapinuse >= textures.Length)       // out of textures
+                if (textureinuse >= textures.Length)       // out of textures
                     return pos;
 
                 // how many can we take..
-                int touse = Math.Min(array.Length - pos, textures[textmapinuse].DepthLeftIndex);
+                int touse = Math.Min(array.Length - pos, textures[textureinuse].DepthLeftIndex);
 
                 //System.Diagnostics.Debug.WriteLine($"Fill {pos} {touse}");
                 // fill in vertex array entries from pos .. pos+touse-1
@@ -155,10 +156,10 @@ namespace GLOFC.GL4
                 // now fill in the texture by loading bitmaps into each slot, and update the matrix image position
                 for (int i = 0; i < touse; i++)
                 {
-                    int imgpos = textures[textmapinuse].DepthIndex + textmapinuse * 65536;      // bits 16+ has textmap
+                    int imgpos = textures[textureinuse].DepthIndex + textureinuse * 65536;      // bits 16+ has textmap
                    // System.Diagnostics.Debug.WriteLine($"Obj2 Write Mat {pos} {pos + i} tx {textmapinuse} = {imgpos}");
                     matrix[pos + i][0,3] = imgpos;
-                    textures[textmapinuse].LoadBitmap(bitmaps[pos + i], textures[textmapinuse].DepthIndex++, false, 1);
+                    textures[textureinuse].LoadBitmap(bitmaps[pos + i], textures[textureinuse].DepthIndex++, false, 1);
                 }
 
                 // now write in the matrices to the vertex buffers
@@ -181,8 +182,8 @@ namespace GLOFC.GL4
 
                 Objects += array.Length;                                                        // this more objects
 
-                if (textures[textmapinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
-                    textmapinuse++;
+                if (textures[textureinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
+                    textureinuse++;
 
                 pos += touse;
 
