@@ -264,7 +264,7 @@ namespace TestOpenTk
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
                 sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 10, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc);
+                var ris = sl.Create(texunitspergroup, 50, 50, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc,3);
                 rObjects.Add(sunshader, "SLsunshade", ris.Item1);
                 rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
@@ -284,7 +284,8 @@ namespace TestOpenTk
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                     var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(sl.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
-                    sl.Add("GA",text, array, mats, bmps);
+                    List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
+                    sl.Add(array, mats, bmps, bref);
                     BitMapHelpers.Dispose(bmps);
                 }
                 {
@@ -298,7 +299,8 @@ namespace TestOpenTk
                         text[i] = "B." + i;
                     }
 
-                    sl.Add("GB",text, array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0));
+                    List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
+                    sl.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0), bref);
                 }
                 {
                     Vector3 pos = new Vector3(0, 0, 15);
@@ -311,7 +313,8 @@ namespace TestOpenTk
                         text[i] = "C." + i;
                     }
 
-                    sl.Add("GC", text, array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0));
+                    List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
+                    sl.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0), bref);
                 }
 
                 System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
@@ -329,11 +332,11 @@ namespace TestOpenTk
                 textrc.DepthTest = true;
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
-                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup, 
+                slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup,
                                                             50, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, PrimitiveType.Triangles,
                                                             textshader, new Size(128, 32), textrc,
-                                                            10);
+                                                            3);
                 items.Add(slset);
 
                 int SectorSize = 10;
@@ -416,17 +419,6 @@ namespace TestOpenTk
 
             this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
 
-            //GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-            //Vector4[] databack = dataoutbuffer.ReadVector4(0, 4);
-            //for (int i = 0; i < databack.Length; i += 1)
-            //{
-            //   // databack[i] = databack[i] / databack[i].W;
-            //   // databack[i].X = databack[i].X * gl3dcontroller.glControl.Width / 2 + gl3dcontroller.glControl.Width/2;
-            //   // databack[i].Y = gl3dcontroller.glControl.Height - databack[i].Y * gl3dcontroller.glControl.Height;
-            //    System.Diagnostics.Debug.WriteLine("{0}={1}", i, databack[i].ToStringVec(true));
-            //}
-            //GLStatics.Check();
-
         }
 
         private void SystemTick(object sender, EventArgs e )
@@ -435,73 +427,27 @@ namespace TestOpenTk
               gl3dcontroller.Redraw();
         }
 
+        static int tagn = 0;
+
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
-
-            if (kb.HasBeenPressed(Keys.F1, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove("GA");
-                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F2, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove("GB");
-                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F3, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                sl.Remove("GC");
-                System.Diagnostics.Debug.WriteLine($"Blocks {sl.Blocks} Removed {sl.BlocksRemoved}");
-                gl3dcontroller.Redraw();
-            }
-
-            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                {
-                    int SectorSize = 10;
-                    Vector3 pos = new Vector3(0, 0, 30);
-                    Vector4[] array = new Vector4[10];
-                    string[] text = new string[array.Length];
-                    Random rnd = new Random(31);
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                        text[i] = "D." + i;
-                    }
-
-                    Font fnt = new Font("MS sans serif", 16f);
-                    sl.Add("GD", text, array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0));
-                }
-                gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
-            }
-
-
-
 
             if (kb.HasBeenPressed(Keys.F5, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove("GA");
                 gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
             if (kb.HasBeenPressed(Keys.F6, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove("GB");
                 gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
             if (kb.HasBeenPressed(Keys.F7, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove("GC");
                 gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()}");
             }
 
             if (kb.HasBeenPressed(Keys.F8, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
@@ -521,19 +467,20 @@ namespace TestOpenTk
                 var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
                 var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkGreen, 0.5f);
 
-                slset.Add("GD", text, array, mats, bmps);
+                slset.Add("GD" + (tagn++).ToString(), text, array, mats, bmps);
                 BitMapHelpers.Dispose(bmps);
                 gl3dcontroller.Redraw();
-
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
             }
-
 
             if (kb.HasBeenPressed(Keys.F9, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 slset.Remove("GD");
                 gl3dcontroller.Redraw();
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects()} sets {slset.Count}");
+            }
+            if (kb.HasBeenPressed(Keys.F12, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                slset.RemoveOldest(1);
+                gl3dcontroller.Redraw();
             }
 
             if (kb.HasBeenPressed(Keys.O, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
@@ -559,20 +506,21 @@ namespace TestOpenTk
 
                 if (index != null)
                 {
-                    var namelist = sl.UserTags[index.Item1] as string[];
-                    System.Diagnostics.Debug.WriteLine($"... {namelist[index.Item2]}");
+                    System.Diagnostics.Debug.WriteLine($"found {index.Item1} {index.Item2}");
+                    //var namelist = sl.UserTags[index.Item1] as string[];
+ //                   System.Diagnostics.Debug.WriteLine($"... {namelist[index.Item2]}");
                 }
             }
 
             if (slset != null)
             {
-                var find = slset.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
+                var find = slset.FindBlock(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
                 if (find != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2} {find.Item3}");
-                    var set = slset[find.Item1];
-                    var namelist = set.UserTags[find.Item2] as string[];
-                    System.Diagnostics.Debug.WriteLine($"... {namelist[find.Item3]}");
+                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2}");
+                    var userdata = slset.UserData[find.Item1[0].tag] as string[];
+
+                    System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item2]}");
                 }
             }
 

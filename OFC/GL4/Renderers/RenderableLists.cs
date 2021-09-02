@@ -225,9 +225,12 @@ namespace GLOFC.GL4
         {
             foreach (var kvp in renderables)
             {
-                var i = kvp.Item2.FindIndex(x => Object.ReferenceEquals(x.Item2, r));
-                if (i >= 0)
-                    return new Tuple<IGLProgramShader, int>(kvp.Item1, i);
+                if (kvp.Item2 != null)          // this may be null if its a shader operation or compute shader
+                {
+                    var i = kvp.Item2.FindIndex(x => Object.ReferenceEquals(x.Item2, r));
+                    if (i >= 0)
+                        return new Tuple<IGLProgramShader, int>(kvp.Item1, i);
+                }
             }
             return null;
         }

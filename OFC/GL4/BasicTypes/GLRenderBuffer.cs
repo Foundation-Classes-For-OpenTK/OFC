@@ -60,9 +60,9 @@ namespace GLOFC.GL4
         }
 
         // from the any type of ImageTarget into this
-        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dlevel, int dx, int dy, int width, int height)
+        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz,       int dx, int dy, int width, int height)
         {
-            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Renderbuffer, dlevel, dx, dy, 0, width, height, 1);
+            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Renderbuffer, 0, dx, dy, 0, width, height, 1);
             GLStatics.Check();
         }
 

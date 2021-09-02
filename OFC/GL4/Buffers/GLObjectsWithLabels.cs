@@ -35,10 +35,7 @@ namespace GLOFC.GL4
 
         public int Blocks { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }      // how many blocks allocated
         public int BlocksRemoved { get; private set; } = 0;     // how many have been removed
-        public int Objects { get; private set; } = 0;           // total number of objects being drawn currently
-        public Dictionary<object, int> TagsToBlock { get; private set; } = new Dictionary<object, int>();       // tag name to block index (in order of tags added)
-        public List<object> UserTags { get; private set; } = new List<object>();          // user tag data, indexed by block index
-        public List<int> Counts { get; private set; } = new List<int>();       // counts of items in each block
+        public bool Emptied { get { return Blocks > 0 && BlocksRemoved == Blocks; } }
 
         private GLVertexBufferIndirect dataindirectbuffer;                  // buffer and its indirect buffers [0] = objects, [1] = labels. [1].tags holds the object tag, [1].Tags holds the count of objects
         public GLRenderableItem ObjectRenderer { get; private set; }
@@ -46,6 +43,14 @@ namespace GLOFC.GL4
         private GLTexture2DArray[] textures;                                // holds the text labels
         private int objectvertexescount;                                    // vert count for object
         private int textureinuse = 0;                                       // textures in use, up to max textures.
+
+        public class BlockRef                                               // used by adders to pass back a list of block refs
+        {
+            public GLObjectsWithLabels owl;
+            public int blockindex;
+            public int count;
+            public object tag;
+        };
 
         GLItemsList items = new GLItemsList();      // our own item list to hold disposes
 
@@ -117,14 +122,14 @@ namespace GLOFC.GL4
         // tag gives a logical name to each group - must be unique
         // returns position where it stopped, or -1 if all added
 
-        public int Add(Object tag, Object userdata, Vector4[] array, string[] text, 
+        public int Add(Vector4[] array, string[] text, 
                                 Font fnt, Color fore, Color back, 
                                 Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,   // see GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix
-                                StringFormat fmt, float backscale, Vector3 textoffset)
+                                StringFormat fmt, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
         {
             var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
             var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, textoffset, size, rot, rotatetoviewer, rotateelevation,0,0,0,true);
-            int v = Add(tag, userdata, array, mats, bmps);
+            int v = Add(array, mats, bmps, blocklist);
             BitMapHelpers.Dispose(bmps);
             return v;
         }
@@ -134,8 +139,9 @@ namespace GLOFC.GL4
         // bitmaps are for each label.  Owned by caller
         // pos = indicates one to start from
         // -1 all added, else the pos where it failed on
+        // block list updated
 
-        public int Add(Object tag, Object userdata, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0)
+        public int Add(Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0)
         {
             do
             {
@@ -172,17 +178,13 @@ namespace GLOFC.GL4
                     return pos;
                 }
 
-                TagsToBlock[tag] = dataindirectbuffer.Indirects[0].Positions.Count - 1;
-                Counts.Add(array.Length);
-                UserTags.Add(userdata);
+                blocklist.Add(new BlockRef() { owl = this, blockindex = dataindirectbuffer.Indirects[0].Positions.Count - 1, count = touse });
 
                 ObjectRenderer.DrawCount = dataindirectbuffer.Indirects[0].Positions.Count;       // update draw count
                 ObjectRenderer.IndirectBuffer = dataindirectbuffer.Indirects[0];                  // and buffer
 
                 TextRenderer.DrawCount = dataindirectbuffer.Indirects[1].Positions.Count;
                 TextRenderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
-
-                Objects += array.Length;                                                        // this more objects
 
                 if (textures[textureinuse].DepthLeftIndex == 0)                                 // out of bitmap space, next please!
                     textureinuse++;
@@ -194,7 +196,7 @@ namespace GLOFC.GL4
             return -1;
         }
 
-        // Find in objects.  Return render group and index into render group or null
+        // Find in objects.  Return block list render group and index into it, or null
 
         public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
         {
@@ -211,39 +213,16 @@ namespace GLOFC.GL4
                 return null;
         }
 
-        public bool Remove(object tag)
+        public bool Remove(int i)
         {
-            if (TagsToBlock.TryGetValue(tag, out int i))
+            if (dataindirectbuffer.Indirects.Count>0 && i < dataindirectbuffer.Indirects[0].Positions.Count )
             {
                 dataindirectbuffer.Remove(i, 0);        // clear draw of both text and object
                 dataindirectbuffer.Remove(i, 1);
-                Objects -= Counts[i];
-                TagsToBlock.Remove(tag);                // remove tag
                 BlocksRemoved++;                        // increment blocks removed
                 return true;
             }
             return false;
-        }
-
-        public int RemoveOldest(int wanted)             // return number of objects removed, may remove in excess of wanted
-        {
-            int removed = 0;
-            List<object> toremove = new List<object>();
-            foreach (var kvp in TagsToBlock)                // Tags to block are stored in add order.
-            {
-                if (removed >= wanted)
-                    break;
-                dataindirectbuffer.Remove(kvp.Value, 0);        // clear draw of both text and object
-                dataindirectbuffer.Remove(kvp.Value, 1);
-                removed += Counts[kvp.Value];
-                Objects -= Counts[kvp.Value];
-                BlocksRemoved++;                        // increment blocks removed
-                toremove.Add(kvp.Key);
-                removed++;
-            }
-            foreach (var k in toremove)
-                TagsToBlock.Remove(k);
-            return removed;
         }
 
         public void Dispose()

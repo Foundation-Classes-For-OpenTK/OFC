@@ -143,10 +143,18 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
-        // from the any type of ImageTarget into this
-        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dlevel, int dx, int dy, int width, int height)
+        // from any type of ImageTarget into this
+        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dmiplevel, int dx, int dy, int width, int height)
         {
-            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Texture2D, dlevel, dx, dy, 0, width, height, 1);
+            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Texture2D, dmiplevel, dx, dy, 0, width, height, 1);
+            GLStatics.Check();
+        }
+
+        // from RenderBuffer
+        public void CopyFrom(GLRenderBuffer rb, int sx, int sy, int dmiplevel, int dx, int dy, int width, int height)
+        {
+            GL.CopyImageSubData(rb.Id, ImageTarget.Renderbuffer, 0, sx, sy, 0, 
+                                    Id, ImageTarget.Texture2D, dmiplevel, dx, dy, 0, width, height, 1);
             GLStatics.Check();
         }
     }

@@ -17,7 +17,8 @@ namespace TestOpenTk
         public Color ForeText { get; set; } = Color.White;
         public Color BackText { get; set; } = Color.Red;
 
-        const int MaxObjectsAllowed = 1000;
+        const int MaxObjectsAllowed = 100000;
+        const int MaxObjectsMargin = 10000;
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
         {
@@ -83,9 +84,7 @@ namespace TestOpenTk
             CurrentPos = pos;
             //System.Diagnostics.Debug.WriteLine($"Request 9 box ${pos}");
 
-          //  Stopwatch sw = new Stopwatch(); sw.Start();
-
-            for (int i = 0; i <= 3; i++)
+            for (int i = 0; i <= 2; i++)
             {
                 int y = i == 0 ? 0 : i == 1 ? SectorSize : -SectorSize;
                 Request(new Vector3(pos.X , pos.Y + y, pos.Z));
@@ -98,7 +97,7 @@ namespace TestOpenTk
                 Request(new Vector3(pos.X - SectorSize, pos.Y + y, pos.Z + SectorSize));
                 Request(new Vector3(pos.X - SectorSize, pos.Y + y, pos.Z - SectorSize));
             }
-         //   System.Diagnostics.Debug.WriteLine($"Time search for sectors {sw.ElapsedMilliseconds}");
+            //System.Diagnostics.Debug.WriteLine($"End 9 box");
         }
 
         // send the request to the requestor using a blocking queue
@@ -108,8 +107,17 @@ namespace TestOpenTk
             pos.X = (int)(pos.X + mm) / SectorSize * SectorSize - mm;
             pos.Y = (int)(pos.Y + mm) / SectorSize * SectorSize - mm;
             pos.Z = (int)(pos.Z + mm) / SectorSize * SectorSize - mm;
-            // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {pos} request");
-            requestedsectors.Add(new Sector(pos));
+
+            if (!slset.TagsToBlocks.ContainsKey(pos))
+            {
+                slset.ReserveTag(pos);      // important, stops repeated adds in the situation where it takes a while to add to set
+                requestedsectors.Add(new Sector(pos));
+                //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {pos} request");
+            }
+            else
+            {
+                //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {pos} request rejected");
+            }
         }
 
         // do this in a thread, as adding threads is computationally expensive so we don't want to do it in the foreground
@@ -122,44 +130,14 @@ namespace TestOpenTk
                     //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} Requestor take");
                     var sector = requestedsectors.Take(stop.Token);       // blocks until take or told to stop
 
-                    lock (displayedsectorsposhash)      // lock since foreground can remove from it
+                    do
                     {
-                        do
-                        {
-                            if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
-                            {
-                                System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts, To {TotalObjects}");
-                                displayedsectorsposhash.Add(sector.pos);
-                                Thread p = new Thread(FillSectorThread);
-                                p.Start(sector);
-                            }
+                       // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts");
+                        Thread p = new Thread(FillSectorThread);
+                        p.Start(sector);
+                    } while (requestedsectors.TryTake(out sector));     // until empty..
 
-                        } while (requestedsectors.TryTake(out sector));     // until empty..
-                    }
-
-                    //    if (TotalObjects > MaxObjectsAllowed)
-                    //    {
-                    //        List<Vector3> indistorder = displayedsectorsposhash.ToList();
-                    //        indistorder.Sort(delegate (Vector3 l, Vector3 r) { return (r - CurrentPos).Length.CompareTo((l - CurrentPos).Length); });
-                    //        removesectors.Enqueue(indistorder[0]);      // add to list to remove
-                    //        System.Diagnostics.Debug.WriteLine($".. requestor asks to delete {indistorder[0]}");
-                    //        //if ( indistorder.Count>=2)
-                    //        //    removesectors.Enqueue(indistorder[1]);     // remove 2 for each extra fill..
-                    //    }
-
-
-                    //    if (!displayedsectorsposhash.Contains(sector.pos))      // don't repeat blocks
-                    //    {
-
-
-                    //    }
-                    //    else
-                    //    {
-                    //        // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} request denied");
-                    //    }
-                    //}
-
-                    while( cleanbitmaps.TryDequeue(out sector))         // bitmap cleaning is not high priority, so just do it when we get another request. No need to unblock on it
+                    while ( cleanbitmaps.TryDequeue(out sector))         // bitmap cleaning is not high priority, so just do it when we get another request. No need to unblock on it
                     {
                         //System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sector.pos}");
                         BitMapHelpers.Dispose(sector.bitmaps);
@@ -210,30 +188,19 @@ namespace TestOpenTk
         {
             if (time - timelastadded > 50)
             {
-                //while (removesectors.TryDequeue(out Vector3 r))
-                //{
-                //    if (slset.Remove(r))
-                //    {
-                //        System.Diagnostics.Debug.WriteLine($"Remove sector {r}");
-                //    }
-
-                //    lock (displayedsectorsposhash)      // lock so thread does not do it at the same time
-                //        displayedsectorsposhash.Remove(r);
-                //}
-
-                // HashSet is PINA - keeping it synced with the slset if horrible. Can we do a quick tag lookup on slset?
-
-                if (generatedsectors.TryDequeue(out Sector d))      // limit fill rate..
+                int max = 3;
+                while (generatedsectors.TryDequeue(out Sector d) && max-- > 0)      // limit fill rate..
                 {
                     slset.Add(d.pos, d.text, d.stars, d.textpos, d.bitmaps);
-                    TotalObjects = slset.Objects();     // how many displaying
                     cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
                     timelastadded = time;
-                    System.Diagnostics.Debug.WriteLine($"Add sector {d.pos} total {TotalObjects}");
                 }
 
-                if (TotalObjects > MaxObjectsAllowed)
-                    slset.RemoveOldest(TotalObjects - MaxObjectsAllowed);
+                if ( slset.Objects > MaxObjectsAllowed )
+                {
+                    slset.RemoveUntil(MaxObjectsAllowed-MaxObjectsMargin);
+                }
+                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects}");
             }
 
             const int rotperiodms = 10000;
@@ -268,19 +235,11 @@ namespace TestOpenTk
         // requested sectors from foreground to requestor
         private BlockingCollection<Sector> requestedsectors = new BlockingCollection<Sector>();
 
-        // owned by requestor, only it can add/remove from this list. 
-        HashSet<Vector3> displayedsectorsposhash = new HashSet<Vector3>();  // quick lookup
-
         // added to by subthread when sector is ready, picked up by foreground update. ones ready for final foreground processing
         private ConcurrentQueue<Sector> generatedsectors = new ConcurrentQueue<Sector>();
 
-        // added to by subthread when things need removing
-  //      private ConcurrentQueue<Vector3> removesectors = new ConcurrentQueue<Vector3>();
-
         // added to by update when cleaned up bitmaps, requestor will clear these for it
         private ConcurrentQueue<Sector> cleanbitmaps = new ConcurrentQueue<Sector>();
-
-        private int TotalObjects = 0;               // update sets this after each add, used by requestor to determine if need to delete
 
         private const int SectorSize = 100;
 
@@ -290,28 +249,4 @@ namespace TestOpenTk
     }
 
 }
-
-//findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
-//            items.Add(findshader);
-
-//        public bool FindSystem(Point viewportloc, GLRenderControl state, Size viewportsize)
-//{
-//    lock (displayedsectors)     // can't have anyone altering displayed sectors
-//    {
-//        var geo = findshader.Get<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-//        geo.SetScreenCoords(viewportloc, viewportsize);
-
-//        foreach (var sec in displayedsectors)
-//        {
-//            sec.rifind.Execute(findshader, state, discard: true); // execute, discard
-//            var res = geo.GetResult();
-//            if (res != null)
-//            {
-//                //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-//                return true; //tbd currentfilteredlist[(int)res[0].Y];
-//            }
-//        }
-//    }
-
-//    return false;
 //}

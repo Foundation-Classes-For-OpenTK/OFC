@@ -28,12 +28,12 @@ namespace GLOFC.GL4
     {
         public Size LabelSize { get { return texturesize; } }
 
-        public int Blocks { get { int t = 0; foreach (var s in set) t += s.Blocks; return t; } }        // how many blocks allocated
-        public int BlocksRemoved { get { int t = 0; foreach (var s in set) t += s.BlocksRemoved; return t; } }  // how many have been removed
-        public int Objects() { int t = 0; foreach (var s in set) t += s.Objects; return t; }           // total number of objects being drawn
-
+        public int Objects { get; private set; } = 0;
         public int Count { get { return set.Count; } }
-        public GLObjectsWithLabels this[int i] { get { return set[i]; } }
+
+        public List<List<GLObjectsWithLabels.BlockRef>> BlockList { get; private set; } = new List<List<GLObjectsWithLabels.BlockRef>>();     // in add order
+        public Dictionary<object, List<GLObjectsWithLabels.BlockRef>> TagsToBlocks { get; private set; } = new Dictionary<object, List<GLObjectsWithLabels.BlockRef>>(); // tags to block list
+        public Dictionary<object, object> UserData { get; set; }  = new Dictionary<object, object>();     // tag to user data, optional
 
         public GLSetOfObjectsWithLabels(string name,        // need a name for the renders
                                         GLRenderProgramSortedList robjects,     // need to give it a render list to add/remove renders to
@@ -60,80 +60,159 @@ namespace GLOFC.GL4
             this.limittexturedepth = debuglimittexturedepth;
         }
 
+        // call to reserve a tag, which you later add.  
+        public void ReserveTag(object tag)          
+        {
+            TagsToBlocks[tag] = null;
+        }
+
+        // tag should be unique, if not, it won't complain
         // array holds worldpositions for objects
         // matrix holds pos, orientation, etc for text
         // bitmaps are for each label.  Owned by caller
         // -1 if all added, else can't add from that pos on
 
-        public void Add(Object tag, Object userdata, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        public void Add(Object tag, Object usertag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
         {
+            UserData[tag] = usertag;
+            Add(tag, array, matrix, bitmaps);
+        }
+
+        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        {
+            System.Diagnostics.Debug.Assert(tag != null);
+
+            List<GLObjectsWithLabels.BlockRef> blocklist = new List<GLObjectsWithLabels.BlockRef>();
+
             if (set.Count == 0)
             {
                 System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
                 AddSet();
             }
 
-            int v = set.Last().Add(tag, userdata, array, matrix, bitmaps);
+            int v = set.Last().Add(array, matrix, bitmaps, blocklist);
 
-            while ( v >= 0)    // if can't add
+            while (v >= 0)    // if can't add
             {
                 System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
                 AddSet();
-                v = set.Last().Add(tag, userdata, array, matrix, bitmaps, v);      // add the rest from v
+                v = set.Last().Add(array, matrix, bitmaps, blocklist, v);      // add the rest from v
             }
+
+            blocklist[0].tag = tag;                 // first entry only gets tag
+            BlockList.Add(blocklist);               // in order, add block list
+            TagsToBlocks[tag] = blocklist;
+            Objects += array.Length;
         }
 
         public bool Remove(object tag)
         {
-            bool res = false;
-            GLObjectsWithLabels removeit = null;
+            List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
 
-            foreach (var s in set)
+            if (TagsToBlocks.TryGetValue(tag, out List<GLObjectsWithLabels.BlockRef> blocklist) )
             {
-                if (s.Remove(tag))        // if removed something
+                if (blocklist != null)      // tag may be reserved, not set, so just remove tag.  if set, remove blocklist
                 {
-                    System.Diagnostics.Debug.WriteLine($"remove in set {set.IndexOf(s)}");
-                    if (s.Blocks == s.BlocksRemoved)  // if all marked removed
+                    foreach (var b in blocklist)
                     {
-                        removeit = s;
+                        b.owl.Remove(b.blockindex);     // in owl, remove block
+                        if (b.owl.Emptied)              // if block has gone emptied, add to remove list
+                            toremove.Add(b.owl);
+                        Objects -= b.count;
                     }
-                    res = true;
-                    break;
+
+                    foreach (var removeit in toremove)
+                    {
+                        robjects.Remove(removeit.ObjectRenderer);      // remove renders
+                        robjects.Remove(removeit.TextRenderer);
+                        removeit.Dispose();        // then dispose
+                        set.Remove(removeit);
+                    }
+                    BlockList.Remove(blocklist);
                 }
-            }
 
-            if ( removeit != null )
-            { 
-                System.Diagnostics.Debug.WriteLine($"Remove set {set.IndexOf(removeit)} with {removeit.Blocks}");
-                robjects.Remove(removeit.ObjectRenderer);      // remove renders
-                robjects.Remove(removeit.TextRenderer);
-                removeit.Dispose();        // then dispose
-                set.Remove(removeit);
-            }
+                TagsToBlocks.Remove(tag);
 
-            return res;
-           // System.Diagnostics.Debug.WriteLine($"Total sets remaining {set.Count}");
+                return true;
+            }
+            else
+                return false;
         }
 
-        public void RemoveOldest(int wanted )
+        public void RemoveOldest(int n)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
-            foreach( var s in set)
+
+            n = Math.Min(BlockList.Count, n);       // limit
+
+            for (int i = 0; i < n; i++)             // for all block list entries
             {
-                int done = s.RemoveOldest(wanted);
-                wanted -= done;
-                if (s.Blocks == s.BlocksRemoved)  // if all marked removed
-                    toremove.Add(s);
-                if (wanted <= 0)
-                    break;
+                var blocklist = BlockList[i];
+
+                foreach (var b in blocklist)
+                {
+                    b.owl.Remove(b.blockindex);     // in owl, remove block
+                    if (b.owl.Emptied)              // if block has gone emptied, add to remove list
+                        toremove.Add(b.owl);
+                    Objects -= b.count;
+                }
+
+                System.Diagnostics.Debug.Assert(TagsToBlocks.ContainsKey(blocklist[0].tag));
+
+                UserData.Remove(blocklist[0].tag);      // remove the user data associated with the tag
+                TagsToBlocks.Remove(blocklist[0].tag);  // remove the tag associated with the blocklist
             }
 
-            foreach( var removeit in toremove )
+            System.Diagnostics.Debug.WriteLine($"Blocklist {BlockList.Count} remove {n} objects {Objects}");
+            BlockList.RemoveRange(0, n);            // and empty block list
+
+            foreach (var removeit in toremove)
             {
                 robjects.Remove(removeit.ObjectRenderer);      // remove renders
                 robjects.Remove(removeit.TextRenderer);
                 removeit.Dispose();        // then dispose
                 set.Remove(removeit);
+            }
+        }
+
+        // remove until Objects <= count
+
+        public void RemoveUntil(int count)
+        {
+            List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
+
+            int n = 0;      // number removed
+            while( n < BlockList.Count && Objects > count )
+            {
+                var blocklist = BlockList[n];
+
+                foreach (var b in blocklist)
+                {
+                    b.owl.Remove(b.blockindex);     // in owl, remove block
+                    if (b.owl.Emptied)              // if block has gone emptied, add to remove list
+                        toremove.Add(b.owl);
+                    Objects -= b.count;
+                }
+
+                System.Diagnostics.Debug.Assert(TagsToBlocks.ContainsKey(blocklist[0].tag));
+
+                UserData.Remove(blocklist[0].tag);      // remove the user data associated with the tag
+                TagsToBlocks.Remove(blocklist[0].tag);  // remove the tag associated with the blocklist
+                n++;
+            }
+
+            if (n > 0)      // if removed something
+            {
+                System.Diagnostics.Debug.WriteLine($"Blocklist {BlockList.Count} remove {n} objects {Objects}");
+                BlockList.RemoveRange(0, n);            // and empty block list
+
+                foreach (var removeit in toremove)
+                {
+                    robjects.Remove(removeit.ObjectRenderer);      // remove renders
+                    robjects.Remove(removeit.TextRenderer);
+                    removeit.Dispose();        // then dispose
+                    set.Remove(removeit);
+                }
             }
         }
 
@@ -159,7 +238,7 @@ namespace GLOFC.GL4
 
             foreach (var s in set)      
             {
-                geo.SetGroup(setno << 18);      // set the group marker for 
+                geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform
                 s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
@@ -168,11 +247,37 @@ namespace GLOFC.GL4
             var res = geo.GetResult();
             if (res != null)
             {
-                //System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                return new Tuple<int,int, int>(((int)res[0].W)>>18,((int)res[0].W) & 0x3ffff, (int)res[0].Y);
+                System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                return new Tuple<int,int, int>(((int)res[0].W) >> 18, ((int)res[0].W) & 0x3ffff, (int)res[0].Y);
             }
             else
                 return null;
+        }
+
+        // Return Blockref list and count within that list, first entry has tag in it for lookup.  Or null.
+
+        public Tuple<List<GLObjectsWithLabels.BlockRef>,int> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
+        {
+            var ret = Find(findshader, state, pos, size);
+            if (ret != null)
+            {
+                GLObjectsWithLabels s = set[ret.Item1];
+                var fb = BlockList.Find(x => x.Find(y => y.owl == s && y.blockindex == ret.Item2) != null);     // find (set,blockindex) in block list
+                if ( fb != null )
+                {
+                    int c = 0;
+                    foreach( var br in fb)      // until we get to owl/blockindex, count previous block counts
+                    {
+                        if (br.owl == s && br.blockindex == ret.Item2)
+                            break;
+                        c += br.count;      
+                    }
+
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int>(fb, c + ret.Item3);       // return block list, and real index into it
+                }
+            }
+
+            return null;
         }
 
         private void AddSet()       // add a new set

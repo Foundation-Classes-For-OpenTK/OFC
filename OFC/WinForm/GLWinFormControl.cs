@@ -230,7 +230,7 @@ namespace GLOFC.WinForm
         {
             if (EnsureCurrentKeyboardMouse)
                 glControl.MakeCurrent();
-            //System.Diagnostics.Debug.WriteLine("GLWIN KD " + e.KeyCode);
+          //  System.Diagnostics.Debug.WriteLine("GLWIN KD " + e.KeyCode);
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
             KeyDown?.Invoke(this, ka);
         }
@@ -291,10 +291,15 @@ namespace GLOFC.WinForm
 
         protected override bool IsInputKey(Keys keyData)    // disable normal windows control change
         {
+            //System.Diagnostics.Debug.WriteLine("Is input key" + keyData);
             if (keyData == Keys.Tab || keyData == Keys.Up || keyData == Keys.Down || keyData == Keys.Left || keyData == Keys.Right)
                 return true;
             else
-                return base.IsInputKey(keyData);
+            {
+                var iik = base.IsInputKey(keyData);
+                //System.Diagnostics.Debug.WriteLine("base Is input key" + keyData + " " + iik);
+                return iik;
+            }
         }
     }
 }
