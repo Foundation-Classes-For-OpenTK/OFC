@@ -24,12 +24,12 @@ namespace GLOFC.GL4
         {
         }
 
-        public GLTexture1D( int width, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int mipmaplevel = 1)
+        public GLTexture1D( int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
         {
             CreateOrUpdateTexture(width, internalformat, mipmaplevel);
         }
 
-        public void CreateOrUpdateTexture(int width, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int mipmaplevel = 1)
+        public void CreateOrUpdateTexture(int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
         {
             if (Id == -1 || Width != width || MipMapLevels != mipmaplevel)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
@@ -40,6 +40,7 @@ namespace GLOFC.GL4
                 MipMapLevels = mipmaplevel;
 
                 GL.CreateTextures(TextureTarget.Texture1D, 1, out int id);
+                GLStatics.Check();
                 Id = id;
 
                 GL.TextureStorage1D(

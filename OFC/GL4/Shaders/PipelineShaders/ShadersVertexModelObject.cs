@@ -32,7 +32,7 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 
@@ -88,7 +88,7 @@ void main(void)
 
     public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 

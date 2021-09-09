@@ -114,11 +114,13 @@
     <Compile Include="GL4\Operations\Operations.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewaveInstanced.cs" />
     <Compile Include="GL4\Shaders\Find\ShaderFindGeoTriangles.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersFragmentTristrip.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersTesselationEvaluateSinewave.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersTesselationControl.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexScaleLookAt.cs" />
     <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexModelWorld.cs" />
-    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexQuads.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexQuadsMatrix.cs" />
+    <Compile Include="GL4\Shaders\PipelineShaders\ShadersVertexTriangleStrips.cs" />
     <Compile Include="GL4\Shaders\PointSprites\ShaderPointSprites.cs" />
     <Compile Include="GL4\Shaders\Stars\ShaderStarCorona.cs" />
     <Compile Include="GL4\Shaders\Stars\ShaderStarSurface.cs" />
@@ -203,6 +205,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
     <None Include="app.config" />
     <EmbeddedResource Include="GL4\Shaders\Functions\distribution.glsl" />
     <EmbeddedResource Include="GL4\Shaders\Functions\snoise3.glsl" />

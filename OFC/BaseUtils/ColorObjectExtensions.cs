@@ -134,6 +134,12 @@ namespace GLOFC
                 (byte)Math.Max(Math.Min(Math.Round((float)c.G * val), 255), 0),
                 (byte)Math.Max(Math.Min(Math.Round((float)c.B * val), 255), 0));
         }
+
+        public static int PackRGB(this Color c)
+        {
+            return c.R + (((int)c.G) << 8) + (((int)c.B) << 16);
+        }
     }
+
 }
 

@@ -79,10 +79,10 @@ namespace TestOpenTk
             items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
             items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
 
-            items.Add( new GLTexture2D(Properties.Resources.dotted)  , "dotted");
-            items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
-            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
+            items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  , "dotted");
+            items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
+            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
+            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8, SizedInternalFormat.Rgba8), "smile");
 
             #region coloured lines
 
@@ -215,7 +215,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 

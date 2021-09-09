@@ -129,7 +129,7 @@ namespace TestOpenTk
 
 
             {
-                items.Add(new GLTexture2D(Properties.Resources.dotted),"solmarker");
+                items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8),"solmarker");
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 solmarker = new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, 0, 0));
@@ -176,7 +176,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             //if (cdmt.AnythingChanged)
             //    gl3dcontroller.Redraw();
         }

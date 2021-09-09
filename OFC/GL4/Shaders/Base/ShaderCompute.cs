@@ -30,6 +30,7 @@ namespace GLOFC.GL4
         public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
 
         public IGLShader GetShader(ShaderType t) { return this; }
+
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader> FinishAction { get; set; }
 

@@ -146,7 +146,7 @@ namespace TestOpenTk
                 int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
                 dataindirectbuffer = new GLVertexBufferIndirect(items,maxstars * (GLBuffer.Vec4size + GLBuffer.Mat4size), GLBuffer.WriteIndirectArrayStride * 100, true);
-                var textarray = new GLTexture2DArray(128, 32, maxstars);
+                var textarray = new GLTexture2DArray(128, 32, maxstars, SizedInternalFormat.Rgba8);
 
                 int SectorSize = 10;
 
@@ -264,7 +264,7 @@ namespace TestOpenTk
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
                 sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 50, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc,3);
+                var ris = sl.Create(texunitspergroup, 50, 50, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 3);
                 rObjects.Add(sunshader, "SLsunshade", ris.Item1);
                 rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
@@ -335,7 +335,7 @@ namespace TestOpenTk
                 slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup,
                                                             50, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, PrimitiveType.Triangles,
-                                                            textshader, new Size(128, 32), textrc,
+                                                            textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8,
                                                             3);
                 items.Add(slset);
 
@@ -423,7 +423,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
               gl3dcontroller.Redraw();
         }
 

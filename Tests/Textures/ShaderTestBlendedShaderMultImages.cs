@@ -59,7 +59,7 @@ namespace TestOpenTk
             };
 
             IGLTexture array2d = items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap, Properties.Resources.mipmap2,
-                                Properties.Resources.mipmap3, Properties.Resources.mipmap4 }, 9), "2DArray2");
+                                Properties.Resources.mipmap3, Properties.Resources.mipmap4 }, SizedInternalFormat.Rgba8, 9), "2DArray2");
 
             if (true)
             {
@@ -155,7 +155,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 

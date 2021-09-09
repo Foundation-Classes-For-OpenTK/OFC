@@ -200,7 +200,7 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultLineSeparColor = Color.Green;
 
-        public void Invalidate()
+        public virtual void Invalidate()
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
             NeedRedraw = true;

@@ -83,15 +83,15 @@ namespace TestOpenTk
             items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
             items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
 
-            items.Add( new GLTexture2D(Properties.Resources.dotted)  ,           "dotted"    );
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
-            items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wooden");
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wood");
-            items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
-            items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
-            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
+            items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  ,           "dotted"    );
+            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
+            items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
+            items.Add(new GLTexture2D(Properties.Resources.wooden, SizedInternalFormat.Rgba8), "wooden");
+            items.Add(new GLTexture2D(Properties.Resources.wooden, SizedInternalFormat.Rgba8), "wood");
+            items.Add(new GLTexture2D(Properties.Resources.shoppinglist, SizedInternalFormat.Rgba8), "shoppinglist");
+            items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
+            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8, SizedInternalFormat.Rgba8), "smile");
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
 
             var dot2 = items.Tex("dotted2");
             dot2.ClearSubImage(0, 50, 50, 0,   // x=0,y=0, texture 0 to clear     demo this
@@ -100,7 +100,9 @@ namespace TestOpenTk
 
 
             ulong ctrl = 0xffffffff;
-            //ctrl = 1;
+            ctrl = (1<<13) | (1<<12) | (1<<11);
+            ctrl |= 1;
+            ctrl |= 0xffffffff;
 
 
 
@@ -370,7 +372,7 @@ namespace TestOpenTk
             if( (ctrl & (1<<7)) != 0)
             {
                 items.Add( new GLTexturedShader2DBlendWithWorldCoord(), "TEX2DA");
-                items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap2, Properties.Resources.mipmap3 }, 9), "2DArray2");
+                items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap2, Properties.Resources.mipmap3 }, SizedInternalFormat.Rgba8, 9), "2DArray2");
 
                 GLRenderState rq = GLRenderState.Quads();
 
@@ -381,7 +383,7 @@ namespace TestOpenTk
                         ));
 
 
-                items.Add( new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted, Properties.Resources.dotted2 }), "2DArray2-1");
+                items.Add( new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted, Properties.Resources.dotted2 }, SizedInternalFormat.Rgba8), "2DArray2-1");
 
                 rObjects.Add(items.Shader("TEX2DA"), "2DA-1",
                     GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
@@ -455,7 +457,7 @@ namespace TestOpenTk
             #region MipMaps
             if( (ctrl & (1<<10)) != 0)
             {
-                items.Add( new GLTexture2D(Properties.Resources.mipmap2, 9), "mipmap1");
+                items.Add( new GLTexture2D(Properties.Resources.mipmap2, SizedInternalFormat.Rgba8, 9), "mipmap1");
 
                 rObjects.Add(items.Shader("TEXOT"), "mipmap1",
                     GLRenderableItem.CreateVector4Vector2(items,PrimitiveType.Triangles, GLRenderState.Tri(),
@@ -468,15 +470,17 @@ namespace TestOpenTk
 
             #region Tape
 
-            if( (ctrl & (1<<11)) != 0)
-            {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 10), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
+            var pls = new GLShaderPipeline(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), 
+                                    new GLPLFragmentShaderTextureTriStripColorReplace(1,Color.FromArgb(255,206,0,0)));
+            items.Add(pls, "tapeshader");
 
-                items.Add( new GLTexture2D(Properties.Resources.Logo8bpp), "tapelogo");
+            if ( (ctrl & (1<<11)) != 0)
+            {
+                var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 50), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
+
+                items.Add( new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "tapelogo");
 
                 items.Tex("tapelogo").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-                items.Add(new GLTexturedShaderTriangleStripWithWorldCoord(true), "tapeshader" );
 
                 GLRenderState rts = GLRenderState.Tri();
                 rts.CullFace = false;
@@ -486,29 +490,28 @@ namespace TestOpenTk
 
             if( (ctrl & (1<<12)) != 0)
             {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 10), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
+                var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 50), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
 
-                items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "tapelogo2");
+                items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "tapelogo2");
 
                 items.Tex("tapelogo2").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-                items.Add(new GLTexturedShaderTriangleStripWithWorldCoord(true), "tapeshader2");
 
                 GLRenderState rts = GLRenderState.Tri();
                 rts.CullFace = false;
 
-                rObjects.Add(items.Shader("tapeshader2"), "tape2", GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, new GLRenderDataTexture(items.Tex("tapelogo2"))));
+                rObjects.Add(items.Shader("tapeshader"), "tape2", GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, new GLRenderDataTexture(items.Tex("tapelogo2"))));
             }
 
             if( (ctrl & (1<<13)) != 0)
             {
-                Vector4[] points = new Vector4[] { new Vector4(100, 5, 40, 0), new Vector4(0, 5, 100, 0), new Vector4(-50, 5, 80, 0), new Vector4(-60, 5, 20, 0) };
+                // tape goes right to left, demoing a 4 point, 6 point, more tape
 
-                var tape = GLTapeObjectFactory.CreateTape(points.ToArray(), 1, 20f, 90F.Radians(), margin:1.5f);
+                Vector4[] points = new Vector4[] { new Vector4(5, 5, 40, 0), new Vector4(0, 5, 40, 0), new Vector4(-25,5,40,0), new Vector4(-35,5,40,0), new Vector4(-100,5,40,0)};
+                Color[] colours = new Color[] { Color.Red, Color.Green, Color.Blue, Color.White };
+                var tape = GLTapeObjectFactory.CreateTape(points.ToArray(), colours, 1, 10f, 90F.Radians(), margin:1f, modulo:4);
 
-                items.Add( new GLTexture2D(Properties.Resources.chevron), "tapelogo3");
+                items.Add( new GLTexture2D(Properties.Resources.chevron, SizedInternalFormat.Rgba8), "tapelogo3");
                 items.Tex("tapelogo3").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-                items.Add( new GLTexturedShaderTriangleStripWithWorldCoord(true), "tapeshader3");
 
                 GLRenderState rts = GLRenderState.Tri(tape.Item3);     // sets primitive restart value to Item3 draw type
                 rts.CullFace = false;
@@ -516,14 +519,15 @@ namespace TestOpenTk
                 GLRenderableItem ri = GLRenderableItem.CreateVector4(items,PrimitiveType.TriangleStrip, rts, tape.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo3")));
                 ri.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3);
 
-                rObjects.Add(items.Shader("tapeshader3"), "tape3", ri);
+                rObjects.Add(items.Shader("tapeshader"), "tape3", ri);
             }
+
 
             #endregion
 
             #region Screen coords
             // fixed point on screen
-            if( (ctrl & (1<<14)) != 0)
+            if( (ctrl & (1<<14)) != 0 )
             {
                 Vector4[] p = new Vector4[4];
 
@@ -661,9 +665,9 @@ namespace TestOpenTk
             if ((ctrl & (1 << 18)) != 0)
             {
                 IGLTexture[] btextures = new IGLTexture[3];
-                btextures[0] = items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "bl1");
-                btextures[1] = items.Add(new GLTexture2D(Properties.Resources.dotted2), "bl2");
-                btextures[2] = items.Add(new GLTexture2D(Properties.Resources.golden), "bl3");
+                btextures[0] = items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "bl1");
+                btextures[1] = items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "bl2");
+                btextures[2] = items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "bl3");
 
                 GLBindlessTextureHandleBlock bl = new GLBindlessTextureHandleBlock(11,btextures);
 
@@ -802,7 +806,7 @@ namespace TestOpenTk
             #region Instancing with matrix and lookat
             if( (ctrl & (1<<23)) != 0)
             {
-                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted2, Properties.Resources.planetaryNebula, Properties.Resources.wooden });
+                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted2, Properties.Resources.planetaryNebula, Properties.Resources.wooden }, SizedInternalFormat.Rgba8);
                 items.Add(texarray);
 
                 var shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0));
@@ -837,7 +841,7 @@ namespace TestOpenTk
 
             if( (ctrl & (1<<24)) != 0)   // instanced sinewive with rotate
             {
-                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.Logo8bpp, Properties.Resources.Logo8bpp });
+                var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.Logo8bpp, Properties.Resources.Logo8bpp }, SizedInternalFormat.Rgba8) ;
                 items.Add(texarray, "Sinewavetex");
                 GLRenderState rp = GLRenderState.Patches(4);
 
@@ -974,11 +978,10 @@ namespace TestOpenTk
                 ((GLPLFragmentShaderTexture2DBlend)items.Shader("TEX2DA").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader)).Blend = zeroone;
 
             if (items.Contains("tapeshader"))
-                ((GLTexturedShaderTriangleStripWithWorldCoord)items.Shader("tapeshader")).TexOffset = new Vector2(degrees / 360f, 0.0f);
-            if (items.Contains("tapeshader2"))
-                ((GLTexturedShaderTriangleStripWithWorldCoord)items.Shader("tapeshader2")).TexOffset = new Vector2(-degrees / 360f, 0.0f);
-            if (items.Contains("tapeshader3"))
-                ((GLTexturedShaderTriangleStripWithWorldCoord)items.Shader("tapeshader3")).TexOffset = new Vector2(-degrees / 360f, 0.0f);
+            {
+                var s = (GLPLFragmentShaderTextureTriStripColorReplace)(items.Shader("tapeshader").GetShader(ShaderType.FragmentShader));
+                s.TexOffset = new Vector2(-degrees / 360f, 0.0f);
+            }
 
             if (items.Contains("TESx1"))
                 ((GLTesselationShaderSinewave)items.Shader("TESx1")).Phase = degrees / 360.0f;
@@ -1017,7 +1020,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 
@@ -1051,13 +1054,17 @@ namespace TestOpenTk
 
         }
 
+        static float Fract(float x)
+        {
+            return x - (float)Math.Floor(x);
+        }
     }
 
     public class GLDirect : GLShaderPipeline
     {
         public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
+            AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
         }
     }
 
@@ -1073,7 +1080,7 @@ namespace TestOpenTk
     {
         public GLBindlessTextureShaderWithWorldCoord(int arbbindingpoint, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureTriangleStrip(arbbindingpoint));
+            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbindingpoint));
         }
     }
 

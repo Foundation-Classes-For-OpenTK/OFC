@@ -78,7 +78,7 @@ namespace TestOpenTk
                 Bitmap bmp = new Bitmap(Properties.Resources.dotted2);      // demo argb copy
                 byte[] argbbytes = bmp.GetARGBBytes();
                 Bitmap copy = BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
-                var tex = new GLTexture2D(copy);
+                var tex = new GLTexture2D(copy, SizedInternalFormat.Rgba8);
                 items.Add(tex, "dotted2");
                 Bitmap bmp2 = tex.GetBitmap(inverty: false);
                 bmp2.Save(@"c:\code\dotted2.bmp");
@@ -159,7 +159,7 @@ namespace TestOpenTk
                 GLFrameBuffer fb = new GLFrameBuffer();
 
                 // attach a texture to draw to
-                ctex.CreateOrUpdateTexture(width, height, 1, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                ctex.CreateOrUpdateTexture(width, height, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, 1);
                 ctex.SetMinMagLinear();
                 fb.AttachColor(ctex, 0, 0);
 
@@ -322,7 +322,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 
@@ -374,7 +374,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
+                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

@@ -45,6 +45,47 @@ namespace TestOpenTk
 #include Shaders.Functions.trig.glsl
 #include Shaders.Functions.mat4.glsl
 
+vec4 Encode( in float value )
+{
+    value *= (256.0*256.0*256.0 - 1.0) / (256.0*256.0*256.0);
+    vec4 encode = fract( value * vec4(1.0, 256.0, 256.0*256.0, 256.0*256.0*256.0) );
+    return vec4( encode.xyz - encode.yzw / 256.0, encode.w ) + 1.0/512.0;
+}
+
+float Decode( in vec4 pack )
+{
+    float value = dot( pack, 1.0 / vec4(1.0, 256.0, 256.0*256.0, 256.0*256.0*256.0) );
+    return value * (256.0*256.0*256.0) / (256.0*256.0*256.0 - 1.0);
+}
+
+const vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
+const vec4 bitDec = 1./bitEnc;
+vec4 EncodeFloatRGBA (float v) {
+    vec4 enc = bitEnc * v;
+    enc = fract(enc);
+    enc -= enc.yzww * vec2(1./255., 0.).xxxy;
+    return enc;
+}
+float DecodeFloatRGBA (vec4 v) {
+    return dot(v, bitDec);
+}
+
+
+float DecodeFloatRGBA2( vec4 rgba ) 
+{
+  return dot( rgba, vec4(1.0, 1/255.0, 1/65025.0, 1/16581375.0) );
+}
+
+vec4 EncodeFloatRGBA2( float v ) 
+{
+  vec4 enc = vec4(1.0, 255.0, 65025.0, 16581375.0) * v;
+  enc = fract(enc);
+  enc -= enc.yzww * vec4(1.0/255.0,1.0/255.0,1.0/255.0,0.0);
+  return enc;
+}
+
+
+
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 const int bindingoutdata = 30;
@@ -69,6 +110,7 @@ layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock 
     mat4 transrotscale;
     mat4 transrotscale2;
 
+    vec4 packdecode;
 };
 
 void main(void)
@@ -80,7 +122,7 @@ void main(void)
     matrixout = mat4(   1,2,3,4,            // row 1
                         5,6,7,8,
                         9,10,11,12, 
-                        13,14,15,16);        // demo memory order
+                        13,14,15,16);        // demo memory order. See GLMatrix4Statics. Its layed out in row order.
     matrixout[2][3] = 20000;        // row 2, col 3 is 20000, demo its [row][col]
 
     identity = mat4identity();
@@ -106,6 +148,14 @@ void main(void)
     transrotscale = trans * rotscale;
 
     transrotscale2 = mat4ScalethenRotateXthenYthenTranslation(radians(-90),radians(90),vec3(1,2,3),vec3(10,20,30));        //    transrotscale = trans * roty * rotx * mscale;
+
+    vec4 colour = vec4(0.2,0.3,0.4,0.1);
+    colour = vec4(2,3,4,5);
+    //float cv = Decode(colour);
+    //packdecode = Encode(cv);
+
+    float vc = DecodeFloatRGBA2(colour);
+    packdecode = EncodeFloatRGBA2(vc);
 
 }
 ";
@@ -153,7 +203,7 @@ void main(void)
                                );
 
 
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
             items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0
@@ -183,7 +233,7 @@ void main(void)
                 System.Diagnostics.Debug.WriteLine($"Vec2a = inc {vec2[0].X.Degrees()} az {vec2[0].Y.Degrees()}");
             }
 
-            Matrix4[] mat4r = vecoutbuffer.ReadMatrix4s(32,32); // read all matrixes
+            Matrix4[] mat4r = vecoutbuffer.ReadMatrix4s(32, 32); // read all matrixes
 
             System.Diagnostics.Debug.WriteLine("Test mat constructor =" + Environment.NewLine + mat4r[0].ToString());
             System.Diagnostics.Debug.WriteLine("Row0 is " + mat4r[0].Row0.ToString());
@@ -278,6 +328,16 @@ void main(void)
                 id++;
             }
 
+
+            Vector4[] vec4r = vecoutbuffer.ReadVector4s(32+13*64, 2); // read all vec4 (N matrices between)
+
+            {
+                System.Diagnostics.Debug.WriteLine($"Vec4 {vec4r[0]}");
+            }
+
+
+
+
             {
                 StringMatrix rox = new StringMatrix("1", "0", "0", "0",
                                                     "0", "cx", "sx", "0",
@@ -334,7 +394,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true);
         }
 
     }

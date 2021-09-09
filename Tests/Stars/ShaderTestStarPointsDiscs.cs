@@ -158,12 +158,12 @@ void main(void)
 
                 using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
-                    items.Add(new GLTexture2D(bmp), "200,100");
+                    items.Add(new GLTexture2D(bmp, SizedInternalFormat.Rgba8), "200,100");
                 }
 
                 using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("-200,-100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
-                    items.Add(new GLTexture2D(bmp), "-200,-100");
+                    items.Add(new GLTexture2D(bmp, SizedInternalFormat.Rgba8), "-200,-100");
                 }
 
                 GLRenderState rq = GLRenderState.Quads();
@@ -213,7 +213,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 

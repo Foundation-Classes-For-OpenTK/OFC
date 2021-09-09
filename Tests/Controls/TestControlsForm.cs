@@ -427,7 +427,7 @@ namespace TestOpenTk
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, Otherkeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, Otherkeys);
         }
 
         private void Otherkeys(KeyboardMonitor h)

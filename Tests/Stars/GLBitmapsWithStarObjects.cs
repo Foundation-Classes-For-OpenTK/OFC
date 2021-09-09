@@ -32,9 +32,10 @@ namespace TestOpenTk
 
         public GLBitmapsWithStarObjects(string name, GLRenderProgramSortedList rlist, Size bitmapsize, 
                                         Vector3 staroffset, float starsize,
-                                        int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue,
-                                        float sunspots = 0.4f ) :
-            base(name, rlist,bitmapsize,mipmaplevels,cullface,depthtest,maxpergroup)
+                                        int mipmaplevels = 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat = OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, 
+                                        bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue,
+                                        float sunspots = 0.4f) :
+            base(name, rlist,bitmapsize,mipmaplevels,textureformat, cullface,depthtest,maxpergroup)
         {
             renderlist = rlist;
 

@@ -89,7 +89,7 @@ namespace GLOFC
 
     // This is the base interface which feed thru events from the window driving to consumers
     // GLWinFormControl is based on it, and uses OpenTk.GLControl as the winforms control to receive all key/mouse events from
-    // GLControlDisplay uses a class based on it so that it can dispatch events in the same way
+    // GLControlDisplay is a class based on it so that it can dispatch events in the same way
 
     public interface GLWindowControl
     {
@@ -117,6 +117,6 @@ namespace GLOFC
         bool Focused { get; }
         void SetCursor(GLCursorType t);
         ulong ElapsedTimems { get; }      
-        
+       
     }
 }

@@ -73,14 +73,14 @@ namespace TestOpenTk
             items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
             items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
 
-            items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted");
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
+            items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted");
+            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
 
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wooden");
-            items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
-            items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
-            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
+            items.Add(new GLTexture2D(Properties.Resources.wooden, SizedInternalFormat.Rgba8), "wooden");
+            items.Add(new GLTexture2D(Properties.Resources.shoppinglist, SizedInternalFormat.Rgba8), "shoppinglist");
+            items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
+            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8, SizedInternalFormat.Rgba8), "smile");
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
 
 
             #region coloured lines
@@ -183,7 +183,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
         }
 
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
@@ -234,7 +234,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureTriangleStrip(false));
+                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

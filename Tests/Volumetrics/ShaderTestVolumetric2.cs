@@ -232,7 +232,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true);
         }
 
     }

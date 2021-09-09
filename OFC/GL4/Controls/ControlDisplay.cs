@@ -19,7 +19,7 @@ using System.Drawing;
 
 namespace GLOFC.GL4.Controls
 {
-    // This control display needs a GLWindowControl to get events from (in constructor)
+    // This control display needs a GLWindowControl to get events from
     // it in turn passes on those events as its a GLWindowControl, adjusted to the controls in the window
     // It render the control display
 
@@ -51,7 +51,8 @@ namespace GLOFC.GL4.Controls
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc,
                                     bool depthtest = true,          // do depth testing or not
                                     float startz = 0.001f,          // z for the deepest window (only will apply if depth testing
-                                    float deltaz = 0.001f           // delta betwwen them
+                                    float deltaz = 0.001f,           // delta betwwen them
+                                    int arbbufferid = 10
                                 ) : base("displaycontrol", new Rectangle(0, 0, mc.ScreenCoordMax.Width, mc.ScreenCoordMax.Height))
         {
             glwin = win;
@@ -75,7 +76,7 @@ namespace GLOFC.GL4.Controls
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLControlShader();
+            shader = new GLShaderPipeline(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid));
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();
             texturebinds = new GLBindlessTextureHandleBlock(arbbufferid);
@@ -100,6 +101,8 @@ namespace GLOFC.GL4.Controls
             glwin.SetCursor(t);
         }
 
+        // On control add, to display, we need to do more work to set textures up
+
         public override void Add(GLBaseControl other, bool atback = false)           
         {
             System.Diagnostics.Debug.Assert(other is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
@@ -108,17 +111,20 @@ namespace GLOFC.GL4.Controls
             base.Add(other,atback);
         }
 
+        // on a recursive layout, we need to adjust the texture positions of the sub controls
         protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
             UpdateVertexTexturePositions(true);
         }
 
-        public override bool BringToFront(GLBaseControl other)  // if we change the z order, we need to update vertex list, keyed to z order
-        {                                                       // and the textures, since the bindless IDs are written in z order        
-            if (!base.BringToFront(other))
+        // if we change the z order, we need to update vertex list, keyed to z order
+        // and the textures, since the bindless IDs are written in z order        
+        public override bool BringToFront(GLBaseControl other)  
+        {                                                       
+            if (!base.BringToFront(other))                  // if not already at front
             {
-                UpdateVertexTexturePositions(true);        // we changed z order, update
+                UpdateVertexTexturePositions(true);         // we changed z order, update
                 return false;
             }
             else
@@ -147,7 +153,7 @@ namespace GLOFC.GL4.Controls
 
                         if (redrawn)
                         {
-                            textures[c].CreateLoadBitmap(c.LevelBitmap);  // and update texture unit with new bitmap
+                            textures[c].CreateLoadBitmap(c.LevelBitmap, SizedInternalFormat.Rgba8);  // and update texture unit with new bitmap
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
 
@@ -186,6 +192,8 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Render Finished");
         }
 
+        // call this during system tick to run the animations
+
         public new void Animate(ulong ts)
         {
             foreach (var c in ControlsIZ)
@@ -193,7 +201,6 @@ namespace GLOFC.GL4.Controls
                 c.Animate(ts);
             }
         }
-
 
         #endregion
 
@@ -210,6 +217,14 @@ namespace GLOFC.GL4.Controls
                 textures[child].Dispose();  // and delete textures
                 textures.Remove(child);
             }
+        }
+
+        // override base control invalidate, and call it, and also pass the invalidate to the gl window control we have
+
+        public override void Invalidate()           
+        {
+            base.Invalidate();
+            glwin.Invalidate();
         }
 
         // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
@@ -276,7 +291,7 @@ namespace GLOFC.GL4.Controls
                         {
                             if (textures[c].Id == -1 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
                             {
-                                textures[c].CreateOrUpdateTexture(c.Width, c.Height);   // and make a texture, this will dispose of the old one 
+                                textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
                             }
 
                             tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
@@ -315,15 +330,6 @@ namespace GLOFC.GL4.Controls
             Paint?.Invoke(sender,ts);
         }
 
-        public class GLControlShader : GLShaderPipeline
-        {
-            public GLControlShader()
-            {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureTriangleStrip(arbbufferid));
-            }
-        }
-
-        const int arbbufferid = 10;
         const int vertexesperentry = 4;
         private GLWindowControl glwin;
         private GLBuffer vertexes;

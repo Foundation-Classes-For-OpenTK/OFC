@@ -140,7 +140,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
-                items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
+                items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
 
                 GLRenderState rt = GLRenderState.Tri();
 
@@ -416,7 +416,7 @@ namespace TestOpenTk
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true);
         }
 
     }

@@ -20,12 +20,12 @@ namespace GLOFC.GL4
 {
     public class GLTexture3D : GLTextureBase         // load a texture into open gl
     {
-        public GLTexture3D(int width, int height, int depth, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int mipmaplevels = 1)
+        public GLTexture3D(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
         {
             CreateOrUpdateTexture(width, height, depth, internalformat, mipmaplevels);
         }
 
-        public void CreateOrUpdateTexture(int width, int height, int depth, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int mipmaplevels = 1)
+        public void CreateOrUpdateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
         {
             if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
@@ -36,6 +36,7 @@ namespace GLOFC.GL4
                 MipMapLevels = mipmaplevels;
 
                 GL.CreateTextures(TextureTarget.Texture3D, 1, out int id);
+                GLStatics.Check();
                 Id = id;
 
                 GL.TextureStorage3D(Id, mipmaplevels, InternalFormat, Width, Height, Depth);

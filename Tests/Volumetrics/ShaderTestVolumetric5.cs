@@ -155,7 +155,7 @@ namespace TestOpenTk
                     numberpos[i] *= Matrix4.CreateTranslation(new Vector3(35500, 0, v));
                 }
 
-                GLTexture2DArray array = new GLTexture2DArray(numbers, ownbitmaps: true);
+                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
                 items.Add( array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
                 items.Shader("IC-2").StartAction += (s,m) => { items.Tex("Nums").Bind(1); GL.Disable(EnableCap.CullFace); };
@@ -309,7 +309,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
         }
 
         private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)

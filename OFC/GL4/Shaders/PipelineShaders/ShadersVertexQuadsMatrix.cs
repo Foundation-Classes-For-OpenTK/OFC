@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  * 
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -15,7 +15,6 @@
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
-using System.Drawing;
 
 namespace GLOFC.GL4
 {
@@ -26,8 +25,8 @@ namespace GLOFC.GL4
     //              [col=3,row=0] is the image index, 
     //              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, <0 means cull primitive
     //              [col=3,row=2] Fade scaler, 0 = none.  >0 fade out as eye goes in, <0 fade in as eye goes in
-    //              [col=3,row=3] Fade End, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade end)/Fade scalar,0,1). 
-    //                                                  for fade in formula is alpha = clamp((fadeend-EyeDistance)/-Fade scalar,0,1). 
+    //              [col=3,row=3] Fade Pos, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade pos)/Fade scalar,0,1). At EyeDistance<=fadepos, alpha is 0
+    //                                                  for fade in formula is alpha = clamp((fadepos-EyeDistance)/-Fade scalar,0,1). At EyeDistance>=fadepos, alpha is 0
     //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      location 0 : vs_textureCoordinate
@@ -37,7 +36,12 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderQuadTextureWithMatrixTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()
+        public GLPLVertexShaderQuadTextureWithMatrixTranslation()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        private string Code()
         {
             return
 @"
@@ -62,16 +66,14 @@ namespace GLOFC.GL4
     } vs;
     layout (location = 3) out float alpha;
     
-    vec4 vertex[] = { vec4(-0.5,0,0.5,1), vec4(-0.5,0,-0.5,1), vec4(0.5,0,-0.5,1), vec4(0.5,0,0.5,1)};      // flat on z plane is the default
+    vec4 vertex[] = { vec4(-0.5,0,0.5,1), vec4(-0.5,0,-0.5,1), vec4(0.5,0,-0.5,1), vec4(0.5,0,0.5,1)};      // flat on xz plane is the default
     vec2 tex[] = { vec2(0,0), vec2(0,1), vec2(1,1), vec2(1,0)};
 
 
-//layout (binding = 31, std430) buffer Positions      // For debug
-//{
-//    vec3 wpout;
-//    vec3 epout;
-//    vec4 dirout;
-//};
+layout (binding = 31, std430) buffer Positions      // For debug
+{
+    vec4 txout;
+};
 
 
     void main(void)
@@ -83,12 +85,15 @@ namespace GLOFC.GL4
 
         //wpout = worldposition; epout = mc.EyePosition.xyz; // for debug
 
+
         if ( tx[2][3]>0)                                      // fade distance, >0 means fade out as eye goes in
             alpha = clamp((mc.EyeDistance-tx[3][3])/tx[2][3],0,1);  // fade end is 3,3
         else if (tx[2][3]<0)
             alpha = clamp((tx[3][3]-mc.EyeDistance)/-tx[2][3],0,1); // <0 means fade in as eye goes in
         else
             alpha = 1;
+
+        // txout = vec4(mc.EyeDistance,tx[2][3], tx[3][3], alpha); // debugging
 
         float ctrl = tx[1][3];              // control word for rotate
 
@@ -100,7 +105,7 @@ namespace GLOFC.GL4
         {
             gl_CullDistance[0] = +1;        // not culled
 
-            if ( ctrl == 0 )                // if not auto rotate to viewer
+            if ( ctrl == 0 )                // if no auto rotate
             {
                 tx[0][3] = tx[1][3] = tx[2][3] = 0;     // use the matrix supplied, correct for flags
                 tx[3][3] = 1;
@@ -111,8 +116,6 @@ namespace GLOFC.GL4
 
                 vec2 dir = AzEl(mc.EyePosition.xyz,worldposition);      // x = elevation y = azimuth        eye to world. see GLPLVertexScaleLookat
                 tx = mat4ScalethenRotateXthenYthenTranslation(ctrl >= 2 ? -(PI-dir.x) : -PI/2,dir.y,scale,worldposition);
-
-            // dirout = vec4(degrees(dir.x),degrees(dir.y),mc.EyeDistance,alpha); // for debug
             }
 
             gl_Position = mc.ProjectionModelMatrix * tx * vertex[gl_VertexID];    
@@ -123,10 +126,6 @@ namespace GLOFC.GL4
     ";
         }
 
-        public GLPLVertexShaderQuadTextureWithMatrixTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
 
         // create a matrix for this shader
         static public Matrix4 CreateMatrix(Vector3 worldpos,
@@ -134,14 +133,14 @@ namespace GLOFC.GL4
                                     Vector3 rotationradians,        // ignored if rotates are on
                                     bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
                                     float alphafadescalar = 0,
-                                    float alphafadeend = 0,
+                                    float alphafadepos = 0,
                                     int imagepos = 0,
                                     bool visible = true
             )
         {
             Matrix4 mat = Matrix4.Identity;
             mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
-            if (rotatetoviewer == false)                                            // if autorotating, no rotation is allowed. matrix is just scaling/translation
+            if (rotatetoviewer == false && rotationradians.LengthSquared>0)   // if autorotating, no rotation is allowed. matrix is just scaling/translation
             {
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
                 mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
@@ -151,21 +150,21 @@ namespace GLOFC.GL4
             mat[0, 3] = imagepos;
             mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
             mat[2, 3] = alphafadescalar;
-            mat[3, 3] = alphafadeend;
+            mat[3, 3] = alphafadepos;
             return mat;
         }
 
         static public Matrix4[] CreateMatrices(Vector4[] worldpos, Vector3 offset,
                                             Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,
                                             float alphafadescalar = 0,
-                                            float alphafadeend = 0,
+                                            float alphafadepos = 0,
                                             int imagepos = 0,
                                             bool visible = true
                                             )
         {
             Matrix4[] mats = new Matrix4[worldpos.Length];
             for (int i = 0; i < worldpos.Length; i++)
-                mats[i] = CreateMatrix(worldpos[i].Xyz + offset, size, rot, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, imagepos, visible);
+                mats[i] = CreateMatrix(worldpos[i].Xyz + offset, size, rot, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, visible);
             return mats;
         }
     }

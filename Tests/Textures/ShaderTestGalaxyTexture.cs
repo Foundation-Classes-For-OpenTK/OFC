@@ -119,7 +119,7 @@ void main(void)
 
             }
 
-            items.Add(new GLTexture2D(Properties.Resources.galheightmap7), "gal");
+            items.Add(new GLTexture2D(Properties.Resources.galheightmap7, SizedInternalFormat.Rgba8), "gal");
 
             items.Add(new GLGalShader(), "TEX-NC");
 
@@ -151,7 +151,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 

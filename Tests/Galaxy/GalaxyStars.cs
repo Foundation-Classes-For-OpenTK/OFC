@@ -1,5 +1,6 @@
 ﻿using GLOFC;
 using GLOFC.GL4;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK;
 using System;
 using System.Collections.Concurrent;
@@ -17,8 +18,12 @@ namespace TestOpenTk
         public Color ForeText { get; set; } = Color.White;
         public Color BackText { get; set; } = Color.Red;
 
-        const int MaxObjectsAllowed = 100000;
-        const int MaxObjectsMargin = 10000;
+        private const int MaxObjectsAllowed = 10000000;
+        private const int MaxObjectsMargin = 10000;
+        private const int SectorSize = 100;
+        private const int MaxRequestsAllowed = 40;
+        private const int MaxLookupThreads = 40;
+        private const int MaxGeneratedThreads = 40;
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
         {
@@ -49,7 +54,7 @@ namespace TestOpenTk
 
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
-                                                            textshader, new Size(128, 32), textrc);
+                                                            textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8);
 
             items.Add(slset);
         }
@@ -75,8 +80,14 @@ namespace TestOpenTk
 
         public void Request9BoxConditional(Vector3 newpos)
         {
-            if ((CurrentPos - newpos).Length >= SectorSize)
-                Request9x3Box(newpos);
+            if ((CurrentPos - newpos).Length >= SectorSize && generatedsectors.Count < MaxGeneratedThreads && slset.Objects < 500000)
+            {
+                if (CurrentPos.Z < -100000)
+                    CurrentPos = newpos;
+                newpos = new Vector3(CurrentPos.X, CurrentPos.Y, CurrentPos.Z + 300);
+
+          //      Request9x3Box(newpos);
+            }
         }
 
         public void Request9x3Box(Vector3 pos)
@@ -111,7 +122,20 @@ namespace TestOpenTk
             if (!slset.TagsToBlocks.ContainsKey(pos))
             {
                 slset.ReserveTag(pos);      // important, stops repeated adds in the situation where it takes a while to add to set
+                
+                // use normally
                 requestedsectors.Add(new Sector(pos));
+
+                ////
+                //while (cleanbitmaps.TryDequeue(out Sector sectoclean))
+                //{
+                //    // System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sectoclean.pos}");
+                //    BitMapHelpers.Dispose(sectoclean.bitmaps);
+                //    sectoclean.bitmaps = null;
+                //}
+
+                //FillSectorThread(new Sector(pos));
+
                 //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {pos} request");
             }
             else
@@ -132,17 +156,21 @@ namespace TestOpenTk
 
                     do
                     {
-                       // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts");
+                        // reduce memory use first by bitmap cleaning 
+                        while (cleanbitmaps.TryDequeue(out Sector sectoclean))
+                        {
+                            // System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sectoclean.pos}");
+                            BitMapHelpers.Dispose(sectoclean.bitmaps);
+                            sectoclean.bitmaps = null;
+                        }
+
+                        // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts");
+
                         Thread p = new Thread(FillSectorThread);
                         p.Start(sector);
+
                     } while (requestedsectors.TryTake(out sector));     // until empty..
 
-                    while ( cleanbitmaps.TryDequeue(out sector))         // bitmap cleaning is not high priority, so just do it when we get another request. No need to unblock on it
-                    {
-                        //System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sector.pos}");
-                        BitMapHelpers.Dispose(sector.bitmaps);
-                        sector.bitmaps = null;
-                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -155,10 +183,10 @@ namespace TestOpenTk
         // in a thread, look up the sector 
         private void FillSectorThread(Object seco)
         {
-            Interlocked.Add(ref subthreadsrunning, 1);      // count subthreads, on shutdown, we need to wait until they all complete
+            int tno = Interlocked.Add(ref subthreadsrunning, 1);      // count subthreads, on shutdown, we need to wait until they all complete
             Sector d = (Sector)seco;
 
-            //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} start");
+          //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} {tno} start");
             Thread.Sleep(10);
 
             Vector4[] array = new Vector4[100];
@@ -176,7 +204,7 @@ namespace TestOpenTk
             d.textpos = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, -2f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
 
             generatedsectors.Enqueue(d);       // d has been filled
-            // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} end");
+            //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} {tno} end");
 
             Interlocked.Add(ref subthreadsrunning, -1);
         }
@@ -188,19 +216,23 @@ namespace TestOpenTk
         {
             if (time - timelastadded > 50)
             {
-                int max = 3;
-                while (generatedsectors.TryDequeue(out Sector d) && max-- > 0)      // limit fill rate..
+                if (generatedsectors.Count > 0)
                 {
-                    slset.Add(d.pos, d.text, d.stars, d.textpos, d.bitmaps);
-                    cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
-                    timelastadded = time;
+                    int max = 5;
+                    while (generatedsectors.TryDequeue(out Sector d) && max-- > 0)      // limit fill rate..
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Add to set {d.pos}");
+                        slset.Add(d.pos, d.text, d.stars, d.textpos, d.bitmaps);
+                        System.Diagnostics.Debug.WriteLine($"..add complete {d.pos} {slset.Objects}" );
+                        cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
+                        timelastadded = time;
+                    }
                 }
 
                 if ( slset.Objects > MaxObjectsAllowed )
                 {
                     slset.RemoveUntil(MaxObjectsAllowed-MaxObjectsMargin);
                 }
-                System.Diagnostics.Debug.WriteLine($"Objects {slset.Objects}");
             }
 
             const int rotperiodms = 10000;
@@ -240,8 +272,6 @@ namespace TestOpenTk
 
         // added to by update when cleaned up bitmaps, requestor will clear these for it
         private ConcurrentQueue<Sector> cleanbitmaps = new ConcurrentQueue<Sector>();
-
-        private const int SectorSize = 100;
 
         private Thread requestorthread;
         private CancellationTokenSource stop =  new CancellationTokenSource();

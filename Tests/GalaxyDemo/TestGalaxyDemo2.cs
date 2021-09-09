@@ -164,7 +164,7 @@ namespace TestOpenTk
 
 
             {
-                items.Add(new GLTexture2D(Properties.Resources.golden), "solmarker");
+                items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "solmarker");
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
@@ -177,7 +177,7 @@ namespace TestOpenTk
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, -1000, 0))
                              ));
-                items.Add( new GLTexture2D(Properties.Resources.dotted), "sag");
+                items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "sag");
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
@@ -188,7 +188,7 @@ namespace TestOpenTk
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, -2000, 25899))
                              ));
-                items.Add(new GLTexture2D(Properties.Resources.dotted2), "bp");
+                items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "bp");
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
@@ -228,7 +228,7 @@ namespace TestOpenTk
                 //}
 
                 // load one upside down and horz flipped, because the volumetric co-ords are 0,0,0 bottom left, 1,1,1 top right
-                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180);
+                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180, SizedInternalFormat.Rgba8);
                 items.Add(galtex, "gal");
                 GalaxyShader gs = new GalaxyShader();
                 items.Add(gs, "Galaxy");
@@ -298,7 +298,7 @@ namespace TestOpenTk
 
             if (true)  // point sprite
             {
-                items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
+                items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"),64,40), "PS1");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
 
@@ -345,7 +345,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            var cdmt = gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
         }
 
         private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)

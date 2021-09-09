@@ -124,7 +124,7 @@ namespace TestOpenTk
                         Vector3 bestpos = new Vector3(final.Item1.X, 0, final.Item1.Y);
                         Vector3 bestsize = new Vector3(final.Item2.X, 1, final.Item2.Y);
                         
-                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphafadescalar:5000, alphaenddistance:500);
+                        textrenderer.Add(null, gmo.name, fnt, Color.White, Color.Transparent, bestpos, bestsize,new Vector3(0,0,0), fmt, alphafadescalar:5000, alphafadepos:500);
                     }
                 }
             }

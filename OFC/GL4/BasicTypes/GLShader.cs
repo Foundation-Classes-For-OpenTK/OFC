@@ -190,13 +190,13 @@ namespace GLOFC.GL4
             return code;
         }
 
-        // list of pairs of (const name = value) where value can be an int, a Color (expressed as a vec4), a Vector2/3/4, a float
+        // list of pairs of (const name = value) where value can be an int, a Color (expressed as a vec4), a Vector2/3/4, a float/double, a bool, Vector4[], Color[]
 
         private static List<string> ConstVars(params Object[] values)
         {
             List<string> slist = new List<string>();
 
-            for (int i = 0; i < values.Length-1;)       // pairs of data, so -1 for length
+            for (int i = 0; i < values.Length - 1;)       // pairs of data, so -1 for length
             {
                 string name = values[i] as string;
                 Object o = values[i + 1];
@@ -248,9 +248,13 @@ namespace GLOFC.GL4
                     string exp = "const vec4 " + name + "[] = {";
                     string vec = "";
                     foreach (Color c in p)
-                        vec = vec.AppendPrePad($"vec4({(float)c.R/255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f})", ",");
+                        vec = vec.AppendPrePad($"vec4({(float)c.R / 255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f})", ",");
 
                     slist.Add(exp + vec + "};");
+                }
+                else if (o is null)     // null means don't override
+                {
+
                 }
                 else
                     System.Diagnostics.Debug.Assert(false);

@@ -66,6 +66,32 @@ namespace TestOpenTk
             Refresh();
         }
 
+        // Texture, triangle strip
+        // Requires:
+        //      location 0 : position: vec4 vertex array of positions world
+        //      tex binding 1 : textureObject : texture of bitmap
+        //      uniform 0 : GL MatrixCalc
+        //      location 24 : uniform of texture offset (written by start automatically)
+
+        // TBD TBD
+
+        public class GLTexturedShaderTriangleStripWithWorldCoord : GLShaderPipeline
+        {
+            GLPLFragmentShaderTextureOffset frag;
+
+            // backtoback is set if its a index draw
+            public GLTexturedShaderTriangleStripWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+            {
+                frag = new GLPLFragmentShaderTextureOffset();
+                AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), frag);
+            }
+
+            public Vector2 TexOffset { get { return frag.TexOffset; } set { frag.TexOffset = value; } }
+        }
+
+
+
+
         private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, int bufferfindbinding)
         {
             HistoryEntry lastone = lastpos != -1 && lastpos < currentfilteredlist.Count ? currentfilteredlist[lastpos] : null;  // see if lastpos is there, and store it
@@ -92,17 +118,17 @@ namespace TestOpenTk
             float seglen = tapesize * 10;
 
             // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
-            var tape = GLTapeObjectFactory.CreateTape(positionsv4, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
+            var tape = GLTapeObjectFactory.CreateTape(positionsv4, null, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
 
             if (ritape == null) // first time..
             {
                 // first the tape
 
-                var tapetex = new GLTexture2D(Properties.Resources.chevron);        // tape image
+                var tapetex = new GLTexture2D(Properties.Resources.chevron, internalformat:OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);        // tape image
                 items.Add(tapetex);
                 tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
-                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(true); // tape shader, expecting triangle strip co-ords
+                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(); // tape shader, expecting triangle strip co-ords
                 items.Add(tapeshader);
 
                 GLRenderState rts = GLRenderState.Tri(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
@@ -176,7 +202,7 @@ namespace TestOpenTk
                     if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
                         textrenderer.Add(isys, isys.System.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.System.X, (float)isys.System.Y - 5, (float)isys.System.Z),
-                                new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: false, alphafadescalar: -200, alphaenddistance: 300);
+                                new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: false, alphafadescalar: -200, alphafadepos: 300);
                     }
                 }
             }

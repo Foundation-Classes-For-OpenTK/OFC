@@ -59,7 +59,7 @@ namespace GLOFC.GL4
                                 int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
                                 int mingroups,     // minimum groups to have
                                 GLBuffer objectbuffer, int objectvertexes , GLRenderState objrc,  PrimitiveType objpt,  // object buffer, vertexes and its rendercontrol
-                                Size texturesize, GLRenderState textrc,  // texturesize and render control
+                                Size texturesize, GLRenderState textrc, SizedInternalFormat textureformat, // texturesize and render control
                                 int debuglimittexture = 0)  // use to limit texture map depth for debugging
         {
             this.objectvertexescount = objectvertexes;
@@ -85,9 +85,9 @@ namespace GLOFC.GL4
                                 groupcount * GLBuffer.Mat4size;         // and for groupcount Mat4 fragmentation per group
 
             // create the vertex indirect buffer
-            dataindirectbuffer = new GLVertexBufferIndirect(items,vertbufsize, GLBuffer.WriteIndirectArrayStride * groupcount, true);
+            dataindirectbuffer = new GLVertexBufferIndirect(items,vertbufsize, GLBuffer.WriteIndirectArrayStride * groupcount, true,BufferUsageHint.DynamicDraw);
 
-            // objects (TBD PT)
+            // objects 
             ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, objpt, objrc,
                                                                         objectbuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
                                                                         dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
@@ -102,14 +102,14 @@ namespace GLOFC.GL4
             for (int i = 0; i < this.textures.Length; i++)
             {
                 int n = Math.Min(objectcount, maxtextper2darray);
-                this.textures[i] = new GLTexture2DArray(texturesize.Width, texturesize.Height, n);
+                this.textures[i] = new GLTexture2DArray(texturesize.Width, texturesize.Height, n, textureformat, 1);
                 items.Add(this.textures[i]);
                 objectcount -= maxtextper2darray;
             }
 
             TextRenderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.Quads, textrc,
                                                                 dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
-                                                                new GLRenderDataTexture(this.textures,0),        // binding 0..N for textures
+                                                                new GLRenderDataTexture(this.textures,0),        // binding 0 assign to our texture 2d
                                                                 0, 1);     //no ic, and matrix divide so 1 matrix per vertex set
             TextRenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
             TextRenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;

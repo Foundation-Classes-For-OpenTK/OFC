@@ -30,20 +30,21 @@ namespace GLOFC.GL4
         }
 
         // bitmap 0 gives the common width/height of the image.
-        public GLTexture2DArray(Bitmap[] bmps, int mipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, bool ownbitmaps = false, Size? bmpsize = null)
+        public GLTexture2DArray(Bitmap[] bmps, SizedInternalFormat internalformat, int mipmaplevel = 1, int genmipmaplevel = 1, bool ownbitmaps = false, Size? bmpsize = null, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
-            CreateLoadBitmaps(bmps, mipmaplevel, internalformat, genmipmaplevel, ownbitmaps, bmpsize);
+            CreateLoadBitmaps(bmps, internalformat, mipmaplevel, genmipmaplevel, ownbitmaps, bmpsize, alignment);
         }
 
-        public GLTexture2DArray(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f)
+        public GLTexture2DArray(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
         {
-            CreateTexture(width, height, depth, mipmaplevels, internalformat);
+            CreateTexture(width, height, depth, internalformat, mipmaplevels);
         }
 
         // You can call as many times to create textures. Only creates one if required
         // mipmaplevels does not apply if multisample > 0 
+        // Rgba8 is the normal one to pick
 
-        public void CreateTexture(int width, int height, int depth, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f,
+        public void CreateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1,
                                     int multisample = 0, bool fixedmultisampleloc = false)
         {
             if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample )
@@ -58,6 +59,7 @@ namespace GLOFC.GL4
                 MultiSample = multisample;
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture2DArray, 1, out int id);
+                GLStatics.Check();
                 Id = id;
 
                 if (MultiSample > 0)
@@ -91,19 +93,19 @@ namespace GLOFC.GL4
         // Bitmaps array can be sparse will null entries if you don't want to use that level. 
         // texture size is either bmpsize or Level 0 size (which therefore must be there)
 
-        public void CreateLoadBitmaps(Bitmap[] bmps, int bitmapmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, int genmipmaplevel = 1, 
-                                               bool ownbitmaps = false, Size? bmpsize = null)
+        public void CreateLoadBitmaps(Bitmap[] bmps, SizedInternalFormat internalformat, int bitmapmipmaplevels = 1, int genmipmaplevel = 1, 
+                                               bool ownbitmaps = false, Size? bmpsize = null, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
             int width = bmpsize.HasValue ? bmpsize.Value.Width : bmps[0].Width;
             int height = bmpsize.HasValue ? bmpsize.Value.Height : MipMapHeight(bmps[0], bitmapmipmaplevels);        // if bitmap is mipped mapped, work out correct height.
             int texmipmaps = Math.Max(bitmapmipmaplevels, genmipmaplevel);
 
-            CreateTexture(width, height, bmps.Length, texmipmaps, internalformat);
+            CreateTexture(width, height, bmps.Length, internalformat, texmipmaps);
 
             for (int zorder = 0; zorder < bmps.Length; zorder++)      // for all bitmaps, we load the texture into zoffset of 2darray
             {
                 if ( bmps[zorder] != null )       // it can be sparse
-                    LoadBitmap(bmps[zorder], zorder, ownbitmaps, bitmapmipmaplevels);   // load into bitmapnumber zoffset level
+                    LoadBitmap(bmps[zorder], zorder, ownbitmaps, bitmapmipmaplevels, alignment);   // load into bitmapnumber zoffset level
             }
 
             if (bitmapmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen

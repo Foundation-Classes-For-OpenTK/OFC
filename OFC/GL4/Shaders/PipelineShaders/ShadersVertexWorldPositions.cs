@@ -27,7 +27,7 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderWorldCoord : GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"
@@ -62,7 +62,7 @@ void main(void)
 
     public class GLPLVertexShaderModelViewCoord: GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"
@@ -101,7 +101,7 @@ void main(void)
 
     public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"
@@ -146,7 +146,12 @@ void main(void)
 
     public class GLPLVertexShaderTextureWorldCoord : GLShaderPipelineShadersBase
     {
-        public string Code()     
+        public GLPLVertexShaderTextureWorldCoord()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        private string Code()     
         {
             return
 
@@ -175,105 +180,10 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderTextureWorldCoord()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
     }
 
 
-    // Pipeline shader, Texture, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions
-    //      uniform buffer 0 : GL MatrixCalc
-    // Out:
-    //      gl_Position
-    //      location 0 : vs_textureCoordinate per triangle strip rules
-    //      location 1 : modelpos
-
-    public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord : GLShaderPipelineShadersBase
-    {
-        public string Code()       
-        {
-            return
-
-@"
-#version 450 core
-#include UniformStorageBlocks.matrixcalc.glsl
-
-layout (location = 0) in vec4 position;
-
-out gl_PerVertex {
-        vec4 gl_Position;
-        float gl_PointSize;
-        float gl_ClipDistance[];
-    };
-
-layout(location = 0) out vec2 vs_textureCoordinate;
-layout(location = 1) out vec3 modelpos;
-
-void main(void)
-{
-    vec2 vcoords[4] = {{0,0},{0,1},{1,0},{1,1} };      // these give the coords for the 4 points making up 2 triangles.  Use with the right fragment shader which understands strip co-ords
-
-    modelpos = position.xyz;
-    vec4 p = position;
-	gl_Position = mc.ProjectionModelMatrix * p;        // order important
-    vs_textureCoordinate = vcoords[ gl_VertexID % 4];       // gl_vertextid is either an autocounter, or the actual element index given in an element draw
-}
-";
-        }
-
-        public GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
-    }
-
-    // Pipeline shader, Texture, real screen coords  (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
-    // Requires:
-    //      location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w must be 1.
-    //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
-    // Out:
-    //      gl_Position
-    //      location 0 : vs_textureCoordinate per triangle strip rules
-    //      z=0 placing it in foreground
-
-    public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineShadersBase
-    {
-        public string Code()
-        {
-            return
-
-@"
-#version 450 core
-#include UniformStorageBlocks.matrixcalc.glsl
-
-layout (location = 0) in vec4 position;
-
-out gl_PerVertex {
-        vec4 gl_Position;
-        float gl_PointSize;
-        float gl_ClipDistance[];
-    };
-
-layout(location = 0) out vec2 vs_textureCoordinate;
-
-void main(void)
-{
-	gl_Position = mc.ScreenMatrix * position;        // order important
-    vec2 vcoords[4] = {{0,0},{0,1},{1,0},{1,1} };      // these give the coords for the 4 points making up 2 triangles.  Use with the right fragment shader which understands strip co-ords
-    vs_textureCoordinate = vcoords[ gl_VertexID % 4];
-}
-";
-        }
-
-        public GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
-    }
-
+ 
     // Pipeline shader, Texture, real screen coords  (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
     // Requires:
     //      location 0 : position: vec4 vertex array of world positions, w = colour image index
@@ -284,7 +194,7 @@ void main(void)
 
     public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"

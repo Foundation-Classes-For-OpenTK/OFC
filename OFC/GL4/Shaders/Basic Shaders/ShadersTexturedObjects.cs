@@ -83,27 +83,5 @@ namespace GLOFC.GL4
         }
     }
 
-    // Texture, triangle strip
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions world
-    //      tex binding 1 : textureObject : texture of bitmap
-    //      uniform 0 : GL MatrixCalc
-    //      location 24 : uniform of texture offset (written by start automatically)
-
-    public class GLTexturedShaderTriangleStripWithWorldCoord : GLShaderPipeline
-    {
-        GLPLFragmentShaderTextureTriangleStrip frag;
-
-        public GLTexturedShaderTriangleStripWithWorldCoord(bool backtoback, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-        {
-            frag = new GLPLFragmentShaderTextureTriangleStrip(backtoback);
-            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoord(), frag);
-        }
-
-        public Vector2 TexOffset { get { return frag.TexOffset; } set { frag.TexOffset = value; } }
-    }
-
-
-
 
 }

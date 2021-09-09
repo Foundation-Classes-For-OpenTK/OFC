@@ -120,7 +120,7 @@ void main(void)
             };
 
             //items.Add("lensflarewhite", new GLTexture2D(Properties.Resources.lensflare_white64));
-            items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
+            items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
 
             items.Add(new GLColorShaderWithWorldCoord(), "COS");
 
@@ -181,7 +181,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             gl3dcontroller.Redraw();
         }
 

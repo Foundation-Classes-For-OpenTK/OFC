@@ -155,8 +155,9 @@ namespace TestOpenTk
                 rObjects.Add(new GLOperationClearDepthBuffer());
             }
 
+            int ctrlo = -1;
 
-            if (true) // galaxy
+            if ((ctrlo & 1) != 0) // galaxy
             {
                 volumetricboundingbox = new Vector4[]
                     {
@@ -198,7 +199,7 @@ namespace TestOpenTk
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
                 // load one upside down and horz flipped, because the volumetric co-ords are 0,0,0 bottom left, 1,1,1 top right
-                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180);
+                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180, SizedInternalFormat.Rgba8);
                 items.Add(galtex, "galtex");
                 galaxyshader = new GalaxyShader(volumenticuniformblock, galtexbinding, gnoisetexbinding, gdisttexbinding);
                 items.Add(galaxyshader, "Galaxy-sh");
@@ -210,7 +211,7 @@ namespace TestOpenTk
                 rObjects.Add(galaxyshader, "galshader", galaxyrenderable);
             }
 
-            if (true)       // Gal map regions
+            if ((ctrlo & 2) != 0)
             {
                 var corr = new GalMapRegions.ManualCorrections[] {          // nerf the centeroid position slightly
                     new GalMapRegions.ManualCorrections("The Galactic Aphelion", y: -2000 ),
@@ -224,14 +225,14 @@ namespace TestOpenTk
                 edsmgalmapregions.CreateObjects("edsmregions", items, rObjects, edsmmapping, 8000, corr: corr);
             }
 
-            if (true)           // Elite regions
+            if ((ctrlo & 4) != 0) 
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects("eliteregions", items, rObjects, eliteregions, 8000);
                 EliteRegionsEnable = false;
             }
 
-            if (true) // star points
+            if ((ctrlo & 8) != 0) 
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -292,9 +293,9 @@ namespace TestOpenTk
             rObjects.Add(new GLOperationClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
 
 
-            if (true)  // point sprite
+            if ((ctrlo & 16) != 0) 
             {
-                items.Add(new GLTexture2D(Properties.Resources.StarFlare2), "lensflare");
+                items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
 
@@ -304,7 +305,7 @@ namespace TestOpenTk
 
             }
 
-            if (true) // grids
+            if ((ctrlo & 32) != 0) 
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 items.Add(gridvertshader, "PLGRIDVertShader");
@@ -320,7 +321,7 @@ namespace TestOpenTk
 
             }
 
-            if (true)       // grid coords
+            if ((ctrlo & 64) != 0) 
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
@@ -339,7 +340,7 @@ namespace TestOpenTk
             }
 
             float sunsize = 2.0f;
-            if (true)       // travel path
+            if ((ctrlo & 128) != 0)
             {
                 Random rnd = new Random(52);
                 List<HistoryEntry> pos = new List<HistoryEntry>();
@@ -367,13 +368,13 @@ namespace TestOpenTk
                 travelpath.SetSystem(0);
             }
 
-            if (true)       // Gal map objects
+            if ((ctrlo & 256) != 0)
             {
                 galmapobjects = new GalMapObjects();
                 galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock,true);
             }
 
-            if (true)
+            if ((ctrlo & 512) != 0)
             {
                 galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
                 //Vector3 pos = new Vector3(50, 0, 0);
@@ -381,7 +382,7 @@ namespace TestOpenTk
                 
             }
 
-            if ( true)
+            if ((ctrlo & 1024) != 0)
             {
                 rightclickmenu = new GLContextMenu("RightClickMenu",    
                     new GLMenuItem("RCMInfo", "Information")
@@ -512,15 +513,36 @@ namespace TestOpenTk
             if (galaxystars!= null)
                 galaxystars.Start();
 
-            if ( false )        // enable for debug
+            if ( false)        // enable for debug buffer
             {
                 debugbuffer = new GLStorageBlock(31, true);
                 debugbuffer.AllocateBytes(32000, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
+            }
+
+            if (true)          // enable for debug
+            {
+                items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+                GLRenderState rc = GLRenderState.Tri(cullface: false);
+                rc.DepthTest = false;
+
+                Vector3[] markers = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, -5, 0), new Vector3(0, -5-3.125f/2f, 0) };
+
+                for (int i = 0; i < markers.Length; i++)
+                {
+                    rObjects.Add(items.Shader("COSOT"), "marker" + i,
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(0.5f),
+                                            new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
+                                            new GLRenderDataTranslationRotation(markers[i])
+                            ));
+                }
+
             }
         }
 
         public void LoadState(MapSaver defaults)
         {
+            return;
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 
@@ -575,8 +597,8 @@ namespace TestOpenTk
         {
             //if (displaycontrol != null && displaycontrol.RequestRender)
               //  glwfc.Invalidate();
-            var cdmt = gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
-            glwfc.Invalidate();
+            var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
+           // glwfc.Invalidate();
         }
 
         double fpsavg = 0;
@@ -677,8 +699,8 @@ namespace TestOpenTk
             if (debugbuffer != null)
             {
                 GLMemoryBarrier.All();
-                Vector4[] debugout = debugbuffer.ReadVector4s(0, 3);
-                System.Diagnostics.Debug.WriteLine("{0},{1}, {2}", debugout[0], debugout[1], debugout[2]);
+                Vector4[] debugout = debugbuffer.ReadVector4s(0, 4);
+                System.Diagnostics.Debug.WriteLine("{0},{1},{2},{3}", debugout[0], debugout[1], debugout[2], debugout[3]);
             }
 
             long t = hptimer.ElapsedMilliseconds;

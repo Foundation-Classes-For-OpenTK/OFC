@@ -165,12 +165,18 @@ namespace GLOFC.Controller
             PosCamera.DoSlew(LastHandleInterval);     // changes here will be picked up by AnythingChanged
         }
 
+        // Polls for keyboard movement
         // and with Invalidate on movement
 
-        public bool HandleKeyboardSlewsInvalidate(bool activated, Action<KeyboardMonitor> handleotherkeys = null, float minmove = 0.01f, float mincamera = 1.0f)
+        public bool HandleKeyboardSlewsAndInvalidateIfMoved(bool activated, Action<KeyboardMonitor> handleotherkeys = null, float minmove = 0.01f, float mincamera = 1.0f)
         {
             HandleKeyboardSlews(activated, handleotherkeys);
+            return InvalidateIfMoved(minmove,mincamera);
+        }
 
+        // Invalidate on movement
+        public bool InvalidateIfMoved(float minmove = 0.01f, float mincamera = 1.0f)
+        { 
             bool moved = PosCamera.IsMoved(minmove,mincamera);
 
             if (moved )

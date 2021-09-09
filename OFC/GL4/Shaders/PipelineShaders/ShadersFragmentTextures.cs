@@ -15,12 +15,12 @@
 
 
 using System;
+using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-
     // Pipeline shader for a 2D texture bound with 2D vertexes
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
@@ -28,7 +28,12 @@ namespace GLOFC.GL4
 
     public class GLPLFragmentShaderTexture : GLShaderPipelineShadersBase
     {
-        public string Code(int binding)
+        public GLPLFragmentShaderTexture(int binding = 1)
+        {
+            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+        }
+
+        private string Code(int binding)
         {
             return
 @"
@@ -45,10 +50,6 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentShaderTexture(int binding = 1)
-        {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
-        }
     }
 
     // Pipeline shader for a 2D array texture, discard if alpha is too small or imageno < 0
@@ -58,7 +59,14 @@ void main(void)
 
     public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineShadersBase
     {
-        public string Code(int binding)
+        // alphazerocolor allows a default colour to show for zero alpha samples
+
+        public GLPLFragmentShaderTexture2DDiscard(int binding = 1, Color? alphazerocolour = null)
+        {
+            CompileLink(ShaderType.FragmentShader, Code(binding, alphazerocolour != null), constvalues: new object[] { "alphacolor", alphazerocolour }, auxname: GetType().Name);
+        }
+
+        public string Code(int binding, bool alphacolor)
         {
             return
 @"
@@ -70,6 +78,8 @@ layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2DArray tex
 
 out vec4 color;
 
+const vec4 alphacolor = vec4(1,1,1,1);
+
 void main(void)
 {
     if ( imageno < 0 )
@@ -78,31 +88,42 @@ void main(void)
     {   
         vec4 c = texture(textureObject2D, vec3(vs_textureCoordinate,imageno));       // vs_texture coords normalised 0 to 1.0f
         if ( c.w < 0.01)
-            discard;
+        {
+"
++
+((!alphacolor) ? @"discard;" : @"color=alphacolor;")
++
+ @"           
+        }
         else
             color = c;
+
     }   
 }
 ";
         }
 
-        public GLPLFragmentShaderTexture2DDiscard(int binding = 1)
-        {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
-        }
     }
 
     // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
-    // discard if alpha is too small or imageno < 0
+    // discard if alpha is too small 
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 2 : vs_in.vs_instance - instance id/texture offset. 
     //      location 3 : alpha (if alpha blend enabled) float
-    //      tex binding 1 : textureObject : 2D texture
+    //      tex binding : textureObject : 2D texture
 
     public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineShadersBase
     {
-        public string Code()
+        // alphablend allows alpha to be passed from the vertex shader to this
+        // alphazerocolor allows a default colour to show for zero alpha samples
+
+        public GLPLFragmentShaderTexture2DIndexed(int offset, int binding = 1, bool alphablend = false, Color? alphazerocolour = null)
+        {
+            CompileLink(ShaderType.FragmentShader, Code(alphazerocolour != null), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "alphacolor", alphazerocolour }, auxname: GetType().Name);
+        }
+
+        public string Code(bool alphacolor)
         {
             return
 @"
@@ -122,6 +143,8 @@ layout (location = 3) in float alpha;
 
 out vec4 color;
 
+const vec4 alphacolor = vec4(1,1,1,1);
+
 const bool enablealphablend = false;
 const int imageoffset = 0;
 
@@ -133,20 +156,25 @@ void main(void)
     if ( enablealphablend )
         cx.w *= alpha;
     if ( cx.w < 0.01)
-        discard;
+    {
+"
++
+((!alphacolor) ? @"discard;" : @"color=alphacolor;")
++
+ @"
+    }
     else
         color = cx;
+
 }
 ";
         }
 
-        public GLPLFragmentShaderTexture2DIndexed(int offset, int binding = 1, bool alphablend = false)
-        {
-            CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding",binding, "imageoffset",offset }, auxname: GetType().Name);
-        }
     }
 
-    // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
+    // Pipeline shader for an array of 2D Array textures.
+    // vs_instance input is used to pick array and 2d depth image
+    // Use with GLVertexShaderTextureMatrixTransform
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 2 : vs_in.vs_instance - instance id/texture offset. 
@@ -156,7 +184,13 @@ void main(void)
 
     public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineShadersBase
     {
-        public string Code()
+        // alphablend allows alpha to be passed from the vertex shader to this
+        public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  // 16 is the opengl minimum textures supported
+        {
+            CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
+        }
+
+        private string Code()
         {
             return
 @"
@@ -193,10 +227,6 @@ void main(void)
 ";
         }
 
-        public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  // 16 is the opengl minimum textures supported
-        {
-            CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
-        }
     }
 
     // Pipeline shader, 2d texture array (0,1), 2d o-ords, with blend between them via a uniform
@@ -207,7 +237,19 @@ void main(void)
 
     public class GLPLFragmentShaderTexture2DBlend : GLShaderPipelineShadersBase
     {
-        public string Code(int binding)
+        public float Blend { get; set; } = 0.0f;
+
+        public GLPLFragmentShaderTexture2DBlend(int binding = 1)
+        {
+            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            GL.ProgramUniform1(Id, 30, Blend);
+        }
+
+        private string Code(int binding)
         {
             return
 @"
@@ -227,30 +269,36 @@ void main(void)
 ";
         }
 
-        public float Blend { get; set; } = 0.0f;
+    }
 
-        public GLPLFragmentShaderTexture2DBlend(int binding = 1)
+    // Pipeline shader for a 2D texture bound with a variable texture offset
+    // Requires:
+    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    //      tex binding X : textureObject : 2D texture
+
+    // Pipeline shader, Co-ords are from a triangle strip
+    // Requires:
+    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    //      location 24 : uniform of texture offset (written by start automatically)
+
+    public class GLPLFragmentShaderTextureOffset : GLShaderPipelineShadersBase
+    {
+        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
+
+        // for normal triangle strips, backtobackrect = false.  Only used for special element index draws
+
+        public GLPLFragmentShaderTextureOffset(int binding = 1)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
         }
 
         public override void Start(GLMatrixCalc c)
         {
-            GL.ProgramUniform1(Id, 30, Blend);
+            GL.ProgramUniform2(Id, 24, TexOffset);
         }
-    }
 
-    // Pipeline shader, Co-ords are from a triangle strip
-    // either the vertex's are separated by primitive restart, 
-    // or they are back to back in which case we need to invert text co-ord x for each other set of triangles
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord - as per triangle strip. Strip must start on a modulo 4 boundary. Must have at least 3 points.
-    //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      location 24 : uniform of texture offset (written by start automatically)
-
-    public class GLPLFragmentShaderTextureTriangleStrip : GLShaderPipelineShadersBase
-    {
-        public string Code(bool backtoback, int binding)
+        public string Code(int binding)
         {
             return
 @"
@@ -258,62 +306,37 @@ void main(void)
 layout (location=0) in vec2 vs_textureCoordinate;
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureObject;
 layout (location = 24) uniform  vec2 offset;
-
 out vec4 color;
 
 void main(void)
-{" +
-(backtoback ?
-@"
-// keep for debugging
-//    vec4 col[] = { vec4(0.4,0,0,1), vec4(0,0.4,0,1), vec4(0,0,0.4,1), vec4(0.4,0.4,0,1),vec4(0,0.4,0.4,1), vec4(0.4,0.4,0.4,1),
-//                   vec4(0.6,0.2,0,1), vec4(0,0.6,0,1), vec4(0,0,0.6,1), vec4(0.6,0.6,0,1),vec4(0,0.6,0.6,1), vec4(0.6,0.6,0.6,1),
-//                   vec4(0.8,0.4,0,1), vec4(0,0.8,0,1), vec4(0,0,0.8,1), vec4(0.8,0.8,0,1),vec4(0,0.8,0.8,1), vec4(0.8,0.8,0.8,1),
-//                   vec4(1.0,0.6,0,1), vec4(0,1.0,0,1), vec4(0,0,1.0,1), vec4(1.0,1.0,0,1),vec4(0,1.0,1.0,1), vec4(1.0,1.0,1.0,1),
-//};
-//if ( gl_PrimitiveID==12)
-//color = vec4(1,1,1,1);
-//else
-//color = col[gl_PrimitiveID];
+{
+    color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
+}";
+        }
 
-    if ( gl_PrimitiveID % 4 < 2 )   // first two primitives have coords okay
-    {
-        color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
-    }
-    else    // next two have them inverted in x due to re-using the previous triangles vertexes
-    {
-        color = texture(textureObject, vec2(1.0-vs_textureCoordinate.x,vs_textureCoordinate.y)+offset);       // vs_texture coords normalised 0 to 1.0f
     }
 
-" :
-@"
-        color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
-") +
+    // Pipeline shader, texture shader, renders an texture ARB dependent on primitive number/2, so to be used with a triangle strip
+    // 
+    // Requires:
+    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    //      uniform binding <config>: ARB bindless texture handles, int 64s
+    //      location 24 : uniform of texture offset (written by start automatically)
 
-"}";
-}
-
+    public class GLPLBindlessFragmentShaderTextureOffsetArray : GLShaderPipelineShadersBase
+    {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
-        public GLPLFragmentShaderTextureTriangleStrip(bool backtobackrect, int binding=1)
+        public GLPLBindlessFragmentShaderTextureOffsetArray(int arbblock)
         {
-            CompileLink(ShaderType.FragmentShader, Code(backtobackrect,binding), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(arbblock), auxname: GetType().Name);
         }
 
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
-    }
 
-    // Pipeline shader, Co-ords are from a triangle strip, we are assuming a primitive restart so we don't need to do the invert thingy
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord - as per triangle strip
-    //      uniform binding <config>: ARB bindless texture handles, int 64s
-    //      location 24 : uniform of texture offset (written by start automatically)
-
-    public class GLPLBindlessFragmentShaderTextureTriangleStrip : GLShaderPipelineShadersBase
-    {
         public string Code(int arbblock)
         {
             return
@@ -338,20 +361,9 @@ void main(void)
 ";
         }
 
-        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
-
-        public GLPLBindlessFragmentShaderTextureTriangleStrip(int arbblock)
-        {
-            CompileLink(ShaderType.FragmentShader, Code(arbblock), auxname: GetType().Name);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            GL.ProgramUniform2(Id, 24, TexOffset);
-        }
     }
 
 
 
-
 }
+

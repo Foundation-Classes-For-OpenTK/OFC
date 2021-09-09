@@ -30,7 +30,12 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        public GLPLVertexShaderModelCoordWithObjectTranslation()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 @"
@@ -57,10 +62,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderModelCoordWithObjectTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
     }
 
 
@@ -79,7 +80,25 @@ void main(void)
 
     public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
+
+        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
+        {
+            object[] cvalues = null;
+            if (basecolours != null)
+                cvalues = new object[] { "colours", basecolours };
+
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            Matrix4 a = ModelTranslation;
+            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 @"
@@ -126,23 +145,6 @@ void main(void)
 ";
         }
 
-        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
-
-        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
-        {
-            object[] cvalues = null;
-            if (basecolours != null)
-                cvalues = new object[] { "colours", basecolours };
-
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues:cvalues);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            Matrix4 a = ModelTranslation;
-            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            GLOFC.GLStatics.Check();
-        }
     }
 
 
@@ -158,7 +160,12 @@ void main(void)
 
     public class GLPLVertexShaderModelCoordWithMatrixTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()
+        public GLPLVertexShaderModelCoordWithMatrixTranslation()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        private string Code()
         {
             return
 @"
@@ -184,11 +191,6 @@ void main(void)
 }
 ";
         }
-
-        public GLPLVertexShaderModelCoordWithMatrixTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
     }
 
 
@@ -206,7 +208,12 @@ void main(void)
 
     public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()
+        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        private string Code()
         {
             return
 @"
@@ -242,10 +249,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
     }
 
 
@@ -264,7 +267,21 @@ void main(void)
     {
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
-        public string Code()
+        public GLPLVertexShaderColorModelCoordWithObjectCommonTranslation()
+        {
+            Transform = new GLRenderDataTranslationRotation();
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+            Matrix4 t = Transform.Transform;
+            GL.ProgramUniformMatrix4(Id, 23, false, ref t);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Code()
         {
             return
 
@@ -294,19 +311,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderColorModelCoordWithObjectCommonTranslation()
-        {
-            Transform = new GLRenderDataTranslationRotation();
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-            Matrix4 t = Transform.Transform;
-            GL.ProgramUniformMatrix4(Id, 23, false, ref t);
-            GLOFC.GLStatics.Check();
-        }
     }
 
 
@@ -325,7 +329,21 @@ void main(void)
     {
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
-        public string Code()
+        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation()
+        {
+            Transform = new GLRenderDataTranslationRotation();
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+            Matrix4 t = Transform.Transform;
+            GL.ProgramUniformMatrix4(Id, 23, false, ref t);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Code()
         {
             return
 
@@ -354,19 +372,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation()
-        {
-            Transform = new GLRenderDataTranslationRotation();
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-            Matrix4 t = Transform.Transform;
-            GL.ProgramUniformMatrix4(Id, 23, false, ref t);
-            GLOFC.GLStatics.Check();
-        }
     }
 
 
@@ -385,7 +390,21 @@ void main(void)
 
     public class GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
+
+        public GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation()
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            Matrix4 a = ModelTranslation;
+            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 @"
@@ -419,19 +438,6 @@ void main(void)
 ";
         }
 
-        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
-
-        public GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            Matrix4 a = ModelTranslation;
-            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            GLOFC.GLStatics.Check();
-        }
     }
 
 
@@ -452,7 +458,28 @@ void main(void)
 
     public class GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
     {
-        public string Code()       // with transform, object needs to pass in uniform 22 the transform
+        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
+        public Vector3 WorldPositionOffset { get; set; } = Vector3.Zero;
+
+        public GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
+        {
+            object[] cvalues = null;
+            if (basecolours != null)
+                cvalues = new object[] { "colours", basecolours };
+
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            Matrix4 a = ModelTranslation;
+            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
+            Vector3 b = WorldPositionOffset;
+            GL.ProgramUniform3(Id, 23, ref b);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
 @"
@@ -497,25 +524,5 @@ void main(void)
 ";
         }
 
-        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
-        public Vector3 WorldPositionOffset { get; set; } = Vector3.Zero;
-
-        public GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
-        {
-            object[] cvalues = null;
-            if (basecolours != null)
-                cvalues = new object[] { "colours", basecolours };
-
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            Matrix4 a = ModelTranslation;
-            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            Vector3 b = WorldPositionOffset;
-            GL.ProgramUniform3(Id, 23, ref b);
-            GLOFC.GLStatics.Check();
-        }
     }
 }

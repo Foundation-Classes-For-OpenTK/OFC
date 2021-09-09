@@ -131,7 +131,7 @@ void main(void)
                                );
 
 
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
             items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
             GLRenderState rt = GLRenderState.Tri();
@@ -211,7 +211,7 @@ void main(void)
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             //gl3dcontroller.Redraw();
         }
 

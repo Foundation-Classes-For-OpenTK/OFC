@@ -36,7 +36,11 @@ namespace GLOFC.GL4
 
         public uint CurrentGeneration { get { return matrixbuffers.CurrentGeneration; } set { matrixbuffers.CurrentGeneration = value; } }
 
-        public GLBitmaps(string name, GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
+        public Size BitmapSize {get { return bitmapsize; } }
+
+        public GLBitmaps(string name, GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, 
+                                            OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat = OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, 
+                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
         {
             this.name = name;
 
@@ -59,6 +63,7 @@ namespace GLOFC.GL4
             renderstate.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
             texmipmaplevels = mipmaplevels;
+            this.textureformat = textureformat;
         }
 
 
@@ -73,7 +78,7 @@ namespace GLOFC.GL4
                             StringFormat fmt = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
                             float alphafadescalar = 0, 
-                            float alphaenddistance = 0,
+                            float alphafadepos = 0,
                             bool visible = true
                          )
         {
@@ -87,7 +92,7 @@ namespace GLOFC.GL4
 
             BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
-            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphaenddistance, ownbitmap:false, visible);
+            Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, ownbitmap:false, visible);
         }
 
         // add a bitmap, indicate if owned by class or you.  Gives back group no, position in group, total in group
@@ -99,12 +104,12 @@ namespace GLOFC.GL4
                             Vector3 rotationradians,        // ignored if rotates are on
                             bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
                             float alphafadescalar = 0, 
-                            float alphafadeend = 0,
+                            float alphafadepos = 0,
                             bool ownbitmap = false,
                             bool visible=  true
                          )
         {
-            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadeend, 0, visible);
+            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
@@ -118,7 +123,7 @@ namespace GLOFC.GL4
         {   
             var texture = new GLTexture2DArray();
             items.Add(texture);
-            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.MaxPerGroup, texmipmaplevels);
+            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.MaxPerGroup, textureformat, texmipmaplevels);
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);
@@ -200,6 +205,7 @@ namespace GLOFC.GL4
 
         private Size bitmapsize;
         private int texmipmaplevels;
+        private OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat;
         private GLItemsList items = new GLItemsList();      // we have our own item list, which is disposed when we dispose
         private List<GLTexture2DArray> grouptextureslist = new List<GLTexture2DArray>();
         private List<GLRenderableItem> grouprenderlist = new List<GLRenderableItem>();

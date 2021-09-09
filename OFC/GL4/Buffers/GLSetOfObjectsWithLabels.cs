@@ -41,7 +41,7 @@ namespace GLOFC.GL4
                                         int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
                                         int mingroups,      // minimum number of groups
                                         IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc, PrimitiveType objpt,   // object shader, buffer, vertexes and its rendercontrol
-                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc,   // text shader, text size, and rendercontrol
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc, SizedInternalFormat textureformat,  // text shader, text size, and rendercontrol
                                         int debuglimittexturedepth = 0)     // set to limit texture depth per set
         {
             this.name = name;
@@ -57,6 +57,7 @@ namespace GLOFC.GL4
             this.textshader = textshader;
             this.texturesize = texturesize;
             this.textrc = textrc;
+            this.textureformat = textureformat;
             this.limittexturedepth = debuglimittexturedepth;
         }
 
@@ -283,7 +284,7 @@ namespace GLOFC.GL4
         private void AddSet()       // add a new set
         {
             var owl = new GLObjectsWithLabels();
-            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, objpt, texturesize, textrc, limittexturedepth);
+            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, objpt, texturesize, textrc, textureformat, limittexturedepth);
             robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
             robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
             set.Add(owl);
@@ -308,6 +309,7 @@ namespace GLOFC.GL4
         private IGLProgramShader textshader;                // text data
         private Size texturesize;
         private GLRenderState textrc;
+        private SizedInternalFormat textureformat;
 
         private int limittexturedepth;                      // debug, limit texture depth
 

@@ -72,14 +72,14 @@ namespace TestOpenTk
             items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
             items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
 
-            items.Add( new GLTexture2D(Properties.Resources.dotted)  ,           "dotted"    );
-            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp), "logo8bpp");
-            items.Add(new GLTexture2D(Properties.Resources.dotted2), "dotted2");
-            items.Add(new GLTexture2D(Properties.Resources.wooden), "wooden");
-            items.Add(new GLTexture2D(Properties.Resources.shoppinglist), "shoppinglist");
-            items.Add(new GLTexture2D(Properties.Resources.golden), "golden");
-            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8), "smile");
-            items.Add(new GLTexture2D(Properties.Resources.moonmap1k), "moon");    
+            items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  ,           "dotted"    );
+            items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
+            items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
+            items.Add(new GLTexture2D(Properties.Resources.wooden, SizedInternalFormat.Rgba8), "wooden");
+            items.Add(new GLTexture2D(Properties.Resources.shoppinglist, SizedInternalFormat.Rgba8), "shoppinglist");
+            items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
+            items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8, SizedInternalFormat.Rgba8), "smile");
+            items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");    
 
             #region coloured lines
 
@@ -99,7 +99,7 @@ namespace TestOpenTk
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed }));
             }
-            if (true)
+            if (false)
             {
                 GLRenderState lines = GLRenderState.Lines(1);
 
@@ -126,9 +126,15 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("COSOT"), "scopen",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
-                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
+                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(2f),
                                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
-                                            new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
+                                            new GLRenderDataTranslationRotation(new Vector3(0, 0, 0))
+                            ));
+                rObjects.Add(items.Shader("COSOT"), "scopen2",
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(2f),
+                                            new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
+                                            new GLRenderDataTranslationRotation(new Vector3(10, 10, 10))
                             ));
 
             }
@@ -137,7 +143,24 @@ namespace TestOpenTk
 
             #region bitmap Renderer
 
+            if (true)
+            {
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+                {
+                    Size bitmapsize = new Size(128, 40);
+                    Vector3 bannersize = new Vector3(20, 0, 0);
+                    Font f = new Font("MS sans serif", 8f);
 
+                    tim = new GLBitmaps("bitmap1", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true, 2);      // group 2
+                    items.Add(tim);
+                    tim.Add("T1", "SingleTest", f, Color.White, Color.Red, new Vector3(10, 10, 10),
+                                            bannersize, new Vector3(0,0,0), fmt, alphafadescalar: 10, alphafadepos: 5, rotatetoviewer:true);
+
+                }
+            }
+
+
+            if ( false)
             {
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 {
@@ -146,9 +169,9 @@ namespace TestOpenTk
                     Vector3 bannersize = new Vector3(width, 0, 0);
                     Font f = new Font("MS sans serif", 8f);
 
-                    tim = new GLBitmaps("bitmap1", rObjects, bitmapsize, 3, false, true,2);      // group 2
+                    tim = new GLBitmaps("bitmap1", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true,2);      // group 2
                     items.Add(tim);
-                    tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadescalar: 10, alphaenddistance: 5);
+                    tim.Add("T1", "MFred", f, Color.White, Color.Red, new Vector3(-10, 5, -10), bannersize, new Vector3(-90F.Radians(), 0, 0), fmt, alphafadescalar: 10, alphafadepos: 5);
                     tim.Add("T2", "MJim", f, Color.White, Color.Red, new Vector3(0, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true);
                     tim.Add("T3", "MGeorge", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
                     tim.Remove("T2");
@@ -156,7 +179,7 @@ namespace TestOpenTk
                     tim.Remove("T3");       // meaning group 2 should be empty .. test it
                    // tim.Add("T3a", "M2George", f, Color.White, Color.Red, new Vector3(10, 5, -10), bannersize, new Vector3(0, 0, 0), fmt, rotatetoviewer: true, rotateelevation: true);
 
-                    tim2 = new GLBitmaps("bitmap2", rObjects, bitmapsize, 3, false, true,25);
+                    tim2 = new GLBitmaps("bitmap2", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true,25);
                     items.Add(tim2);
                     for (int i = 0; i < 50; i++)
                     {
@@ -227,7 +250,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             //  gl3dcontroller.Redraw();
         }
 

@@ -16,6 +16,7 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL4;
+using System.Drawing;
 
 namespace GLOFC.GL4
 {
@@ -25,11 +26,12 @@ namespace GLOFC.GL4
     {
         // tape is segmented, and roty determines if its flat to Y or not, use with TriangleStrip
         // series of tapes with a margin between them.  Set up to provide the element index buffer indices as well
-        // aligns the element indexes start point for each tape to mod 4 to allow trianglestrip to work properly
+        // aligns the element indexes start point for each tape to modulo N to allow trianglestrip to work properly (4 normally)
+        // pass in colour array, or null, to add colour information to tape W values.  Note colour is one less in length than points array
         // return list of points, and element buffer indexes, and the indexor draw element type
 
-        public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, float width, float segmentlength = 1, float rotationaroundy = 0, 
-                                                       float margin = 0, uint restartindex = 0xffffffff)
+        public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, Color[] colours, float width, float segmentlength = 1, float rotationaroundy = 0, 
+                                                       float margin = 0, uint restartindex = 0xffffffff, int modulo = 4)
         {
             List<Vector4> vec = new List<Vector4>();
             List<uint> eids = new List<uint>();
@@ -41,17 +43,26 @@ namespace GLOFC.GL4
 
                 for (int i = 0; i < points.Length - 1; i++)
                 {
-                    while( vec.Count % 4 != 0 )     // must be on a boundary of four for the vertex shaders which normally are used
+                    Vector4[] segment = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, margin);
+
+                    if ( colours != null )
+                    {
+                        int w = colours[i].PackRGB();
+                        for (int j = 0; j < segment.Length; j++)
+                            segment[j].W = w;
+                    }
+
+                    while ( vec.Count % modulo != 0 )     // must be on a boundary of four for the vertex shaders which normally are used
                     {
                         vec.Add(new Vector4(1000,2000,3000,1));     // dummy value we can recognise
                         vno++;
                     }
 
-                    Vector4[] vec1 = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, margin);
-                  //  System.Diagnostics.Debug.WriteLine($"At {vno} vec {vec.Count} add {vec1.Length}");
-                    vec.AddRange(vec1);
+                    //  System.Diagnostics.Debug.WriteLine($"At {vno} vec {vec.Count} add {vec1.Length}");
 
-                    for (int l = 0; l < vec1.Length; l++)
+                    vec.AddRange(segment);
+
+                    for (int l = 0; l < segment.Length; l++)
                         eids.Add(vno++);
 
                     eids.Add(restartindex);

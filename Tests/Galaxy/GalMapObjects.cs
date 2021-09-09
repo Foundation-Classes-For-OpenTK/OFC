@@ -12,18 +12,13 @@
  * governing permissions and limitations under the License.
  */
 
- using EliteDangerousCore.EDSM;
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+using EliteDangerousCore.EDSM;
 using GLOFC;
 using GLOFC.GL4;
-using System;
+using OpenTK;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
@@ -62,22 +57,31 @@ namespace TestOpenTk
         {
             this.galmap = galmap;
 
-            Bitmap[] images = galmap.RenderableMapTypes.Select(x => x.Image as Bitmap).ToArray();
-            IGLTexture texarray = items.Add(new GLTexture2DArray(images, mipmaplevel:1, genmipmaplevel:3, bmpsize:new Size(256,256)), "GalObjTex");     // 256 is defined normal size
+            // first gets the images and make a 2d array texture for them
 
-            // a look at vertex shader
-            var vert = new GLPLVertexScaleLookat(rotate:true, rotateelevation:false, commontransform:false, autoscale:1000, autoscalemin:0.1f, autoscalemax:2f);
-            var tcs = new GLPLTesselationControl(10f);
-            tes = new GLPLTesselationEvaluateSinewave(0.2f,1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
-            var frag = new GLPLFragmentShaderTexture2DDiscard(1);       // binding 1 - takes image pos from tes. imagepos < 0 means discard
+            Bitmap[] images = galmap.RenderableMapTypes.Select(x => x.Image as Bitmap).ToArray();
+            // 256 is defined normal size
+            var objtex = new GLTexture2DArray(images, mipmaplevel: 1, genmipmaplevel: 3, bmpsize: new Size(256, 256), internalformat: OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, alignment: ContentAlignment.BottomCenter);
+            IGLTexture texarray = items.Add(objtex, "GalObjTex");
+
+            // now build the shaders
+
+            const int texbindingpoint = 1;
+            var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false,       // a look at vertex shader
+                                                        autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
+            var tcs = new GLPLTesselationControl(2f);
+            tes = new GLPLTesselationEvaluateSinewave(0.2f, 1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
+            var frag = new GLPLFragmentShaderTexture2DDiscard(texbindingpoint);       // binding - takes image pos from tes. imagepos < 0 means discard
 
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);
-            items.Add( objectshader);
+            items.Add(objectshader);
 
-            objectshader.StartAction += (s,m) =>
+            objectshader.StartAction += (s, m) =>
             {
-                texarray.Bind(1);   // bind tex array to 1, matching above
+                texarray.Bind(texbindingpoint);   // bind tex array to, matching above
             };
+
+            // now the RenderControl for the objects
 
             GLRenderState rt = GLRenderState.Patches(4);
             rt.DepthTest = depthtest;
@@ -85,8 +89,10 @@ namespace TestOpenTk
             // create a quad and all entries of the renderable map objects, zero at this point, with a zero instance count. UpdateEnables will fill it in later
             // but we need to give it the maximum buffer length at this point
 
+            const float objsize = 10.0f;        // size of object on screen
+
             ridisplay = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, rt,
-                                GLShapeObjectFactory.CreateQuad2(50.0f, 50.0f),         // quad2 4 vertexts
+                                GLShapeObjectFactory.CreateQuad2(objsize, objsize),         // quad2 4 vertexts
                                 new Vector4[galmap.RenderableMapObjects.Length],        // world positions
                                 ic: 0, seconddivisor: 1);
 
@@ -96,7 +102,7 @@ namespace TestOpenTk
 
             rObjects.Add(objectshader, "galmapobj", ridisplay);
 
-            // find
+            // add a find shader to look them up
 
             var geofind = new GLPLGeoShaderFindTriangles(bufferfindbinding, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
             items.Add(geofind);
@@ -104,52 +110,62 @@ namespace TestOpenTk
             findshader = items.NewShaderPipeline(null, vert, tcs, tes, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
 
             // hook to modelworldbuffer, at modelpos and worldpos.  UpdateEnables will fill in instance count
-            rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, GLRenderState.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount, 
+            rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, GLRenderState.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount,
                                                                             modelworldbuffer, worldpos, null, ic: 0, seconddivisor: 1);
 
             GLStatics.Check();
 
-            // Text renderer
-            textrenderer = new GLBitmaps("bm-galmapobjects", rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
+            // Text renderer for the labels
+
+            textrenderer = new GLBitmaps("bm-galmapobjects", rObjects, new Size(128, 40), depthtest: depthtest, cullface: false, textureformat: OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
             items.Add(textrenderer);
 
-            var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
+            // now make the text up for all the objects above
 
-            List<Vector3> posset = new List<Vector3>();
-
-            Font fnt = new Font("Arial", 8.5F);
-            using (StringFormat fmt = new StringFormat())
+            using (Font fnt = new Font("Arial", 8.5F))
             {
-                fmt.Alignment = StringAlignment.Center;
-                for(int i = 0 ; i < renderablegalmapobjects.Length; i++)
+                using (StringFormat fmt = new StringFormat())
                 {
-                    var o = renderablegalmapobjects[i];
-                    float offset = -6;
+                    fmt.Alignment = StringAlignment.Center;
 
-                    for (int j = 0; j < i; j++)
+                    var renderablegalmapobjects = galmap.RenderableMapObjects; // list of enabled entries
+
+                    List<Vector3> posset = new List<Vector3>();
+
+                    float offscale = objsize * (0.5f + (float)textrenderer.BitmapSize.Height / (float)textrenderer.BitmapSize.Width / 2);       // this is the nominal centre of the text bitmap, offset in Y to the object
+
+                    for (int i = 0; i < renderablegalmapobjects.Length; i++)
                     {
-                        var d1 = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
-                        var d2 = posset[j];     // where it was placed.
-                        var diff = d1 - d2;
+                        var o = renderablegalmapobjects[i];
+                        float offset = -offscale;
 
-                        if (diff.Length < 4)
+                        for (int j = 0; j < i; j++)     // look up previous ones and see if we labeled it before
                         {
-                            if (offset > 0)
-                                offset = -offset - 6;
-                            else
-                                offset *= -1;
-                           // System.Diagnostics.Debug.WriteLine($"close {renderablegalmapobjects[i].name} {d1} to {renderablegalmapobjects[j].name} {d2} {diff} select {offset}");
-                        }
-                    }
+                            var d1 = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
+                            var d2 = posset[j];     // where it was placed.
+                            var diff = d1 - d2;
 
-                    Vector3 pos = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
-                    posset.Add(pos);
-                    //System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
-                    textrenderer.Add(o.id, o.name, fnt, 
-                        Color.White,Color.FromArgb(0,255,0,0),//Color.Red,//Color.Transparent, 
-                        pos,
-                        new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: false, rotateelevation: false, 
-                        alphafadescalar: -200, alphaenddistance: 300); // eyedistance < alphaenddistance, scaling by scalar.
+                            if (diff.Length < offscale)        // close
+                            {
+                                if (offset > 0)         // if offset is positive, flip below and increase again
+                                    offset = -offset - offscale;
+                                else
+                                    offset *= -1;       // flip over top
+                                                        // System.Diagnostics.Debug.WriteLine($"close {renderablegalmapobjects[i].name} {d1} to {renderablegalmapobjects[j].name} {d2} {diff} select {offset}");
+                            }
+                        }
+
+                        Vector3 pos = new Vector3(o.points[0].X, o.points[0].Y + offset, o.points[0].Z);
+                        posset.Add(pos);
+                        //System.Diagnostics.Debug.WriteLine($"{renderablegalmapobjects[i].name} at {pos} {offset}");
+
+                        textrenderer.Add(o.id, o.name, fnt,
+                            Color.White, Color.FromArgb(0, 255, 0, 255),
+                            pos,
+                            new Vector3(objsize, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: dorotate, rotateelevation: doelevation,
+                            alphafadescalar: -100, alphafadepos: 500); // fade in, alpha = 0 at >500, 1 at 400
+
+                    }
                 }
             }
 
@@ -173,7 +189,7 @@ namespace TestOpenTk
                     indextoentry[mwpos++] = entry;
                 }
 
-                textrenderer.SetVisiblityRotation(o.id, en, true, false);
+                textrenderer.SetVisiblityRotation(o.id, en, dorotate, doelevation);
                 entry++;
             }
 
@@ -229,6 +245,9 @@ namespace TestOpenTk
         private int[] indextoentry;
         private Dictionary<string, bool> State { get; set; } = new Dictionary<string, bool>();       // if not present, its on, else state 
         private GalacticMapping galmap;
+
+        private const bool dorotate = true;
+        private const bool doelevation = false;
     }
 
 }

@@ -77,6 +77,8 @@ namespace GLOFC.GL4
             MatrixBuffer.StartWrite(GLLayoutStandards.Mat4size * pos, GLLayoutStandards.Mat4size);
             MatrixBuffer.Write(mat);
             MatrixBuffer.StopReadWrite();
+
+            //float[] stored = MatrixBuffer.ReadFloats(GLLayoutStandards.Mat4size * pos, 16, true);
             return pos;
         }
 

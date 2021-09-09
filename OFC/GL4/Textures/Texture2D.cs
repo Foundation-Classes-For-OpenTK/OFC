@@ -27,17 +27,18 @@ namespace GLOFC.GL4
         {
         }
 
-        public GLTexture2D(Bitmap bmp, int bitmipmaplevel = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
-                            int genmipmaplevel = 1, bool ownbitmaps = false)
+        public GLTexture2D(Bitmap bmp, SizedInternalFormat internalformat, int bitmipmaplevel = 1,
+                            int genmipmaplevel = 1, bool ownbitmaps = false, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
-            CreateLoadBitmap(bmp, bitmipmaplevel, internalformat, genmipmaplevel, ownbitmaps);
+            CreateLoadBitmap(bmp, internalformat, bitmipmaplevel, genmipmaplevel, ownbitmaps, alignment);
         }
 
         // You can call as many times to create textures. Only creates one if required
         // mipmaplevels does not apply if multisample > 0 
+        // Rgba8 is the normal one to pick
 
-        public void CreateOrUpdateTexture(int width, int height, int mipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
-                                            int multisample = 0, bool fixedmultisampleloc = false)
+        public void CreateOrUpdateTexture(int width, int height, SizedInternalFormat internalformat, int mipmaplevels = 1,
+                                                            int multisample = 0, bool fixedmultisampleloc = false)
         {
             // if not there, or changed, we can't just replace it, size is fixed. Delete it
 
@@ -52,6 +53,7 @@ namespace GLOFC.GL4
                 MultiSample = multisample;
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisample : TextureTarget.Texture2D, 1, out int id);
+                GLStatics.Check();
                 Id = id;
 
                 if (MultiSample > 0)
@@ -96,6 +98,7 @@ namespace GLOFC.GL4
                 MipMapLevels = 1;
 
                 GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
+                GLStatics.Check();
                 Id = id;
 
                 GL.BindTexture(TextureTarget.Texture2D, Id);
@@ -118,15 +121,15 @@ namespace GLOFC.GL4
 
         // You can reload the bitmap, it will create a new Texture if required
 
-        public void CreateLoadBitmap(Bitmap bmp, int bitmipmaplevels = 1, SizedInternalFormat internalformat = SizedInternalFormat.Rgba32f, 
-                                     int genmipmaplevel = 1, bool ownbitmap = false)
+        public void CreateLoadBitmap(Bitmap bmp, SizedInternalFormat internalformat, int bitmipmaplevels = 1,
+                                                int genmipmaplevel = 1, bool ownbitmap = false, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
             int h = MipMapHeight(bmp, bitmipmaplevels);
             int texmipmaps = Math.Max(bitmipmaplevels, genmipmaplevel);
 
-            CreateOrUpdateTexture(bmp.Width, h, texmipmaps, internalformat);
+            CreateOrUpdateTexture(bmp.Width, h, internalformat, texmipmaps);
 
-            LoadBitmap(bmp, -1, ownbitmap , bitmipmaplevels);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
+            LoadBitmap(bmp, -1, ownbitmap , bitmipmaplevels, alignment);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
 
             if (bitmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);

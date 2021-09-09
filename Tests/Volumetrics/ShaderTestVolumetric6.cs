@@ -156,7 +156,7 @@ namespace TestOpenTk
                     numberpos2[i] *= Matrix4.CreateTranslation(new Vector3(v, 0, -35500));
                 }
 
-                GLTexture2DArray array = new GLTexture2DArray(numbers, ownbitmaps: true);
+                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
                 items.Add( array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
@@ -189,7 +189,7 @@ namespace TestOpenTk
                 new Vector4(hsize,-vsize,zsize,1),
             };
 
-            items.Add(new GLTexture2D(Properties.Resources.Galaxy_L), "gal");
+            items.Add(new GLTexture2D(Properties.Resources.Galaxy_L, SizedInternalFormat.Rgba8), "gal");
 
             items.Add(new ShaderV2(items.Tex("gal")), "V2");
 
@@ -317,7 +317,7 @@ namespace TestOpenTk
         
         private void SystemTick(object sender, EventArgs e)
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
         }
 
         private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)

@@ -24,7 +24,7 @@ namespace GLOFC.GL4
     {
         OpenTK.Graphics.Color4 col;
 
-        public string Code()
+        private string Code()
         {
             return
 @"
@@ -51,7 +51,7 @@ void main(void)
 
     public class GLPLFragmentShaderUniformColor : GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"
@@ -80,7 +80,7 @@ void main(void)
 
     public class GLPLFragmentShaderVSColor : GLShaderPipelineShadersBase
     {
-        public string Code()
+        private string Code()
         {
             return
 @"

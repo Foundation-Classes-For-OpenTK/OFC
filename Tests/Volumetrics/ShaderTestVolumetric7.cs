@@ -155,7 +155,7 @@ namespace TestOpenTk
                     BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                 }
 
-                GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, ownbitmaps: true);
+                GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, SizedInternalFormat.Rgba8, ownbitmaps: true);
                 items.Add(numtextures, "Nums");
 
                 Matrix4[] numberposx = new Matrix4[(right - left) / 1000 + 1];
@@ -195,7 +195,7 @@ namespace TestOpenTk
             }
 
             {
-                items.Add(new GLTexture2D(numbitmaps[45]), "solmarker");
+                items.Add(new GLTexture2D(numbitmaps[45], SizedInternalFormat.Rgba8), "solmarker");
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
@@ -210,7 +210,7 @@ namespace TestOpenTk
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, -1000, 0))
                              ));
-                items.Add( new GLTexture2D(Properties.Resources.dotted), "sag");
+                items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "sag");
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
@@ -221,7 +221,7 @@ namespace TestOpenTk
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, -2000, 25899))
                              ));
-                items.Add(new GLTexture2D(Properties.Resources.dotted2), "bp");
+                items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "bp");
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq, 
                              GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
@@ -268,7 +268,7 @@ namespace TestOpenTk
                 float[] gdata = gaussiantex.GetTextureImageAs<float>(OpenTK.Graphics.OpenGL4.PixelFormat.Red); // read back check
 
                 // load one upside down and horz flipped, because the volumetric co-ords are 0,0,0 bottom left, 1,1,1 top right
-                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180);
+                GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180, SizedInternalFormat.Rgba8);
                 items.Add( galtex, "gal");
                 GalaxyShader gs = new GalaxyShader();
                 items.Add( gs, "Galaxy");
@@ -361,7 +361,7 @@ void main(void)
         
         private void SystemTick(object sender, EventArgs e)
         {
-            gl3dcontroller.HandleKeyboardSlewsInvalidate(true, OtherKeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
 
         }
 

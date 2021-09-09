@@ -28,7 +28,7 @@ namespace EliteDangerousCore.EDSM
         public List<GalacticMapObject> galacticMapObjects = null;
         public List<GalMapType> galacticMapTypes = null;
 
-        public GalacticMapObject[] RenderableMapObjects { get { return galacticMapObjects.Where(x => x.galMapType.Image != null).ToArray(); } }
+        public GalacticMapObject[] RenderableMapObjects { get { return galacticMapObjects.Where(x => x.galMapType.Image != null ).ToArray(); } }
         public GalMapType[] RenderableMapTypes { get { return galacticMapTypes.Where(x => x.Image != null).ToArray(); } }
 
         public bool Loaded { get { return galacticMapObjects != null; } }
