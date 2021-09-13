@@ -542,7 +542,6 @@ namespace TestOpenTk
 
         public void LoadState(MapSaver defaults)
         {
-            return;
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 

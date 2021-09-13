@@ -59,9 +59,12 @@ namespace TestOpenTk
 
             GLBaseControl.Themer = Theme;
 
+            // detect mouse press with menu open and close it
             map.displaycontrol.GlobalMouseDown += (ctrl, e) =>
             {
-                if (map.displaycontrol["Galmenu"]!= null && (ctrl == null || !map.displaycontrol["Galmenu"].IsThisOrChildOf(ctrl)))       // true because we don't want action if galmenu is closed
+                // if map open, and no ctrl hit or ctrl is not a child of galmenu
+
+                if (map.displaycontrol["Galmenu"]!= null && (ctrl == null || !map.displaycontrol["Galmenu"].IsThisOrChildOf(ctrl)))       
                 {
                     ((GLForm)map.displaycontrol["Galmenu"]).Close();
                 }
@@ -69,22 +72,7 @@ namespace TestOpenTk
 
         }
 
-        static void Theme(GLBaseControl s)      // run on each control during add, theme it
-        {
-            var cb = s as GLCheckBox;
-            if ( cb != null )
-            {
-                float[][] colorMatrixElements = {
-                           new float[] {0.5f,  0,  0,  0, 0},        // red scaling factor of 0.5
-                           new float[] {0,  0.5f,  0,  0, 0},        // green scaling factor of 1
-                           new float[] {0,  0,  0.5f,  0, 0},        // blue scaling factor of 1
-                           new float[] {0,  0,  0,  1, 0},        // alpha scaling factor of 1
-                           new float[] {0.0f, 0.0f, 0.0f, 0, 1}};    // three translations of 
-
-                var colormap1 = new System.Drawing.Imaging.ColorMap();
-                cb.SetDrawnBitmapUnchecked(new System.Drawing.Imaging.ColorMap[] { colormap1 }, colorMatrixElements);
-            }
-        }
+        // on menu button..
 
         public void ShowMenu()
         {
@@ -100,12 +88,16 @@ namespace TestOpenTk
             pform.ForeColor = Color.Orange;
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
             pform.Resizeable = pform.Moveable = false;
+
+            // provide opening animation
             pform.ScaleWindow = new SizeF(0.0f, 0.0f);
             pform.Animators.Add(new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(1, 1)));
+
+            // and closing animation
             pform.FormClosing += (f,e) => { 
-                e.Handled = true;
-                var ani = new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(0, 0));
-                ani.FinishAction += (a, c, t) => { pform.ForceClose(); };
+                e.Handled = true;       // stop close
+                var ani = new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(0, 0));       // add a close animation
+                ani.FinishAction += (a, c, t) => { pform.ForceClose(); };   // when its complete, force close
                 pform.Animators.Add(ani); 
             };
 
@@ -320,5 +312,24 @@ namespace TestOpenTk
                          + c.TargetPosition.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +
                          c.EyePosition.X.ToStringInvariant("N1") + " ," + c.EyePosition.Y.ToStringInvariant("N1") + " ," + c.EyePosition.Z.ToStringInvariant("N1");
         }
+
+        static void Theme(GLBaseControl s)      // run on each control during add, theme it
+        {
+            var cb = s as GLCheckBox;
+            if (cb != null)
+            {
+                float[][] colorMatrixElements = {
+                           new float[] {0.5f,  0,  0,  0, 0},        // red scaling factor of 0.5
+                           new float[] {0,  0.5f,  0,  0, 0},        // green scaling factor of 1
+                           new float[] {0,  0,  0.5f,  0, 0},        // blue scaling factor of 1
+                           new float[] {0,  0,  0,  1, 0},        // alpha scaling factor of 1
+                           new float[] {0.0f, 0.0f, 0.0f, 0, 1}};    // three translations of 
+
+                var colormap1 = new System.Drawing.Imaging.ColorMap();
+                cb.SetDrawnBitmapUnchecked(new System.Drawing.Imaging.ColorMap[] { colormap1 }, colorMatrixElements);
+            }
+        }
+
+
     }
 }
