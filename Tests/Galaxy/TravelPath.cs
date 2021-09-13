@@ -21,9 +21,10 @@ namespace TestOpenTk
 
     class HistoryEntry
     {
-        public HistoryEntry(DateTime utc, string n, double x, double y, double z) { EventTimeUTC = utc; System = new SystemClass() { Name = n, X = x, Y = y, Z = z }; }
+        public HistoryEntry(DateTime utc, string n, double x, double y, double z, Color pos) { EventTimeUTC = utc; System = new SystemClass() { Name = n, X = x, Y = y, Z = z }; JumpColor = pos; }
         public SystemClass System;
         public DateTime EventTimeUTC;
+        public Color JumpColor;
     }
 
     class TravelPath
@@ -66,31 +67,6 @@ namespace TestOpenTk
             Refresh();
         }
 
-        // Texture, triangle strip
-        // Requires:
-        //      location 0 : position: vec4 vertex array of positions world
-        //      tex binding 1 : textureObject : texture of bitmap
-        //      uniform 0 : GL MatrixCalc
-        //      location 24 : uniform of texture offset (written by start automatically)
-
-        // TBD TBD
-
-        public class GLTexturedShaderTriangleStripWithWorldCoord : GLShaderPipeline
-        {
-            GLPLFragmentShaderTextureOffset frag;
-
-            // backtoback is set if its a index draw
-            public GLTexturedShaderTriangleStripWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-            {
-                frag = new GLPLFragmentShaderTextureOffset();
-                AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), frag);
-            }
-
-            public Vector2 TexOffset { get { return frag.TexOffset; } set { frag.TexOffset = value; } }
-        }
-
-
-
 
         private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, int bufferfindbinding)
         {
@@ -115,10 +91,11 @@ namespace TestOpenTk
             lastpos = lastone == null ? -1 : currentfilteredlist.IndexOf(lastone);        // may be -1, may have been removed
 
             var positionsv4 = currentfilteredlist.Select(x => new Vector4((float)x.System.X, (float)x.System.Y, (float)x.System.Z, 0)).ToArray();
+            var colours = currentfilteredlist.Select(x => x.JumpColor).ToArray();
             float seglen = tapesize * 10;
 
             // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
-            var tape = GLTapeObjectFactory.CreateTape(positionsv4, null, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
+            var tape = GLTapeObjectFactory.CreateTape(positionsv4, colours, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
 
             if (ritape == null) // first time..
             {
@@ -128,7 +105,9 @@ namespace TestOpenTk
                 items.Add(tapetex);
                 tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
-                tapeshader = new GLTexturedShaderTriangleStripWithWorldCoord(); // tape shader, expecting triangle strip co-ords
+                tapefrag = new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0));
+                var vert = new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB();
+                tapeshader = new GLShaderPipeline(vert, tapefrag);
                 items.Add(tapeshader);
 
                 GLRenderState rts = GLRenderState.Tri(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
@@ -212,7 +191,7 @@ namespace TestOpenTk
 
         public void Update(ulong time, float eyedistance)
         {
-            const int rotperiodms = 10000;
+            const int rotperiodms = 20000;
             time = time % rotperiodms;
             float fract = (float)time / rotperiodms;
             float angle = (float)(2 * Math.PI * fract);
@@ -220,7 +199,7 @@ namespace TestOpenTk
             float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
             //System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
             sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
-            tapeshader.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
+            tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
         public HistoryEntry FindSystem(Point viewportloc, GLRenderState state, Size viewportsize)
@@ -290,7 +269,8 @@ namespace TestOpenTk
             return currentfilteredlist[lastpos];
         }
 
-        private GLTexturedShaderTriangleStripWithWorldCoord tapeshader;
+        private GLShaderPipeline tapeshader;
+        private GLPLFragmentShaderTextureTriStripColorReplace tapefrag;
         private GLBuffer tapepointbuf;
         private GLRenderableItem ritape;
 

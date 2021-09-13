@@ -345,18 +345,20 @@ namespace TestOpenTk
                 Random rnd = new Random(52);
                 List<HistoryEntry> pos = new List<HistoryEntry>();
                 DateTime start = new DateTime(2020, 1, 1);
+                Color[] colors = new Color[] { Color.Red, Color.Green, Color.Blue, Color.White, Color.Black, Color.Purple, Color.Yellow };
                 for (int j = 0; j <= 200; j++)
                 {
+                    Color jc = colors[j % colors.Length];
                     int i = j * 10;
                     string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
-                        pos.Add(new HistoryEntry(start, name, i + rnd.Next(50), rnd.Next(50), i));
+                        pos.Add(new HistoryEntry(start, name, i + rnd.Next(50), rnd.Next(50), i, jc));
                     else if (i < 60000)
-                        pos.Add(new HistoryEntry(start, name, 60000 - i + rnd.Next(50), rnd.Next(50), i));
+                        pos.Add(new HistoryEntry(start, name, 60000 - i + rnd.Next(50), rnd.Next(50), i,jc));
                     else if (i < 90000)
-                        pos.Add(new HistoryEntry(start, name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i));
+                        pos.Add(new HistoryEntry(start, name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i,jc));
                     else 
-                        pos.Add(new HistoryEntry(start, name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000));
+                        pos.Add(new HistoryEntry(start, name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000,jc));
 
                     start = start.AddDays(1);
                 }
@@ -598,7 +600,7 @@ namespace TestOpenTk
             //if (displaycontrol != null && displaycontrol.RequestRender)
               //  glwfc.Invalidate();
             var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
-           // glwfc.Invalidate();
+            glwfc.Invalidate();
         }
 
         double fpsavg = 0;
@@ -902,7 +904,7 @@ namespace TestOpenTk
             if (kb.HasBeenPressed(Keys.F3, GLOFC.Controller.KeyboardMonitor.ShiftState.Shift))
             {
                 HistoryEntry prev = travelpath.CurrentList.Last();
-                travelpath.AddSystem(new HistoryEntry(DateTime.UtcNow, "new-" + newsys.ToString(), prev.System.X, prev.System.Y, prev.System.Z + 100));
+                travelpath.AddSystem(new HistoryEntry(DateTime.UtcNow, "new-" + newsys.ToString(), prev.System.X, prev.System.Y, prev.System.Z + 100, Color.DarkSalmon));
                 newsys++;
                 glwfc.Invalidate();
             }
