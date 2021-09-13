@@ -79,6 +79,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        public void ForceClose()        // ignore the OnClose and force close
+        {
+            OnClosed();
+            Remove(this);
+        }
+
         #region For inheritors
 
         public virtual void OnShown()   // only called if top level form

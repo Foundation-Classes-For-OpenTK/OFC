@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using System;
 using System.Drawing;
 
 namespace GLOFC.GL4.Controls
@@ -19,12 +20,17 @@ namespace GLOFC.GL4.Controls
     public interface IControlAnimation
     {
         void Animate(GLBaseControl cs, ulong timems);
+        Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
+        Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
     }
 
     public abstract class AnimateTimeBase : IControlAnimation
     {
         public ulong StartTime { get; set; }
         public ulong EndTime { get; set; }
+
+        public Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
+        public Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
 
         public enum StateType { Waiting, Running, Done };
         public StateType State = StateType.Waiting;
@@ -44,6 +50,7 @@ namespace GLOFC.GL4.Controls
             {
                 State = StateType.Running;
                 Start(cs);
+                StartAction?.Invoke(this, cs, timems);
             }
 
             if (State == StateType.Running)
@@ -55,6 +62,7 @@ namespace GLOFC.GL4.Controls
                 if (deltain >= 1.0)
                 {
                     End(cs);
+                    FinishAction?.Invoke(this, cs, timems);
                     State = StateType.Done;
                 }
                 else

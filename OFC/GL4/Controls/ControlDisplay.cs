@@ -196,7 +196,8 @@ namespace GLOFC.GL4.Controls
 
         public new void Animate(ulong ts)
         {
-            foreach (var c in ControlsIZ)
+            var controls = new List<GLBaseControl>(ControlsIZ);     // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
+            foreach (var c in controls)
             {
                 c.Animate(ts);
             }

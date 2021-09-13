@@ -100,6 +100,14 @@ namespace TestOpenTk
             pform.ForeColor = Color.Orange;
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
             pform.Resizeable = pform.Moveable = false;
+            pform.ScaleWindow = new SizeF(0.0f, 0.0f);
+            pform.Animators.Add(new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(1, 1)));
+            pform.FormClosing += (f,e) => { 
+                e.Handled = true;
+                var ani = new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(0, 0));
+                ani.FinishAction += (a, c, t) => { pform.ForceClose(); };
+                pform.Animators.Add(ani); 
+            };
 
             {   // top buttons
                 GLPanel p3d2d = new GLPanel("3d2d", new Rectangle(leftmargin, vpos, 80, iconsize), Color.Transparent);

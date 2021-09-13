@@ -680,7 +680,8 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible)
             {
-                foreach (var c in ControlsIZ)
+                var controlslist = new List<GLBaseControl>(ControlsIZ); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
+                foreach (var c in controlslist)
                     c.Animate(ts);
                 foreach (var a in Animators)
                     a.Animate(this, ts);

@@ -18,11 +18,9 @@ namespace TestOpenTk
         public Color ForeText { get; set; } = Color.White;
         public Color BackText { get; set; } = Color.Red;
 
-        private const int MaxObjectsAllowed = 10000000;
-        private const int MaxObjectsMargin = 10000;
+        private const int MaxObjectsAllowed = 10000;
+        private const int MaxObjectsMargin = 1000;
         private const int SectorSize = 100;
-        private const int MaxRequestsAllowed = 40;
-        private const int MaxLookupThreads = 40;
         private const int MaxGeneratedThreads = 40;
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
@@ -80,13 +78,13 @@ namespace TestOpenTk
 
         public void Request9BoxConditional(Vector3 newpos)
         {
-            if ((CurrentPos - newpos).Length >= SectorSize && generatedsectors.Count < MaxGeneratedThreads && slset.Objects < 500000)
+            if ((CurrentPos - newpos).Length >= SectorSize && generatedsectors.Count < MaxGeneratedThreads )
             {
-                if (CurrentPos.Z < -100000)
-                    CurrentPos = newpos;
-                newpos = new Vector3(CurrentPos.X, CurrentPos.Y, CurrentPos.Z + 300);
+                //if (CurrentPos.Z < -100000)
+                //    CurrentPos = newpos;
+                //newpos = new Vector3(CurrentPos.X, CurrentPos.Y, CurrentPos.Z + 300);
 
-          //      Request9x3Box(newpos);
+                Request9x3Box(newpos);
             }
         }
 
@@ -126,14 +124,13 @@ namespace TestOpenTk
                 // use normally
                 requestedsectors.Add(new Sector(pos));
 
-                ////
+                //// Debug only
                 //while (cleanbitmaps.TryDequeue(out Sector sectoclean))
                 //{
                 //    // System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sectoclean.pos}");
                 //    BitMapHelpers.Dispose(sectoclean.bitmaps);
                 //    sectoclean.bitmaps = null;
                 //}
-
                 //FillSectorThread(new Sector(pos));
 
                 //  System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {pos} request");

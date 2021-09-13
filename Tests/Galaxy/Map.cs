@@ -13,22 +13,18 @@
  */
 
 using EliteDangerousCore.EDSM;
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL4;
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using OpenTK;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using System.Diagnostics;
 
 namespace TestOpenTk
 {
@@ -92,6 +88,7 @@ namespace TestOpenTk
             items.Dispose();
         }
 
+        public ulong ElapsedTimems { get { return glwfc.ElapsedTimems; } }
 
         #region Initialise
 
@@ -463,6 +460,7 @@ namespace TestOpenTk
                 {
                     // MCUB set up by Controller3DDraw which did the work first
                     galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc);
+                    displaycontrol.Animate(glwfc.ElapsedTimems);
                     displaycontrol.Render(glwfc.RenderState,ts);
                 };
             }
