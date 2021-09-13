@@ -64,12 +64,12 @@ void main(void)
 
         // width/height/depth determine points, with wb/hb/db the granularity of the noise
 
-        public ComputeShaderNoise3D(int width, int height, int depth, int wb, int hb, int db, int binding = 3) : base(width / Localgroupsize, height / Localgroupsize, depth / Localgroupsize)
+        public ComputeShaderNoise3D(int width, int height, int depth, int wb, int hb, int db, int binding = 3, bool saveable = false) : base(width / Localgroupsize, height / Localgroupsize, depth / Localgroupsize)
         {
             System.Diagnostics.Debug.Assert(width % 8 == 0);
             System.Diagnostics.Debug.Assert(height % 8 == 0);
             System.Diagnostics.Debug.Assert(depth % 8 == 0);
-            CompileLink(gencode(width, height, depth, wb, hb, db, binding));
+            CompileLink(gencode(width, height, depth, wb, hb, db, binding),saveable:saveable);
         }
     }
 }

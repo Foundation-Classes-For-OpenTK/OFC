@@ -72,14 +72,12 @@ namespace GLOFC.GL4
             foreach (GLShader s in shaders)
                 GL.AttachShader(Id, s.Id);
 
-            if (separable)
-                GL.ProgramParameter(Id, ProgramParameterName.ProgramSeparable, 1);
+            GL.ProgramParameter(Id, ProgramParameterName.ProgramSeparable, separable ? 1:0);
 
             if (varyings != null)
                 GL.TransformFeedbackVaryings(Id, varyings.Length, varyings, varymode);      // this indicate varyings.
 
-            if (wantbinary)
-                GL.ProgramParameter(Id, ProgramParameterName.ProgramBinaryRetrievableHint, 1);
+            GL.ProgramParameter(Id, ProgramParameterName.ProgramBinaryRetrievableHint, wantbinary ? 1:0);
 
             GL.LinkProgram(Id);
             var info = GL.GetProgramInfoLog(Id);

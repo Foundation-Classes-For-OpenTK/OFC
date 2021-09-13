@@ -56,17 +56,22 @@ namespace GLOFC.GL4
         }
 
         // completeoutfile is output of file for debugging
-        public void CompileLink(string code, Object[] constvalues = null, string completeoutfile = null )
+        public void CompileLink(string code, Object[] constvalues = null, bool saveable = false, string completeoutfile = null )
         {
             Program = new GLProgram();
             string ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.ComputeShader, code, constvalues, completeoutfile);
             System.Diagnostics.Debug.Assert(ret == null, "Compute Shader", ret);
-            ret = Program.Link();
+            ret = Program.Link(wantbinary:saveable);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
             GLOFC.GLStatics.Check();
         }
 
-        protected void Load(byte[] bin, BinaryFormat binformat)
+        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        {
+            return Program.GetBinary(out binformat);
+        }
+
+        public void Load(byte[] bin, BinaryFormat binformat)
         {
             Program = new GLProgram(bin, binformat);
         }

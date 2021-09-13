@@ -470,9 +470,11 @@ namespace TestOpenTk
 
             #region Tape
 
-            var pls = new GLShaderPipeline(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), 
-                                    new GLPLFragmentShaderTextureTriStripColorReplace(1,Color.FromArgb(255,206,0,0)));
-            items.Add(pls, "tapeshader");
+            {
+                var pls = new GLShaderPipeline(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(),
+                                    new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0)));
+                items.Add(pls, "tapeshader");
+            }
 
             if ( (ctrl & (1<<11)) != 0)
             {

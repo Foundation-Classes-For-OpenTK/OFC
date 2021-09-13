@@ -84,12 +84,18 @@ namespace TestOpenTk
             items.Add(new GLColorShaderWithWorldCoord(), "COSW");
 
             var vs1 = new GLPLVertexShaderColorModelCoordWithObjectTranslation(new string[] { "modelpos" }, TransformFeedbackMode.InterleavedAttribs);
-            var vsbin = vs1.Program.GetBinary(out BinaryFormat binformat);      // round trip example thru binary
+            var vsbin = vs1.GetBinary(out BinaryFormat binformat);      // round trip example thru binary
 
             var vs = new GLPLVertexShaderColorModelCoordWithObjectTranslation(vsbin,binformat);
 
-            var fs = new GLPLFragmentShaderVSColor();
+            var fs = new GLPLFragmentShaderVSColor(true);
             var cosot = new GLShaderPipeline(vs, fs);
+
+            var pipelinebin = cosot.GetBinary(out BinaryFormat fmt);    // save out a pipeline shader
+
+            var cosotloaded = new GLShaderPipeline(pipelinebin, fmt);       // demo you can load them, but can't be used, since we then don't have all the component classes
+
+
             items.Add(cosot,"COSOT");
 
             ts1 = new GLOperationQueryTimeStamp();

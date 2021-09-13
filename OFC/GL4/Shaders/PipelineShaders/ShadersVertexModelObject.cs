@@ -32,6 +32,15 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
+        {
+            CompileLink(ShaderType.VertexShader, Code(), null, varyings, varymode, auxname: GetType().Name, saveable: saveable);
+        }
+        public GLPLVertexShaderColorModelCoordWithObjectTranslation(byte[] bin, BinaryFormat bf)
+        {
+            Load(bin, bf);
+        }
+
         private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
@@ -64,14 +73,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
-        {
-            CompileLink(ShaderType.VertexShader, Code(), null, varyings, varymode, auxname: GetType().Name, saveable: saveable);
-        }
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation(byte[] bin, BinaryFormat bf)
-        {
-            Load(bin, bf);
-        }
     }
 
     // Pipeline shader, Translation, Texture, Modelpos, transform
@@ -88,6 +89,11 @@ void main(void)
 
     public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
+        public GLPLVertexShaderTextureModelCoordWithObjectTranslation(bool saveable = false)
+        {
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, saveable: saveable);
+        }
+
         private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
             return
@@ -118,10 +124,6 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderTextureModelCoordWithObjectTranslation()
-        {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
-        }
     }
 
 

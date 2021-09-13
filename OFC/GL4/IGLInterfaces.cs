@@ -32,6 +32,8 @@ namespace GLOFC.GL4
 
     public interface IGLPipelineComponentShader : IGLShader  // All pipeline components must come from this
     {
+        byte[] GetBinary(out OpenTK.Graphics.OpenGL4.BinaryFormat binformat);     // must have linked with wantbinary
+        void Load(byte[] bin, OpenTK.Graphics.OpenGL4.BinaryFormat binformat);
     }
 
     public interface IGLProgramShader : IGLShader           // Shaders suitable for the rendering queue inherit from this - standard and pipeline
@@ -42,6 +44,9 @@ namespace GLOFC.GL4
         IGLShader GetShader(OpenTK.Graphics.OpenGL4.ShaderType st);    // get a subcomponent.  if the shader does not have subcomponents, its should return itself.
         T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType st) where T : IGLShader;    // get a subcomponent of type T from shader type st. Excepts if not present or no subcomponents
         T GetShader<T>() where T : IGLShader;    // get a subcomponent of type T. Excepts if not present or no subcomponents
+
+        byte[] GetBinary(out OpenTK.Graphics.OpenGL4.BinaryFormat binformat);     // must have linked with wantbinary
+        void Load(byte[] bin, OpenTK.Graphics.OpenGL4.BinaryFormat binformat);
 
         Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      // allow start and finish action events to be added to the shader..
         Action<IGLProgramShader> FinishAction { get; set; }

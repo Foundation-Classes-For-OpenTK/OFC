@@ -105,7 +105,12 @@ namespace GLOFC.GL4
             GLOFC.GLStatics.Check();
         }
 
-        protected void Load(byte[] bin, BinaryFormat binformat)
+        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        {
+            return Program.GetBinary(out binformat);
+        }
+
+        public void Load(byte[] bin, BinaryFormat binformat)
         {
             Program = new GLProgram(bin, binformat);
         }

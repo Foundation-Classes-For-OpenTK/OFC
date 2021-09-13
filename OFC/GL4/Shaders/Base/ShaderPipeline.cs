@@ -52,6 +52,13 @@ namespace GLOFC.GL4
             shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
         }
 
+        public GLShaderPipeline(byte[] bin, BinaryFormat binformat)
+        {
+            pipelineid = GL.GenProgramPipeline();
+            shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
+            Load(bin, binformat);
+        }
+
         public GLShaderPipeline(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader> fa = null) : this()
         {
             StartAction = sa;
@@ -110,6 +117,21 @@ namespace GLOFC.GL4
         {
             shaders[m] = p;
             GL.UseProgramStages(pipelineid, convmask[m], p.Id);
+            GLStatics.Check();
+        }
+
+        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        {
+            GL.GetProgram(pipelineid, (GetProgramParameterName)0x8741, out int len);
+            byte[] array = new byte[len];
+            GL.GetProgramBinary(pipelineid, len, out int binlen, out binformat, array);
+            GLStatics.Check();
+            return array;
+        }
+
+        public void Load(byte[] bin, BinaryFormat binformat)    // load program direct from bin
+        {
+            GL.ProgramBinary(pipelineid, binformat, bin, bin.Length);
             GLStatics.Check();
         }
 

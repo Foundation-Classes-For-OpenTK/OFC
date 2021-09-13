@@ -23,7 +23,7 @@ namespace GLOFC.GL4
     public abstract class GLShaderPipelineComponentShadersBase : IGLPipelineComponentShader
     {
         public int Id { get { return Program.Id; } }
-        public GLProgram Program { get; private set; }
+        protected GLProgram Program { get; private set; }
 
         protected void CompileLink( OpenTK.Graphics.OpenGL4.ShaderType st, string code, 
                                         Object[] constvalues = null, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs,
@@ -37,7 +37,12 @@ namespace GLOFC.GL4
             System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
         }
 
-        protected void Load(byte[] bin, BinaryFormat binformat)
+        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        {
+            return Program.GetBinary(out binformat);
+        }
+
+        public void Load(byte[] bin, BinaryFormat binformat)
         {
             Program = new GLProgram(bin, binformat);
         }

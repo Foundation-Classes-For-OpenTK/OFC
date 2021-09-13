@@ -43,7 +43,8 @@ namespace GLOFC.GL4
         public IGLShader GetShader(ShaderType t) { throw new NotImplementedException(); }
         public T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType t) where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
         public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
-
+        public byte[] GetBinary(out BinaryFormat binformat) { throw new NotImplementedException(); }
+        public void Load(byte[] bin, BinaryFormat binformat) { throw new NotImplementedException(); }
 
         public GLOperationsBase()
         {
