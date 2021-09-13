@@ -48,7 +48,7 @@ namespace TestOpenTk
         //************************************
         // demos std 140 and 430 effect on uniforms
 
-        public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation2 : GLShaderPipelineShadersBase
+        public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation2 : GLShaderPipelineComponentShadersBase
         {
             public string Code()       // with transform, object needs to pass in uniform 22 the transform
             {

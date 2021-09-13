@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
-    public class DynamicGridVertexShader : GLShaderPipelineShadersBase
+    public class DynamicGridVertexShader : GLShaderPipelineComponentShadersBase
     {
         public int ComputeGridSize(float eyedistance, out int gridwidth)
         {
@@ -149,7 +149,7 @@ void main(void)
 
     }
 
-    public class DynamicGridCoordVertexShader : GLShaderPipelineShadersBase
+    public class DynamicGridCoordVertexShader : GLShaderPipelineComponentShadersBase
     {
         string vcode()
         { return @"

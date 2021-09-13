@@ -30,7 +30,7 @@ namespace GLOFC.GL4
     // Inputs (4) drawid[] instance number. 
     // output to buffer bound structure Positions
 
-    public class GLPLGeoShaderFindTriangles : GLShaderPipelineShadersBase
+    public class GLPLGeoShaderFindTriangles : GLShaderPipelineComponentShadersBase
     {
         public string Code(bool passthru)
         {

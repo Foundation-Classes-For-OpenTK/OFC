@@ -26,7 +26,7 @@ namespace GLOFC.GL4
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      tex binding X : textureObject : 2D texture
 
-    public class GLPLFragmentShaderTexture : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTexture : GLShaderPipelineComponentShadersBase
     {
         public GLPLFragmentShaderTexture(int binding = 1)
         {
@@ -57,7 +57,7 @@ void main(void)
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 1 : flat in imageno to select, <0 discard
 
-    public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineComponentShadersBase
     {
         // alphazerocolor allows a default colour to show for zero alpha samples
 
@@ -113,7 +113,7 @@ void main(void)
     //      location 3 : alpha (if alpha blend enabled) float
     //      tex binding : textureObject : 2D texture
 
-    public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineComponentShadersBase
     {
         // alphablend allows alpha to be passed from the vertex shader to this
         // alphazerocolor allows a default colour to show for zero alpha samples
@@ -182,7 +182,7 @@ void main(void)
     //      location 3 : alpha (if alpha blend enabled) float
     //      tex binding [N..] : textureObject : 2D textures, multiple ones. select
 
-    public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineComponentShadersBase
     {
         // alphablend allows alpha to be passed from the vertex shader to this
         public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  // 16 is the opengl minimum textures supported
@@ -235,7 +235,7 @@ void main(void)
     //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
     //      location 30 : uniform float blend between the two texture
 
-    public class GLPLFragmentShaderTexture2DBlend : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTexture2DBlend : GLShaderPipelineComponentShadersBase
     {
         public float Blend { get; set; } = 0.0f;
 
@@ -282,7 +282,7 @@ void main(void)
     //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
     //      location 24 : uniform of texture offset (written by start automatically)
 
-    public class GLPLFragmentShaderTextureOffset : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTextureOffset : GLShaderPipelineComponentShadersBase
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
@@ -323,7 +323,7 @@ void main(void)
     //      uniform binding <config>: ARB bindless texture handles, int 64s
     //      location 24 : uniform of texture offset (written by start automatically)
 
-    public class GLPLBindlessFragmentShaderTextureOffsetArray : GLShaderPipelineShadersBase
+    public class GLPLBindlessFragmentShaderTextureOffsetArray : GLShaderPipelineComponentShadersBase
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 

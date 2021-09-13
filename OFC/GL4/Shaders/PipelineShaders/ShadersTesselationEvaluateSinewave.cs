@@ -25,7 +25,7 @@ namespace GLOFC.GL4
     // output (1) imageno - from w in tcs_worldposinstance
     // input (2) instance number from first vertex of primitive
 
-    public class GLPLTesselationEvaluateSinewave : GLShaderPipelineShadersBase
+    public class GLPLTesselationEvaluateSinewave : GLShaderPipelineComponentShadersBase
     {
         string TES()
         {

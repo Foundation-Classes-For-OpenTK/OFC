@@ -30,17 +30,21 @@ namespace GLOFC.GL4
         void Finish();                                      // Renders call this when program has ended
     }
 
-    public interface IGLPipelineShader : IGLShader          // All pipeline shaders come from this
+    public interface IGLPipelineComponentShader : IGLShader  // All pipeline components must come from this
     {
     }
 
-    public interface IGLProgramShader : IGLShader           // Shaders suitable for the rendering queue inherit from this
+    public interface IGLProgramShader : IGLShader           // Shaders suitable for the rendering queue inherit from this - standard and pipeline
     {
+        string Name { get; }
         bool Enable { get; set; }
-        IGLShader GetShader(OpenTK.Graphics.OpenGL4.ShaderType t);    // get a subcomponent.  if the shader does not have subcomponents, its should return itself.
+
+        IGLShader GetShader(OpenTK.Graphics.OpenGL4.ShaderType st);    // get a subcomponent.  if the shader does not have subcomponents, its should return itself.
+        T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType st) where T : IGLShader;    // get a subcomponent of type T from shader type st. Excepts if not present or no subcomponents
+        T GetShader<T>() where T : IGLShader;    // get a subcomponent of type T. Excepts if not present or no subcomponents
+
         Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }      // allow start and finish action events to be added to the shader..
         Action<IGLProgramShader> FinishAction { get; set; }
-        string Name { get; }                                
     }
 
     public interface IGLTexture : IDisposable               // all textures from this..

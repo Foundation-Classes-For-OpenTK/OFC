@@ -32,7 +32,7 @@ namespace TestOpenTk
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
 
-        public class GLVertexShaderCompute : GLShaderPipelineShadersBase
+        public class GLVertexShaderCompute : GLShaderPipelineComponentShadersBase
         {
             public string Code()       // Runs the noise function over the vectors and reports state
             {

@@ -20,7 +20,7 @@ namespace GLOFC.GL4
     // Requires:
     //      no inputs
 
-    public class GLPLFragmentShaderFixedColor : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderFixedColor : GLShaderPipelineComponentShadersBase
     {
         OpenTK.Graphics.Color4 col;
 
@@ -49,7 +49,7 @@ void main(void)
     // Requires:
     //      uniform : vec4 of colour
 
-    public class GLPLFragmentShaderUniformColor : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderUniformColor : GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {
@@ -78,7 +78,7 @@ void main(void)
     // Requires:
     //      vs_color : vec4 of colour
 
-    public class GLPLFragmentShaderVSColor : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderVSColor : GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {
@@ -103,7 +103,7 @@ void main(void)
 
     // Pipeline shader, one of six colour based on primitive ID, selectable divisor, mostly for testing
 
-    public class GLPLFragmentIDShaderColor : GLShaderPipelineShadersBase
+    public class GLPLFragmentIDShaderColor : GLShaderPipelineComponentShadersBase
     {
         public string Code(int divisor)
         {

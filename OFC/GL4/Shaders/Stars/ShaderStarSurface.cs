@@ -16,7 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    public class GLPLStarSurfaceFragmentShader : GLShaderPipelineShadersBase
+    public class GLPLStarSurfaceFragmentShader : GLShaderPipelineComponentShadersBase
     {
         public string Fragment()
         {

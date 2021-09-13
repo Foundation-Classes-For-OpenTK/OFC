@@ -28,7 +28,7 @@ namespace GLOFC.GL4
     //      gl_Position
     //      location 1: modelpos
 
-    public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderModelCoordWithObjectTranslation()
         {
@@ -78,7 +78,7 @@ void main(void)
     //      location 3 basecolor for fragment shader
     //      location 4 drawid (4.6) for multidraws
 
-    public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
     {
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
@@ -158,7 +158,7 @@ void main(void)
     //      location 0 : vs_color is based on instance ID mostly for debugging
     //      location 1 : modelpos
 
-    public class GLPLVertexShaderModelCoordWithMatrixTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderModelCoordWithMatrixTranslation()
         {
@@ -206,7 +206,7 @@ void main(void)
     //      location 2 : instance count
     //      gl_Position
 
-    public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderTextureModelCoordWithMatrixTranslation()
         {
@@ -263,7 +263,7 @@ void main(void)
     //      location 0 : vs_textureCoordinate
     //      gl_Position
 
-    public class GLPLVertexShaderColorModelCoordWithObjectCommonTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderColorModelCoordWithObjectCommonTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
@@ -325,7 +325,7 @@ void main(void)
     //      location 0: vs_textureCoordinate
     //      gl_Position
 
-    public class GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
@@ -388,7 +388,7 @@ void main(void)
     //      location 1 : modelpos
     //      location 2 : instance id
 
-    public class GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
     {
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
@@ -456,7 +456,7 @@ void main(void)
     //      location 3 basecolour
 
 
-    public class GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
     {
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
         public Vector3 WorldPositionOffset { get; set; } = Vector3.Zero;

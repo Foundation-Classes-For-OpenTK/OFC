@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
-    public class GalaxyFragmentPipeline : GLShaderPipelineShadersBase
+    public class GalaxyFragmentPipeline : GLShaderPipelineComponentShadersBase
     {
         string fcode = @"
 #version 450 core

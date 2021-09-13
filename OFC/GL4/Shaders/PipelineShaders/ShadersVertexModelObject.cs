@@ -30,7 +30,7 @@ namespace GLOFC.GL4
     //      location 0 : vs_color
     //      location 1 : modelpos
 
-    public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {
@@ -86,7 +86,7 @@ void main(void)
     //      location 1: modelpos
 
 
-    public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         private string Code()       // with transform, object needs to pass in uniform 22 the transform
         {

@@ -979,7 +979,7 @@ namespace TestOpenTk
 
             if (items.Contains("tapeshader"))
             {
-                var s = (GLPLFragmentShaderTextureTriStripColorReplace)(items.Shader("tapeshader").GetShader(ShaderType.FragmentShader));
+                var s = items.Shader("tapeshader").GetShader<GLPLFragmentShaderTextureTriStripColorReplace>();
                 s.TexOffset = new Vector2(-degrees / 360f, 0.0f);
             }
 

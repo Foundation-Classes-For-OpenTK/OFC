@@ -41,6 +41,9 @@ namespace GLOFC.GL4
         public Action<IGLProgramShader> FinishAction { get; set; }        // not used
         public string Name => "Operation";
         public IGLShader GetShader(ShaderType t) { throw new NotImplementedException(); }
+        public T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType t) where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
+        public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
+
 
         public GLOperationsBase()
         {

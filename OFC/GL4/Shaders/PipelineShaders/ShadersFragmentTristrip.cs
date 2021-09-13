@@ -28,7 +28,7 @@ namespace GLOFC.GL4
     //      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
     //      location 24 : uniform of texture offset (written by start automatically)
 
-    public class GLPLFragmentShaderTextureTriStrip : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTextureTriStrip : GLShaderPipelineComponentShadersBase
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
@@ -95,7 +95,7 @@ void main(void)
     //      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
     //      location 24 : uniform of texture offset (written by start automatically)
 
-    public class GLPLFragmentShaderTextureTriStripColorReplace : GLShaderPipelineShadersBase
+    public class GLPLFragmentShaderTextureTriStripColorReplace : GLShaderPipelineComponentShadersBase
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 

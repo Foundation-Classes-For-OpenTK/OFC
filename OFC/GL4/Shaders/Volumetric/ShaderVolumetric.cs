@@ -23,7 +23,7 @@ namespace GLOFC.GL4
     //          Add(new GLGeometricShaderVolumetric(), OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
     //          Add(new FragmentPipeline(), OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader); }
 
-    public class GLPLVertexShaderVolumetric : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderVolumetric : GLShaderPipelineComponentShadersBase
     {
         string vcode =
         @"
@@ -49,7 +49,7 @@ void main(void)
         }
     }
 
-    public class GLPLGeometricShaderVolumetric : GLShaderPipelineShadersBase
+    public class GLPLGeometricShaderVolumetric : GLShaderPipelineComponentShadersBase
     {
         public GLPLGeometricShaderVolumetric(int bufferbindingpoint)
         {

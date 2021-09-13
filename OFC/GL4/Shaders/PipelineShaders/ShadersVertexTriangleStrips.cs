@@ -29,7 +29,7 @@ namespace GLOFC.GL4
     //      location 0 : vs_textureCoordinate per triangle strip rules
     //      z=0 placing it in foreground
 
-    public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord()
         {
@@ -76,7 +76,7 @@ void main(void)
     //      location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
     //      location 3 : flat out color carried in vertex as a packed RGB value
 
-    public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB()
         {

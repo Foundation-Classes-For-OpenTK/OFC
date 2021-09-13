@@ -30,6 +30,8 @@ namespace GLOFC.GL4
         public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
 
         public IGLShader GetShader(ShaderType t) { return this; }
+        public T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType t) where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
+        public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
 
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
         public Action<IGLProgramShader> FinishAction { get; set; }

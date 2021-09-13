@@ -25,7 +25,7 @@ namespace GLOFC.GL4
     //      location 0 : vec4 positions
     //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
 
-    public class GLPLVertexShaderWorldCoord : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderWorldCoord : GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {
@@ -60,7 +60,7 @@ void main(void)
     //      location 0 : vec4 positions
     //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
 
-    public class GLPLVertexShaderModelViewCoord: GLShaderPipelineShadersBase
+    public class GLPLVertexShaderModelViewCoord: GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {
@@ -99,7 +99,7 @@ void main(void)
     //      location 0: vs_color
     //      gl_Position
 
-    public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {
@@ -144,7 +144,7 @@ void main(void)
     //      location 0 : vs_textureCoordinate
     //      location 1 : modelpos
 
-    public class GLPLVertexShaderTextureWorldCoord : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderTextureWorldCoord : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderTextureWorldCoord()
         {
@@ -192,7 +192,7 @@ void main(void)
     //      location 0: vs_color
     //      gl_Position
 
-    public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineComponentShadersBase
     {
         private string Code()
         {

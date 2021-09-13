@@ -27,7 +27,7 @@ namespace GLOFC.GL4
     //      location 1 : worldpos copied
     //      location 2 : instance id
 
-    public class GLPLVertexScaleLookat : GLShaderPipelineShadersBase
+    public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
         string vert =
         @"

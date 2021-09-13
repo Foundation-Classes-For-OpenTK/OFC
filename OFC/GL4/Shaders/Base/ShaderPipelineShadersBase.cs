@@ -20,7 +20,7 @@ namespace GLOFC.GL4
 {
     // base class for all pipeline shaders parts. these have to be compiled into a ShaderPipeline
 
-    public abstract class GLShaderPipelineShadersBase : IGLPipelineShader
+    public abstract class GLShaderPipelineComponentShadersBase : IGLPipelineComponentShader
     {
         public int Id { get { return Program.Id; } }
         public GLProgram Program { get; private set; }

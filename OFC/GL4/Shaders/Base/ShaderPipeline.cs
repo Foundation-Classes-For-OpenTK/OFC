@@ -40,16 +40,16 @@ namespace GLOFC.GL4
         public Action<IGLProgramShader> FinishAction { get; set; }
 
         public IGLShader GetShader(ShaderType t) { return shaders[t]; }
-        public T GetShader<T>(ShaderType t) where T : IGLPipelineShader
-        { return (T)shaders[t]; }
+        public T GetShader<T>(ShaderType t) where T : IGLShader { return (T)shaders[t]; }
+        public T GetShader<T>() where T : IGLShader { foreach (var s in shaders) if (s.Value.GetType() == typeof(T)) return (T)s.Value; throw new InvalidCastException(); }    // get a subcomponent of type T. Excepts if not present
 
         private int pipelineid;
-        private Dictionary<ShaderType, IGLPipelineShader> shaders;
+        private Dictionary<ShaderType, IGLPipelineComponentShader> shaders;
 
         public GLShaderPipeline()
         {
             pipelineid = GL.GenProgramPipeline();
-            shaders = new Dictionary<ShaderType, IGLPipelineShader>();
+            shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
         }
 
         public GLShaderPipeline(Action<IGLProgramShader, GLMatrixCalc> sa, Action<IGLProgramShader> fa = null) : this()
@@ -58,14 +58,14 @@ namespace GLOFC.GL4
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader> fa = null) : this()
+        public GLShaderPipeline(IGLPipelineComponentShader vertex, Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader> fa = null) : this()
         {
             AddVertex(vertex);
             StartAction = sa;
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader fragment, Action<IGLProgramShader, GLMatrixCalc> sa = null, 
+        public GLShaderPipeline(IGLPipelineComponentShader vertex, IGLPipelineComponentShader fragment, Action<IGLProgramShader, GLMatrixCalc> sa = null, 
                                 Action<IGLProgramShader> fa = null) : this()
         {
             AddVertexFragment(vertex, fragment);
@@ -73,7 +73,7 @@ namespace GLOFC.GL4
             FinishAction = fa;
         }
 
-        public GLShaderPipeline(IGLPipelineShader vertex, IGLPipelineShader tcs, IGLPipelineShader tes, IGLPipelineShader geo, IGLPipelineShader fragment, 
+        public GLShaderPipeline(IGLPipelineComponentShader vertex, IGLPipelineComponentShader tcs, IGLPipelineComponentShader tes, IGLPipelineComponentShader geo, IGLPipelineComponentShader fragment, 
                                 Action<IGLProgramShader, GLMatrixCalc> sa = null, Action<IGLProgramShader> fa = null) : this()
         {
             AddVertexTCSTESGeoFragment(vertex, tcs,tes,geo, fragment);
@@ -81,18 +81,18 @@ namespace GLOFC.GL4
             FinishAction = fa;
         }
 
-        public void AddVertex(IGLPipelineShader p)
+        public void AddVertex(IGLPipelineComponentShader p)
         {
             Add(p, ShaderType.VertexShader);
         }
 
-        public void AddVertexFragment(IGLPipelineShader p, IGLPipelineShader f)
+        public void AddVertexFragment(IGLPipelineComponentShader p, IGLPipelineComponentShader f)
         {
             Add(p, ShaderType.VertexShader);
             Add(f, ShaderType.FragmentShader);
         }
 
-        public void AddVertexTCSTESGeoFragment(IGLPipelineShader p, IGLPipelineShader tcs, IGLPipelineShader tes, IGLPipelineShader g, IGLPipelineShader f)
+        public void AddVertexTCSTESGeoFragment(IGLPipelineComponentShader p, IGLPipelineComponentShader tcs, IGLPipelineComponentShader tes, IGLPipelineComponentShader g, IGLPipelineComponentShader f)
         {
             if (p != null)
                 Add(p, ShaderType.VertexShader);
@@ -106,7 +106,7 @@ namespace GLOFC.GL4
                 Add(f, ShaderType.FragmentShader);
         }
 
-        public void Add(IGLPipelineShader p, ShaderType m)
+        public void Add(IGLPipelineComponentShader p, ShaderType m)
         {
             shaders[m] = p;
             GL.UseProgramStages(pipelineid, convmask[m], p.Id);

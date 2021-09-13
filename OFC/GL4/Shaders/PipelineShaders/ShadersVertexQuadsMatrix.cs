@@ -34,7 +34,7 @@ namespace GLOFC.GL4
     //      location 3 : alpha blend to use
     //      gL_Position
 
-    public class GLPLVertexShaderQuadTextureWithMatrixTranslation : GLShaderPipelineShadersBase
+    public class GLPLVertexShaderQuadTextureWithMatrixTranslation : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexShaderQuadTextureWithMatrixTranslation()
         {

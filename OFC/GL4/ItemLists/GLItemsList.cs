@@ -55,9 +55,9 @@ namespace GLOFC.GL4
             return (IGLProgramShader)items[name];
         }
 
-        public IGLPipelineShader PLShader(string name)
+        public IGLPipelineComponentShader PLShader(string name)
         {
-            return (IGLPipelineShader)items[name];
+            return (IGLPipelineComponentShader)items[name];
         }
 
         public GLVertexArray VA(string name)
@@ -119,7 +119,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
-        public IGLPipelineShader Add(IGLPipelineShader disp, string name = null)
+        public IGLPipelineComponentShader Add(IGLPipelineComponentShader disp, string name = null)
         {
             items.Add(EnsureName(name), disp);
             return disp;

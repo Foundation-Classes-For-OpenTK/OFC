@@ -24,7 +24,7 @@ namespace GLOFC.GL4
     // output (1) tcs_worldposinstance
     // output (2) tcs_instance 
 
-    public class GLPLTesselationControl : GLShaderPipelineShadersBase
+    public class GLPLTesselationControl : GLShaderPipelineComponentShadersBase
     {
         string TCS(float tesselation)
         {

@@ -55,7 +55,7 @@ namespace TestOpenTk
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
 
-        public class GLShaderStars : GLShaderPipelineShadersBase
+        public class GLShaderStars : GLShaderPipelineComponentShadersBase
         {
             public string Code()
             {
