@@ -67,6 +67,7 @@
     <Compile Include="GL4\Buffers\GLSetOfObjectsWithLabels.cs" />
     <Compile Include="GL4\Buffers\GLVertexBufferIndirect.cs" />
     <Compile Include="GL4\Buffers\GLObjectsWithLabels.cs" />
+    <Compile Include="GL4\Controls\ControlAnimators.cs" />
     <Compile Include="GL4\Controls\ControlAnimation.cs" />
     <Compile Include="GL4\Controls\ControlBaseCheckBox.cs" />
     <Compile Include="GL4\Controls\ControlCalendar.cs" />

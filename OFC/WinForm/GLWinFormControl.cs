@@ -35,7 +35,7 @@ namespace GLOFC.WinForm
         public GL4.GLRenderState RenderState { get; set; } = null;
 
         public bool EnsureCurrentPaintResize { get; set; } = false;         // must be set for multiple opengl windows in one thread
-        public bool EnsureCurrentKeyboardMouse { get; set; } = false;       // only if you try and do something like resizing the viewport
+        public bool EnsureCurrentKeyboardMouse { get; set; } = false;       // only if you try and do something like resizing the viewport or doing GL work
 
         // what buffers to clear
         public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;
@@ -57,9 +57,9 @@ namespace GLOFC.WinForm
         public Action<Object> Resize { get; set; } = null;
         public Action<Object,ulong> Paint { get; set; } = null;     // ulong is elapsed time in ms
 
-        public ulong ElapsedTimems { get { return (ulong)sw.ElapsedMilliseconds; } }
+        public ulong ElapsedTimems { get { return (ulong)gltime.ElapsedMilliseconds; } }
 
-        private System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
+        private System.Diagnostics.Stopwatch gltime = new System.Diagnostics.Stopwatch();
         private GLControlKeyOverride glControl { get; set; }
 
         public GLWinFormControl(Control attachcontrol, OpenTK.Graphics.GraphicsMode mode = null)
@@ -68,6 +68,9 @@ namespace GLOFC.WinForm
                 mode = OpenTK.Graphics.GraphicsMode.Default;
 
             glControl = new GLControlKeyOverride(mode);
+
+            glControl.MakeCurrent();        // make sure GLControl is current context selected, in case operating with multiples
+
             glControl.Dock = DockStyle.Fill;
             glControl.BackColor = System.Drawing.Color.Black;
             glControl.Name = "glControl";
@@ -91,7 +94,7 @@ namespace GLOFC.WinForm
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
 
-            sw.Start();
+            gltime.Start();
         }
 
         public void Invalidate()        // repaint
@@ -276,7 +279,7 @@ namespace GLOFC.WinForm
                 RenderState = GL4.GLRenderState.Start();
             }
 
-            Paint?.Invoke(glControl,(ulong)sw.ElapsedMilliseconds);
+            Paint?.Invoke(glControl,(ulong)gltime.ElapsedMilliseconds);
 
             glControl.SwapBuffers();
         }

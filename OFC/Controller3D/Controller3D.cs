@@ -133,6 +133,7 @@ namespace GLOFC.Controller
 
         // Owner should call this at regular intervals.
         // handle keyboard, handle other keys if required
+        // Does not call any GL functions - only affects Matrixcalc
 
         public void HandleKeyboardSlews(bool activated, Action<KeyboardMonitor> handleotherkeys = null)
         {
@@ -171,11 +172,14 @@ namespace GLOFC.Controller
         public bool HandleKeyboardSlewsAndInvalidateIfMoved(bool activated, Action<KeyboardMonitor> handleotherkeys = null, float minmove = 0.01f, float mincamera = 1.0f)
         {
             HandleKeyboardSlews(activated, handleotherkeys);
-            return InvalidateIfMoved(minmove,mincamera);
+            bool moved = RecalcMatrixIfMoved(minmove, mincamera);
+            if ( moved )
+                glwin.Invalidate();
+            return moved;
         }
 
-        // Invalidate on movement
-        public bool InvalidateIfMoved(float minmove = 0.01f, float mincamera = 1.0f)
+        // Recalc matrix if moved
+        public bool RecalcMatrixIfMoved(float minmove = 0.01f, float mincamera = 1.0f)
         { 
             bool moved = PosCamera.IsMoved(minmove,mincamera);
 
@@ -183,7 +187,6 @@ namespace GLOFC.Controller
             {
                 //System.Diagnostics.Debug.WriteLine("Changed");
                 MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
-                glwin.Invalidate();
             }
 
             return moved;
@@ -321,7 +324,9 @@ namespace GLOFC.Controller
 
         #region Implementation
 
-        private void glControl_Resize(object sender)          // from the window, a resize event
+
+        // from the window, a resize event. Must have the correct context, if multiple, set glwin.EnsureCurrentPaintResize
+        private void glControl_Resize(object sender)         
         {
             System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);

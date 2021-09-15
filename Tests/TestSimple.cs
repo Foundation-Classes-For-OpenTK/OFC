@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  * Part of the EDDiscovery Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -13,24 +13,17 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC;
+using GLOFC.Controller;
+using GLOFC.GL4;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
-using GLOFC.GL4;
-using GLOFC.Controller;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using GLOFC;
 
-// A simpler main for testing
+// A simpler main for demoing
 
 namespace TestOpenTk
 {

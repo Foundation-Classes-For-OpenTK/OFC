@@ -42,14 +42,13 @@ namespace GLOFC.GL4.Controls
 
         // only for top level windows at the moment, we can throw them on the screen scaled..  <1 smaller, >1 bigger
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; AltScaleChanged = true; FindDisplay()?.ReRender(); } }
-        private SizeF? altscale = null;
         public bool AltScaleChanged { get; set; } = false;
         public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
+        // list of attached animators.
         public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
         // padding/margin and border control
-
         public GL4.Controls.Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public GL4.Controls.Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
@@ -57,7 +56,6 @@ namespace GLOFC.GL4.Controls
         public int BorderWidth { get { return borderwidth; } set { if (borderwidth != value) { borderwidth = value; CalcClientRectangle(); InvalidateLayout(); } } }
 
         // this is the client area, inside the margin/padding/border
-
         public int ClientLeftMargin { get { return Margin.Left + Padding.Left + BorderWidth; } }
         public int ClientRightMargin { get { return Margin.Right + Padding.Right + BorderWidth; } }
         public int ClientWidthMargin { get { return Margin.TotalWidth + Padding.TotalWidth + BorderWidth * 2; } }
@@ -71,12 +69,10 @@ namespace GLOFC.GL4.Controls
         public Rectangle ClientRectangle { get; private set; }
 
         // docking control
-
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; InvalidateLayoutParent(); } } }
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
         // Autosize
-
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
 
         // toggle controls
@@ -91,8 +87,6 @@ namespace GLOFC.GL4.Controls
         public virtual bool SetFocus() { return FindDisplay()?.SetFocus(this) ?? false; }
 
         // colour font
-
-        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
         public Font Font { get { return font ?? parent?.Font ?? DefaultFont; } set { SetFont(value); InvalidateLayout(); } }    // look back up tree
         public bool IsFontDefined { get { return font != null; } }
         public Color BackColor { get { return backcolor; } set { if (backcolor != value) { backcolor = value; Invalidate(); } } }
@@ -140,7 +134,6 @@ namespace GLOFC.GL4.Controls
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
         // control lists
-
         public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
         public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }          // read only, in zorder, so 0 = first layout last painted
         public GLBaseControl this[string s] { get { return ControlsZ.Find((x)=>x.Name == s); } }    // null if not
@@ -199,6 +192,10 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultHighlightColor = Color.Red;
 
         static public Color DefaultLineSeparColor = Color.Green;
+
+        // privates
+        private SizeF? altscale = null;
+        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
 
         public virtual void Invalidate()
         {

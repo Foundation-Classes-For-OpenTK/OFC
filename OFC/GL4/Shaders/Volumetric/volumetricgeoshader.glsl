@@ -26,7 +26,7 @@ layout(std140, binding=0) uniform MatrixCalc
     float EyeDistance;
 } mc;
 
-layout (points) in;              // no vertex info is used, just its instance ID
+layout (points) in;             // no vertex info is used, just its instance ID
 layout (triangle_strip) out;
 layout (max_vertices=18) out;	// 6 triangles max
 
@@ -41,7 +41,7 @@ out gl_PerVertex				// pipeline shaders must repeat this.  Watch out for unused 
   float gl_ClipDistance[];
 };
 
-const int bufferbp = 1;			// usually replaced by compile time consts, here to make source highlighter okay
+const int bufferbp = 1;			// Buffer binding 
 
 layout (std140, binding = bufferbp) uniform PointBlock
 {
