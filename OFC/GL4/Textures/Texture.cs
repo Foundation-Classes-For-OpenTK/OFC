@@ -134,7 +134,7 @@ namespace GLOFC.GL4
             int curwidth = bmp.Width;
             int masterheight = MipMapHeight(bmp, bmpmipmaplevels);
 
-            System.Diagnostics.Debug.Assert(bmp.Width == Width);
+            System.Diagnostics.Debug.Assert(bmp.Width <= Width);
             System.Diagnostics.Debug.Assert(masterheight<=Height);  // bitmap may be shorter
 
             int curheight = masterheight;
