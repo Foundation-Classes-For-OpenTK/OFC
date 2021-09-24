@@ -374,10 +374,8 @@ namespace TestOpenTk
 
             if ((ctrlo & 512) != 0)
             {
-              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
-                //Vector3 pos = new Vector3(50, 0, 0);
-              //  galaxystars.Request9Box(pos);
-                
+                galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
+               
             }
 
             if ((ctrlo & 1024) != 0)
@@ -669,7 +667,7 @@ namespace TestOpenTk
             var tmr2 = new GLOperationQueryTimeStamp();
             tmr1.Execute(null);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:true);
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:false);
             tmr2.Execute(null);
 
             // GL.QueryCounter(queryID[1], QueryCounterTarget.Timestamp);
@@ -813,9 +811,9 @@ namespace TestOpenTk
         }
 
 
-#endregion
+        #endregion
 
-#region UI
+        #region UI
 
         private void MouseDownOnMap(Object s, GLMouseEventArgs e)
         {
@@ -834,6 +832,12 @@ namespace TestOpenTk
 
         private void MouseClickOnMap(Object s, GLMouseEventArgs e)
         {
+            int distmovedsq = gl3dcontroller.MouseMovedSq(e.WindowLocation);
+            if (distmovedsq > 4)
+            {
+                System.Diagnostics.Debug.WriteLine($"Moved mouse {distmovedsq}, reject click");
+                return;
+            }
           //  System.Diagnostics.Debug.WriteLine("map click");
             Object item = FindObjectOnMap(e.ViewportLocation);
 

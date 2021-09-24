@@ -44,6 +44,7 @@ namespace GLOFC.Controller
 
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
         public PositionCamera PosCamera { get; private set; } = new PositionCamera();
+        public Point MouseDownPos { get; private set; }
 
         public void Start(GLMatrixCalc mc, PositionCamera pc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
         {
@@ -194,39 +195,28 @@ namespace GLOFC.Controller
 
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
-          //  System.Diagnostics.Debug.WriteLine("3dcontroller mouse down");
-
-            mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
-
-            if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Left))
-            {
-                mouseStartRotate = mouseDownPos;
-               // System.Diagnostics.Debug.WriteLine($"..start rotate {mouseStartRotate} {e.WindowLocation}");
-            }
-
-            if (e.Button.HasFlag(GLMouseEventArgs.MouseButtons.Right))
-            {
-                mouseStartTranslateXY = mouseDownPos;
-                mouseStartTranslateXZ = mouseDownPos;
-            }
+            MouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+            mouseRotatePos =  mouseTranslateXYPos = mouseTranslateXZPos = MouseDownPos;
         }
 
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
-           // System.Diagnostics.Debug.WriteLine("3dcontroller mouse up");
+            MouseDownPos = mouseTranslateXYPos = mouseTranslateXZPos =  mouseRotatePos = new Point(int.MinValue, int.MinValue);
+        }
 
-            var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+        public bool IsMouseDown()
+        {
+            return MouseDownPos.X != int.MinValue;
+        }
 
-            bool notmovedmouse = Math.Abs(mousepos.X - mouseDownPos.X) + Math.Abs(mousepos.Y - mouseDownPos.Y) < 4;
-
-            if (!notmovedmouse)     // if we moved it, its not a stationary click, ignore
-                return;
-
-            if (e.Button == GLMouseEventArgs.MouseButtons.Right)                    // right clicks are about bookmarks.
+        public int MouseMovedSq(Point curmouse)     // square of mouse moved, -1 if was not down
+        {
+            if (MouseDownPos.X != int.MinValue)
             {
-                mouseStartTranslateXY = new Point(int.MinValue, int.MinValue);         // indicate rotation is finished.
-                mouseStartTranslateXZ = new Point(int.MinValue, int.MinValue);
+                return (curmouse.X - MouseDownPos.X) * (curmouse.X - MouseDownPos.X) + (curmouse.Y - MouseDownPos.Y) * (curmouse.Y - MouseDownPos.Y);
             }
+            else
+                return -1;
         }
 
         public void MouseMove(object sender, GLMouseEventArgs e)
@@ -235,29 +225,29 @@ namespace GLOFC.Controller
 
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                if (MatrixCalc.InPerspectiveMode && mouseStartRotate.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
+                if (MatrixCalc.InPerspectiveMode && mouseRotatePos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
-                    int dx = mousepos.X - mouseStartRotate.X;
-                    int dy = mousepos.Y - mouseStartRotate.Y;
+                    int dx = mousepos.X - mouseRotatePos.X;
+                    int dy = mousepos.Y - mouseRotatePos.Y;
                    // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
 
                     KillSlew();    // all slews
 
-                    mouseStartTranslateXZ = mouseStartRotate = mousepos;
+                    mouseTranslateXZPos = mouseRotatePos = mousepos;        // we reset both since the other button may be clicked later
 
                     PosCamera.RotateCamera(new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
                 }
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                if (mouseStartTranslateXY.X != int.MinValue)
+                if (mouseTranslateXYPos.X != int.MinValue)
                 {
                     KillSlew();
 
-                    int dx = mousepos.X - mouseStartTranslateXY.X;
-                    int dy = mousepos.Y - mouseStartTranslateXY.Y;
+                    int dx = mousepos.X - mouseTranslateXYPos.X;
+                    int dy = mousepos.Y - mouseTranslateXYPos.Y;
 
-                    mouseStartTranslateXZ = mouseStartRotate = mousepos;
+                    mouseTranslateXZPos = mouseRotatePos = mousepos;
 
                     //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
 
@@ -266,14 +256,14 @@ namespace GLOFC.Controller
             }
             else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
             {
-                if (mouseStartTranslateXZ.X != int.MinValue)
+                if (mouseTranslateXZPos.X != int.MinValue)
                 {
                     KillSlew();
 
-                    int dx = mousepos.X - mouseStartTranslateXZ.X;
-                    int dy = mousepos.Y - mouseStartTranslateXZ.Y;
+                    int dx = mousepos.X - mouseTranslateXZPos.X;
+                    int dy = mousepos.Y - mouseTranslateXZPos.Y;
 
-                    mouseStartTranslateXZ = mouseStartRotate = mouseStartTranslateXY = mousepos;
+                    mouseTranslateXZPos = mouseRotatePos = mouseTranslateXYPos = mousepos;
 
                     Vector3 translation = new Vector3(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
 
@@ -346,10 +336,9 @@ namespace GLOFC.Controller
         private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
         private ulong? lastkeyintervalcount = null;
 
-        private Point mouseDownPos;
-        private Point mouseStartRotate = new Point(int.MinValue, int.MinValue);        // used to indicate not started for these using mousemove
-        private Point mouseStartTranslateXZ = new Point(int.MinValue, int.MinValue);
-        private Point mouseStartTranslateXY = new Point(int.MinValue, int.MinValue);
+        private Point mouseRotatePos = new Point(int.MinValue, int.MinValue);        // used to indicate not started for these using mousemove
+        private Point mouseTranslateXZPos = new Point(int.MinValue, int.MinValue);
+        private Point mouseTranslateXYPos = new Point(int.MinValue, int.MinValue);
 
         #endregion
     }
