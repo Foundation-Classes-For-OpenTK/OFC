@@ -268,16 +268,31 @@ namespace GLOFC.WinForm
             if (EnsureCurrentPaintResize)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
 
-            GL.Disable(EnableCap.ScissorTest);      // Scissors off by default at start of each render.
-            GL.Disable(EnableCap.StencilTest);      // and stencil
-
-            GL.ClearColor(BackColor);
-            GL.Clear(ClearBuffers);                 // note renderdiscard affects this..
-
-            if ( RenderState == null )
+            if (RenderState == null)
             {
                 RenderState = GL4.GLRenderState.Start();
             }
+
+            // set up initial conditions
+
+            GL.Disable(EnableCap.RasterizerDiscard);    // these need to be set correctly to let clear work
+            RenderState.Discard = false;            // indicate its off
+
+            GL.DepthMask(true);                     // must be on
+            RenderState.WriteDepthBuffer = true;    // indicate its on
+
+            GL.Disable(EnableCap.ScissorTest);      // Scissors off by default at start of each render - must be done for clear. Not in render state
+            GL.Disable(EnableCap.StencilTest);      // and stencil
+
+            GL.ColorMask(true, true, true, true);   // also affects clear colour
+            RenderState.ColorMasking = GL4.GLRenderState.ColorMask.All;
+
+            // From opengl: The pixel ownership test, the scissor test, dithering, and the buffer writemasks affect the operation of glClear.
+            // The scissor box bounds the cleared region.
+            // Alpha function, blend function, logical operation, stenciling, texture mapping, and depth-buffering are ignored by glClear. 
+
+            GL.ClearColor(BackColor);
+            GL.Clear(ClearBuffers);                 // Clear - see above how some states
 
             Paint?.Invoke(glControl,(ulong)gltime.ElapsedMilliseconds);
 

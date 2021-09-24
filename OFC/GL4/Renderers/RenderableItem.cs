@@ -625,47 +625,28 @@ namespace GLOFC.GL4
 
         #region Execute directly outside of a render list
 
-        // Use Cases: if shader is not rendering to screen (such as a finder) and that would have discard=true
-        // or to a framebuffer in stages
-        // state may be null, or the RenderState may be null (for shaders/operations)
+        // appliedstate if not null overrides this.RenderState and uses that instead
 
-        public void Execute(IGLProgramShader shader, GLRenderState state, GLMatrixCalc c = null, bool noshaderstart = false, bool discard = false)
+        public void Execute(IGLProgramShader shader, GLRenderState glstate, GLMatrixCalc c = null, GLRenderState appliedstate = null, bool noshaderstart = false)
         {
-            System.Diagnostics.Debug.Assert(state != null && shader != null);
+            System.Diagnostics.Debug.Assert(glstate != null && shader != null);
             if (shader.Enable)
             {
                 if (!noshaderstart)
                     shader.Start(c);
 
-                bool curdiscard = false;
+                GLRenderState curstate = RenderState;
+                if ( appliedstate != null )
+                    RenderState = appliedstate;
 
-                if (discard)        // if forced discard
-                {
-                    if (state != null && RenderState != null)
-                    {
-                        curdiscard = RenderState.Discard;        // remember
-                        RenderState.Discard = true;   // set RC to discard
-                    }
-                    else
-                        GL.Enable(EnableCap.RasterizerDiscard); // no RC will be applied, so set to discard manually
-                }
-
-                Bind(state, shader, c);
+                Bind(glstate, shader, c);
 
                 Render();
 
                 if (!noshaderstart)
                     shader.Finish();
 
-                if (discard)        // if forced discard
-                {
-                    if (state != null && RenderState != null)
-                    {
-                        RenderState.Discard = curdiscard;
-                    }
-                    else
-                        GL.Disable(EnableCap.RasterizerDiscard);
-                }
+                RenderState = curstate;
             }
         }
 

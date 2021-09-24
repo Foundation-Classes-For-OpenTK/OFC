@@ -114,7 +114,7 @@ namespace TestOpenTk
             geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
 
             System.Diagnostics.Debug.WriteLine("Run find");
-            findrender.Execute(findshader, glwfc.RenderState, discard:true);
+            findrender.Execute(findshader, glwfc.RenderState);
             System.Diagnostics.Debug.WriteLine("Finish find");
 
             var res = geo.GetResult();

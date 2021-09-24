@@ -162,8 +162,7 @@ namespace GLOFC.GL4
                         {
                             if (g.Item2 != null && g.Item2.Visible)                    // Make sure its visible and not empty slot
                             {
-                                if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
-
+                                if (verbose) System.Diagnostics.Debug.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
                                 if (g.Item2.RenderState == null)                       // if no render control, do not change last applied.
                                 {
                                     g.Item2.Bind(null, shaderri.Item1, c);
@@ -178,6 +177,7 @@ namespace GLOFC.GL4
                                     lastapplied = g.Item2.RenderState;
                                 }
 
+                                if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
                                 g.Item2.Render();
                                 //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
                             }

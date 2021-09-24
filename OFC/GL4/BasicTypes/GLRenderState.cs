@@ -103,13 +103,13 @@ namespace GLOFC.GL4
             DepthClamp = prev.DepthClamp;
             BlendEnable = prev.BlendEnable;
             BlendSourceRGB = prev.BlendSourceRGB;
-            BlendSourceA = prev.BlendSourceA;
             BlendDestRGB = prev.BlendDestRGB;
+            BlendSourceA = prev.BlendSourceA;
             BlendDestA = prev.BlendDestA;
-            BlendEquationA = prev.BlendEquationA;
             BlendEquationRGB = prev.BlendEquationRGB;
-            ColorMasking = prev.ColorMasking;
+            BlendEquationA = prev.BlendEquationA;
             Discard = prev.Discard;
+            ColorMasking = prev.ColorMasking;
         }
 
         static public GLRenderState Start()
@@ -255,6 +255,7 @@ namespace GLOFC.GL4
             {
                 Discard = newstate.Discard;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.RasterizerDiscard, Discard);
+                System.Diagnostics.Debug.WriteLine("RS Discard " + Discard);
             }
 
             // ---------------------------------- Below are default null
@@ -357,10 +358,10 @@ namespace GLOFC.GL4
 
         public uint? PrimitiveRestart { get; set; } = null;         // its either null (disabled) or value (enabled). null does not mean don't care.
         public int ClipDistanceEnable { get; set; } = 0;            // set for number of clip/cull distances to enable. 0 means none. 
-        public bool DepthTest { get; set; } = true;
+        public bool DepthTest { get; set; } = true;                 // default on start of Paint draw is ON
         public DepthFunction DepthFunctionMode { get; set; } = DepthFunction.Less;
-        public bool WriteDepthBuffer { get; set; } = true;
-        public bool DepthClamp { get; set; } = false;
+        public bool WriteDepthBuffer { get; set; } = true;          // default on start of Paint draw is ON
+        public bool DepthClamp { get; set; } = false;   
         public bool BlendEnable { get; set; } = true;
         public BlendingFactorSrc BlendSourceRGB { get; set; } = BlendingFactorSrc.SrcAlpha;
         public BlendingFactorDest BlendDestRGB { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
@@ -368,9 +369,9 @@ namespace GLOFC.GL4
         public BlendingFactorDest BlendDestA { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
         public BlendEquationMode BlendEquationRGB { get; set; } = BlendEquationMode.FuncAdd;
         public BlendEquationMode BlendEquationA { get; set; } = BlendEquationMode.FuncAdd;
-        public bool Discard {get;set;} = false;        // normal not to discard
-       
-        [System.Flags] public enum ColorMask { Red=1,Green=2,Blue=4,Alpha=8};
+        public bool Discard {get;set;} = false;                     // normal not to discard. default on start of draw is OFF
+
+        [System.Flags] public enum ColorMask { Red=1,Green=2,Blue=4,Alpha=8, All=15};
         public ColorMask ColorMasking = ColorMask.Red | ColorMask.Green | ColorMask.Blue | ColorMask.Alpha;
 
     }

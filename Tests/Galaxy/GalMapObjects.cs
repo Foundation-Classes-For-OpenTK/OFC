@@ -208,7 +208,8 @@ namespace TestOpenTk
             geo.SetScreenCoords(viewportloc, viewportsize);
 
             GLStatics.Check();
-            rifind.Execute(findshader, state, discard:true); // execute, discard
+
+            rifind.Execute(findshader, state); // execute. Geoshader discards geometry by not outputting anything
 
             var res = geo.GetResult();
             if (res != null)

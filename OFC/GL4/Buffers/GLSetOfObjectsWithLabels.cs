@@ -240,7 +240,7 @@ namespace GLOFC.GL4
             foreach (var s in set)      
             {
                 geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform
-                s.ObjectRenderer.Execute(findshader, state, discard: true, noshaderstart:true); // execute find over ever set, not clearing the buffer
+                s.ObjectRenderer.Execute(findshader, state, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
             findshader.Finish();    // finish shader

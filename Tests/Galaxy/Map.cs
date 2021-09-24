@@ -289,7 +289,6 @@ namespace TestOpenTk
 
             rObjects.Add(new GLOperationClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
 
-
             if ((ctrlo & 16) != 0) 
             {
                 items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
@@ -375,7 +374,7 @@ namespace TestOpenTk
 
             if ((ctrlo & 512) != 0)
             {
-                galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
+              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
                 //Vector3 pos = new Vector3(50, 0, 0);
               //  galaxystars.Request9Box(pos);
                 
@@ -542,6 +541,7 @@ namespace TestOpenTk
 
         public void LoadState(MapSaver defaults)
         {
+            return;
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 
@@ -609,7 +609,7 @@ namespace TestOpenTk
         {
             long t1 = hptimer.ElapsedTicks;
             //TBD
-            GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
+        //    GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
             long t2 = hptimer.ElapsedTicks;
 
             GLMatrixCalcUniformBlock mcb = ((GLMatrixCalcUniformBlock)items.UB("MCUB"));
@@ -669,13 +669,12 @@ namespace TestOpenTk
             var tmr2 = new GLOperationQueryTimeStamp();
             tmr1.Execute(null);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:false);
-
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:true);
             tmr2.Execute(null);
 
             // GL.QueryCounter(queryID[1], QueryCounterTarget.Timestamp);
 
-            GL.Flush(); // ensure everything is in the grapghics pipeline
+         //   GL.Flush(); // ensure everything is in the grapghics pipeline
 
             //while (tmr2.IsAvailable() == false)
             //    ;

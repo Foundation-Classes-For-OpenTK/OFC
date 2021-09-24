@@ -198,11 +198,11 @@ namespace GLOFC.GL4
 
         // Find in objects.  Return block list render group and index into it, or null
 
-        public Tuple<int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
+        public Tuple<int, int> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(pos, size);
-            ObjectRenderer.Execute(findshader, state, discard: true); 
+            ObjectRenderer.Execute(findshader, glstate); 
             var res = geo.GetResult();
             if (res != null)
             {

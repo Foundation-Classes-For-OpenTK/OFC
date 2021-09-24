@@ -207,7 +207,7 @@ namespace TestOpenTk
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(viewportloc, viewportsize);
 
-            rifind.Execute(findshader, state, discard:true); // execute, discard
+            rifind.Execute(findshader, state); 
 
             var res = geo.GetResult();
             if (res != null)
