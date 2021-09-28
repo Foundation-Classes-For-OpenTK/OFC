@@ -222,8 +222,18 @@ namespace GLOFC.GL4.Controls
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirarchy before we mess with it
 
-            if (InDropDown && ctrl != this && (ctrl == null || !dropdownbox.IsThisOrChildOf(ctrl)))        // if its not part of dropdown, close it
+            if (InDropDown && (ctrl == null || !IsThisOrChildOf(ctrl)))        // if its not part of us, close
                 Deactivate();
+        }
+
+        public override bool IsThisOrChildOf(GLBaseControl ctrl)         // override, and make the DropDown one of us - important for some checks
+        {
+            if (base.IsThisOrChildOf(ctrl))
+                return true;
+            else if (InDropDown && dropdownbox.IsThisOrChildOf(ctrl))
+                return true;
+            else
+                return false;
         }
 
         private void Activate()
@@ -248,7 +258,6 @@ namespace GLOFC.GL4.Controls
                 dropdownbox.HighlightSelectedItem = false;
                 dropdownbox.ResumeLayout();
                 AddToDesktop(dropdownbox);             // attach to display, not us, so it shows over everything
-                dropdownbox.Creator = this;     // associate drop down with ComboBox.
                 DropDownStateChanged?.Invoke(this, true);
                 dropdownbox.SetFocus();
             }

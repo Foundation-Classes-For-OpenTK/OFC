@@ -45,9 +45,6 @@ namespace GLOFC.GL4.Controls
         public bool AltScaleChanged { get; set; } = false;
         public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
-        // list of attached animators.
-        public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
-
         // padding/margin and border control
         public GL4.Controls.Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public GL4.Controls.Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
@@ -99,7 +96,8 @@ namespace GLOFC.GL4.Controls
         public GLBaseControl FindControlUnderDisplay() { return Parent is GLControlDisplay ? this : parent?.FindControlUnderDisplay(); }
         public GLForm FindForm() { return this is GLForm ? this as GLForm : parent?.FindForm(); }
 
-        public GLBaseControl Creator { get { return creator; } set { creator = value; } } // normally the same as parent, sometimes different if the control is attached to desktop
+        // list of attached animators.
+        public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
 
         // tooltips
         public string ToolTipText { get; set; } = null;
@@ -135,7 +133,7 @@ namespace GLOFC.GL4.Controls
 
         // control lists
         public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
-        public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }          // read only, in zorder, so 0 = first layout last painted
+        public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }        // read only, in zorder, so 0 = first layout last painted
         public GLBaseControl this[string s] { get { return ControlsZ.Find((x)=>x.Name == s); } }    // null if not
 
         // events
@@ -197,6 +195,7 @@ namespace GLOFC.GL4.Controls
         private SizeF? altscale = null;
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
 
+        // Invalidate this and therefore its children
         public virtual void Invalidate()
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
@@ -211,12 +210,14 @@ namespace GLOFC.GL4.Controls
             FindDisplay()?.ReRender();
         }
 
+        // Invalidate and relayout
         public void InvalidateLayout()
         {
             Invalidate();
             PerformLayout();
         }
 
+        // Invalidate and layout the parent, and therefore us
         public void InvalidateLayoutParent()
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
@@ -229,26 +230,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public Rectangle ChildArea()            // area used by children controls
-        {
-            int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
-
-            foreach (var c in childrenz)
-            {
-                if (c.Left < left)
-                    left = c.Left;
-                if (c.Right > right)
-                    right = c.Right;
-                if (c.Top < top)
-                    top = c.Top;
-                if (c.Bottom > bottom)
-                    bottom = c.Bottom;
-            }
-
-            return new Rectangle(left, top, right - left, bottom - top);
-        }
-
-        public bool IsThisOrChildOf(GLBaseControl ctrl)         // ctrl us, or one of our children?
+        // is ctrl us, or one of our children?  may want to override to associate other controls as us
+        public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
         {
             if (ctrl == this)
                 return true;
@@ -260,6 +243,7 @@ namespace GLOFC.GL4.Controls
             return false;
         }
 
+        // is us or child of us focused
         public virtual bool IsThisOrChildrenFocused()
         {
             if (Focused)
@@ -299,6 +283,27 @@ namespace GLOFC.GL4.Controls
             return found;
         }
 
+        // Area needed for children controls
+        public Rectangle ChildArea()        
+        {
+            int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
+
+            foreach (var c in childrenz)
+            {
+                if (c.Left < left)
+                    left = c.Left;
+                if (c.Right > right)
+                    right = c.Right;
+                if (c.Top < top)
+                    top = c.Top;
+                if (c.Bottom > bottom)
+                    bottom = c.Bottom;
+            }
+
+            return new Rectangle(left, top, right - left, bottom - top);
+        }
+
+        // Perform layout on this and all children
         public void PerformLayout()             // perform layout on all child containers inside us. Does not call Layout on ourselves
         {
             if (suspendLayoutCount>0)
@@ -313,12 +318,14 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // Call to halt layout
         public void SuspendLayout()
         {
             suspendLayoutCount++;
             //System.Diagnostics.Debug.WriteLine("Suspend layout on " + Name);
         }
 
+        // call to resume layout
         public void ResumeLayout()
         {
             //if ( suspendLayoutSet ) System.Diagnostics.Debug.WriteLine("Resume Layout on " + Name);
@@ -338,6 +345,7 @@ namespace GLOFC.GL4.Controls
             PerformRecursiveLayout();
         }
 
+        // attach control to desktop
         public virtual bool AddToDesktop(GLBaseControl child, bool atback = false)
         {
             var f = FindDisplay();
@@ -350,10 +358,11 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
+        // attach control to us as child.  atback allows insertion in bottom z order
         public virtual void Add(GLBaseControl child, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
-            child.parent = child.creator = this;
+            child.parent = this;
 
             child.ClearFlagsDown();       // in case of reuse, clear all temp flags as child is added
 
@@ -383,6 +392,7 @@ namespace GLOFC.GL4.Controls
             InvalidateLayout();        // we are invalidated and layout
         }
 
+        // add a list of controls
         public virtual void AddItems(IEnumerable<GLBaseControl> list)
         {
             SuspendLayout();
@@ -391,7 +401,8 @@ namespace GLOFC.GL4.Controls
             ResumeLayout();
         }
 
-        public static void Remove(GLBaseControl child)     // remove is normal, the closes down and disposes of the child and all its children
+        // remove closes down and disposes of the child and all its children
+        public static void Remove(GLBaseControl child)    
         {                                                  
             if (child.Parent != null) // if attached
             {
@@ -401,7 +412,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public static void Detach(GLBaseControl child)     // a detach keeps the child and its children alive and connected together, but detached from parent
+        // a detach keeps the child and its children alive and connected together, but detached from parent
+        public static void Detach(GLBaseControl child)    
         {
             if (child.Parent != null) // if attached
             {
@@ -411,12 +423,14 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public virtual bool BringToFront()      // bring to the front, true if it was at the front
+        // bring to the front, true if it was at the front
+        public virtual bool BringToFront()      
         {
             return Parent?.BringToFront(this) ?? true;
         }
 
-        public virtual bool BringToFront(GLBaseControl child)   // bring child to front, true if already in front
+        // bring child to front, true if already in front
+        public virtual bool BringToFront(GLBaseControl child)   
         {
             //System.Diagnostics.Debug.WriteLine("Bring to front" + child.Name);
             int curpos = childrenz.IndexOf(child);
@@ -449,7 +463,7 @@ namespace GLOFC.GL4.Controls
             return true;
         }
 
-        // Easy way, using naming, to address controls. wildcards ? *. Will work with closing/removing items since we take a list first
+        // Using naming to address controls. wildcards ? *. Will work with closing/removing items since we take a list first
         public void ApplyToControlOfName(string wildcardname,Action<GLBaseControl> act, bool recurse = false)
         {
             if (recurse)
@@ -465,9 +479,8 @@ namespace GLOFC.GL4.Controls
                 act(c);
         }
 
-         // p = co-coords finds including margin/padding/border area, so inside bounds
+        // p = co-coords finds including margin/padding/border area, so inside bounds
         // if control found, return offset within bounds left
-
         public GLBaseControl FindControlOver(Point coords, out Point offset)
         {
             Size sz = ScaledSize;       // get visual size shown to user
@@ -658,7 +671,7 @@ namespace GLOFC.GL4.Controls
             if (dispose)
                 child.Dispose();
 
-            child.parent = child.creator = null;
+            child.parent = null;
 
             childrenz.Remove(child);
             childreniz.Remove(child);
@@ -1290,7 +1303,6 @@ namespace GLOFC.GL4.Controls
         private bool topMost { get; set; } = false;              // if set, always force to top
 
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
-        private GLBaseControl creator { get; set; } = null;       // its creator, normally its parent.
 
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();

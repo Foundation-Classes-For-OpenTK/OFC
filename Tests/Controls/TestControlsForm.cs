@@ -149,9 +149,11 @@ namespace TestOpenTk
             displaycontrol.Name = "displaycontrol";
             displaycontrol.SuspendLayout();
 
+            GLForm pform;
+
             if (true)
             {
-                GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
+                pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
                 pform.BackColor = Color.FromArgb(200, Color.Red);
                 pform.SuspendLayout();
                 pform.BackColorGradientDir = 90;
@@ -197,7 +199,7 @@ namespace TestOpenTk
                     pform.Add(b3);
                 }
 
-                if (false)
+                if (true)
                 {
                     GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
                     cb1.Margin = new Margin(16, 8, 16, 8);
@@ -232,7 +234,7 @@ namespace TestOpenTk
                     pform.Add(chk6);
                 }
 
-                if (false)
+                if (true)
                 {
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
                     dtp.Font = new Font("Ms Sans Serif", 11);
@@ -243,7 +245,7 @@ namespace TestOpenTk
                     pform.Add(dtp);
                 }
 
-                if (false)
+                if (true)
                 {
                     List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
                     GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
@@ -350,6 +352,19 @@ namespace TestOpenTk
             }
 
             displaycontrol.ResumeLayout();
+
+            displaycontrol.GlobalMouseDown += (ctrl, ex) =>
+            {
+                if (ctrl == null || !pform.IsThisOrChildOf(ctrl))
+                {
+                    System.Diagnostics.Debug.WriteLine("Not on form");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Click on form");
+                }
+            };
+
 
 
             gl3dcontroller = new Controller3D();

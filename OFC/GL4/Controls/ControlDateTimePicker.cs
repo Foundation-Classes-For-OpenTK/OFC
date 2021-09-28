@@ -310,8 +310,18 @@ namespace GLOFC.GL4.Controls
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirachy before we mess with it
 
-            if (InCalendar && (ctrl == null || !Calendar.IsThisOrChildOf(ctrl)))        // if its not part of calendar, close it
+            if (InCalendar && (ctrl == null || !IsThisOrChildOf(ctrl)))        // if its not part of us, close
                 Deactivate();
+        }
+
+        public override bool IsThisOrChildOf(GLBaseControl ctrl)         // override, and make the Calendar one of us
+        {
+            if (base.IsThisOrChildOf(ctrl))
+                return true;
+            else if (InCalendar && Calendar.IsThisOrChildOf(ctrl))
+                return true;
+            else
+                return false;
         }
 
         private void Activate()     // turn on
@@ -329,7 +339,6 @@ namespace GLOFC.GL4.Controls
                 Calendar.Value = datetimevalue;
                 Calendar.ResumeLayout();
                 AddToDesktop(Calendar);             // attach to display, not us, so it shows over everything
-                Calendar.Creator = this;     // associate calendar drop down with this
                 Calendar.SetFocus();
                 DropDownStateChanged?.Invoke(this, true);
             }

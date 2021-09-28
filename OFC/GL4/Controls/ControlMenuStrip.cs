@@ -311,28 +311,27 @@ namespace GLOFC.GL4.Controls
         protected override void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseDown(ctrl, e);
-            System.Diagnostics.Debug.WriteLine($"{Name} Global click on {ctrl.Name}");
+
             if ( parentmenu == null )       // if top level menu.. top of heirarchy
             {
-                bool isthischild = IsThisOrChildControl(ctrl);
-                System.Diagnostics.Debug.WriteLine($"..{Name} ctrl '{ctrl?.Name}' {isthischild}");
-                if (ctrl == null || !isthischild )     // not a drop down, not a child of our tree
+                bool isthisorchild = ctrl != null && IsThisOrChildOf(ctrl);
+                System.Diagnostics.Debug.WriteLine($"{Name} Top level, click on child {isthisorchild}");
+
+                if (!isthisorchild)
                 {
-                    System.Diagnostics.Debug.WriteLine($".. {Name} Close");
                     GetTopLevelMenu().CloseMenus();
                 }
             }
         }
 
-        private bool IsThisOrChildControl(GLBaseControl to)        // find out if to is this or a child in the tree
+        public override bool IsThisOrChildOf(GLBaseControl ctrl)        // submenus are us, so its a child
         {
-//            System.Diagnostics.Debug.WriteLine("control is " + to.Name + " creator is " + to.Creator.Name);
-  //          foreach (GLBaseControl b in ControlsIZ) System.Diagnostics.Debug.WriteLine("{0} from {1}", b.Name, b.Creator.Name);
-
-            if (to == this || ControlsIZ.Contains(to) || ControlsIZ.Any(x=>to.Creator==x))
+            if (base.IsThisOrChildOf(ctrl))
+                return true;
+            else if (submenu != null && submenu.IsThisOrChildOf(ctrl))
                 return true;
             else
-                return submenu != null ? submenu.IsThisOrChildControl(to) : false;      // check out submenus
+                return false;
         }
 
         protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
