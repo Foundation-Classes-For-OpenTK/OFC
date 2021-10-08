@@ -106,7 +106,7 @@ void main(void)
     }
 
     // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
-    // discard if alpha is too small 
+    // discard if alpha is too small or replace with colour
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
     //      location 2 : vs_in.vs_instance - instance id/texture offset. 
@@ -174,6 +174,7 @@ void main(void)
 
     // Pipeline shader for an array of 2D Array textures.
     // vs_instance input is used to pick array and 2d depth image
+    // Discard if small alpha
     // Use with GLVertexShaderTextureMatrixTransform
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
@@ -221,7 +222,13 @@ void main(void)
     vec4 cx = texture(textureObject2D[tx], vec3(vs_textureCoordinate,ii));
     if ( enablealphablend )
         cx.w *= alpha;
-    color = cx;
+
+    if ( cx.w < 0.01)
+    {
+        discard;
+    }
+    else    
+        color = cx;
 //color = vec4(1,1,1,1);
 }
 ";

@@ -143,15 +143,19 @@ namespace GLOFC
             }
         }
 
-        public static Bitmap[] DrawTextIntoFixedSizeBitmaps(Size size, string[] text,
-                                                            Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
-                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90)
+        public static Bitmap[] DrawTextIntoFixedSizeBitmaps(Size size, string[] text, 
+                                                    Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
+                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90,
+                                                    int pos = 0, int length = -1)
         {
-            Bitmap[] bmp = new Bitmap[text.Length];
-            for( int i = 0; i < text.Length; i++)
+            if (length == -1)
+                length = text.Length - pos;
+
+            Bitmap[] bmp = new Bitmap[length];
+            for( int i = 0; i < length; i++)
             {
                 bmp[i] = new Bitmap(size.Width,size.Height);
-                DrawTextIntoFixedSizeBitmap(ref bmp[i], text[i], dp, hint, c, b, backscale, centertext, frmt, angleback);
+                DrawTextIntoFixedSizeBitmap(ref bmp[i], text[i+pos], dp, hint, c, b, backscale, centertext, frmt, angleback);
             }
             return bmp;
         }

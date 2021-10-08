@@ -71,15 +71,17 @@ namespace GLOFC.GL4
         // array holds worldpositions for objects
         // matrix holds pos, orientation, etc for text
         // bitmaps are for each label.  Owned by caller
-        // -1 if all added, else can't add from that pos on
+        // pos = indicates one to start from
+        // arraylength = if -1, use length of array, else only go to this entry (so 10 means 0..9 used)
+        // All are added
 
-        public void Add(Object tag, Object usertag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        public void Add(Object tag, Object usertag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
         {
             UserData[tag] = usertag;
-            Add(tag, array, matrix, bitmaps);
+            Add(tag, array, matrix, bitmaps,pos,arraylength);
         }
 
-        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps)
+        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
         {
             System.Diagnostics.Debug.Assert(tag != null);
 
@@ -91,19 +93,22 @@ namespace GLOFC.GL4
                 AddSet();
             }
 
-            int v = set.Last().Add(array, matrix, bitmaps, blocklist);
+            if (arraylength == -1)          // this means use length of array
+                arraylength = array.Length;
 
-            while (v >= 0)    // if can't add
+            int endpos = set.Last().Add(array, matrix, bitmaps, blocklist,pos,arraylength);
+
+            while (endpos >= 0)    // if can't add
             {
-                System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {v}");
+                System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {endpos}");
                 AddSet();
-                v = set.Last().Add(array, matrix, bitmaps, blocklist, v);      // add the rest from v
+                endpos = set.Last().Add(array, matrix, bitmaps, blocklist, endpos, arraylength);      // add the rest from endpos
             }
 
             blocklist[0].tag = tag;                 // first entry only gets tag
             BlockList.Add(blocklist);               // in order, add block list
             TagsToBlocks[tag] = blocklist;
-            Objects += array.Length;
+            Objects += arraylength;
         }
 
         public bool Remove(object tag)

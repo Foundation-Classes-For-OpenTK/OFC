@@ -159,12 +159,16 @@ layout (binding = 31, std430) buffer Positions      // For debug
                                             float alphafadescalar = 0,
                                             float alphafadepos = 0,
                                             int imagepos = 0,
-                                            bool visible = true
+                                            bool visible = true,
+                                            int pos = 0, int length = -1        // allowing you to pick out a part of the worldpos array
                                             )
         {
-            Matrix4[] mats = new Matrix4[worldpos.Length];
-            for (int i = 0; i < worldpos.Length; i++)
-                mats[i] = CreateMatrix(worldpos[i].Xyz + offset, size, rot, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, visible);
+            if (length == -1)
+                length = worldpos.Length - pos;
+
+            Matrix4[] mats = new Matrix4[length];
+            for (int i = 0; i < length; i++)
+                mats[i] = CreateMatrix(worldpos[i+pos].Xyz + offset, size, rot, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, visible);
             return mats;
         }
     }

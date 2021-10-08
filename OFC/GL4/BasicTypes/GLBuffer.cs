@@ -15,6 +15,7 @@
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
+using System.Collections.Generic;
 
 namespace GLOFC.GL4
 {
@@ -100,11 +101,13 @@ namespace GLOFC.GL4
 
         #region Fill - all perform alignment
 
-        public void Fill(float[] floats)
+        // length = -1 use floats.length, else take a subset starting at zero index
+        public void Fill(float[] floats, int length = -1)
         {
-            if (floats.Length > 0)
+            length = (length == -1) ? floats.Length : length;
+            if (length > 0)
             {
-                int datasize = floats.Length * sizeof(float);
+                int datasize = length * sizeof(float);
                 int posv = AlignArray(sizeof(float), datasize);
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, floats);
                 GLStatics.Check();
@@ -117,9 +120,10 @@ namespace GLOFC.GL4
             Fill(vertices);
         }
 
-        public void Fill(Vector2[] vertices)
+        public void Fill(Vector2[] vertices, int length = -1)
         {
-            int datasize = vertices.Length * Vec2size;
+            length = (length == -1) ? vertices.Length : length;
+            int datasize = length * Vec2size;
             int posv = AlignArray(Vec2size, datasize);
             if (vertices.Length > 0)
             {
@@ -136,9 +140,10 @@ namespace GLOFC.GL4
 
         // no Vector3 on purpose, they don't work well with opengl
 
-        public void Fill(Vector4[] vertices)
+        public void Fill(Vector4[] vertices, int length = -1)
         {
-            int datasize = vertices.Length * Vec4size;
+            length = (length == -1) ? vertices.Length : length;
+            int datasize = length * Vec4size;
             int posv = AlignArray(Vec4size, datasize);
 
             if (vertices.Length > 0)
@@ -155,12 +160,12 @@ namespace GLOFC.GL4
                 int datasize = sourcelength * Vec4size;
                 int posv = AlignArray(Vec4size, datasize);
 
-                if (sourcelength == vertices.Length)        // if everything.. just a named buffer subdata
+                if (sourceoffset == 0)        // if from beginning of buffer, then its just copy datasize from the beginning
                 {
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, vertices);
                 }
                 else
-                {
+                {                             // otherwise, annoyingly, a copy is needed
                     Vector4[] subset = new Vector4[sourcelength];
                     Array.Copy(vertices, sourceoffset, subset, 0, sourcelength);
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
@@ -182,9 +187,10 @@ namespace GLOFC.GL4
             Fill(tex);
         }
 
-        public void Fill(Matrix4[] mats)
+        public void Fill(Matrix4[] mats, int length = -1)
         {
-            int datasize = mats.Length * Mat4size;
+            length = (length == -1) ? mats.Length : length;
+            int datasize = length * Mat4size;
             int posv = AlignArray(Vec4size, datasize);
             if (mats.Length > 0)
             {
@@ -201,7 +207,7 @@ namespace GLOFC.GL4
                 int datasize = sourcelength * Mat4size;
                 int posv = AlignArray(Vec4size, datasize);
 
-                if (sourcelength == mats.Length)        // if everything.. just a named buffer subdata
+                if (sourceoffset == 0)        // if at start
                 {
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, mats);
                 }
@@ -221,15 +227,15 @@ namespace GLOFC.GL4
             Fill(mats);
         }
 
-        public void Fill(OpenTK.Graphics.Color4[] colours, int entries = -1)        // entries can say repeat colours until filled to entries..
+        public void Fill(OpenTK.Graphics.Color4[] colours, int length = -1)        // entries can say repeat colours until filled to entries..
         {
-            if (entries == -1)
-                entries = colours.Length;
+            if (length == -1)
+                length = colours.Length;
 
-            int datasize = entries * Vec4size;
+            int datasize = length * Vec4size;
             int posc = AlignArray(Vec4size, datasize);
 
-            int colstogo = entries;
+            int colstogo = length;
             int colp = posc;
 
             while (colstogo > 0)   // while more to fill in
@@ -242,9 +248,10 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
-        public void Fill(ushort[] words)
+        public void Fill(ushort[] words, int length = -1)
         {
-            int datasize = words.Length * sizeof(ushort);
+            length = (length == -1) ? words.Length : length;
+            int datasize = length * sizeof(ushort);
             int posv = AlignArray(sizeof(ushort), datasize);
             if (words.Length > 0)
             {
@@ -259,9 +266,10 @@ namespace GLOFC.GL4
             Fill(words);
         }
 
-        public void Fill(uint[] data)
+        public void Fill(uint[] data, int length = -1)
         {
-            int datasize = data.Length * sizeof(uint);
+            length = (length == -1) ? data.Length : length;
+            int datasize = length * sizeof(uint);
             int pos = AlignArray(sizeof(uint), datasize);
             if (data.Length > 0)
             {
@@ -276,9 +284,10 @@ namespace GLOFC.GL4
             Fill(data);
         }
 
-        public void Fill(byte[] data)      
+        public void Fill(byte[] data, int length = -1)      
         {
-            int datasize = data.Length;
+            length = (length == -1) ? data.Length : length;
+            int datasize = length;
             int pos = AlignArray(sizeof(byte), datasize);     
             if (data.Length > 0)
             {
@@ -466,33 +475,35 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
-        public void Write(float[] a)
+        public void Write(float[] a, int length = -1)
         {
+            length = (length == -1) ? a.Length : length;
+
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             int size = sizeof(float);
-            var p = AlignArrayPtr(size, a.Length);
+            var p = AlignArrayPtr(size, length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);
             else
             {
-                var fa = new float[a.Length * 4];
-                for (int i = 0; i < a.Length; i++)      // std140 'orrible
+                var fa = new float[length * 4];
+                for (int i = 0; i < length; i++)      // std140 'orrible
                     fa[i * 4] = a[i];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
         }
 
-        public void Write(float[] a, int count, int sourceoffset = 0)     // count in floats units, source offset in floats units
+        public void Write(float[] a, int length, int sourceoffset = 0)     // count in floats units, source offset in floats units
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             int size = sizeof(float);
-            var p = AlignArrayPtr(size, count);
+            var p = AlignArrayPtr(size, length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, sourceoffset, p.Item1, count);
+                System.Runtime.InteropServices.Marshal.Copy(a, sourceoffset, p.Item1, length);
             else
             {
-                var fa = new float[count * 4];
-                for (int i = 0; i < count; i++)      // std140 'orrible
+                var fa = new float[length * 4];
+                for (int i = 0; i < length; i++)      // std140 'orrible
                     fa[i * 4] = a[i + sourceoffset];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
@@ -505,11 +516,12 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p, a.Length); // number of units
         }
 
-        public void WriteCont(float[] a)     // without checking for alignment/stride
+        public void WriteCont(float[] a, int length = -1)     // without checking for alignment/stride
         {
-            System.Runtime.InteropServices.Marshal.Copy(a, 0, CurrentPtr, a.Length);       // number of units, not byte length!
-            CurrentPtr += sizeof(float) * a.Length;
-            CurrentPos += sizeof(float) * a.Length;
+            length = (length == -1) ? a.Length : length;
+            System.Runtime.InteropServices.Marshal.Copy(a, 0, CurrentPtr, length);       // number of units, not byte length!
+            CurrentPtr += sizeof(float) * length;
+            CurrentPos += sizeof(float) * length;
         }
 
         public void Write(int v)
@@ -520,17 +532,19 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
-        public void Write(int[] a)
+        public void Write(int[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
+
+            length = (length == -1) ? a.Length : length;
             int size = sizeof(int);
-            var p = AlignArrayPtr(size, a.Length);
+            var p = AlignArrayPtr(size, length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);       // number of units, not byte length!
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);       // number of units, not byte length!
             else
             {
-                var fa = new int[a.Length * 4];
-                for (int i = 0; i < a.Length; i++)      // std140 'orrible
+                var fa = new int[length * 4];
+                for (int i = 0; i < length; i++)      // std140 'orrible
                     fa[i * 4] = a[i];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
@@ -544,17 +558,18 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
-        public void Write(short[] a)
+        public void Write(short[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
+            length = (length == -1) ? a.Length : length;
             int size = sizeof(short);
-            var p = AlignArrayPtr(size, a.Length);
+            var p = AlignArrayPtr(size, length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);       // number of units, not byte length!
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);       // number of units, not byte length!
             else
             {
-                var fa = new short[a.Length * 4];
-                for (int i = 0; i < a.Length; i++)      // std140 'orrible
+                var fa = new short[length * 4];
+                for (int i = 0; i < length; i++)      // std140 'orrible
                     fa[i * 4] = a[i];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
@@ -568,17 +583,18 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
-        public void Write(long[] a)
+        public void Write(long[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
+            length = (length == -1) ? a.Length : length;
             int size = sizeof(long);
-            var p = AlignArrayPtr(size, a.Length);
+            var p = AlignArrayPtr(size, length);
             if (p.Item2 == size)
-                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);       // number of units, not byte length!
+                System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);       // number of units, not byte length!
             else
             {
-                var fa = new long[a.Length * 4];
-                for (int i = 0; i < a.Length; i++)      // std140 'orrible
+                var fa = new long[length * 4];
+                for (int i = 0; i < length; i++)      // std140 'orrible
                     fa[i * 4] = a[i];
                 System.Runtime.InteropServices.Marshal.Copy(fa, 0, p.Item1, fa.Length);       // number of units, not byte length!
             }
@@ -592,11 +608,12 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
-        public void Write(byte[] a)     // special , not aligned, as not normal glsl type.  Used mostly for element indexes
+        public void Write(byte[] a, int length = -1 )     // special , not aligned, as not normal glsl type.  Used mostly for element indexes
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
-            var p = AlignArrayPtr(sizeof(byte), a.Length);
-            System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);
+            length = (length == -1) ? a.Length : length;
+            var p = AlignArrayPtr(sizeof(byte), length);
+            System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);
         }
 
         public const int WriteIndirectArrayStride = 16;

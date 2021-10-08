@@ -138,18 +138,22 @@ namespace GLOFC.GL4
         // matrix holds pos, orientation, etc for text
         // bitmaps are for each label.  Owned by caller
         // pos = indicates one to start from
+        // arraylength = if -1, use length of array, else only go to this entry (so 10 means 0..9 used)
         // -1 all added, else the pos where it failed on
         // block list updated
 
-        public int Add(Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0)
+        public int Add(Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0, int arraylength = -1)
         {
+            if (arraylength == -1)      // this means use length of array
+                arraylength = array.Length;
+
             do
             {
                 if (textureinuse >= textures.Length)       // out of textures
                     return pos;
 
                 // how many can we take..
-                int touse = Math.Min(array.Length - pos, textures[textureinuse].DepthLeftIndex);
+                int touse = Math.Min(arraylength - pos, textures[textureinuse].DepthLeftIndex);
 
                 //System.Diagnostics.Debug.WriteLine($"Fill {pos} {touse}");
                 // fill in vertex array entries from pos .. pos+touse-1
@@ -191,7 +195,7 @@ namespace GLOFC.GL4
 
                 pos += touse;
 
-            } while (pos < array.Length);
+            } while (pos < arraylength);
 
             return -1;
         }
