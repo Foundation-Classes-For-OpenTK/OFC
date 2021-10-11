@@ -23,15 +23,15 @@ namespace GLOFC.GL4.Controls
     public class GLListBox : GLForeDisplayBase
     {
         public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     // not fired by programatically 
-        public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
+        public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     
 
         public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; InvalidateLayoutParent(); } }
         public List<Image> ImageItems { get { return images; } set { images = value; InvalidateLayoutParent(); } }
         public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; InvalidateLayoutParent(); } }
 
-        public int SelectedIndex { get { return selectedIndex; } set { SetSelectedIndex(value); } }
-        public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { SetSelectedItem(value); } }
-        public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { SetSelectedIndex(value); } }
+        public int SelectedIndex { get { return selectedIndex; } set { setSelectedIndex(value,false); } }       // does not fire SelectedIndexChanged
+        public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { setSelectedItem(value); } }     // does not fire SelectedIndexChanged
+        public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { setSelectedItem(value); } } // does not fire SelectedIndexChanged
 
         public int FocusIndex { get { return focusindex; } set { if (items != null) focusindex = Math.Min(value, items.Count - 1); Invalidate(); } }        // -1 turns off focus
 
@@ -53,7 +53,7 @@ namespace GLOFC.GL4.Controls
 
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }       // normal focus dotted box, 
         public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }    // SelectedItem is highlighted
-        public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }            // if set, focus is a highlighted area, no selecteditem shown
+        public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }            // if set, focus is a dotted area, no selecteditem shown
 
         // scroll bar
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
@@ -108,20 +108,6 @@ namespace GLOFC.GL4.Controls
         {
         }
 
-        public bool SetSelectedItem(string v, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
-        {
-            if (items != null)
-            {
-                int i = items.FindIndex((x) => x.Equals(v, c));
-                if (i >= 0 && i < items.Count)
-                {
-                    SetSelectedIndex(v);
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public bool FocusUp(int count = 1)
         {
             count = Math.Min(focusindex, count);
@@ -129,7 +115,7 @@ namespace GLOFC.GL4.Controls
             if (Items != null && count > 0)
             {
                 focusindex -= count;
-                EnsureInView();
+                showfocusindex = true;
                 Invalidate();
                 return true;
             }
@@ -146,7 +132,7 @@ namespace GLOFC.GL4.Controls
                 if (count > 0)
                 {
                     focusindex += count;
-                    EnsureInView();
+                    showfocusindex = true;
                     Invalidate();
                     return true;
                 }
@@ -154,18 +140,9 @@ namespace GLOFC.GL4.Controls
 
             return false;
         }
-
-        public bool SelectCurrent()
+        public void SelectCurrentFocus()            // does fire selectedindexchange, no action if focusindex is not set
         {
-            if (focusindex >= 0)
-            {
-                selectedIndex = focusindex;
-                OnSelectedIndexChanged();
-                Invalidate();
-                return true;
-            }
-            else
-                return false;
+            setSelectedIndex(focusindex,true);
         }
 
         #region Implementation
@@ -182,7 +159,7 @@ namespace GLOFC.GL4.Controls
             if (AutoSize)       // measure text size and number of items to get idea of space required. Allow for scroll bar
             {
                 int items = (Items != null) ? Items.Count() : 0;
-                System.Diagnostics.Debug.WriteLine("AS Items" + items);
+                //System.Diagnostics.Debug.WriteLine("AS Items" + items);
                 SizeF max = new SizeF(ScrollBarWidth*2,0);
                 if ( items>0)
                 {
@@ -199,7 +176,7 @@ namespace GLOFC.GL4.Controls
                 int fh = (int)Font.GetHeight() + 2;
                 Size sz = new Size((int)max.Width+ScrollBarWidth+8,Math.Min(items*fh+4,DropDownHeightMaximum));
                 SetNI(size: sz);
-                System.Diagnostics.Debug.WriteLine("Autosize list box " + Size);
+                //System.Diagnostics.Debug.WriteLine("Autosize list box " + Size);
             }
         }
 
@@ -268,17 +245,25 @@ namespace GLOFC.GL4.Controls
                     }
                 }
 
-                if (selectedindexset)     // we set the selected index, move to this and set focus to it, make sure its displayed
+                if ( showfocusindex )              // if we have been told to ensure focus index is displayed..
                 {
-                    focusindex = SelectedIndex;
-
-                    if (firstindex >= focusindex)       // must display focusindex
+                    //System.Diagnostics.Debug.WriteLine($"Focus Index reset {firstindex} to fi {focusindex} sel {selectedIndex}");
+                    System.Diagnostics.Debug.Assert(displayableitems >= 1);
+                    if (firstindex > focusindex)    // must display focusindex
+                    {
                         firstindex = focusindex;
+                        scrollbar.Value = firstindex;       // ensure the scroll bar is informed
+                    }
                     else if (focusindex >= firstindex + displayableitems) // if too far back..
-                        firstindex = focusindex - displayableitems - 1;
-
-                    selectedindexset = false;
+                    {
+                        firstindex = focusindex - displayableitems + 1;     // +1 to shift it on one up
+                        scrollbar.Value = firstindex;       // ensure the scroll bar is informed
+                    }
+                    System.Diagnostics.Debug.Assert(firstindex >= 0);
+                    showfocusindex = false;
                 }
+
+                //System.Diagnostics.Debug.WriteLine($"Paint fi {firstindex} focus {focusindex} sel {selectedIndex}");
 
                 using (StringFormat f = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.NoWrap })
                 using (Brush textb = new SolidBrush(this.ForeColor))
@@ -351,47 +336,35 @@ namespace GLOFC.GL4.Controls
                         gr.DrawRectangle(p1, itemarea);
                 }
             }
+       
         }
 
-        private void EnsureInView()
+        private bool setSelectedItem(string v, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
         {
-            if (focusindex < firstindex)
+            if (items != null)
             {
-                firstindex = focusindex;
-                scrollbar.Value = firstindex;
-                Invalidate();
+                int i = items.FindIndex((x) => x.Equals(v, c));
+                if (i >= 0 && i < items.Count)
+                {
+                    setSelectedIndex(i, false);
+                    return true;
+                }
             }
-            else if (focusindex >= firstindex + displayableitems)
-            {
-                firstindex = focusindex - displayableitems + 1;
-                scrollbar.Value = firstindex;
-                Invalidate();
-            }
-            //System.Diagnostics.Debug.WriteLine("Ensure view {0} {1}", focusindex, firstindex);
+            return false;
         }
 
-
-        private void SetSelectedIndex(int i)
+        private void setSelectedIndex(int i, bool firechange)
         {
             if (items != null)
             {
                 if (i >= 0 && i < items.Count)
                 {
-                    selectedIndex = i;
-                    selectedindexset = true;
-                    EnsureInView();
+                    focusindex = selectedIndex = i;             // selecting it moves the sel and focus to this point
+                    showfocusindex = true;
+                    if ( firechange)
+                        OnSelectedIndexChanged();
                     Invalidate();
                 }
-            }
-        }
-
-        private void SetSelectedIndex(string s, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
-        {
-            if (items != null)
-            {
-                int i = items.FindIndex((x) => x.Equals(s, c));
-                if (i >= 0)
-                    SetSelectedIndex(i);
             }
         }
 
@@ -402,15 +375,8 @@ namespace GLOFC.GL4.Controls
             {
                 if (items != null && itemheight > 0)       // if any items and we have done a calc layout.. just to check
                 {
-                    int index = firstindex + e.Location.Y / itemheight;
-
-                    if (index >= 0 && index < items.Count)
-                    {
-                        selectedIndex = index;
-                        OnSelectedIndexChanged();
-                    }
+                    setSelectedIndex(firstindex + e.Location.Y / itemheight, true);
                 }
-
             }
         }
 
@@ -468,7 +434,7 @@ namespace GLOFC.GL4.Controls
 
                 if ((e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return) || (e.Alt && (e.KeyCode == System.Windows.Forms.Keys.Up || e.KeyCode == System.Windows.Forms.Keys.Down)))
                 {
-                    SelectCurrent();
+                    SelectCurrentFocus();
                 }
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Delete || e.KeyCode == System.Windows.Forms.Keys.Escape || e.KeyCode == System.Windows.Forms.Keys.Back)
@@ -504,17 +470,17 @@ namespace GLOFC.GL4.Controls
         private int itemheight;
         private int displayableitems;
 
-        private int firstindex = 0;
-        private int selectedIndex { get; set; } = -1;
+        private int firstindex = 0;                 // top line of box
+        private int selectedIndex { get; set; } = -1;   // which is selected
         private int focusindex = -1;                // where the focus is at
-
-        private bool selectedindexset = false;      // we just set the selected index, move to show selectedindex, set focus to it
 
         private int dropDownHeightMaximum = 400;
 
         private bool showfocusbox = true;           // normal focus dotted box
         private bool showfocushighlight = false;    // focus selection is highlighted, no highlight selected shown
         private bool highlightSelectedItem = true;  // highlight selected
+
+        private bool showfocusindex = false;        // set on selection or move if we need ensure focus index is showing
 
     }
 }

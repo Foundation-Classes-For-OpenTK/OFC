@@ -114,7 +114,6 @@
       <DependentUpon>TestQueries.cs</DependentUpon>
     </Compile>
     <Compile Include="Stars\GLBitmapsWithStarObjects.cs" />
-    <Compile Include="Classes.cs" />
     <Compile Include="Functions\TestFunctions.cs">
       <SubType>Form</SubType>
     </Compile>

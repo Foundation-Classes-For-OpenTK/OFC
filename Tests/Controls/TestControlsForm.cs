@@ -1,4 +1,17 @@
-﻿using OpenTK;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using GLOFC;
@@ -11,9 +24,6 @@ using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
 using System.Globalization;
-
-// Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
-// this one add on tex coord calculation and using a single tight quad shows its working
 
 namespace TestOpenTk
 {
@@ -236,6 +246,17 @@ namespace TestOpenTk
 
                 if (true)
                 {
+                    GLComboBox cbstars = new GLComboBox("GalaxyStarsNumber", new Rectangle(350, 340, 100, 32));
+                    cbstars.ToolTipText = "Control how many stars are shown when zoomes in";
+                    cbstars.Items = new List<string>() { "Ultra", "High", "Medium", "Low" };
+                    var list = new List<int>() { 1000000, 500000, 250000, 100000 };
+                    int itemno = 1;
+                    cbstars.SelectedIndex = itemno >= 0 ? itemno : 1;       // high default
+                    pform.Add(cbstars);
+                }
+
+                if (true)
+                {
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = dtp.ShowCalendar = true;
@@ -252,6 +273,7 @@ namespace TestOpenTk
                     lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
+                    lb1.ShowFocusBox = true;
                     //lb1.FitToItemsHeight = false;
                     pform.Add(lb1);
                     lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };

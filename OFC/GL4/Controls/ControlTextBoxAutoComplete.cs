@@ -196,7 +196,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (ListBox.Visible)
                     {
-                        ListBox.SelectCurrent();
+                        ListBox.SelectCurrentFocus();
                     }
                     else
                     {

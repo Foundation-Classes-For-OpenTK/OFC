@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  * Part of the EDDiscovery Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -22,8 +22,6 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
-// A simpler main for testing
 
 namespace TestOpenTk
 {

@@ -255,7 +255,7 @@ namespace GLOFC.GL4.Controls
                 dropdownbox.Font = Font;
                 dropdownbox.Visible = true;
                 dropdownbox.ShowFocusBox = true;
-                dropdownbox.HighlightSelectedItem = false;
+                dropdownbox.HighlightSelectedItem = true;
                 dropdownbox.ResumeLayout();
                 AddToDesktop(dropdownbox);             // attach to display, not us, so it shows over everything
                 DropDownStateChanged?.Invoke(this, true);
