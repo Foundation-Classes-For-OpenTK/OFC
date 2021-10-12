@@ -262,6 +262,10 @@ namespace GLOFC
         {
             return ((angle + add + 360 + 180) % 360) - 180;
         }
+        public static double AddBoundedAngle(this double angle, double add)
+        {
+            return ((angle + add + 360 + 180) % 360) - 180;
+        }
 
         public static float Fract(this float a)
         {

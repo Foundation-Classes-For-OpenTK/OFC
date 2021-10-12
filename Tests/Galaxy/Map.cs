@@ -374,7 +374,7 @@ namespace TestOpenTk
 
             if ((ctrlo & 512) != 0)
             {
-                galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
+                //galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
                
             }
 
@@ -456,7 +456,7 @@ namespace TestOpenTk
                 displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
                 {
                     // MCUB set up by Controller3DDraw which did the work first
-                    galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc);
+                    galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc,gl3dcontroller.PosCamera.ZoomFactor);
                     displaycontrol.Animate(glwfc.ElapsedTimems);
                     displaycontrol.Render(glwfc.RenderState,ts);
                 };
@@ -773,14 +773,20 @@ namespace TestOpenTk
             displaycontrol.SetFocus();
         }
 
-        private Object FindObjectOnMap(Point vierpowerloc)
+        private Object FindObjectOnMap(Point loc)
         {
-            var sys = travelpath?.FindSystem(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size) ?? null;
-            if (sys != null)
-                return sys;
-            var gmo = galmapobjects?.FindPOI(vierpowerloc, glwfc.RenderState, matrixcalc.ViewPort.Size) ?? null;
+            var he = travelpath?.FindSystem(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float tz);
+            if (he != null)
+                return he;
+            var gmo = galmapobjects?.FindPOI(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float gz);
             if (gmo != null)
                 return gmo;
+            var sys = galaxystars?.Find(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float sz);
+            if (sys != null)
+            {
+                sys.X = sys.Y = sys.Z = 100000;
+                return sys;
+            }
             return null;
         }
 
@@ -788,6 +794,7 @@ namespace TestOpenTk
         {
             var he = obj as HistoryEntry;
             var gmo = obj as GalacticMapObject;
+            var sys = obj as SystemClass;
             if (he != null)
             {
 
@@ -803,6 +810,10 @@ namespace TestOpenTk
                 return new Tuple<string, Vector3, string>(gmo.name,
                                                           new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z),
                                                           t1);
+            }
+            else if ( sys != null)
+            {
+                return new Tuple<string, Vector3, string>(sys.Name, new Vector3((float)sys.X, (float)sys.Y, (float)sys.Z), $"EDSM Star {sys.Name}");
             }
             else
             {

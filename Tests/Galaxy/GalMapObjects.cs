@@ -199,13 +199,16 @@ namespace TestOpenTk
         }
 
 
-        public GalacticMapObject FindPOI(Point viewportloc, GLRenderState state, Size viewportsize)
+        // Find at point, return found and z point
+        public GalacticMapObject FindPOI(Point loc, GLRenderState state, Size viewportsize, out float z)
         {
+            z = 0;
+
             if (!objectshader.Enable)
                 return null;
 
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(viewportloc, viewportsize);
+            geo.SetScreenCoords(loc, viewportsize);
 
             GLStatics.Check();
 
@@ -214,8 +217,9 @@ namespace TestOpenTk
             var res = geo.GetResult();
             if (res != null)
             {
-//                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                //                for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
 
+                z = res[0].Z;
                 int instance = (int)res[0].Y;
                 // tbd wrong! not a one to one mapping
                 return galmap.RenderableMapObjects[indextoentry[instance]];       //TBD

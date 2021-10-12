@@ -233,18 +233,18 @@ namespace GLOFC.GL4
             set.Clear();
         }
 
-        // Return set, render group, and render index in group, or null
-        public Tuple<int,int,int> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
+        // Return set, render group, render index in group, z of find, or null
+        public Tuple<int,int,int,float> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(pos, size);
+            geo.SetScreenCoords(pos, viewportsize);
             findshader.Start(null);     // this clears the buffer
 
             int setno = 0;
 
             foreach (var s in set)      
             {
-                geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform
+                geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform (encoded in drawID in .W)
                 s.ObjectRenderer.Execute(findshader, state, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
@@ -254,7 +254,7 @@ namespace GLOFC.GL4
             if (res != null)
             {
                 System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
-                return new Tuple<int,int, int>(((int)res[0].W) >> 18, ((int)res[0].W) & 0x3ffff, (int)res[0].Y);
+                return new Tuple<int,int, int,float>(((int)res[0].W) >> 18, ((int)res[0].W) & 0x3ffff, (int)res[0].Y, res[0].Z);
             }
             else
                 return null;
@@ -262,13 +262,15 @@ namespace GLOFC.GL4
 
         // Return Blockref list and count within that list, first entry has tag in it for lookup.  Or null.
 
-        public Tuple<List<GLObjectsWithLabels.BlockRef>,int> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size size)
+        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
         {
-            var ret = Find(findshader, state, pos, size);
+            var ret = Find(findshader, state, pos, viewportsize);       // return set, group, index, z
             if (ret != null)
             {
-                GLObjectsWithLabels s = set[ret.Item1];
+                GLObjectsWithLabels s = set[ret.Item1];     // this is set
+
                 var fb = BlockList.Find(x => x.Find(y => y.owl == s && y.blockindex == ret.Item2) != null);     // find (set,blockindex) in block list
+
                 if ( fb != null )
                 {
                     int c = 0;
@@ -279,7 +281,7 @@ namespace GLOFC.GL4
                         c += br.count;      
                     }
 
-                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int>(fb, c + ret.Item3);       // return block list, and real index into it
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, float>(fb, c + ret.Item3, ret.Item4);       // return block list, and real index into it
                 }
             }
 

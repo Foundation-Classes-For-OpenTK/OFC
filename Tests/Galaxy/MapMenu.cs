@@ -306,11 +306,11 @@ namespace TestOpenTk
             map.displaycontrol.Add(pform);
         }
 
-        public void UpdateCoords(GLOFC.GLMatrixCalc c)
+        public void UpdateCoords(GLOFC.GLMatrixCalc c, float zoom)
         {
             status.Text = c.TargetPosition.X.ToStringInvariant("N1") + " ," + c.TargetPosition.Y.ToStringInvariant("N1") + " ,"
                          + c.TargetPosition.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +
-                         c.EyePosition.X.ToStringInvariant("N1") + " ," + c.EyePosition.Y.ToStringInvariant("N1") + " ," + c.EyePosition.Z.ToStringInvariant("N1");
+                         c.EyePosition.X.ToStringInvariant("N1") + " ," + c.EyePosition.Y.ToStringInvariant("N1") + " ," + c.EyePosition.Z.ToStringInvariant("N1") + " z " + zoom;
         }
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it

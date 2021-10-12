@@ -202,16 +202,21 @@ namespace TestOpenTk
             tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
-        public HistoryEntry FindSystem(Point viewportloc, GLRenderState state, Size viewportsize)
+        // Find at point, return found and z point
+
+        public HistoryEntry FindSystem(Point loc, GLRenderState state, Size viewportsize, out float z)
         {
+            z = 0;
+
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(viewportloc, viewportsize);
+            geo.SetScreenCoords(loc, viewportsize);
 
             rifind.Execute(findshader, state); 
 
             var res = geo.GetResult();
             if (res != null)
             {
+                z = res[0].Z;
                 //for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
                 return currentfilteredlist[(int)res[0].Y];
             }

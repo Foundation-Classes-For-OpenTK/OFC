@@ -23,7 +23,7 @@ namespace TestOpenTk
         private const int SectorSize = 100;
         private const int MaxGeneratedThreads = 40;
 
-        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferfindbinding)
+        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferbinding)
         {
             sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) } );
             items.Add(sunvertex);
@@ -55,6 +55,9 @@ namespace TestOpenTk
                                                             textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8);
 
             items.Add(slset);
+
+            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(findbufferbinding, 16), null, null, null);
+            items.Add(findshader);
         }
 
         public void Start()
@@ -242,12 +245,30 @@ namespace TestOpenTk
             sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
         }
 
+        public SystemClass Find( Point loc, GLRenderState rs, Size viewportsize ,out float z)
+        {
+            z = 0;
+            var find = slset.FindBlock(findshader, rs, loc, viewportsize);
+            if ( find != null )
+            {
+                System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2}");
+                var userdata = slset.UserData[find.Item1[0].tag] as string[];
+
+                System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item2]}");
+                return new SystemClass() { Name = userdata[find.Item2] };
+            }
+            else
+                return null;
+        }
+
 
         private GLSetOfObjectsWithLabels slset; // main class holding drawing
 
         private GLShaderPipeline sunshader;     // sun drawer
         private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
         private GLBuffer shapebuf;
+
+        private GLShaderPipeline findshader;    // find shader for lookups
 
         private class Sector
         {
