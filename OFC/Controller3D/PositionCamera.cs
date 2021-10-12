@@ -55,14 +55,14 @@ namespace GLOFC.Controller
                     {
                         lookat = gotopos;
                         eyeposition = gotopos + eyeoffset;
-                        System.Diagnostics.Debug.WriteLine("{0} Immediate Slew to {1}", Environment.TickCount % 10000, targetposSlewTarget);
+                        //System.Diagnostics.Debug.WriteLine("{0} Immediate Slew to {1}", Environment.TickCount % 10000, targetposSlewTarget);
                     }
                     else
                     {
                         targetposSlewTarget = gotopos;
                         targetposSlewProgress = 0.0f;
                         targetposSlewTime = (timeslewsec < 0) ? ((float)Math.Max(1.0, dist / unitspersecond)) : timeslewsec;            //10000 ly/sec, with a minimum slew
-                        System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Slew start to {gotopos} {targetposSlewTime}");
+                       // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Slew start to {gotopos} {targetposSlewTime}");
                     }
                 }
             }
@@ -96,10 +96,6 @@ namespace GLOFC.Controller
             cameraDir.X = cameraDir.X.AddBoundedAngle(addazel.X);
             cameraDir.Y = cameraDir.Y.AddBoundedAngle(addazel.Y);
 
-            //Vector2 cameraDir = new Vector2((float)(((double)CameraDirection.X).AddBoundedAngle(addazel.X)),
-                                            //(float)(((double)CameraDirection.Y).AddBoundedAngle(addazel.Y)));
-
-
             if (cameraDir.X < 0 && cameraDir.X > -90)                   // Limit camera pitch
                 cameraDir.X = 0;
             if (cameraDir.X > 180 || cameraDir.X <= -90)
@@ -111,7 +107,7 @@ namespace GLOFC.Controller
                 SetLookatPositionFromEye(cameraDir, EyeDistance);
             else
                 SetEyePositionFromLookat(cameraDir, EyeDistance);
-            System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2} Zoom Fact {3} Eye dist {4}", Environment.TickCount % 10000, lookat, eyeposition, ZoomFactor, EyeDistance);
+           // System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2} Zoom Fact {3} Eye dist {4}", Environment.TickCount % 10000, lookat, eyeposition, ZoomFactor, EyeDistance);
         }
 
         // Pan to camera position, time = 0 immediate, <0 estimate, else time to slew in seconds
@@ -127,7 +123,7 @@ namespace GLOFC.Controller
                 {
                     Vector2 diff = newcamerapos - cameradir;
                     timeslewsec = (float)(diff.Length / 60);
-                    System.Diagnostics.Debug.WriteLine($"camera diff {diff} {timeslewsec}");
+                   // System.Diagnostics.Debug.WriteLine($"camera diff {diff} {timeslewsec}");
                 }
 
                 cameraDirSlewStart = CameraDirection;
@@ -203,7 +199,7 @@ namespace GLOFC.Controller
 
                 zoomSlewTime = timetozoom;
                 zoomSlewProgress = 0;
-                System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
+                //System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
             }
         }
 
@@ -250,7 +246,7 @@ namespace GLOFC.Controller
         public void SetLookatPositionFromEye(Vector2 cameradirdegreesp, float distance)              // from current eye position, set lookat, given a camera angle and a distance
         {
             lookat = eyeposition.CalculateLookatPositionFromEye(cameradirdegreesp, distance);
-            System.Diagnostics.Debug.WriteLine($"setlookat {cameradirdegreesp} distance {distance} resulting distance {(lookat - eyeposition).Length}");
+          //  System.Diagnostics.Debug.WriteLine($"setlookat {cameradirdegreesp} distance {distance} resulting distance {(lookat - eyeposition).Length}");
             cameradir = cameradirdegreesp;
         }
 
@@ -282,7 +278,7 @@ namespace GLOFC.Controller
                 if (newprogress >= 1.0f)
                 {
                     lookat = targetposSlewTarget;
-                    System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
+                    //System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
                 }
                 else
                 {
@@ -296,7 +292,7 @@ namespace GLOFC.Controller
                     var move = Vector3.Multiply(totvector, (float)slewfact);
                     lookat += move;
                     eyeposition += move;
-                    System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
+                    //System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
                 }
 
                 targetposSlewProgress = (float)newprogress;
@@ -309,12 +305,12 @@ namespace GLOFC.Controller
                 if ( newprogress > 1.0f)
                 {
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
                 }
                 else
                 {
                     float newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 

@@ -103,17 +103,6 @@ namespace GLOFC
 
             Vector3 eyerel = Vector3.Transform(cameravector, transform);
             return eyeposition + eyerel * distance;       
-
-            //Matrix4d transform4 = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees
-
-            //transform4 *= Matrix4d.CreateRotationX((float)(cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
-            //transform4 *= Matrix4d.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
-
-            //Vector3d eyerel4 = Vector3d.Transform(new Vector3d(cameravector.X, cameravector.Y, cameravector.Z), transform4);   
-
-            //return new Vector3((float)(eyeposition.X + eyerel4.X * distance),
-            //    (float)(eyeposition.Y + eyerel4.Y * distance),
-            //    (float)(eyeposition.Z + eyerel4.Z * distance));
         }
            
 
