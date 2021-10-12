@@ -187,7 +187,7 @@ namespace GLOFC.Controller
             {
                 Zoom(z);
             }
-            else if (Math.Abs(z - ZoomFactor) > 0.001)
+            else if (Math.Abs(z - ZoomFactor) > 0.01)
             {
                 zoomSlewTarget = z;
                 zoomSlewStart = ZoomFactor;
@@ -199,7 +199,7 @@ namespace GLOFC.Controller
 
                 zoomSlewTime = timetozoom;
                 zoomSlewProgress = 0;
-                //System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
+                System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
             }
         }
 
