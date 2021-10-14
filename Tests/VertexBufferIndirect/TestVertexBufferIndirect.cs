@@ -516,10 +516,10 @@ namespace TestOpenTk
                 var find = slset.FindBlock(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
                 if (find != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item1} {find.Item2}");
+                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item2} {find.Item3} {find.Item4} {find.Item5}");
                     var userdata = slset.UserData[find.Item1[0].tag] as string[];
 
-                    System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item2]}");
+                    System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item4]}");
                 }
             }
 

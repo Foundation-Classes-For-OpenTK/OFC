@@ -73,13 +73,15 @@ namespace GLOFC.GL4.Controls
                 fmt.Alignment = StringAlignment.Near;
                 fmt.LineAlignment = StringAlignment.Near;
 
+                // measure text
+                var captionsize = BitMapHelpers.MeasureStringInBitmap(caption, fnt, fmt);      
                 var textsize = BitMapHelpers.MeasureStringInBitmap(text + (text.EndsWith(Environment.NewLine) ? "AAAA" : ""), fnt, fmt);
+                int captiontextmaxwidth = Math.Max((int)textsize.Width, (int)captionsize.Width);    // which is longer, the caption or the text?
 
                 int buts = (buttons == MessageBoxButtons.AbortRetryIgnore || buttons == MessageBoxButtons.YesNoCancel) ? 3 : 2;     // guess of how many, just to set min but width
-
-                int contentwidth = Math.Max((butwidth + butxspacing) * buts + butxspacing, (int)textsize.Width + fnt.Height/4);       // add on a little nerf
+                int contentwidth = Math.Max((butwidth + butxspacing) * buts + butxspacing, captiontextmaxwidth + fnt.Height/4);       // which is biggest, the buttons or the caption/text+nerf
                 int windowextrawidth =  textmargin + tb.Margin.TotalWidth + tb.Padding.TotalWidth + cf.BorderWidth + cf.ExtraClientMargin.Width;
-                int estwidth = contentwidth + windowextrawidth;
+                int estwidth = contentwidth + windowextrawidth; // estimated width is contentwidth + extra for window
 
                 if ( estwidth > availablespace.Width - windowmargin * 2)
                 {

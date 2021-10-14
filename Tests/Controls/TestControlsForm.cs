@@ -205,8 +205,16 @@ namespace TestOpenTk
                     b3.TabOrder = taborder++;
                     b3.Padding = new GLOFC.GL4.Controls.Padding(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
+                    b3.Click += (c, ev) => { MsgDialog2(); };
                     b3.Enabled = false;
                     pform.Add(b3);
+
+                    GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Button 4");
+                    b4.TabOrder = taborder++;
+                    b4.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
+                    b4.Click += (c, ev) => { MsgDialog2(); };
+                    pform.Add(b4);
                 }
 
                 if (true)
@@ -440,7 +448,12 @@ namespace TestOpenTk
             for (int i = 0; i < 30; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(100, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+        }
+
+        private void MsgDialog2()
+        {
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.OKCancel);
         }
 
         private void MsgReturn(GLMessageBox msg, GLOFC.GL4.Controls.DialogResult res)

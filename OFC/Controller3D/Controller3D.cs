@@ -149,15 +149,15 @@ namespace GLOFC.Controller
                     PosCamera.CameraKeyboard(keyboard, KeyboardRotateSpeed?.Invoke(LastHandleInterval) ?? (0.02f * LastHandleInterval));
                 }
 
-                PosCamera.PositionKeyboard(keyboard, MatrixCalc.InPerspectiveMode, KeyboardTravelSpeed?.Invoke(LastHandleInterval, MatrixCalc.EyeDistance) ?? (0.1f * LastHandleInterval));
-                PosCamera.ZoomKeyboard(keyboard, KeyboardZoomSpeed?.Invoke(LastHandleInterval) ?? (1.0f + ((float)LastHandleInterval * 0.002f)));      // zoom slew is not affected by the above
+                if (keyboard.IsAnyCurrentlyOrHasBeenPressed())
+                {
+                    PosCamera.PositionKeyboard(keyboard, MatrixCalc.InPerspectiveMode, KeyboardTravelSpeed?.Invoke(LastHandleInterval, MatrixCalc.EyeDistance) ?? (0.1f * LastHandleInterval));
+                    PosCamera.ZoomKeyboard(keyboard, KeyboardZoomSpeed?.Invoke(LastHandleInterval) ?? (1.0f + ((float)LastHandleInterval * 0.002f)));      // zoom slew is not affected by the above
 
-                if (keyboard.HasBeenPressed(Keys.P, KeyboardMonitor.ShiftState.Ctrl))
-                    ChangePerspectiveMode(!MatrixCalc.InPerspectiveMode);
+                    handleotherkeys?.Invoke(keyboard);
 
-                handleotherkeys?.Invoke(keyboard);
-
-                keyboard.ClearHasBeenPressed();
+                    keyboard.ClearHasBeenPressed();
+                }
             }
             else
             {

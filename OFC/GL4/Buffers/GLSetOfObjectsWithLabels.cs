@@ -27,7 +27,6 @@ namespace GLOFC.GL4
     public class GLSetOfObjectsWithLabels : IDisposable
     {
         public Size LabelSize { get { return texturesize; } }
-
         public int Objects { get; private set; } = 0;
         public int Count { get { return set.Count; } }
 
@@ -68,6 +67,7 @@ namespace GLOFC.GL4
         }
 
         // tag should be unique, if not, it won't complain
+        // usertag is indexed by tag and is any user data the user wants to store against a tag
         // array holds worldpositions for objects
         // matrix holds pos, orientation, etc for text
         // bitmaps are for each label.  Owned by caller
@@ -111,6 +111,7 @@ namespace GLOFC.GL4
             Objects += arraylength;
         }
 
+        // remove a specific tag
         public bool Remove(object tag)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -145,6 +146,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
+        // remove the oldest N blocks
         public void RemoveOldest(int n)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -169,7 +171,7 @@ namespace GLOFC.GL4
                 TagsToBlocks.Remove(blocklist[0].tag);  // remove the tag associated with the blocklist
             }
 
-            System.Diagnostics.Debug.WriteLine($"Blocklist {BlockList.Count} remove {n} objects {Objects}");
+            //System.Diagnostics.Debug.WriteLine($"Blocklist {BlockList.Count} remove {n} objects {Objects}");
             BlockList.RemoveRange(0, n);            // and empty block list
 
             foreach (var removeit in toremove)
@@ -181,13 +183,13 @@ namespace GLOFC.GL4
             }
         }
 
-        // remove until Objects <= count
+        // remove until Objects <= count, oldest first
 
         public void RemoveUntil(int count)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
 
-            int n = 0;      // number removed
+            int n = 0;      // index of removal
             while( n < BlockList.Count && Objects > count )
             {
                 var blocklist = BlockList[n];
@@ -260,9 +262,11 @@ namespace GLOFC.GL4
                 return null;
         }
 
-        // Return Blockref list and count within that list, first entry has tag in it for lookup.  Or null.
+        // Find, item1 = return the list of blocks
+        // item2 = the found block, item3 = the index within that found block, item4 = the total index into the data (summed up), and item5 = the z of the find
+        // or null
 
-        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
+        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
         {
             var ret = Find(findshader, state, pos, viewportsize);       // return set, group, index, z
             if (ret != null)
@@ -274,14 +278,14 @@ namespace GLOFC.GL4
                 if ( fb != null )
                 {
                     int c = 0;
-                    foreach( var br in fb)      // until we get to owl/blockindex, count previous block counts
+                    foreach( var br in fb)      // until we get to owl/blockindex, count previous block counts so we get a cumulative total
                     {
                         if (br.owl == s && br.blockindex == ret.Item2)
                             break;
                         c += br.count;      
                     }
 
-                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, float>(fb, c + ret.Item3, ret.Item4);       // return block list, and real index into it
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, ret.Item2, ret.Item3, c + ret.Item3, ret.Item4);       // return block list, and real index into it
                 }
             }
 

@@ -85,7 +85,7 @@ namespace GLOFC.Controller
         
         public float CameraRotation { get { return camerarot; } set { KillSlew(); camerarot = value; } }       // rotation around Z
 
-        public void RotateCamera(Vector2 addazel, float addzrot, bool movepos)
+        public void RotateCamera(Vector2 addazel, float addzrot, bool changelookat)
         {
             KillSlew();
            // System.Diagnostics.Debug.WriteLine("{0} Rotate camera {1} {2} {3} look {4} eye {5} camera dir {6}", Environment.TickCount % 10000, addazel, addzrot, movepos, lookat, eyeposition, cameradir);
@@ -103,7 +103,7 @@ namespace GLOFC.Controller
 
             camerarot = camerarot.AddBoundedAngle(addzrot);
 
-            if (movepos)
+            if (changelookat)
                 SetLookatPositionFromEye(cameraDir, EyeDistance);
             else
                 SetEyePositionFromLookat(cameraDir, EyeDistance);
@@ -305,12 +305,12 @@ namespace GLOFC.Controller
                 if ( newprogress > 1.0f)
                 {
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
-                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
+                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
                 }
                 else
                 {
                     float newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 
@@ -372,6 +372,7 @@ namespace GLOFC.Controller
 
         public bool YHoldMovement { get; set; } = true;
 
+        // Keys WASD RF Left/Right/Up/Down/PageUp/Down  with none or shift or ctrl
         public bool PositionKeyboard(KeyboardMonitor kbd, bool inperspectivemode, float movedistance)
         {
             Vector3 positionMovement = Vector3.Zero;
@@ -443,6 +444,8 @@ namespace GLOFC.Controller
                 return false;
         }
 
+        // Numpad 8+2+4+6, TGQE with none or shift
+        // Numpad 9+3 tilt camera
         public bool CameraKeyboard(KeyboardMonitor kbd, float angle)
         {
             Vector3 cameraActionRotation = Vector3.Zero;
@@ -450,56 +453,47 @@ namespace GLOFC.Controller
             if (kbd.Shift)
                 angle *= 2.0F;
 
-            if (kbd.IsCurrentlyPressed(Keys.NumPad4) != null)
-            {
-                cameraActionRotation.Z = angle;
-            }
-            if (kbd.IsCurrentlyPressed(Keys.NumPad6) != null)
-            {
-                cameraActionRotation.Z = -angle;
-            }
+            bool movelookat = kbd.Ctrl == false;
 
-            if (kbd.IsCurrentlyPressed(Keys.NumPad5, Keys.NumPad2, Keys.Z) != null)
+            if (kbd.IsCurrentlyPressed(Keys.NumPad8, Keys.T) != null)           // pitch up, 
             {
                 cameraActionRotation.X = -angle;
             }
-            if (kbd.IsCurrentlyPressed(Keys.NumPad8, Keys.X) != null)
+            else if (kbd.IsCurrentlyPressed(Keys.NumPad2, Keys.G) != null)           // pitch down
             {
                 cameraActionRotation.X = angle;
             }
 
-            bool movepos = false;
-
-            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.Ctrl, Keys.Q))
-            {
-                cameraActionRotation.Y = angle;
-            }
-            else if (kbd.IsCurrentlyPressed(Keys.NumPad7, Keys.Q) != null)
-            {
-                cameraActionRotation.Y = -angle;
-                movepos = true;
-            }
-
-            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.Ctrl, Keys.E))
+            if (kbd.IsCurrentlyPressed(Keys.NumPad4, Keys.Q) != null)           // turn left
             {
                 cameraActionRotation.Y = -angle;
             }
-            else if (kbd.IsCurrentlyPressed(Keys.NumPad9, Keys.E) != null)
+            else if (kbd.IsCurrentlyPressed(Keys.NumPad6, Keys.E) != null)      // turn right
             {
                 cameraActionRotation.Y = angle;
-                movepos = true;
             }
+
+            if (kbd.IsCurrentlyPressed(Keys.NumPad9) != null)
+            {
+                cameraActionRotation.Z = angle;
+            }
+            if (kbd.IsCurrentlyPressed(Keys.NumPad3) != null)
+            {
+                cameraActionRotation.Z = -angle;
+            }
+
+            //System.Diagnostics.Debug.WriteLine($"Cam rot {cameraActionRotation} {movelookat}");
 
             if (cameraActionRotation.LengthSquared > 0)
             {
-                RotateCamera(new Vector2(cameraActionRotation.X, cameraActionRotation.Y), cameraActionRotation.Z, movepos);
+                RotateCamera(new Vector2(cameraActionRotation.X, cameraActionRotation.Y), cameraActionRotation.Z, movelookat);
                 return true;
             }
             else
                 return false;
         }
 
-
+        // Keys MN, Ctrl1-9
         public bool ZoomKeyboard(KeyboardMonitor kbd, float adjustment)
         {
             bool changed = false;
@@ -518,23 +512,23 @@ namespace GLOFC.Controller
 
             float newzoom = 0;
 
-            if (kbd.HasBeenPressed(Keys.D1))
+            if (kbd.HasBeenPressed(Keys.D1, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMax;
-            if (kbd.HasBeenPressed(Keys.D2))
+            if (kbd.HasBeenPressed(Keys.D2, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 100;                                                      // Factor 3 scale
-            if (kbd.HasBeenPressed(Keys.D3))
+            if (kbd.HasBeenPressed(Keys.D3, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 33;
-            if (kbd.HasBeenPressed(Keys.D4))
+            if (kbd.HasBeenPressed(Keys.D4, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 11F;
-            if (kbd.HasBeenPressed(Keys.D5))
+            if (kbd.HasBeenPressed(Keys.D5, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 3.7F;
-            if (kbd.HasBeenPressed(Keys.D6))
+            if (kbd.HasBeenPressed(Keys.D6, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 1.23F;
-            if (kbd.HasBeenPressed(Keys.D7))
+            if (kbd.HasBeenPressed(Keys.D7, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 0.4F;
-            if (kbd.HasBeenPressed(Keys.D8))
+            if (kbd.HasBeenPressed(Keys.D8, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = 0.133F;
-            if (kbd.HasBeenPressed(Keys.D9))
+            if (kbd.HasBeenPressed(Keys.D9, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMin;
 
             if (newzoom != 0)

@@ -23,8 +23,14 @@ namespace GLOFC.GL4.Controls
     {
         #region Init
 
-        public Action<GLMenuItem> SubmenuOpened = null;         // SubMenu opening, called if a top level menu
-        public Action<GLMenuItem> SubmenuClosed = null;         // SubMenu closing, called if a top level menu
+        // all Menu Items
+
+        public Action<GLMenuStrip> Opening = null;         // Menu opening
+
+        // Called on top level menu item only.
+        public Func<GLMenuStrip, bool> Closing = null;      // All Submenus closing (and if context menu, the top level is detaching), return true to allow the close to happen
+        public Action<GLMenuItem, GLMenuStrip> SubmenuOpened = null;        // from GLMenuItem the GLMenuStrip submenu is opening
+        public Action<GLMenuItem, GLMenuStrip> SubmenuClosing = null;       // from GLMenuItem the GLMenuStrip submenu is closing
 
         // Inherited FlowInZOrder, FlowDirection, FlowPadding, BackColor
 
@@ -77,6 +83,7 @@ namespace GLOFC.GL4.Controls
             TopMost = true;
             parent.Add(this);
             SetFocus();
+            Opening?.Invoke(this);
         }
 
         #endregion  
@@ -134,7 +141,7 @@ namespace GLOFC.GL4.Controls
 
                     SetSelected(index);                                         // set selected thus fixing highlight on this one
 
-                    GetTopLevelMenu().SubmenuOpened?.Invoke(mi);                // call, allowing configuration of the submenu
+                    GetTopLevelMenu().SubmenuOpened?.Invoke(mi,submenu);                // call, allowing configuration of the submenu
 
                     if (focusto)                                                // used to transfer focus to submenu.  Note submenu with focus has up/down keys
                         submenu.SetFocus();
@@ -157,12 +164,23 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
-        public void Move(int dir)                           // move highlight left/up or right/down, or just highlight first (0)
+        public bool Move(int dir)                           // move highlight left/up or right/down
         {
-            int newpos = selected + dir;
-            newpos = newpos.Range(0, ControlsIZ.Count - 1);
-            //System.Diagnostics.Debug.WriteLine("Move Highlighted {0} > {1} ", selected, newpos);
-            Select(newpos, FlowDirection == ControlFlowDirection.Right);
+            int pos = selected;
+            while (true)
+            {
+                pos += dir;
+                if (pos < 0 || pos >= ControlsIZ.Count)     // out of range, can't move
+                    return false;
+
+                if (ControlsIZ[pos].Enabled && ControlsIZ[pos].Visible)     // if on
+                {
+                    Select(pos, FlowDirection == ControlFlowDirection.Right);   // set focus on if left-right menu
+                    return true;
+                }
+                else if (dir == 0)
+                    return false;
+            }
         }
 
         public void ActivateSelected()                  // activate, either selected or hoverover item
@@ -170,7 +188,7 @@ namespace GLOFC.GL4.Controls
             if (submenu != null)                        // if a submenu is up, activate always transfers to it
             {
                 submenu.SetFocus();                     // it becomes the focus
-                submenu.Move(0);                        // autoselect first item
+                submenu.Move(1);                        // autoselect first item
             }
             else
             {
@@ -211,12 +229,17 @@ namespace GLOFC.GL4.Controls
         public void CloseMenus()        // all menus close down
         {
             System.Diagnostics.Debug.WriteLine($"{Name} Close menus");
-            CloseSubMenus();
-            SetSelected(-1);
-            if (openedascontextmenu)
+
+            var allow = Closing?.Invoke(this) ?? true;
+            if (allow)
             {
-                System.Diagnostics.Debug.WriteLine($"{Name} Detach");
-                Detach(this);
+                CloseSubMenus();
+                SetSelected(-1);
+                if (openedascontextmenu)
+                {
+                    System.Diagnostics.Debug.WriteLine($"{Name} Detach");
+                    Detach(this);
+                }
             }
         }
 
@@ -224,10 +247,10 @@ namespace GLOFC.GL4.Controls
         {
             if (submenu != null)
             {
+                GetTopLevelMenu().SubmenuClosing?.Invoke(ControlsIZ[selected] as GLMenuItem, submenu);                 // call before close
                 submenu.CloseSubMenus();    // close child submenus first
                 System.Diagnostics.Debug.WriteLine($"{Name} Close down");
                 submenu.Close();
-                GetTopLevelMenu().SubmenuClosed?.Invoke(ControlsIZ[selected] as GLMenuItem);                 // call, allowing configuration of the submenu
                 submenu = null;
                 SetFocus();
             }
