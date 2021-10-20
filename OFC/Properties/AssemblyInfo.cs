@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Open Foundation Classes for OpenTK")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Open Foundation Classes for OpenTK GL 4.6")]
+[assembly: AssemblyDescription("A set of classes which build on OpenTK GL to encapsulate the OpenGL API in a more friendly manner. Contains example shaders for you to build on. Allows render queues to be build.  Encapsulates global GL flags so the render queue handles changing global state.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("OFC")]
-[assembly: AssemblyCopyright("Copyright  2020")]
+[assembly: AssemblyCompany("robbyxp1 @ github.com")]
+[assembly: AssemblyProduct("GLOFC")]
+[assembly: AssemblyCopyright("Copyright 2021 robbyxp1 @ github.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

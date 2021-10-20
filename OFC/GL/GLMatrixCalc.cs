@@ -51,7 +51,7 @@ namespace GLOFC
     //    |                          |       |    |       -1        |   |               |  |                           |  |
     //    |                          |       |    -------------------   |               |  -----------------------------  |
     //    ----------------------------       ----------------------------               -----------------------------------
-    
+
     // this class computes the model and projection matrices
     // also the screen co-ord matrix
 
@@ -79,8 +79,8 @@ namespace GLOFC
         public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);     // Origin in clip space (-1,1) = top left, screen coord (0,0)
 
         // after Calculate model matrix
-        public Vector3 EyePosition { get; private set; }                       
-        public Vector3 TargetPosition { get; private set; }                    
+        public Vector3 EyePosition { get; private set; }
+        public Vector3 LookAt { get; private set; }
         public float EyeDistance { get; private set; }
         public Matrix4 ModelMatrix { get; private set; }
         public Matrix4 ProjectionMatrix { get; private set; }
@@ -114,9 +114,11 @@ namespace GLOFC
 
         public void CalculateModelMatrix(Vector3 lookat, Vector3 eyeposition, Vector2 cameradirection, float camerarotation)  
         {
-            TargetPosition = lookat;      // record for shader use
+            LookAt = lookat;      // record for shader use
             EyePosition = eyeposition;
             EyeDistance = (lookat - eyeposition).Length;
+
+          //  System.Diagnostics.Debug.WriteLine($"CMM {lookat} {eyeposition} dist {EyeDistance} {cameradirection} {camerarotation}");
 
             if (InPerspectiveMode)
             {

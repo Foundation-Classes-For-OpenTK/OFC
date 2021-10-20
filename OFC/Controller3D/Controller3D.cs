@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2015 - 2019 EDDiscovery development team + Robbyxp1 @ github.com
+ * Copyright 2015 - 2021 EDDiscovery development team + Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -46,12 +46,15 @@ namespace GLOFC.Controller
         public PositionCamera PosCamera { get; private set; } = new PositionCamera();
         public Point MouseDownPos { get; private set; }
 
+        // Start with externs MC/PC 
         public void Start(GLMatrixCalc mc, PositionCamera pc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
         {
             MatrixCalc = mc;
             PosCamera = pc;
             Start(win, lookat, cameradirdegrees, zoomn);
         }
+
+        // Start with exterma; <C
 
         public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn,
                         bool registermouseui = true, bool registerkeyui = true)
@@ -87,11 +90,30 @@ namespace GLOFC.Controller
             MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
 
             PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
-            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
         }
 
-        // Pos Direction interface
+        // given a position camera string (see PosCamera) reset the position to here.
+        public bool SetPositionCamera(string s)
+        {
+            if (PosCamera.SetPositionCamera(s))
+            {
+                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+                return true;
+            }
+            else
+                return false;
+        }
+
+        // Set position and camera and goto it
+        public void SetPositionCamera(Vector3 lookat, Vector3 eyepos, float camerarot)
+        {
+            PosCamera.SetPositionCamera(lookat, eyepos, camerarot);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+        }
+
+        // Pos Direction interface - all of these will cause movement, which will be detected by the PosCamera different tracker
 
         public bool YHoldMovement { get { return PosCamera.YHoldMovement; } set { PosCamera.YHoldMovement = value; } }      // hold Y steady when moving, whatever the camera direction
         public void TranslatePosition(Vector3 posx) { PosCamera.Translate(posx); }
@@ -112,7 +134,7 @@ namespace GLOFC.Controller
         public void ChangePerspectiveMode(bool on)
         {
             MatrixCalc.InPerspectiveMode = on;
-            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
         }
@@ -187,7 +209,7 @@ namespace GLOFC.Controller
             if (moved )
             {
                 //System.Diagnostics.Debug.WriteLine("Changed");
-                MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
             }
 
             return moved;
@@ -320,7 +342,7 @@ namespace GLOFC.Controller
         {
             System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);
-            MatrixCalc.CalculateModelMatrix(PosCamera.Lookat, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
             MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
         }

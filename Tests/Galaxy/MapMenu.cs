@@ -308,9 +308,14 @@ namespace TestOpenTk
 
         public void UpdateCoords(GLOFC.GLMatrixCalc c, float zoom)
         {
-            status.Text = c.TargetPosition.X.ToStringInvariant("N1") + " ," + c.TargetPosition.Y.ToStringInvariant("N1") + " ,"
-                         + c.TargetPosition.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +
+            status.Text = c.LookAt.X.ToStringInvariant("N1") + " ," + c.LookAt.Y.ToStringInvariant("N1") + " ,"
+                         + c.LookAt.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +
                          c.EyePosition.X.ToStringInvariant("N1") + " ," + c.EyePosition.Y.ToStringInvariant("N1") + " ," + c.EyePosition.Z.ToStringInvariant("N1") + " z " + zoom;
+        }
+
+        public void DebugStatusText(string s)
+        {
+            status.Text = s;
         }
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it

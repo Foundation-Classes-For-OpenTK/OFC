@@ -66,17 +66,17 @@ namespace TestOpenTk
                 lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
             }
 
-            s.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, i.InstanceCount);
+            s.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, i.InstanceCount);
 
             DynamicGridCoordVertexShader bs = items.PLShader("PLGRIDBitmapVertShader") as DynamicGridCoordVertexShader;
             bs.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, Color.Yellow, Color.Transparent);
 
-            solmarker.Position = gl3dcontroller.MatrixCalc.TargetPosition;
+            solmarker.Position = gl3dcontroller.MatrixCalc.LookAt;
             solmarker.Scale = gl3dcontroller.MatrixCalc.EyeDistance / 20;
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
         }
 
 

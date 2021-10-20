@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright 2015 - 2019 EDDiscovery development team + Robbyxp1 @ github.com
+* Copyright 2015 - 2021 EDDiscovery development team + Robbyxp1 @ github.com
 *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
 * file except in compliance with the License. You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 using OpenTK;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace GLOFC.Controller
@@ -25,7 +26,7 @@ namespace GLOFC.Controller
     {
         #region Positions
 
-        public Vector3 Lookat { get { return lookat; } set { KillSlew(); float d = EyeDistance; lookat = value; SetEyePositionFromLookat(cameradir, d);} }
+        public Vector3 LookAt { get { return lookat; } set { KillSlew(); float d = EyeDistance; lookat = value; SetEyePositionFromLookat(cameradir, d);} }
         public Vector3 EyePosition { get { return eyeposition; } set { KillSlew(); float d = EyeDistance; eyeposition = value; SetLookatPositionFromEye(cameradir, d); } }
 
         public float EyeDistance { get { return (lookat - EyePosition).Length; } }
@@ -62,7 +63,7 @@ namespace GLOFC.Controller
                         targetposSlewTarget = gotopos;
                         targetposSlewProgress = 0.0f;
                         targetposSlewTime = (timeslewsec < 0) ? ((float)Math.Max(1.0, dist / unitspersecond)) : timeslewsec;            //10000 ly/sec, with a minimum slew
-                       // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Slew start to {gotopos} {targetposSlewTime}");
+                        //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Slew start to {gotopos} {targetposSlewTime}  eye {eyeposition} look {lookat} dir {CameraDirection} rot {CameraRotation}");
                     }
                 }
             }
@@ -72,6 +73,13 @@ namespace GLOFC.Controller
         {
             GoTo(gotopos, timeslewsec, unitspersecond);
             GoToZoom(zoom, targetposSlewTime);
+        }
+
+        public void GoToZoomPan(Vector3 gotopos, Vector2 cameradir, float zoom, float timeslewsec = 0, float unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
+        {
+            GoTo(gotopos, timeslewsec, unitspersecond);
+            GoToZoom(zoom, targetposSlewTime);
+            Pan(cameradir, targetposSlewTime);
         }
 
         #endregion
@@ -88,7 +96,7 @@ namespace GLOFC.Controller
         public void RotateCamera(Vector2 addazel, float addzrot, bool changelookat)
         {
             KillSlew();
-           // System.Diagnostics.Debug.WriteLine("{0} Rotate camera {1} {2} {3} look {4} eye {5} camera dir {6}", Environment.TickCount % 10000, addazel, addzrot, movepos, lookat, eyeposition, cameradir);
+            //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 1000} Rotate camera {addazel} z {addzrot} look {lookat} eye {eyeposition} camera dir {cameradir}");
 
             System.Diagnostics.Debug.Assert(!float.IsNaN(addazel.X) && !float.IsNaN(addazel.Y));
             Vector2 cameraDir = CameraDirection;
@@ -199,7 +207,7 @@ namespace GLOFC.Controller
 
                 zoomSlewTime = timetozoom;
                 zoomSlewProgress = 0;
-                System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
+                //System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
             }
         }
 
@@ -211,9 +219,24 @@ namespace GLOFC.Controller
 
         #endregion
 
-        #region More Position functions not causing Slew to cancel
+        #region More Position functions
 
-        public void SetPosition(Vector3 lookp, Vector3 eyeposp, float camerarotp = 0)     // set lookat/eyepos, rotation
+        public string StringPositionCamera { get { return $"{lookat.X},{lookat.Y},{lookat.Z},{eyeposition.X},{eyeposition.Y},{eyeposition.Z},{camerarot}"; } }
+
+        public bool SetPositionCamera(string s)     // from StringPositionCamera
+        {
+            string[] sparts = s.Split(',');
+            if (sparts.Length == 7)
+            {
+                float[] dparts = sparts.Select(x => x.InvariantParseFloat(0)).ToArray();
+                SetPositionCamera(new Vector3(dparts[0], dparts[1], dparts[2]), new Vector3(dparts[3], dparts[4], dparts[5]), dparts[6]);
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public void SetPositionCamera(Vector3 lookp, Vector3 eyeposp, float camerarotp = 0)     // set lookat/eyepos, rotation
         {
             lookat = lookp;
             eyeposition = eyeposp;
@@ -275,24 +298,27 @@ namespace GLOFC.Controller
                 Debug.Assert(targetposSlewTime > 0);
                 var newprogress = targetposSlewProgress + msticks / (targetposSlewTime * 1000);
 
+                if (newprogress >= 1.0f)        // limit
+                    newprogress = 1.0f;
+
+                var slewstart = Math.Sin((targetposSlewProgress - 0.5) * Math.PI);
+                var slewend = Math.Sin((newprogress - 0.5) * Math.PI);
+                Debug.Assert((1 - 0 - slewstart) != 0);
+                var slewfact = (slewend - slewstart) / (1.0 - slewstart);
+
+                var totvector = new Vector3((float)(targetposSlewTarget.X - lookat.X), (float)(targetposSlewTarget.Y - lookat.Y), (float)(targetposSlewTarget.Z - lookat.Z));
+
+                var move = Vector3.Multiply(totvector, (float)slewfact);
+                lookat += move;
+                eyeposition += move;
+
                 if (newprogress >= 1.0f)
                 {
-                    lookat = targetposSlewTarget;
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew complete at {1} {2}", Environment.TickCount % 10000, lookat, eyeposition);
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount%1000} Slew complete at {lookat} {eyeposition}");
                 }
                 else
                 {
-                    var slewstart = Math.Sin((targetposSlewProgress - 0.5) * Math.PI);
-                    var slewend = Math.Sin((newprogress - 0.5) * Math.PI);
-                    Debug.Assert((1 - 0 - slewstart) != 0);
-                    var slewfact = (slewend - slewstart) / (1.0 - slewstart);
-
-                    var totvector = new Vector3((float)(targetposSlewTarget.X - lookat.X), (float)(targetposSlewTarget.Y - lookat.Y), (float)(targetposSlewTarget.Z - lookat.Z));
-
-                    var move = Vector3.Multiply(totvector, (float)slewfact);
-                    lookat += move;
-                    eyeposition += move;
-                    //System.Diagnostics.Debug.WriteLine("{0} Slew to {1} eye {2} prog {3}", Environment.TickCount % 10000, lookat, eyeposition, newprogress);
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 1000} Slew to {lookat} eye {eyeposition} dist {EyeDistance} prog {newprogress}");
                 }
 
                 targetposSlewProgress = (float)newprogress;
@@ -302,15 +328,15 @@ namespace GLOFC.Controller
             {
                 var newprogress = zoomSlewProgress + msticks / (zoomSlewTime * 1000);
 
-                if ( newprogress > 1.0f)
+                if ( newprogress >= 1.0f)
                 {
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
                 }
                 else
                 {
                     float newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 
@@ -354,9 +380,9 @@ namespace GLOFC.Controller
 
         public bool IsMoved(float minmovement = 0.1f, float cameramove = 1.0f)
         {
-            bool moved = Vector3.Subtract(lastlookat, Lookat).Length >= minmovement;
+            bool moved = Vector3.Subtract(lastlookat, LookAt).Length >= minmovement;
             if (moved)
-                lastlookat = Lookat;
+                lastlookat = LookAt;
             bool eyemoved = Vector3.Subtract(lasteyepos, EyePosition).Length >= minmovement;
             if (eyemoved)
                 lasteyepos = EyePosition;
@@ -416,7 +442,7 @@ namespace GLOFC.Controller
                 {
                     Vector2 cameraDir = CameraDirection;
 
-                    if (YHoldMovement)  // elite movement means only the camera rotation around the Y axis is taken into account. 
+                    if (YHoldMovement)  // Y hold movement means only the camera rotation around the Y axis is taken into account. 
                     {
                         var cameramove = Matrix4.CreateTranslation(positionMovement);
                         var rotY = Matrix4.CreateRotationY(cameraDir.Y.Radians());      // rotate by Y, which is rotation around the Y axis, which is where your looking at horizontally

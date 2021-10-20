@@ -213,7 +213,7 @@ void main(void)
 
         public void ComputeUniforms(int gridwidth, GLMatrixCalc mc, Vector2 cameradir, Color textcol, Color? backcol = null)
         {
-            float sy = mc.TargetPosition.Y.Clamp(-2000, 2000);
+            float sy = mc.LookAt.Y.Clamp(-2000, 2000);
 
             float multgrid = mc.EyeDistance / gridwidth;
 
@@ -226,7 +226,7 @@ void main(void)
             //                System.Diagnostics.Debug.WriteLine("Mult " + multgrid + " tw "+ tw);
             int majorlines = (gridwidth * tw).Clamp(0, 10000);
 
-            int sx = (int)((mc.TargetPosition.X - majorlines).Clamp(-50000, 50000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
+            int sx = (int)((mc.LookAt.X - majorlines).Clamp(-50000, 50000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
 
             if (sx % majorlines > majorlines / 2)                // if we are over 1/2 way across, move over
                 sx += majorlines;
@@ -236,7 +236,7 @@ void main(void)
             bool lookbackwards = (cameradir.Y > 90 || cameradir.Y < -90);
             int zoffset = lookbackwards ? majorlines : 0;
 
-            int sz = (int)((mc.TargetPosition.Z - zoffset).Clamp(-20000, 70000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
+            int sz = (int)((mc.LookAt.Z - zoffset).Clamp(-20000, 70000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
 
             sz = sz / majorlines * majorlines - 50000;         // round and adjust back
 

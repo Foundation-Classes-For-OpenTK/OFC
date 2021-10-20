@@ -456,6 +456,7 @@ namespace TestOpenTk
                 {
                     // MCUB set up by Controller3DDraw which did the work first
                     galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc,gl3dcontroller.PosCamera.ZoomFactor);
+                        // debug this galaxymenu.DebugStatusText(gl3dcontroller.PosCamera.StringPositionCamera);  gl3dcontroller.PosCamera.SetPositionCamera(gl3dcontroller.PosCamera.StringPositionCamera);
                     displaycontrol.Animate(glwfc.ElapsedTimems);
                     displaycontrol.Render(glwfc.RenderState,ts);
                 };
@@ -622,7 +623,7 @@ namespace TestOpenTk
                     lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
                 }
 
-                gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.TargetPosition, lastgridwidth, gridrenderable.InstanceCount);
+                gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, gridrenderable.InstanceCount);
             }
 
             // set the coords fader
@@ -654,7 +655,7 @@ namespace TestOpenTk
                 galaxystars.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
             if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400)
-                galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.Lookat);
+                galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.LookAt);
 
             long t4 = hptimer.ElapsedTicks;
 

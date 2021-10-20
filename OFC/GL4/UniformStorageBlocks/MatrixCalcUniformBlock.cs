@@ -57,7 +57,7 @@ namespace GLOFC.GL4
                 Write(c.ProjectionModelMatrix);     // 0- 63
                 Write(c.ProjectionMatrix);          // 64-127
                 Write(c.ModelMatrix);               // 128-191
-                Write(c.TargetPosition, 0);         // 192-207
+                Write(c.LookAt, 0);         // 192-207
                 Write(c.EyePosition, 0);            // 208-223
                 Write(c.EyeDistance);               // 224-239
                 StopReadWrite();                                // and complete..
@@ -75,7 +75,7 @@ namespace GLOFC.GL4
                 Write(c.ProjectionModelMatrix);     //0, 64 long
                 Write(c.ProjectionMatrix);          //64, 64 long
                 Write(c.ModelMatrix);               //128, 64 long
-                Write(c.TargetPosition, 0);         //192, vec4, 16 long
+                Write(c.LookAt, 0);         //192, vec4, 16 long
                 Write(c.EyePosition, 0);            // 208, vec4, 16 long
                 Write(c.EyeDistance);               // 224, float, 4 long
                 Write(c.MatrixScreenCoordToClipSpace());                // 240-303, into the project model matrix slot, used for text

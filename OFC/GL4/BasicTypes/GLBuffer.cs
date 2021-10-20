@@ -48,8 +48,9 @@ namespace GLOFC.GL4
             {
                 Length = bytessize;
                 GL.NamedBufferData(Id, Length, (IntPtr)0, uh);               // set buffer size
+                var err = GL.GetError();
+                System.Diagnostics.Debug.Assert(err == ErrorCode.NoError, $"GL NamedBuffer error {err}");        // check for any errors, always.
                 ResetPositions();
-                GLStatics.Check();
             }
         }
 
@@ -63,6 +64,8 @@ namespace GLOFC.GL4
                 if (newlength > 0)
                 {
                     GL.NamedBufferData(newid, newlength, (IntPtr)0, uh);               // set buffer size
+                    var err = GL.GetError();
+                    System.Diagnostics.Debug.Assert(err == ErrorCode.NoError, $"GL NamedBuffer error {err}");        // check for any errors, always.
                     if (Length > 0)                                                    // if previous buffer had data
                         GL.CopyNamedBufferSubData(Id, newid, (IntPtr)0, (IntPtr)0, Math.Min(Length, newlength));
                 }
@@ -71,7 +74,6 @@ namespace GLOFC.GL4
 
                 Id = newid;                 // swap to new
                 Length = newlength;
-                GLStatics.Check();
             }
         }
 
