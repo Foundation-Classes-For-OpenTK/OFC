@@ -4,6 +4,8 @@ packages
 .vs
 *.csproj.user
 *.suo
+*.zip
+*.nupkg
 /logs
 */*Secrets.config
 *.ncrunch*

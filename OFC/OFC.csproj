@@ -227,8 +227,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GL4\Shaders\Base\PlanShaders.txt" />
-    <Content Include="Readme.txt" />
+    <None Include="GL4\Shaders\Base\PlanShaders.txt" />
+    <None Include="Readme.txt" />
     <None Include="Resources\Up.png" />
     <None Include="Resources\Right.png" />
     <None Include="Resources\Left.png" />
