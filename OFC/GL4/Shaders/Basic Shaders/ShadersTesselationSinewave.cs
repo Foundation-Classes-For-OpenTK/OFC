@@ -43,7 +43,7 @@ layout (vertices = 4) out;
 
 void main(void)
 {
-    float tess = " + tesselation.ToString() + @";
+    float tess = " + tesselation.ToStringInvariant() + @";
 
     if ( gl_InvocationID == 0 )
     {
@@ -76,14 +76,14 @@ out vec2 vs_textureCoordinate;
 
 void main(void)
 {
-    float amp = " + amplitude + @";
+    float amp = " + amplitude.ToStringInvariant() + @";
     vs_textureCoordinate = vec2(gl_TessCoord.x,1.0-gl_TessCoord.y);         //1.0-y is due to the project model turning Y upside down so Y points upwards on screen
 
     vec4 p1 = mix(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_TessCoord.x);  
     vec4 p2 = mix(gl_in[2].gl_Position, gl_in[3].gl_Position, gl_TessCoord.x); 
     vec4 pos = mix(p1, p2, gl_TessCoord.y);                                     
 
-    pos.y += amp*sin((phase+gl_TessCoord.x)*3.142*2*" + repeats + @");           // .x goes 0-1, phase goes 0-1, convert to radians
+    pos.y += amp*sin((phase+gl_TessCoord.x)*3.142*2*" + repeats.ToStringInvariant() + @");           // .x goes 0-1, phase goes 0-1, convert to radians
 
     gl_Position = mc.ProjectionModelMatrix * transform * pos;
 

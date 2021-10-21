@@ -100,22 +100,24 @@ namespace GLOFC.WaveFront
                         {
                             if (words.Count >= 3)
                             {
-                                reader_vertices.Vertices.Add(new Vector4(float.Parse(words[0]), float.Parse(words[1]),
-                                                    zcorr * float.Parse(words[2]), words.Count < 4 ? 1 : float.Parse(words[3])));
+                                reader_vertices.Vertices.Add(new Vector4(   words[0].InvariantParseFloat(0),
+                                                                            words[1].InvariantParseFloat(0),
+                                                                            zcorr * words[2].InvariantParseFloat(0), 
+                                                                            words.Count < 4 ? 1 : words[3].InvariantParseFloat(0)));
                             }
                         }
                         else if (type == "vt")
                         {
                             if (words.Count >= 2)
                             {
-                                reader_vertices.TextureVertices.Add(new Vector3(float.Parse(words[0]), float.Parse(words[1]),
-                                                            words.Count < 3 ? 0 : float.Parse(words[2])));
+                                reader_vertices.TextureVertices.Add(new Vector3(words[0].InvariantParseFloat(0), words[1].InvariantParseFloat(0),
+                                                            words.Count < 3 ? 0 : words[2].InvariantParseFloat(0)));
                             }
                         }
                         else if (type == "vn")
                         {
                             if (words.Count >= 2)
-                                reader_vertices.Normals.Add(new Vector3(float.Parse(words[0]), float.Parse(words[1]), zcorr * float.Parse(words[2])));
+                                reader_vertices.Normals.Add(new Vector3(words[0].InvariantParseFloat(0), words[1].InvariantParseFloat(0), zcorr * words[2].InvariantParseFloat(0)));
                         }
                         else if (type == "vp")
                         {

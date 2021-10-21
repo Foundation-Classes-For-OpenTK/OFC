@@ -39,7 +39,7 @@ out vec4 color;
 
 void main(void)
 {
-    color = vec4(" + col.R + "," + col.G + "," + col.B + "," + col.A + @");
+    color = vec4(" + col.R.ToStringInvariant() + "," + col.G.ToStringInvariant() + "," + col.B.ToStringInvariant() + "," + col.A.ToStringInvariant() + @");
 }
 ";
         }

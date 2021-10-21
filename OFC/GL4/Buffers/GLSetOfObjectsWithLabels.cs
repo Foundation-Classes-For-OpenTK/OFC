@@ -296,8 +296,8 @@ namespace GLOFC.GL4
         {
             var owl = new GLObjectsWithLabels();
             var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, objpt, texturesize, textrc, textureformat, limittexturedepth);
-            robjects.Add(objectshader, name + "O" + (setnumber).ToString(), ris.Item1);
-            robjects.Add(textshader, name + "T" + (setnumber++).ToString(), ris.Item2);
+            robjects.Add(objectshader, name + "O" + (setnumber).ToStringInvariant(), ris.Item1);
+            robjects.Add(textshader, name + "T" + (setnumber++).ToStringInvariant(), ris.Item2);
             set.Add(owl);
         }
 

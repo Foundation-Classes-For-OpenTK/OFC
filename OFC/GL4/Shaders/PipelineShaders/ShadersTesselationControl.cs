@@ -56,7 +56,7 @@ layout( location = 2 ) out int tcs_instance[];
 
 void main(void)
 {
-    float tess = " + tesselation.ToString() + @";
+    float tess = " + tesselation.ToStringInvariant() + @";
 
     if ( gl_InvocationID == 0 )
     {

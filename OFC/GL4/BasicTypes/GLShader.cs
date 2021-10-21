@@ -208,12 +208,14 @@ namespace GLOFC.GL4
                 else if (o is Color)
                 {
                     System.Drawing.Color c = (System.Drawing.Color)o;
-                    slist.Add("const vec4 " + name + " = vec4(" + ((float)c.R / 255).ToStringInvariant() + "," + ((float)c.G / 255).ToStringInvariant() + "," + ((float)c.B / 255).ToStringInvariant() + "," + ((float)c.A / 255).ToStringInvariant() + ");");
+                    string s = "const vec4 " + name + " = vec4(" + ((float)c.R / 255).ToStringInvariant() + "," + ((float)c.G / 255).ToStringInvariant() + "," + ((float)c.B / 255).ToStringInvariant() + "," + ((float)c.A / 255).ToStringInvariant() + ");";
+                    slist.Add(s);
                 }
                 else if (o is OpenTK.Vector4)
                 {
                     OpenTK.Vector4 v = (OpenTK.Vector4)o;
-                    slist.Add("const vec4 " + name + " = vec4(" + v.X.ToStringInvariant() + "," + v.Y.ToStringInvariant() + "," + v.Z.ToStringInvariant() + "," + v.W.ToStringInvariant() + ");");
+                    string s = "const vec4 " + name + " = vec4(" + v.X.ToStringInvariant() + "," + v.Y.ToStringInvariant() + "," + v.Z.ToStringInvariant() + "," + v.W.ToStringInvariant() + ");";
+                    slist.Add(s);
                 }
                 else if (o is OpenTK.Vector2)
                 {
@@ -248,7 +250,7 @@ namespace GLOFC.GL4
                     string exp = "const vec4 " + name + "[] = {";
                     string vec = "";
                     foreach (Color c in p)
-                        vec = vec.AppendPrePad($"vec4({(float)c.R / 255.0f},{(float)c.G / 255.0f},{(float)c.B / 255.0f},{(float)c.A / 255.0f})", ",");
+                        vec = vec.AppendPrePad($"vec4({((float)c.R / 255.0f).ToStringInvariant()},{((float)c.G / 255.0f).ToStringInvariant()},{((float)c.B / 255.0f).ToStringInvariant()},{((float)c.A / 255.0f).ToStringInvariant()})", ",");
 
                     slist.Add(exp + vec + "};");
                 }
