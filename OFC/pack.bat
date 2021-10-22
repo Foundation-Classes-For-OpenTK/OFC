@@ -9,3 +9,4 @@ nuget pack OFC.csproj -Verbosity detailed -Build -Properties Configuration=Relea
 
 copy *.nupkg *.zip
 
+copy *.nupkg ..\..\examples\packages

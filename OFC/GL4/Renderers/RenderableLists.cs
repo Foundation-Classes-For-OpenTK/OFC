@@ -116,7 +116,7 @@ namespace GLOFC.GL4
 
         public void Render(GLRenderState currentstate, GLMatrixCalc c, bool verbose = false)
         {
-            if (verbose) System.Diagnostics.Debug.WriteLine("***Begin RList");
+            if (verbose) System.Diagnostics.Trace.WriteLine("***Begin RList");
 
             GLRenderState lastapplied = null;
             IGLProgramShader curshader = null;
@@ -136,14 +136,14 @@ namespace GLOFC.GL4
                                 curshader = null;
                             }
 
-                            if (verbose) System.Diagnostics.Debug.WriteLine("  Compute Shader " + shaderri.Item1.GetType().Name);
+                            if (verbose) System.Diagnostics.Trace.WriteLine("  Compute Shader " + shaderri.Item1.GetType().Name);
 
                             shaderri.Item1.Start(c);                        // start/finish it
                             shaderri.Item1.Finish();
                         }
                         else
                         {
-                            if (verbose) System.Diagnostics.Debug.WriteLine("  Operation " + shaderri.Item1.GetType().Name);
+                            if (verbose) System.Diagnostics.Trace.WriteLine("  Operation " + shaderri.Item1.GetType().Name);
                             shaderri.Item1.Start(c);                        // operations just start, but don't change the current shader
                         }
                     }
@@ -156,13 +156,13 @@ namespace GLOFC.GL4
                             curshader = shaderri.Item1;
                             curshader.Start(c);                                         // start the program - if compute shader, or operation, this executes the code
                         }
-                        //System.Diagnostics.Debug.WriteLine("Shader " + kvp.Item1.GetType().Name);
+                        //System.Diagnostics.Trace.WriteLine("Shader " + kvp.Item1.GetType().Name);
 
                         foreach (var g in shaderri.Item2)
                         {
                             if (g.Item2 != null && g.Item2.Visible)                    // Make sure its visible and not empty slot
                             {
-                                if (verbose) System.Diagnostics.Debug.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
+                                if (verbose) System.Diagnostics.Trace.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
                                 if (g.Item2.RenderState == null)                       // if no render control, do not change last applied.
                                 {
                                     g.Item2.Bind(null, shaderri.Item1, c);
@@ -177,19 +177,31 @@ namespace GLOFC.GL4
                                     lastapplied = g.Item2.RenderState;
                                 }
 
-                                if (verbose) System.Diagnostics.Debug.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
+                                if (verbose) System.Diagnostics.Trace.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
                                 g.Item2.Render();
-                                //System.Diagnostics.Debug.WriteLine("....Render Over " + g.Item1);
+                                //System.Diagnostics.Trace.WriteLine("....Render Over " + g.Item1);
+                            }
+                            else
+                            {
+                                if (verbose) System.Diagnostics.Trace.WriteLine("  Not visible " + g.Item1 + " " + shaderri.Item1.GetType().Name);
                             }
                         }
                     }
+                    else
+                    {
+                        if (verbose) System.Diagnostics.Trace.WriteLine("  No items visible " + shaderri.Item1.GetType().Name);
+                    }
+                }
+                else
+                {
+                    if (verbose) System.Diagnostics.Trace.WriteLine("  Shader disabled " + shaderri.Item1.GetType().Name + " " + shaderri.Item1.Name);
                 }
             }
 
             if (curshader != null)
                 curshader.Finish();
 
-            if (verbose) System.Diagnostics.Debug.WriteLine("***End RList");
+            if (verbose) System.Diagnostics.Trace.WriteLine("***End RList");
             GL.UseProgram(0);           // final clean up
             GL.BindProgramPipeline(0);
         }

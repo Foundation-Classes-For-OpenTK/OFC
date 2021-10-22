@@ -36,9 +36,9 @@ namespace GLOFC.Controller
         public Func<int, float> KeyboardRotateSpeed;                            // optional set to scale camera key rotation commands given this time interval
         public Func<int, float> KeyboardZoomSpeed;                              // optional set to scale zoom speed commands given this time interval
 
-        public float MouseRotateAmountPerPixel { get; set; } = 0.25f;           // mouse speeds, degrees/pixel
-        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 0.5f;     // per pixel movement at zoom 1 (zoom scaled)
-        public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 2.0f;  // per pixel movement at zoom 1
+        public float MouseRotateAmountPerPixel { get; set; } = 0.15f;           // mouse speeds, degrees/pixel
+        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;     // per pixel movement at zoom 1 (zoom scaled)
+        public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 10.0f;  // per pixel movement at zoom 1
 
         public Action<Controller3D, ulong> PaintObjects;                        // Mandatory. ulong is time in ms
 
@@ -217,13 +217,14 @@ namespace GLOFC.Controller
 
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
-            MouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
-            mouseRotatePos =  mouseTranslateXYPos = mouseTranslateXZPos = MouseDownPos;
+            mouseDeltaPos = MouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+            System.Diagnostics.Debug.WriteLine($"Mouse down {MouseDownPos}");
         }
 
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
-            MouseDownPos = mouseTranslateXYPos = mouseTranslateXZPos =  mouseRotatePos = new Point(int.MinValue, int.MinValue);
+            System.Diagnostics.Debug.WriteLine($"Mouse Up");
+            mouseDeltaPos = MouseDownPos = new Point(int.MinValue, int.MinValue);
         }
 
         public bool IsMouseDown()
@@ -247,45 +248,47 @@ namespace GLOFC.Controller
 
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                if (MatrixCalc.InPerspectiveMode && mouseRotatePos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
+                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                if (MatrixCalc.InPerspectiveMode && MouseDownPos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
-                    int dx = mousepos.X - mouseRotatePos.X;
-                    int dy = mousepos.Y - mouseRotatePos.Y;
+                    int dx = mousepos.X - mouseDeltaPos.X;
+                    int dy = mousepos.Y - mouseDeltaPos.Y;
                    // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
 
                     KillSlew();    // all slews
 
-                    mouseTranslateXZPos = mouseRotatePos = mousepos;        // we reset both since the other button may be clicked later
+                    mouseDeltaPos = mousepos;        // we reset both since the other button may be clicked later
 
                     PosCamera.RotateCamera(new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
                 }
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                if (mouseTranslateXYPos.X != int.MinValue)
+                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                if (MouseDownPos.X != int.MinValue)
                 {
                     KillSlew();
 
-                    int dx = mousepos.X - mouseTranslateXYPos.X;
-                    int dy = mousepos.Y - mouseTranslateXYPos.Y;
+                    int dy = mousepos.Y - mouseDeltaPos.Y;
 
-                    mouseTranslateXZPos = mouseRotatePos = mousepos;
+                    System.Diagnostics.Trace.WriteLine($"{mousepos}  dy {dy} Button {e.Button.ToString()}");
 
-                    //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
+                    mouseDeltaPos = mousepos;
 
                     PosCamera.Translate(new Vector3(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
                 }
             }
             else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
             {
-                if (mouseTranslateXZPos.X != int.MinValue)
+                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                if (MouseDownPos.X != int.MinValue)
                 {
                     KillSlew();
 
-                    int dx = mousepos.X - mouseTranslateXZPos.X;
-                    int dy = mousepos.Y - mouseTranslateXZPos.Y;
+                    int dx = mousepos.X - mouseDeltaPos.X;
+                    int dy = mousepos.Y - mouseDeltaPos.Y;
 
-                    mouseTranslateXZPos = mouseRotatePos = mouseTranslateXYPos = mousepos;
+                    mouseDeltaPos = mousepos;
 
                     Vector3 translation = new Vector3(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
 
@@ -358,9 +361,7 @@ namespace GLOFC.Controller
         private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
         private ulong? lastkeyintervalcount = null;
 
-        private Point mouseRotatePos = new Point(int.MinValue, int.MinValue);        // used to indicate not started for these using mousemove
-        private Point mouseTranslateXZPos = new Point(int.MinValue, int.MinValue);
-        private Point mouseTranslateXYPos = new Point(int.MinValue, int.MinValue);
+        private Point mouseDeltaPos = new Point(int.MinValue, int.MinValue);        // when using the mouse move, last delta pos
 
         #endregion
     }

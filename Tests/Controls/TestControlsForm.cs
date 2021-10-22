@@ -265,7 +265,7 @@ namespace TestOpenTk
 
                 if (true)
                 {
-                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 300, 30), DateTime.Now);
+                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 500, 30), DateTime.Now);
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = dtp.ShowCalendar = true;
                     dtp.ShowUpDown = true;

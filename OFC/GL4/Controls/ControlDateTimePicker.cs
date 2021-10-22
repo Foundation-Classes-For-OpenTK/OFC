@@ -38,9 +38,10 @@ namespace GLOFC.GL4.Controls
             Time = 4,
             Custom = 8
         }
+        public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }     // format control, primary
 
+        // returns current format, or sets a custom format
         public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  RecalculatePartsList(); InvalidateLayout(); } }
-        public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }
 
         public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
         public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
@@ -161,7 +162,7 @@ namespace GLOFC.GL4.Controls
             {
                 for (int i = 0; i < partlist.Count; i++)
                 {
-                    if (partlist[i].ptype >= PartsTypes.Day && e.Location.X >= partlist[i].xpos + partsstartx && e.Location.X <= partlist[i].endx + partsstartx)
+                    if (partlist[i].ptype >= PartsTypes.DayName && e.Location.X >= partlist[i].xpos + partsstartx && e.Location.X <= partlist[i].endx + partsstartx)
                     {
                         System.Diagnostics.Debug.WriteLine("Click on " + i);
                         if (selectedpart == i )      // click again, increment
@@ -214,7 +215,7 @@ namespace GLOFC.GL4.Controls
                 else if (e.KeyCode == System.Windows.Forms.Keys.Left && selectedpart >= 0)
                 {
                     int findprev = selectedpart - 1; // back 1
-                    while (findprev >= 0 && partlist[findprev].ptype < PartsTypes.Day)       // back until valid or -1
+                    while (findprev >= 0 && partlist[findprev].ptype < PartsTypes.DayName)       // back until valid or -1
                         findprev--;
 
                     if ( findprev == -1 && CheckBox.Visible)
@@ -231,7 +232,7 @@ namespace GLOFC.GL4.Controls
                 else if (e.KeyCode == System.Windows.Forms.Keys.Right && selectedpart < partlist.Count - 1)
                 {
                     int findnext = selectedpart + 1; // fwd 1
-                    while (findnext < partlist.Count && partlist[findnext].ptype < PartsTypes.Day)       // fwd until valid
+                    while (findnext < partlist.Count && partlist[findnext].ptype < PartsTypes.DayName)       // fwd until valid
                         findnext++;
 
                     if (findnext < partlist.Count)
@@ -483,7 +484,9 @@ namespace GLOFC.GL4.Controls
             if (selectedpart != -1)
             {
                 Parts p = partlist[selectedpart];
-                if (p.ptype == PartsTypes.Day)
+                if (p.ptype == PartsTypes.DayName)
+                    datetimevalue = datetimevalue.SafeAddDays(dir);
+                else if (p.ptype == PartsTypes.Day)
                     datetimevalue = datetimevalue.SafeAddDays(dir);
                 else if (p.ptype == PartsTypes.Month)
                     datetimevalue = datetimevalue.SafeAddMonths(dir);
@@ -515,8 +518,10 @@ namespace GLOFC.GL4.Controls
 
             try
             {
-                if (p.ptype == PartsTypes.Day)
-                    nv = new DateTime(datetimevalue.Year, datetimevalue.Month, newvalue, datetimevalue.Hour, datetimevalue.Minute, datetimevalue.Second, datetimevalue.Kind);
+                if (p.ptype == PartsTypes.DayName)
+                    return false;
+                else if (p.ptype == PartsTypes.Day)
+                        nv = new DateTime(datetimevalue.Year, datetimevalue.Month, newvalue, datetimevalue.Hour, datetimevalue.Minute, datetimevalue.Second, datetimevalue.Kind);
                 else if (p.ptype == PartsTypes.Month)
                     nv = new DateTime(datetimevalue.Year, newvalue, datetimevalue.Day, datetimevalue.Hour, datetimevalue.Minute, datetimevalue.Second, datetimevalue.Kind);
                 else if (p.ptype == PartsTypes.Year)
