@@ -97,7 +97,7 @@ void main(void)
         {
             CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
                                                                     "usetransform", commontransform, "autoscale", autoscale,
-                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax },completeoutfile:@"c:\code\shader.txt");
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
         }
     }
 }
