@@ -23,7 +23,9 @@ namespace GLOFC.GL4
         string vert =
 @"
         #version 450 core
-        // maxsize/scale provided programatically
+
+        const float maxsize = 0;        // replaced by const
+        const float scale = 0;          // replaced by const
 
         #include UniformStorageBlocks.matrixcalc.glsl
 

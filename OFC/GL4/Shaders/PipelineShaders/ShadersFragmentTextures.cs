@@ -144,7 +144,6 @@ layout (location = 3) in float alpha;
 out vec4 color;
 
 const vec4 alphacolor = vec4(1,1,1,1);
-
 const bool enablealphablend = false;
 const int imageoffset = 0;
 

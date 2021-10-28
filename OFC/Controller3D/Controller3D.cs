@@ -218,12 +218,12 @@ namespace GLOFC.Controller
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
             mouseDeltaPos = MouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
-            System.Diagnostics.Debug.WriteLine($"Mouse down {MouseDownPos}");
+            //System.Diagnostics.Debug.WriteLine($"Mouse down {MouseDownPos}");
         }
 
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"Mouse Up");
+            //System.Diagnostics.Debug.WriteLine($"Mouse Up");
             mouseDeltaPos = MouseDownPos = new Point(int.MinValue, int.MinValue);
         }
 
@@ -248,7 +248,7 @@ namespace GLOFC.Controller
 
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
                 if (MatrixCalc.InPerspectiveMode && MouseDownPos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
                     int dx = mousepos.X - mouseDeltaPos.X;
@@ -264,14 +264,14 @@ namespace GLOFC.Controller
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
                 if (MouseDownPos.X != int.MinValue)
                 {
                     KillSlew();
 
                     int dy = mousepos.Y - mouseDeltaPos.Y;
 
-                    System.Diagnostics.Trace.WriteLine($"{mousepos}  dy {dy} Button {e.Button.ToString()}");
+                    //System.Diagnostics.Trace.WriteLine($"{mousepos}  dy {dy} Button {e.Button.ToString()}");
 
                     mouseDeltaPos = mousepos;
 
@@ -280,7 +280,7 @@ namespace GLOFC.Controller
             }
             else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
             {
-                System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
+                //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
                 if (MouseDownPos.X != int.MinValue)
                 {
                     KillSlew();
@@ -343,7 +343,7 @@ namespace GLOFC.Controller
         // from the window, a resize event. Must have the correct context, if multiple, set glwin.EnsureCurrentPaintResize
         private void glControl_Resize(object sender)         
         {
-            System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
+            //System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);
             MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
             MatrixCalc.CalculateProjectionMatrix();

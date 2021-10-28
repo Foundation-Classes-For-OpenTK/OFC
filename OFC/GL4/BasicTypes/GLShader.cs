@@ -110,14 +110,15 @@ namespace GLOFC.GL4
             string code = "", line;
             List<string> constcode = constvalues != null ? ConstVars(constvalues) : null;       // compute const vars, to be placed after # lines
             List<string> constvars = constcode != null ? constcode.Select((s)=>s.Substring(0,s.IndexOf("=")+1)).ToList() : null;        // without the values for pattern matching
-            HashSet<string> hashlines = new HashSet<string>();
-            bool doneconst = false;
+
+            bool doneversion = false;
+            HashSet<string> extensions = new HashSet<string>();
 
             while ((line = lr.ReadLine()) != null)
             {
                 line = line.Trim(); // remove whitespace
 
-                if ( line.Length == 0 )     // ignore empties
+                if (line.Length == 0)     // ignore empties
                 {
                 }
                 else if (line.StartsWith("#include", StringComparison.InvariantCultureIgnoreCase) || line.StartsWith("//Include", StringComparison.InvariantCultureIgnoreCase))
@@ -125,13 +126,13 @@ namespace GLOFC.GL4
                     line = line.Mid(line[0] == '#' ? 8 : 9).Trim();
                     string include = ResourceHelpers.GetResourceAsString(line);
 
-                    if ( include == null)       // if not found directly, use the namespace of this function to use as a root path, allowing us to ditch the upper level stuff
+                    if (include == null)       // if not found directly, use the namespace of this function to use as a root path, allowing us to ditch the upper level stuff
                     {
                         var nsofcode = System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Namespace;
                         include = ResourceHelpers.GetResourceAsString(nsofcode + "." + line);
                     }
 
-                    if ( include == null )      // if not found, see if its in include modules
+                    if (include == null)      // if not found, see if its in include modules
                     {
                         foreach (string partial in includemodules)
                         {
@@ -141,9 +142,9 @@ namespace GLOFC.GL4
                         }
                     }
 
-                    if ( include == null )
+                    if (include == null)
                     {
-                        if ( File.Exists(line))
+                        if (File.Exists(line))
                         {
                             include = GLOFC.FileHelpers.TryReadAllTextFromFile(line);
                         }
@@ -164,30 +165,32 @@ namespace GLOFC.GL4
                     System.Diagnostics.Debug.Assert(include != null, "Cannot include " + line);
                     lr.OpenString(include);     // include it
                 }
-                else if (line.StartsWith("#extension", StringComparison.InvariantCultureIgnoreCase) || line.StartsWith("#version", StringComparison.InvariantCultureIgnoreCase))        
+                else if (line.StartsWith("#version", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    if (!hashlines.Contains(line))          // don't repeat these hash lines - if a file has been included, we may get multiple repeats of #version etc
+                    if (!doneversion)      // as soon as we have a version, we are set.
                     {
                         code += line + Environment.NewLine;
-                        hashlines.Add(line);
+                        doneversion = true;
+                    }
+                }
+                else if (line.StartsWith("#extension", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (!extensions.Contains(line))          // don't repeat these hash lines - if a file has been included, we may get multiple repeats of them
+                    {
+                        code += line + Environment.NewLine;
+                        extensions.Add(line);
                     }
                 }
                 else
                 {
-                    if ( !doneconst )
+                    if (constcode != null && line.StartsWith("const"))        // if we have constants, see if its a const line
                     {
-                        if (constcode != null)      // take the opportunity to introduce any constant values to the source
-                            code += string.Join(Environment.NewLine, constcode) + Environment.NewLine;
-
-                        doneconst = true;
+                        int i = line.ContainsIn(constvars); // check to see if its a constant to be replaced..
+                        if (i >= 0)
+                            line = constcode[i];        // replace with this
                     }
 
-                    if ( constcode != null && line.ContainsIn(constvars)>=0) // check to see its not a const redefinition
-                    {
-                        //System.Diagnostics.Debug.WriteLine("Repeat const " + line);
-                    }
-                    else
-                        code += line + Environment.NewLine;
+                    code += line + Environment.NewLine;
                 }
             }
 

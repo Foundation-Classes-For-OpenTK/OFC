@@ -96,6 +96,8 @@ out gl_PerVertex {
 
 layout(location=0) out vec4 vs_color;
 
+const vec4 color = vec4(0,0,0,0);       // replaced by const
+
 void main(void)
 {
     int line = gl_InstanceID;

@@ -502,6 +502,8 @@ out gl_PerVertex {
 layout (location = 1) out vec3 modelpos;
 layout (location = 2) out int instance;
 
+const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs
+
 void main(void)
 {
     float ctrl = worldpos[1][3];
