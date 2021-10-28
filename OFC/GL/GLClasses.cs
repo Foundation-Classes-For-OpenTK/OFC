@@ -109,8 +109,9 @@ namespace GLOFC
 
         void EnsureCurrentContext();
         void Invalidate();
-        Rectangle ClientScreenPos { get; }
-        Point MouseScreenPosition { get; }
+        Rectangle GLWindowControlScreenRectangle { get; }
+        Point MousePosition { get; }
+        Point MouseWindowPosition { get; }
         int Width { get; }
         int Height { get; }
         Size Size { get; }

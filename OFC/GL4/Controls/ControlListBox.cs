@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -245,7 +245,7 @@ namespace GLOFC.GL4.Controls
                     }
                 }
 
-                if ( showfocusindex )              // if we have been told to ensure focus index is displayed..
+                if ( showfocusindex && focusindex >= 0 )              // if we have been told to ensure focus index is displayed..
                 {
                     //System.Diagnostics.Debug.WriteLine($"Focus Index reset {firstindex} to fi {focusindex} sel {selectedIndex}");
                     System.Diagnostics.Debug.Assert(displayableitems >= 1);
@@ -259,7 +259,7 @@ namespace GLOFC.GL4.Controls
                         firstindex = focusindex - displayableitems + 1;     // +1 to shift it on one up
                         scrollbar.Value = firstindex;       // ensure the scroll bar is informed
                     }
-                    System.Diagnostics.Debug.Assert(firstindex >= 0);
+                    System.Diagnostics.Debug.Assert(firstindex >= 0,$"first index {focusindex} {firstindex} {displayableitems}");
                     showfocusindex = false;
                 }
 

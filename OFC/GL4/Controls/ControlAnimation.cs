@@ -19,17 +19,19 @@ namespace GLOFC.GL4.Controls
 {
     public interface IControlAnimation
     {
-        void Animate(GLBaseControl cs, ulong timems);
-        Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
-        Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
+        void Animate(GLBaseControl cs, ulong timems);       // return true to keep, false to delete animator
+        Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }       // execute after setup
+        Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }      // execute after removal/end
     }
 
     // Build on this class to provide custom animations. Implement Start, Middle, End
 
     public abstract class AnimateTimeBase : IControlAnimation
     {
-        public ulong StartTime { get; set; }
-        public ulong EndTime { get; set; }
+        public ulong StartTime { get; set; }    // after first tick, absolute time, before can be delta or absolute
+        public ulong EndTime { get; set; }      // ditto
+        public bool DeltaTime { get; set; }     // if set, StartTime/EndTime are deltas from the first tick
+        public bool RemoveAfterEnd { get; set; } = false;   // remove from control at end point
 
         public Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
         public Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
@@ -37,9 +39,9 @@ namespace GLOFC.GL4.Controls
         public enum StateType { Waiting, Running, Done };
         public StateType State = StateType.Waiting;
 
-        public AnimateTimeBase(ulong startime, ulong endtime)
+        public AnimateTimeBase(ulong startime, ulong endtime, bool deltatime, bool removeafterend = false)
         {
-            StartTime = startime; EndTime = endtime;
+            StartTime = startime; EndTime = endtime; DeltaTime = deltatime; RemoveAfterEnd = removeafterend;
         }
 
         protected abstract void Start(GLBaseControl cs);
@@ -48,6 +50,13 @@ namespace GLOFC.GL4.Controls
 
         public void Animate(GLBaseControl cs, ulong timems)
         {
+            if ( DeltaTime )                // if we were set up with delta times, then set the starttime/end time as moved on from timems
+            {
+                StartTime += timems;
+                EndTime += timems;
+                DeltaTime = false;
+            }
+
             if (State == StateType.Waiting && timems >= StartTime)
             {
                 State = StateType.Running;
@@ -64,8 +73,14 @@ namespace GLOFC.GL4.Controls
                 if (deltain >= 1.0)
                 {
                     End(cs);
-                    FinishAction?.Invoke(this, cs, timems);
+
+                    if ( RemoveAfterEnd)
+                    {
+                        cs.Animators.Remove(this);
+                    }
+
                     State = StateType.Done;
+                    FinishAction?.Invoke(this, cs, timems);
                 }
                 else
                 {

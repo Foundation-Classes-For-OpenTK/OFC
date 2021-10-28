@@ -97,39 +97,68 @@ namespace TestOpenTk
 
             rObjects.Add(items.Shader("TRI"), "scopen", GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, rc, triangles, worldpos, ic:2, seconddivisor:1));
 
-            findshader = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(11, 16), null, null, null);
-            findrender = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic:2, seconddivisor:1 );
+            // demo shared find block, a problem in the past with the previous interface
+
+            GLStorageBlock findblock = new GLStorageBlock(11);
+
+            findshader1 = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
+            findrender1 = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic: 2, seconddivisor: 1);
+
+            findshader2 = items.NewShaderPipeline("FS2", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
+            findrender2 = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic: 2, seconddivisor: 1);
 
             Closed += ShaderTest_Closed;
         }
 
         void mousedown(Object sender, GLMouseEventArgs e)
         {
-         //  GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-           // mcub.Set(gl3dcontroller.MatrixCalc);
+            //  GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
+            // mcub.Set(gl3dcontroller.MatrixCalc);
 
-            var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-
-            geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
-
-            System.Diagnostics.Debug.WriteLine("Run find");
-            findrender.Execute(findshader, glwfc.RenderState);
-            System.Diagnostics.Debug.WriteLine("Finish find");
-
-            var res = geo.GetResult();
-            if (res != null)
             {
-                for (int i = 0; i < res.Length; i++)
+                var geo = findshader1.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+
+                geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
+
+                System.Diagnostics.Debug.WriteLine("Run find");
+                findrender1.Execute(findshader1, glwfc.RenderState);
+                System.Diagnostics.Debug.WriteLine("Finish find");
+
+                var res = geo.GetResult();
+                if (res != null)
                 {
-                    System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                    for (int i = 0; i < res.Length; i++)
+                    {
+                        System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                    }
+                }
+            }
+            {
+                var geo = findshader2.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+
+                geo.SetScreenCoords(e.WindowLocation, glwfc.Size);
+
+                System.Diagnostics.Debug.WriteLine("Run find 2");
+                findrender2.Execute(findshader1, glwfc.RenderState);
+                System.Diagnostics.Debug.WriteLine("Finish find 2");
+
+                var res = geo.GetResult();
+                if (res != null)
+                {
+                    for (int i = 0; i < res.Length; i++)
+                    {
+                        System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+                    }
                 }
             }
 
 
         }
 
-        GLShaderPipeline findshader;
-        GLRenderableItem findrender;
+        GLShaderPipeline findshader1;
+        GLShaderPipeline findshader2;
+        GLRenderableItem findrender1;
+        GLRenderableItem findrender2;
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {

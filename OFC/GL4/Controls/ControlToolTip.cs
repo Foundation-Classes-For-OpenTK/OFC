@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -21,9 +21,13 @@ namespace GLOFC.GL4.Controls
 
     public class GLToolTip : GLForeDisplayBase
     {
-        public int AutomaticDelay { get; set; } = 500;      
-        public StringFormat StringFormat = null;
-        public Point AutoPlacementOffset = new Point(10, 0);
+        public int AutomaticDelay { get; set; } = 500;
+        public ulong FadeInTime { get; set; } = 250;
+        public ulong FadeOutTime { get; set; } = 250;
+        public StringFormat StringFormat { get; set; } = null;
+        public Point AutoPlacementOffset { get; set; } = new Point(10, 0);
+
+        public float ShownOpacity { get; set; } = 1.0f;
 
         public GLToolTip(string name, Color? backcolour = null) : base(name, DefaultWindowRectangle)
         {
@@ -83,18 +87,49 @@ namespace GLOFC.GL4.Controls
                 tiptext = text;
                 Visible = true;
                 Invalidate();       // must invalidate as paint uses tiptext.
+
+                if (Parent is GLControlDisplay)
+                {
+                    if (FadeInTime > 0)     // if we are attached to control display, and we are fading in, do it
+                    {
+                        Opacity = 0;
+                        Animators.Add(new AnimateOpacity(0, FadeInTime, true, ShownOpacity, 0.0f, true));   // note delta time
+                    }
+                    else
+                        Opacity = ShownOpacity;
+                }
             }
         }
 
         public void Hide()
         {
-            Visible = false;
+            if (Visible)
+            {
+                if (Parent is GLControlDisplay && FadeOutTime > 0)
+                {
+                    var animate = new AnimateOpacity(0, FadeOutTime, true, 0.0f, Opacity, true);
+                    animate.FinishAction = (an, ctrl, time) => 
+                    { 
+                        ctrl.Visible = false;
+                        // animators are removed at this point, find out what the positional mouse args would be and call again to give the next control the chance
+                        var me = FindDisplay().MouseEventArgsFromPoint(FindDisplay().MouseWindowPosition);      
+                        MouseMoved(me);
+                    };
+                    Animators.Add(animate);
+                }
+                else
+                    Visible = false;
+            }
         }
 
         private void MouseMoved(GLMouseEventArgs e)
         {
+            // System.Diagnostics.Debug.WriteLine($"GLOBAL: Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {control.Name}");
+
+            if (Animators.Count > 0)        // if we are animating, can't do anything
+                return;
+
             var control = e.Control as GLBaseControl;
-           // System.Diagnostics.Debug.WriteLine($"GLOBAL: Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {control.Name}");
 
             if ( mouseover != control)
             {

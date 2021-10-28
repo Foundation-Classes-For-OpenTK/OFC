@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -30,15 +30,17 @@ namespace GLOFC.GL4.Controls
         public bool RequestRender { get; set; } = false;                        // set whenever anything is invalidated by a control.
         public void ReRender() { RequestRender = true; }
 
-        public Point MouseScreenPosition { get { return glwin.MouseScreenPosition; } }
+        public Point MousePosition { get { return glwin.MousePosition; } }
 
         public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
 
-        public new Action<Object,ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
+        public new Action<Object, ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
 
         public GLMatrixCalc MatrixCalc { get; set; }
 
-        public Rectangle ClientScreenPos { get { return glwin.ClientScreenPos; } }
+        public Rectangle GLWindowControlScreenRectangle { get { return glwin.GLWindowControlScreenRectangle; } }
+
+        public Point MouseWindowPosition {  get { return glwin.MouseWindowPosition; } }
 
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
@@ -76,7 +78,7 @@ namespace GLOFC.GL4.Controls
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid));
+            shader = new GLShaderPipeline(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid,true));
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();
             texturebinds = new GLBindlessTextureHandleBlock(arbbufferid);
@@ -157,9 +159,9 @@ namespace GLOFC.GL4.Controls
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
 
-                        if ( c.AltScaleChanged )
+                        if ( c.TopLevelControlUpdate )
                         {
-                            c.AltScaleChanged = false;
+                            c.TopLevelControlUpdate = false;
                             altscalechanged = true;
                         }
                     }
@@ -232,7 +234,7 @@ namespace GLOFC.GL4.Controls
 
         protected override bool InvalidateDueToLocationChange(GLBaseControl child)
         {
-            System.Diagnostics.Debug.WriteLine("Control display location change");
+            //System.Diagnostics.Debug.WriteLine("Control display location change");
             UpdateVertexTexturePositions(false);
             return false;       // we don't need to invalidate due to just a location change, we can handle that without it
         }
@@ -263,24 +265,27 @@ namespace GLOFC.GL4.Controls
                 {
                     if (c.Visible)  // must be visible to be added to vlist
                     {
+                        //System.Diagnostics.Debug.WriteLine($"Update texture {c.Name} with {c.Opacity}");
                         float[] a;
+                        float w = c.Opacity;
 
                         if (c.ScaleWindow == null)
                         {
-                            a = new float[] {   c.Left, c.Top, z, 1,
-                                                        c.Left, c.Bottom , z, 1,
-                                                        c.Right, c.Top, z, 1,
-                                                        c.Right, c.Bottom , z, 1,
+                         
+                            a = new float[] {   c.Left, c.Top, z, w,
+                                                        c.Left, c.Bottom , z, w,
+                                                        c.Right, c.Top, z, w,
+                                                        c.Right, c.Bottom , z, w,
                                                  };
                         }
                         else
                         {
                             float right = c.Left + c.Width * c.ScaleWindow.Value.Width;
                             float bot = c.Top + c.Height * c.ScaleWindow.Value.Height;
-                            a = new float[] { c.Left, c.Top, z, 1,
-                                              c.Left, bot, z, 1,
-                                              right, c.Top, z, 1,
-                                              right, bot, z, 1
+                            a = new float[] { c.Left, c.Top, z, w,
+                                              c.Left, bot, z, w,
+                                              right, c.Top, z, w,
+                                              right, bot, z, w
                             };
                         }
 
@@ -297,6 +302,10 @@ namespace GLOFC.GL4.Controls
 
                             tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
                         }
+                    }
+                    else
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"{c.Name} not visible so not adding");
                     }
                 }
 

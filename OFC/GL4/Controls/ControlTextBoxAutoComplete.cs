@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 
 namespace GLOFC.GL4.Controls
@@ -28,8 +29,10 @@ namespace GLOFC.GL4.Controls
 
     public class GLTextBoxAutoComplete : GLMultiLineTextBox
     {
-        public Func<string, GLTextBoxAutoComplete, List<string>> PerformAutoCompleteInThread { get; set; } = null;
-        public Func<string, GLTextBoxAutoComplete, List<string>> PerformAutoCompleteInUIThread { get; set; } = null;
+        // fired in thread (first, before UI)
+        public Action<string, GLTextBoxAutoComplete, SortedSet<string>> PerformAutoCompleteInThread { get; set; } = null;
+        // using a GLTimer, fire in UI
+        public Action<string, GLTextBoxAutoComplete, SortedSet<string>> PerformAutoCompleteInUIThread { get; set; } = null;
 
         public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        // called on return, or autocomplete entry selected.
 
@@ -112,14 +115,12 @@ namespace GLOFC.GL4.Controls
                 System.Diagnostics.Debug.WriteLine("{0} Begin AC", Environment.TickCount % 10000);
                 restartautocomplete = false;
 
-                autocompletestrings = new List<string>();
+                autocompletestrings = new SortedSet<string>();
 
                 if ( PerformAutoCompleteInThread != null)           // first see if a thread wants action
                 {
                     System.Diagnostics.Debug.WriteLine("AC in thread");
-                    var ret = PerformAutoCompleteInThread(string.Copy(autocompletestring), this);
-                    if (ret != null)
-                        autocompletestrings.AddRange(ret);
+                    PerformAutoCompleteInThread(string.Copy(autocompletestring), this, autocompletestrings);
                 }
 
                 if ( PerformAutoCompleteInUIThread != null )        // then see if the UI wants action
@@ -140,9 +141,7 @@ namespace GLOFC.GL4.Controls
         private void AutoCompleteInUI(GLOFC.Timers.Timer t, long tick)      // in UI thread, fired by autocompleteinui timer
         {
             System.Diagnostics.Debug.WriteLine("{0} Perform in UI ", tick);
-            var uistrings = PerformAutoCompleteInUIThread.Invoke(string.Copy(autocompletestring), this);        // we know its not null
-            if (uistrings != null)
-                autocompletestrings.AddRange(uistrings);
+            PerformAutoCompleteInUIThread.Invoke(string.Copy(autocompletestring), this, autocompletestrings);        // we know its not null
             AutocompleteUIDone.Set();
         }
             
@@ -152,12 +151,12 @@ namespace GLOFC.GL4.Controls
 
             if (autocompletestrings != null && autocompletestrings.Count > 0)
             {
-                foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("String " + s); }
+                //foreach (var s in autocompletestrings) { System.Diagnostics.Debug.WriteLine("Autocomplete String " + s); }
 
                 Point sc = FindScreenCoords(new Point(ClientLeftMargin, Height + 1));
                 ListBox.Font = Font;
                 ListBox.Location = sc;
-                ListBox.Items = autocompletestrings;
+                ListBox.Items = autocompletestrings.ToList();
                 ListBox.ScaleWindow = FindScaler();
 
                 if (ListBox.Parent == null)
@@ -227,7 +226,7 @@ namespace GLOFC.GL4.Controls
         private string autocompletestring;
         private bool executingautocomplete = false;
         private bool restartautocomplete = false;
-        private List<string> autocompletestrings = null;
+        private SortedSet<string> autocompletestrings = null;
         private System.Threading.Thread ThreadAutoComplete;
 
     }

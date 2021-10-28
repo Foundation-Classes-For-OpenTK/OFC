@@ -108,16 +108,19 @@ namespace GLOFC.GL4
             lr.OpenString(codelisting);
 
             string code = "", line;
-            List<string> constcode = constvalues != null ? ConstVars(constvalues) : null;       // compute const vars, to be placed after #version
+            List<string> constcode = constvalues != null ? ConstVars(constvalues) : null;       // compute const vars, to be placed after # lines
             List<string> constvars = constcode != null ? constcode.Select((s)=>s.Substring(0,s.IndexOf("=")+1)).ToList() : null;        // without the values for pattern matching
-
-            bool doneversion = false;
+            HashSet<string> hashlines = new HashSet<string>();
+            bool doneconst = false;
 
             while ((line = lr.ReadLine()) != null)
             {
-                line = line.Trim();
+                line = line.Trim(); // remove whitespace
 
-                if (line.StartsWith("#include", StringComparison.InvariantCultureIgnoreCase) || line.StartsWith("//Include", StringComparison.InvariantCultureIgnoreCase))
+                if ( line.Length == 0 )     // ignore empties
+                {
+                }
+                else if (line.StartsWith("#include", StringComparison.InvariantCultureIgnoreCase) || line.StartsWith("//Include", StringComparison.InvariantCultureIgnoreCase))
                 {
                     line = line.Mid(line[0] == '#' ? 8 : 9).Trim();
                     string include = ResourceHelpers.GetResourceAsString(line);
@@ -161,21 +164,25 @@ namespace GLOFC.GL4
                     System.Diagnostics.Debug.Assert(include != null, "Cannot include " + line);
                     lr.OpenString(include);     // include it
                 }
-                else if (line.StartsWith("#version", StringComparison.InvariantCultureIgnoreCase))        // one and only one #version
+                else if (line.StartsWith("#extension", StringComparison.InvariantCultureIgnoreCase) || line.StartsWith("#version", StringComparison.InvariantCultureIgnoreCase))        
                 {
-                    if (!doneversion)
+                    if (!hashlines.Contains(line))          // don't repeat these hash lines - if a file has been included, we may get multiple repeats of #version etc
                     {
                         code += line + Environment.NewLine;
-
+                        hashlines.Add(line);
+                    }
+                }
+                else
+                {
+                    if ( !doneconst )
+                    {
                         if (constcode != null)      // take the opportunity to introduce any constant values to the source
                             code += string.Join(Environment.NewLine, constcode) + Environment.NewLine;
 
-                        doneversion = true;
+                        doneconst = true;
                     }
-                }
-                else 
-                {
-                    if ( line.HasChars() && constcode != null && line.ContainsIn(constvars)>=0) // check to see its not a const redefinition
+
+                    if ( constcode != null && line.ContainsIn(constvars)>=0) // check to see its not a const redefinition
                     {
                         //System.Diagnostics.Debug.WriteLine("Repeat const " + line);
                     }

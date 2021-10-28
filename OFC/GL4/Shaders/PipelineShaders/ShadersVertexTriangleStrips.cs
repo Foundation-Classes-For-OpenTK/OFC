@@ -22,12 +22,14 @@ namespace GLOFC.GL4
 {
     // Pipeline shader, Texture, real screen coords  (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
     // Requires:
-    //      location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w must be 1.
+    //      location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w is passed thru on out 3
     //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
     // Out:
     //      gl_Position
-    //      location 0 : vs_textureCoordinate per triangle strip rules
-    //      z=0 placing it in foreground
+    //      location 0 : vec2 vs_textureCoordinate per triangle strip rules
+    //      location 1 : worldpos
+    //      location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
+    //      location 3 : flat out w for fragshader.
 
     public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineComponentShadersBase
     {
@@ -53,12 +55,18 @@ out gl_PerVertex {
     };
 
 layout(location = 0) out vec2 vs_textureCoordinate;
+layout(location = 1) out vec3 worldpos;
+layout(location = 2) flat out int vertexid;
+layout (location = 3) flat out float wvalue;
 
 void main(void)
 {
-	gl_Position = mc.ScreenMatrix * position;        // order important
+    wvalue = position.w;
+    worldpos = position.xyz;
+	gl_Position = mc.ScreenMatrix * vec4(position.xyz,1);        // order important
     vec2 vcoords[4] = {{0,0},{0,1},{1,0},{1,1} };      // these give the coords for the 4 points making up 2 triangles.  Use with the right fragment shader which understands strip co-ords
     vs_textureCoordinate = vcoords[ gl_VertexID % 4];
+    vertexid = gl_VertexID;
 }
 ";
         }
@@ -67,14 +75,14 @@ void main(void)
 
     // Pipeline shader, Texture, Modelpos, transform
     // Requires:
-    //      location 0 : position: vec4 vertex array of positions. W[vertex_id%4==0] contains red, next green, then blue, then unused.
+    //      location 0 : position: vec4 vertex array of positions. W contains encoded red, next green, blue in 24 bit quantity
     //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      gl_Position
     //      location 0 : vs_textureCoordinate per triangle strip rules - use a fragment shader which understands the order (GLPLFragmentShaderTextureTriStrip)
-    //      location 1 : modelpos
+    //      location 1 : worldpos
     //      location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
-    //      location 3 : flat out color carried in vertex as a packed RGB value
+    //      location 3 : flat out color carried in vertex as a packed RGB value from input location 0 w co-ord
 
     public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB : GLShaderPipelineComponentShadersBase
     {
@@ -100,7 +108,7 @@ out gl_PerVertex {
     };
 
 layout(location = 0) out vec2 vs_textureCoordinate;
-layout(location = 1) out vec3 modelpos;
+layout(location = 1) out vec3 worldpos;
 layout(location = 2) flat out int vertexid;
 layout(location = 3) flat out vec4 colorout;
 
@@ -108,7 +116,7 @@ void main(void)
 {
     vec2 vcoords[4] = {{0,0},{0,1},{1,0},{1,1}};        // these give the coords for the 4 points making up 2 triangles.  Use with the right fragment shader which understands strip co-ords
 
-    modelpos = position.xyz;
+    worldpos = position.xyz;
     vec4 p = vec4(position.xyz,1);
 	gl_Position = mc.ProjectionModelMatrix * p;        // order important
     vs_textureCoordinate = vcoords[ gl_VertexID % 4];  // Very important. gl_vertextid is either an autocounter for non indexed addressing, starting at zero, 

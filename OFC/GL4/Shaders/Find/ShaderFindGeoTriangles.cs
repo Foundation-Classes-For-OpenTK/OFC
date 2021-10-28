@@ -143,15 +143,22 @@ void main(void)
 ";
         }
 
-        public GLPLGeoShaderFindTriangles(int resultoutbufferbinding,int maximumresultsp, bool forwardfacing = true)
+        // creates a find block for you, with maximum results
+
+        public GLPLGeoShaderFindTriangles(int resultoutbufferbinding, int maximumresultsp, bool forwardfacing = true)   
         {
-            maximumresults = maximumresultsp;
             vecoutbuffer = new GLStorageBlock(resultoutbufferbinding);      // buffer is disposed by overriden dispose below.
-            vecoutbuffer.AllocateBytes(16 + sizeof(float) * 4 * maximumresults );
-            CompileLink(ShaderType.GeometryShader, Code(false), auxname: GetType().Name,
-                                constvalues:new object[] { "bindingoutdata", resultoutbufferbinding, "maximumresults", maximumresults, "forwardfacing", forwardfacing});
+            Create(maximumresultsp, forwardfacing);
         }
 
+        // give an existing storage block for finding
+        public GLPLGeoShaderFindTriangles(GLStorageBlock res, int maximumresultsp, bool forwardfacing = true)
+        {
+            vecoutbuffer = res;
+            Create(maximumresultsp, forwardfacing);
+        }
+
+        // Set up screen coords for find
         public void SetScreenCoords(Point p, Size s, int margin = 10)
         {
             Vector4 v = new Vector4(((float)p.X) / (s.Width / 2) - 1.0f, (1.0f - (float)p.Y / (s.Height / 2)), 0, 0);   // convert to clip space
@@ -197,6 +204,14 @@ void main(void)
         {
             vecoutbuffer.Dispose();
             base.Dispose();
+        }
+
+        private void Create(int maximumresultsp, bool forwardfacing)
+        {
+            maximumresults = maximumresultsp;
+            vecoutbuffer.AllocateBytes(16 + sizeof(float) * 4 * maximumresults);
+            CompileLink(ShaderType.GeometryShader, Code(false), auxname: GetType().Name,
+                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing });
         }
 
         private GLStorageBlock vecoutbuffer;

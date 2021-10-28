@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -25,7 +25,7 @@ namespace GLOFC.GL4.Controls
 
         // all Menu Items
 
-        public Action<GLMenuStrip> Opening = null;         // Menu opening
+        public Action<GLMenuStrip> Opening = null;         // Menu opening due to Show
 
         // Called on top level menu item only.
         public Func<GLMenuStrip, bool> Closing = null;      // All Submenus closing (and if context menu, the top level is detaching), return true to allow the close to happen
@@ -73,7 +73,9 @@ namespace GLOFC.GL4.Controls
 
         // call to pop up the context menu, parent is normally displaycontrol
         // you can double call and the previous one is closed
-        public void Show(GLBaseControl parent, Point coord)        
+        // if changewidthifrequired, it will reflow to not exceed parent, making the window wider if required
+        // It always makes sure right/bottom is within parent
+        public void Show(GLBaseControl parent, Point coord, bool changewidthifrequired = false)        
         {
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             Detach(this);
@@ -81,7 +83,14 @@ namespace GLOFC.GL4.Controls
             Location = coord;
             AutoSize = true;
             TopMost = true;
+            KeepWithinParent = changewidthifrequired;
             parent.Add(this);
+            int overflowy = this.Bottom - parent.Bottom;
+            if (overflowy > 0)
+                Top -= overflowy;
+            int overflowx = this.Right - parent.Right;
+            if (overflowx > 0)
+                Left -= overflowx;
             SetFocus();
             Opening?.Invoke(this);
         }
@@ -90,7 +99,8 @@ namespace GLOFC.GL4.Controls
 
         #region Menu Openers
 
-        private bool Select(int index, bool focusto)     // select this item, optionally transfer focus to it
+        // select this item, optionally transfer focus to it
+        public bool Select(int index, bool focusto)     
         {
             if ( submenu != null )      // if submenu is activated..
             {
@@ -164,7 +174,8 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
-        public bool Move(int dir)                           // move highlight left/up or right/down
+        // move highlight left/up or right/down
+        public bool Move(int dir)                           
         {
             int pos = selected;
             while (true)
@@ -183,7 +194,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public void ActivateSelected()                  // activate, either selected or hoverover item
+        // activate, either selected or hoverover item
+        public void ActivateSelected()                  
         {
             if (submenu != null)                        // if a submenu is up, activate always transfers to it
             {
@@ -526,7 +538,7 @@ namespace GLOFC.GL4.Controls
         private bool openedascontextmenu = false;
     }
 
-    // Helper class - use Show() to make it visible. Do not attach to anything at creation. Note they always flow Down
+    // Helper class - use Show() to make it visible. Do not attach to anything at creation. 
     public class GLContextMenu : GLMenuStrip
     {
         public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, items)

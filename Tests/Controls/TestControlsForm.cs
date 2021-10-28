@@ -42,7 +42,6 @@ namespace TestOpenTk
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -165,6 +164,7 @@ namespace TestOpenTk
             {
                 pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
                 pform.BackColor = Color.FromArgb(200, Color.Red);
+                pform.Opacity = 0.7f;
                 pform.SuspendLayout();
                 pform.BackColorGradientDir = 90;
                 pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
@@ -172,8 +172,9 @@ namespace TestOpenTk
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
                 //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
                 pform.ScaleWindow = new SizeF(0.0f, 0.0f);
-                pform.Animators.Add(new AnimateScale(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 300, new SizeF(1, 1)));
-                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 300, new Point(100,100)));
+                pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
+                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
+                pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
                 displaycontrol.Add(pform);
 
                 int taborder = 0;
@@ -266,11 +267,18 @@ namespace TestOpenTk
                 if (true)
                 {
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 500, 30), DateTime.Now);
+                    dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
+                    dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
+                    //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
+                    dtp.SuspendLayout();
                     dtp.Font = new Font("Ms Sans Serif", 11);
-                    dtp.ShowCheckBox = dtp.ShowCalendar = true;
+                    dtp.ShowCheckBox = true;
+                    dtp.ShowCalendar = true;
                     dtp.ShowUpDown = true;
+                    dtp.AutoSize = true;
                     //dtp.Culture = CultureInfo.GetCultureInfo("es");
                     dtp.TabOrder = taborder++;
+                    dtp.ResumeLayout();
                     pform.Add(dtp);
                 }
 
@@ -351,10 +359,14 @@ namespace TestOpenTk
                     GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
                     gla.TabOrder = taborder++;
                     gla.Font = new Font("Ms Sans Serif", 12);
-                    gla.PerformAutoCompleteInThread += (s, a) =>
+                    gla.PerformAutoCompleteInThread += (s, a, set) =>
                     {
                         var r = new List<string>() { "one", "two", "three" };
-                        return r.Where(x => x.StartsWith(s)).ToList();
+                        foreach(var x in r)
+                        {
+                            if (s.StartsWith(x))
+                                set.Add(x);
+                        }
                     };
                     pform.Add(gla);
                 }
@@ -422,6 +434,7 @@ namespace TestOpenTk
             else
                 gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
+            systemtimer.Start();
         }
 
         private void ConfDialog()

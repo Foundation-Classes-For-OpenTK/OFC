@@ -39,9 +39,6 @@ namespace TestOpenTk
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -280,6 +277,9 @@ namespace TestOpenTk
             else
                 gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
 

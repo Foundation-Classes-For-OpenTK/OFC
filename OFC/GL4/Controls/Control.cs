@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -41,13 +41,12 @@ namespace GLOFC.GL4.Controls
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
 
         // only for top level windows at the moment, we can throw them on the screen scaled..  <1 smaller, >1 bigger
-        public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; AltScaleChanged = true; FindDisplay()?.ReRender(); } }
-        public bool AltScaleChanged { get; set; } = false;
+        public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } }
         public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
         // padding/margin and border control
-        public GL4.Controls.Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
-        public GL4.Controls.Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
         public Color BorderColor { get { return bordercolor; } set { if (bordercolor != value) { bordercolor = value; Invalidate(); } } }
         public int BorderWidth { get { return borderwidth; } set { if (borderwidth != value) { borderwidth = value; CalcClientRectangle(); InvalidateLayout(); } } }
@@ -75,6 +74,9 @@ namespace GLOFC.GL4.Controls
         // toggle controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
         public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
+
+        // Top level windows only, control Opacity
+        public float Opacity { get { return opacity; } set { if (value != Opacity) { opacity = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } } }
 
         // Focus
         public virtual bool Focused { get { return focused; } }
@@ -128,8 +130,11 @@ namespace GLOFC.GL4.Controls
         // Tabs
         public int TabOrder { get; set; } = -1;                 // set, the lowest tab order wins the form focus
 
-        // Others
+        // Order control
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
+
+        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
+        public bool TopLevelControlUpdate { get; set; } = false;
 
         // control lists
         public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
@@ -163,7 +168,6 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change. Either may be null
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;       // sent to all controls on a click. GLBaseControl may be null
-
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only hook on GLControlDisplay.  Has all the GLMouseEventArgs fields filled out including control ones
 
         // default color schemes and sizes
@@ -194,6 +198,7 @@ namespace GLOFC.GL4.Controls
         // privates
         private SizeF? altscale = null;
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
+        private float opacity = 1.0f;
 
         // Invalidate this and therefore its children
         public virtual void Invalidate()
@@ -693,7 +698,8 @@ namespace GLOFC.GL4.Controls
                 var controlslist = new List<GLBaseControl>(ControlsIZ); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
                 foreach (var c in controlslist)
                     c.Animate(ts);
-                foreach (var a in Animators)
+                var animators = new List<IControlAnimation>(Animators); // animators may remove themselves from the animation list, so we need to take a copy
+                foreach (var a in animators)
                     a.Animate(this, ts);
             }
         }
@@ -1451,7 +1457,7 @@ namespace GLOFC.GL4.Controls
         protected void Gc_MouseMove(object sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
-            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord);
+            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} MousePos {3}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, FindDisplay().MouseWindowPosition);
 
             GLBaseControl c = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display
 
@@ -1521,7 +1527,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-
 
         protected void Gc_MouseUp(object sender, GLMouseEventArgs e)
         {
@@ -1610,6 +1615,20 @@ namespace GLOFC.GL4.Controls
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseWheel(e);
             }
+        }
+
+        // provides a means to calculate what the GLMouseEventArgs for windowlocation, viewportlocation, etc is from a window point inside the GL Control window
+        public GLMouseEventArgs MouseEventArgsFromPoint(Point windowlocation)
+        {
+            GLMouseEventArgs e = new GLMouseEventArgs(windowlocation);
+            SetViewScreenCoord(ref e);
+            GLBaseControl c = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display
+            if (c != null)
+            {
+                SetControlLocation(ref e, c, leftover);
+            }
+
+            return e;
         }
 
         // overriden by GLControlDisplay. Translate WindowsLocation into ViewPortLocation and ScreenCoord

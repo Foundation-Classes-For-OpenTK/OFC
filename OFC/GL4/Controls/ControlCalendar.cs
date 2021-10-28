@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -30,7 +30,7 @@ namespace GLOFC.GL4.Controls
         public GLButton ButLeft { get; set; } = new GLButton();
         public GLButton ButRight { get; set; } = new GLButton();
 
-        public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+        public CultureInfo Culture { get { return culture; } set { culture = value; Invalidate(); } }
 
         public GLCalendar(string name, Rectangle location) : base(name, location)
         {
@@ -449,6 +449,7 @@ namespace GLOFC.GL4.Controls
         private int gridystart = 0;     // offset pixels in Y
         private Point hoverpoint = Point.Empty;     // save position to recalc
         private int hoveredpos = -1;    // save index to prevent too many updates
+        private CultureInfo culture = CultureInfo.CurrentUICulture;
 
         #endregion
     }

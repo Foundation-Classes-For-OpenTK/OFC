@@ -474,14 +474,14 @@ namespace TestOpenTk
 
             GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]);
 
-            tbac.PerformAutoCompleteInUIThread = (s, a) =>
+            tbac.PerformAutoCompleteInUIThread = (s, a,set) =>
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 var glist = edsmmapping.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
                 List<string> list = glist.Select(x => x.name).ToList();
                 list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
-                list.Sort();
-                return list;
+                foreach (var x in list)
+                    set.Add(x);
             };
 
             tbac.SelectedEntry = (a) =>     // in UI thread

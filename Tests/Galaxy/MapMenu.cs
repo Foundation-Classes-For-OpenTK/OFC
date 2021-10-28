@@ -91,12 +91,12 @@ namespace TestOpenTk
 
             // provide opening animation
             pform.ScaleWindow = new SizeF(0.0f, 0.0f);
-            pform.Animators.Add(new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(1, 1)));
+            pform.Animators.Add(new AnimateScale(10, 400, true, new SizeF(1, 1)));
 
             // and closing animation
             pform.FormClosing += (f,e) => { 
                 e.Handled = true;       // stop close
-                var ani = new AnimateScale(map.ElapsedTimems + 10, map.ElapsedTimems + 400, new SizeF(0, 0));       // add a close animation
+                var ani = new AnimateScale(10, 400, true, new SizeF(0, 0));       // add a close animation
                 ani.FinishAction += (a, c, t) => { pform.ForceClose(); };   // when its complete, force close
                 pform.Animators.Add(ani); 
             };

@@ -30,8 +30,9 @@ namespace GLOFC.WinForm
         public int Height { get { return glControl.Height; } }
         public Size Size { get { return glControl.Size; } }
         public bool Focused { get { return glControl.Focused; } }
-        public Rectangle ClientScreenPos { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }
-        public Point MouseScreenPosition { get { return Control.MousePosition; } }
+        public Rectangle GLWindowControlScreenRectangle { get { return new Rectangle(glControl.PointToScreen(new Point(0, 0)), glControl.ClientRectangle.Size); } }        
+        public Point MousePosition { get { return Control.MousePosition; } }  // mouse position on all screens
+        public Point MouseWindowPosition { get { var mp = Control.MousePosition; var ctop = glControl.PointToScreen(Point.Empty); return new Point(mp.X - ctop.X, mp.Y - ctop.Y); } }
         public GL4.GLRenderState RenderState { get; set; } = null;
 
         public bool EnsureCurrentPaintResize { get; set; } = false;         // must be set for multiple opengl windows in one thread

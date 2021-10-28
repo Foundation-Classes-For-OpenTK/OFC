@@ -22,7 +22,7 @@ namespace GLOFC.GL4.Controls
         public Point Target { get; set; }
         private Point? Begin { get; set; }
 
-        public AnimateTranslate(ulong starttime, ulong endtime, Point target, Point? begin = null) : base(starttime, endtime)
+        public AnimateTranslate(ulong starttime, ulong endtime, bool deltatime, Point target, Point? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
@@ -37,7 +37,7 @@ namespace GLOFC.GL4.Controls
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var p = new Point((int)(Begin.Value.X + (double)(Target.X - Begin.Value.X) * delta), (int)(Begin.Value.Y + (double)(Target.Y - Begin.Value.Y) * delta));
-            System.Diagnostics.Debug.WriteLine("Animate {0} to pos {1}", cs.Name, p);
+            //System.Diagnostics.Debug.WriteLine("Animate {0} to pos {1}", cs.Name, p);
             if (cs.Dock != DockingType.None)
                 cs.Dock = DockingType.None;
             cs.Location = p;
@@ -54,7 +54,7 @@ namespace GLOFC.GL4.Controls
         public Size Target { get; set; }
         public Size? Begin { get; set; } = null;
 
-        public AnimateSize(ulong starttime, ulong endtime, Size target, Size? begin = null) : base(starttime, endtime)
+        public AnimateSize(ulong starttime, ulong endtime, bool deltatime, Size target, Size? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
@@ -69,7 +69,7 @@ namespace GLOFC.GL4.Controls
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var s = new Size((int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta), (int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta));
-            System.Diagnostics.Debug.WriteLine("Animate {0} to size {1}", cs.Name, s);
+            //System.Diagnostics.Debug.WriteLine("Animate {0} to size {1}", cs.Name, s);
             if (cs.Dock != DockingType.None)
                 cs.Dock = DockingType.None;
             cs.Size = s;
@@ -86,7 +86,7 @@ namespace GLOFC.GL4.Controls
         public SizeF Target { get; set; }
         public SizeF? Begin { get; set; } = null;
 
-        public AnimateScale(ulong starttime, ulong endtime, SizeF target, SizeF? begin = null) : base(starttime, endtime)
+        public AnimateScale(ulong starttime, ulong endtime, bool deltatime, SizeF target, SizeF? begin = null, bool removeafterend = false) : base(starttime, endtime,deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
@@ -94,7 +94,7 @@ namespace GLOFC.GL4.Controls
 
         protected override void Start(GLBaseControl cs)
         {
-            if ( Begin == null )
+            if (Begin == null)
                 Begin = cs.ScaleWindow ?? new SizeF(1, 1);
         }
 
@@ -103,13 +103,46 @@ namespace GLOFC.GL4.Controls
             var s = new SizeF(Begin.Value.Width + (Target.Width - Begin.Value.Width) * (float)delta,
                               Begin.Value.Height + (Target.Height - Begin.Value.Height) * (float)delta);
 
-            System.Diagnostics.Debug.WriteLine("Animate {0} to scale {1}", cs.Name, s);
+            //System.Diagnostics.Debug.WriteLine("Animate {0} to scale {1}", cs.Name, s);
             cs.ScaleWindow = s;
         }
 
         protected override void End(GLBaseControl cs)
         {
             cs.ScaleWindow = Target;
+        }
+    }
+    public class AnimateOpacity : AnimateTimeBase
+    {
+        public float Target { get; set; }
+        public float? Begin { get; set; } = null;
+
+        public AnimateOpacity(ulong starttime, ulong endtime, bool deltatime, float target, float? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
+        {
+            Target = target;
+            Begin = begin;
+        }
+
+        protected override void Start(GLBaseControl cs)
+        {
+            if (Begin == null)
+                Begin = cs.Opacity;
+            cs.Opacity = Begin.Value;
+            //System.Diagnostics.Debug.WriteLine("Animate {0} begin {1}", cs.Name, cs.Opacity);
+        }
+
+        protected override void Middle(GLBaseControl cs, double delta)
+        {
+            var s = Begin.Value + (Target - Begin.Value) * (float)delta;
+
+            cs.Opacity = s;
+//            System.Diagnostics.Debug.WriteLine("Animate {0} to opacity {1}", cs.Name, cs.Opacity);
+        }
+
+        protected override void End(GLBaseControl cs)
+        {
+            cs.Opacity = Target;
+         //   System.Diagnostics.Debug.WriteLine("Animate {0} final {1}", cs.Name, cs.Opacity);
         }
     }
 

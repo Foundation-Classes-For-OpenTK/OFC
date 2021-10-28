@@ -327,6 +327,7 @@ void main(void)
     // 
     // Requires:
     //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    //      location 3 : flat in wvalue for opacity control (if enabled by usealphablending)
     //      uniform binding <config>: ARB bindless texture handles, int 64s
     //      location 24 : uniform of texture offset (written by start automatically)
 
@@ -334,9 +335,9 @@ void main(void)
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
-        public GLPLBindlessFragmentShaderTextureOffsetArray(int arbblock)
+        public GLPLBindlessFragmentShaderTextureOffsetArray(int arbblock, bool usealphablending = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(arbblock), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(arbblock), constvalues:new object[] { "usewvalue", usealphablending }, auxname: GetType().Name);
         }
 
         public override void Start(GLMatrixCalc c)
@@ -352,6 +353,7 @@ void main(void)
 #extension GL_ARB_bindless_texture : require
 
 layout (location=0) in vec2 vs_textureCoordinate;
+layout (location=3) flat in float wvalue;
 layout (binding = " + arbblock.ToStringInvariant() + @", std140) uniform TEXTURE_BLOCK
 {
     sampler2D tex[256];
@@ -359,11 +361,15 @@ layout (binding = " + arbblock.ToStringInvariant() + @", std140) uniform TEXTURE
 layout (location = 24) uniform  vec2 offset;
 
 out vec4 color;
+const bool usewvalue = false;
 
 void main(void)
 {
     int objno = gl_PrimitiveID/2;
     color = texture(tex[objno], vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
+
+    if ( usewvalue)
+        color.w *= wvalue;
 }
 ";
         }

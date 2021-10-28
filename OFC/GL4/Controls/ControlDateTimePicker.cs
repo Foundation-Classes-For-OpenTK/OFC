@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -28,8 +28,7 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
-
-        public CultureInfo Culture { get; set; } = CultureInfo.CurrentUICulture;
+        public CultureInfo Culture { get { return culture; } set { culture = value; InvalidateLayoutParent(); } }
 
         public enum DateTimePickerFormat
         {
@@ -41,7 +40,7 @@ namespace GLOFC.GL4.Controls
         public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }     // format control, primary
 
         // returns current format, or sets a custom format
-        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  RecalculatePartsList(); InvalidateLayout(); } }
+        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  InvalidateLayoutParent(); } }
 
         public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
         public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
@@ -60,6 +59,8 @@ namespace GLOFC.GL4.Controls
 
         public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
         {
+            SuspendLayout();
+
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
             CheckBox.KeyDown += OnKeyFromChild;
@@ -88,6 +89,8 @@ namespace GLOFC.GL4.Controls
 
             Focusable = true;
             InvalidateOnFocusChange = true;
+
+            ResumeLayout();
         }
 
         public GLDateTimePicker() : this("DTP?", DefaultWindowRectangle, DateTime.Now)
@@ -101,25 +104,58 @@ namespace GLOFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
+        protected override void OnFontChanged()
+        {
+            base.OnFontChanged();
+            InvalidateLayoutParent();
+        }
+
         #region Layout paint
+
+        const int borderoffset = 2;
+
+        protected override void SizeControl(Size parentsize)
+        {
+            base.SizeControl(parentsize);
+            if (AutoSize)
+            {
+                RecalculatePartsList();
+                if ( partlist.Count>0)          // must see if we have parts
+                {
+                    int endx = partlist.Last().endx + borderoffset;     // get the end of the parts, in x
+                    int size = ClientHeight - borderoffset * 2;
+                    if (UpDown.Visible)
+                    {
+                        endx += size + borderoffset;
+                    }
+                    if (ShowCalendar)
+                    {
+                        int calwidth = size * 20 / 12;      // synchronise with below
+                        endx += calwidth + borderoffset; 
+                    }
+                    SetNI(size: new Size(endx, ClientHeight));
+                }
+            }
+        }
+
 
         protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
 
-            int borderoffset = 2;
-            int height = ClientHeight - 4;
+            int size = ClientHeight - borderoffset*2;
 
             // NI versions stops repeated invalidates/layouts
-            CheckBox.SetNI(location: new Point(borderoffset, borderoffset), size: new Size(height, height));
-            UpDown.SetNI(location: new Point(ClientRectangle.Width - height - borderoffset, borderoffset), size: new Size(height, height));
+            CheckBox.SetNI(location: new Point(borderoffset, borderoffset), size: new Size(size, size));
 
-            CalendarSelect.Visible = ShowCalendar;
-            CalendarSelect.SetNI(location: new Point(UpDown.Left - borderoffset - CalendarSelect.Width, (ClientHeight / 2 - height/2)), size: new Size(height * 20 / 12, height));
+            RecalculatePartsList();   // cause anything might have changed
 
-            partsstartx = (CheckBox.Visible ? (CheckBox.Right + borderoffset) : borderoffset);
+            int calwidth = size * 20 / 12;
+            int calpos = ClientRectangle.Width - calwidth - borderoffset;
+            CalendarSelect.SetNI(location: new Point(calpos, (ClientHeight / 2 - size / 2)), size: new Size(calwidth, size));
 
-            RecalculatePartsList();   // cause anything might have changed, like fonts
+            int updownpos = CalendarSelect.Visible ? CalendarSelect.Left - size - borderoffset : ClientRectangle.Width - size - borderoffset;
+            UpDown.SetNI(location: new Point(updownpos, borderoffset), size: new Size(size, size));
         }
 
         // called after the background of the panel has been drawn - so it will be clear to write.
@@ -134,16 +170,16 @@ namespace GLOFC.GL4.Controls
                     {
                         Parts p = partlist[i];
 
-                        string t = (p.ptype == PartsTypes.Text) ? p.maxstring : datetimevalue.ToString(p.format, Culture);
+                        string t = (p.ptype == PartsTypes.Text) ? p.text : datetimevalue.ToString(p.format, Culture);
 
-                        if (i == selectedpart && IsThisOrChildrenFocused())
+                        if (i == selectedpart && IsThisOrChildrenFocused() )
                         {
                             using (Brush br = new SolidBrush(this.SelectedColor))
-                                gr.FillRectangle(br, new Rectangle(p.xpos + partsstartx, 0, p.endx - p.xpos, ClientHeight));
+                                gr.FillRectangle(br, new Rectangle(p.xpos, 0, p.endx - p.xpos, ClientHeight));
                         }
 
                         int ymarg = (ClientHeight - Font.Height) / 2;
-                        Rectangle r = new Rectangle(p.xpos + partsstartx, ymarg, p.endx - p.xpos, ClientHeight - ymarg);
+                        Rectangle r = new Rectangle(p.xpos, ymarg, p.endx - p.xpos, ClientHeight - ymarg);
                         gr.DrawString(t, this.Font, textb, r, fmt);
                     }
                 }
@@ -162,9 +198,8 @@ namespace GLOFC.GL4.Controls
             {
                 for (int i = 0; i < partlist.Count; i++)
                 {
-                    if (partlist[i].ptype >= PartsTypes.DayName && e.Location.X >= partlist[i].xpos + partsstartx && e.Location.X <= partlist[i].endx + partsstartx)
+                    if (partlist[i].ptype >= PartsTypes.DayName && e.Location.X >= partlist[i].xpos && e.Location.X <= partlist[i].endx)
                     {
-                        System.Diagnostics.Debug.WriteLine("Click on " + i);
                         if (selectedpart == i )      // click again, increment
                         {
                             if ( e.WasFocusedAtClick )
@@ -267,7 +302,6 @@ namespace GLOFC.GL4.Controls
 
         private void updownchanged(GLBaseControl b, int dir)
         {
-            System.Diagnostics.Debug.WriteLine("Up down");
             if (dir > 0)
                 ProcessUpDown(1);
             else
@@ -331,7 +365,9 @@ namespace GLOFC.GL4.Controls
             {
                 Calendar.SuspendLayout();
                 var p = FindScreenCoords(new Point(ClientLeftMargin, Height + 1));
-                Calendar.Bounds = new Rectangle(p.X, p.Y, 200, 200);     // autosizes
+                Calendar.Bounds = new Rectangle(p.X, p.Y, 200, 200);     // autosize 
+                Calendar.Culture = Culture;
+                                                                        
                 Calendar.ScaleWindow = FindScaler();
                 Calendar.Name = Name + "-Cal";
                 Calendar.TopMost = true;
@@ -379,10 +415,13 @@ namespace GLOFC.GL4.Controls
         {
             if (Font == null)
                 return;
-            //System.Diagnostics.Debug.WriteLine(Name + " Format " + customformat);
+
+            //System.Diagnostics.Debug.WriteLine($"DTP Recalc {Name} {customformat}");
+
             partlist.Clear();
 
-            int xpos = 0;
+            int size = ClientHeight - borderoffset * 2;
+            int xpos = (CheckBox.Visible ? (borderoffset + size + borderoffset) : borderoffset);
 
             using (Bitmap b = new Bitmap(1, 1))
             {
@@ -392,84 +431,100 @@ namespace GLOFC.GL4.Controls
 
                     while (fmt.Length > 0)
                     {
-                        Parts p = null;
-
-                        if (fmt[0] == '\'')
+                        Parts p = FromString(ref fmt);      // is it a part?
+                        if (p == null)
                         {
-                            int index = fmt.IndexOf('\'', 1);
-                            if (index == -1)
-                                index = fmt.Length;
+                            if (fmt[0] == '\'')
+                            {
+                                int index = fmt.IndexOf('\'', 1);
+                                if (index == -1)
+                                    index = fmt.Length;
 
-                            p = new Parts() { maxstring = fmt.Substring(1, index - 1), ptype = PartsTypes.Text };
-                            fmt = (index < fmt.Length) ? fmt.Substring(index + 1) : "";
-                        }
-                        else if (fmt.StartsWith("dddd"))
-                            p = Make(ref fmt, 4, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.DayNames));
-                        else if (fmt.StartsWith("ddd"))
-                            p = Make(ref fmt, 3, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.AbbreviatedDayNames));
-                        else if (fmt.StartsWith("dd"))
-                            p = Make(ref fmt, 2, PartsTypes.Day, "99");
-                        else if (fmt.StartsWith("d"))
-                            p = Make(ref fmt, 1, PartsTypes.Day, "99");
-                        else if (fmt.StartsWith("MMMM"))
-                            p = Make(ref fmt, 4, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.MonthNames));
-                        else if (fmt.StartsWith("MMM"))
-                            p = Make(ref fmt, 3, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.AbbreviatedMonthNames));
-                        else if (fmt.StartsWith("MM"))
-                            p = Make(ref fmt, 2, PartsTypes.Month, "99");
-                        else if (fmt.StartsWith("M"))
-                            p = Make(ref fmt, 1, PartsTypes.Month, "99");
-                        else if (fmt.StartsWith("HH", StringComparison.InvariantCultureIgnoreCase))
-                            p = Make(ref fmt, 2, PartsTypes.Hours, "99");
-                        else if (fmt.StartsWith("H", StringComparison.InvariantCultureIgnoreCase))
-                            p = Make(ref fmt, 1, PartsTypes.Hours, "99");
-                        else if (fmt.StartsWith("mm"))
-                            p = Make(ref fmt, 2, PartsTypes.Mins, "99");
-                        else if (fmt.StartsWith("m"))
-                            p = Make(ref fmt, 1, PartsTypes.Mins, "99");
-                        else if (fmt.StartsWith("ss"))
-                            p = Make(ref fmt, 2, PartsTypes.Seconds, "99");
-                        else if (fmt.StartsWith("s"))
-                            p = Make(ref fmt, 1, PartsTypes.Seconds, "99");
-                        else if (fmt.StartsWith("tt"))
-                            p = Make(ref fmt, 2, PartsTypes.AmPm, "AM");
-                        else if (fmt.StartsWith("t"))
-                            p = Make(ref fmt, 1, PartsTypes.AmPm, "AM");
-                        else if (fmt.StartsWith("yyyyy"))
-                            p = Make(ref fmt, 5, PartsTypes.Year, "99999");
-                        else if (fmt.StartsWith("yyyy"))
-                            p = Make(ref fmt, 4, PartsTypes.Year, "9999");
-                        else if (fmt.StartsWith("yyy"))
-                            p = Make(ref fmt, 3, PartsTypes.Year, "9999");
-                        else if (fmt.StartsWith("yy"))
-                            p = Make(ref fmt, 2, PartsTypes.Year, "99");
-                        else if (fmt.StartsWith("y"))
-                            p = Make(ref fmt, 1, PartsTypes.Year, "99");
-                        else if (fmt[0] != ' ')
-                        {
-                            p = new Parts() { maxstring = fmt.Substring(0, 1), ptype = PartsTypes.Text };
-                            fmt = fmt.Substring(1).Trim();
-                        }
-                        else
-                            fmt = fmt.Substring(1).Trim();
+                                p = new Parts() { text = fmt.Substring(1, index - 1), ptype = PartsTypes.Text };
+                                fmt = (index < fmt.Length) ? fmt.Substring(index + 1) : "";
+                            }
+                            else
+                            {
+                                string s = "";
+                                while (fmt[0] != '\'' && FromString(fmt) == null)       // collect all together until we find another format or quote esacpe
+                                {
+                                    s += fmt[0];
+                                    fmt = fmt.Substring(1);
+                                }
 
-                        if (p != null)
-                        {
-                            p.xpos = xpos;
-                            SizeF sz = e.MeasureString(p.maxstring, this.Font);
-                            int width = (int)(sz.Width + 1);
-                            p.endx = xpos + width;
-                            xpos = p.endx + 1;
-                            partlist.Add(p);
+                                p = new Parts() { text = s, ptype = PartsTypes.Text };
+                            }
                         }
+
+                        p.xpos = xpos;
+                        SizeF sz = e.MeasureString(p.text, this.Font);
+                        int width = (int)(sz.Width + 1);
+                        p.endx = p.xpos + width;
+                        xpos = p.endx;// + (p.ptype != PartsTypes.Text ?  borderoffset :0);
+                        //System.Diagnostics.Debug.WriteLine($"Part {p.ptype} {p.xpos}..{p.endx} '{p.text}'");
+                        partlist.Add(p);
                     }
                 }
             }
         }
 
+        private Parts FromString(string fmt)
+        {
+            string s = fmt;
+            return FromString(ref s);
+        }
+
+        private Parts FromString(ref string fmt)        // find part, or null
+        {
+            if (fmt.StartsWith("dddd"))
+                return Make(ref fmt, 4, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.DayNames));
+            else if (fmt.StartsWith("ddd"))
+                return Make(ref fmt, 3, PartsTypes.DayName, Maxlengthof(Culture.DateTimeFormat.AbbreviatedDayNames));
+            else if (fmt.StartsWith("dd"))
+                return Make(ref fmt, 2, PartsTypes.Day, "99");
+            else if (fmt.StartsWith("d"))
+                return Make(ref fmt, 1, PartsTypes.Day, "99");
+            else if (fmt.StartsWith("MMMM"))
+                return Make(ref fmt, 4, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.MonthNames));
+            else if (fmt.StartsWith("MMM"))
+                return Make(ref fmt, 3, PartsTypes.Month, Maxlengthof(Culture.DateTimeFormat.AbbreviatedMonthNames));
+            else if (fmt.StartsWith("MM"))
+                return Make(ref fmt, 2, PartsTypes.Month, "99");
+            else if (fmt.StartsWith("M"))
+                return Make(ref fmt, 1, PartsTypes.Month, "99");
+            else if (fmt.StartsWith("HH", StringComparison.InvariantCultureIgnoreCase))
+                return Make(ref fmt, 2, PartsTypes.Hours, "99");
+            else if (fmt.StartsWith("H", StringComparison.InvariantCultureIgnoreCase))
+                return Make(ref fmt, 1, PartsTypes.Hours, "99");
+            else if (fmt.StartsWith("mm"))
+                return Make(ref fmt, 2, PartsTypes.Mins, "99");
+            else if (fmt.StartsWith("m"))
+                return Make(ref fmt, 1, PartsTypes.Mins, "99");
+            else if (fmt.StartsWith("ss"))
+                return Make(ref fmt, 2, PartsTypes.Seconds, "99");
+            else if (fmt.StartsWith("s"))
+                return Make(ref fmt, 1, PartsTypes.Seconds, "99");
+            else if (fmt.StartsWith("tt"))
+                return Make(ref fmt, 2, PartsTypes.AmPm, "AM");
+            else if (fmt.StartsWith("t"))
+                return Make(ref fmt, 1, PartsTypes.AmPm, "AM");
+            else if (fmt.StartsWith("yyyyy"))
+                return Make(ref fmt, 5, PartsTypes.Year, "99999");
+            else if (fmt.StartsWith("yyyy"))
+                return Make(ref fmt, 4, PartsTypes.Year, "9999");
+            else if (fmt.StartsWith("yyy"))
+                return Make(ref fmt, 3, PartsTypes.Year, "9999");
+            else if (fmt.StartsWith("yy"))
+                return Make(ref fmt, 2, PartsTypes.Year, "99");
+            else if (fmt.StartsWith("y"))
+                return Make(ref fmt, 1, PartsTypes.Year, "99");
+            else
+                return null;
+        }
+
         private Parts Make(ref string c, int len, PartsTypes t, string maxs)
         {
-            Parts p = new Parts() { format = c.Substring(0, len) + " ", ptype = t, maxstring = maxs }; // space at end seems to make multi ones work
+            Parts p = new Parts() { format = c.Substring(0, len) + " ", ptype = t, text = maxs }; // space at end seems to make multi ones work
             c = c.Substring(len);
             return p;
         }
@@ -556,7 +611,7 @@ namespace GLOFC.GL4.Controls
         class Parts
         {
             public PartsTypes ptype;
-            public string maxstring;
+            public string text;
             public string format;
             public int xpos;
             public int endx;
@@ -564,10 +619,11 @@ namespace GLOFC.GL4.Controls
 
         private List<Parts> partlist = new List<Parts>();
         private int selectedpart = 0;                            // always select first part as default.  -1 means checkbox
-        private int partsstartx = 0;                             // where the text starts
 
         private string keybuffer;
         private Color selectedColor = Color.Green;
+
+        private CultureInfo culture = CultureInfo.CurrentUICulture;
 
         #endregion
 

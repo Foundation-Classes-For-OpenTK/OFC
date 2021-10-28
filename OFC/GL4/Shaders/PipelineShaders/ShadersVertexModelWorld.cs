@@ -68,7 +68,8 @@ void main(void)
     // Pipeline shader, Common Model Translation, Seperate World pos, transform
     // Requires:
     //      location 0 : position: vec4 vertex array of positions model coords
-    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced. W selects the base colour to present
+    //      location 1 : world-position: vec4 vertex array of world pos for model, instanced.
+    //                   W>=0 selects the base colour to present, W <=-1 disables the model at this position
     //      uniform buffer 0 : GL MatrixCalc
     //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
     // Out:
