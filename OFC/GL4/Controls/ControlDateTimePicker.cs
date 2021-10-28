@@ -605,7 +605,8 @@ namespace GLOFC.GL4.Controls
 
         private DateTime datetimevalue = DateTime.Now;
         private DateTimePickerFormat format = DateTimePickerFormat.Long;
-        private string customformat = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern;
+        private string customformat = CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern;
+        private CultureInfo culture = CultureInfo.CurrentCulture;
 
         enum PartsTypes { Text, DayName, Day, Month, Year, Hours, Mins, Seconds, AmPm }
         class Parts
@@ -623,7 +624,6 @@ namespace GLOFC.GL4.Controls
         private string keybuffer;
         private Color selectedColor = Color.Green;
 
-        private CultureInfo culture = CultureInfo.CurrentUICulture;
 
         #endregion
 

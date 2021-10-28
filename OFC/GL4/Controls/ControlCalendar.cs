@@ -449,7 +449,7 @@ namespace GLOFC.GL4.Controls
         private int gridystart = 0;     // offset pixels in Y
         private Point hoverpoint = Point.Empty;     // save position to recalc
         private int hoveredpos = -1;    // save index to prevent too many updates
-        private CultureInfo culture = CultureInfo.CurrentUICulture;
+        private CultureInfo culture = CultureInfo.CurrentCulture;
 
         #endregion
     }
