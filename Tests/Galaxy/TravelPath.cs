@@ -129,7 +129,8 @@ namespace TestOpenTk
                 starposbuf.AllocateFill(positionsv4);
                 //Vector4[] vectors = starposbuf.ReadVector4s(0, starposbuf.Length / 16);
 
-                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) });
+                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
+                         autoscale: 50, autoscalemin: 1f, autoscalemax: 50f); // below scale, 1f, above scale, scale up to x times (eyedist/scale)
                 items.Add(sunvertex);
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
                 items.Add(sunshader);

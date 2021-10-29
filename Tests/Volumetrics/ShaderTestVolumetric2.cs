@@ -87,7 +87,7 @@ void main(void)
                 //GLShader.includepaths.Add(@"c:\code\ofc\tests\Volumetrics");
                 //CompileLink(vertex: vcode, frag: fcode, geo: @"#include volumetricgeo2.glsl");
 
-                GLShader.includemodules.Add("TestOpenTk.Volumetrics");
+                GLShader.IncludeModules.Add("TestOpenTk.Volumetrics");
                 CompileLink(vertex: vcode, frag: fcode, geo: "#include volumetricgeo2.glsl");
 
 

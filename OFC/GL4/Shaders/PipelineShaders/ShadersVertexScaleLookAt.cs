@@ -17,7 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // Autoscale to size on model if required
+    // Vertex look at with autoscale, optional common transform (uniform 22 mat4)
     //      location 0 : position: vec4 vertex array of positions model coords, w is ignored
     //      location 1 : worldpositions - passed thru to world pos
     //      uniform buffer 0 : GL MatrixCalc
@@ -29,6 +29,14 @@ namespace GLOFC.GL4
 
     public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
+        public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, bool commontransform = false,
+                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
+        {
+            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
+                                                                    "usetransform", commontransform, "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
+        }
+
         string vert =
         @"
 #version 450 core
@@ -92,12 +100,5 @@ void main(void)
 }
 ";
 
-        public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, bool commontransform = false,
-                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
-        {
-            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
-                                                                    "usetransform", commontransform, "autoscale", autoscale,
-                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
-        }
     }
 }

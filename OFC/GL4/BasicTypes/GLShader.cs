@@ -29,8 +29,8 @@ namespace GLOFC.GL4
         public int Id { get; private set; }
         public bool Compiled { get { return Id != -1; } }
 
-        static public List<string> includepaths = new List<string>();               // add to add new include paths for #include
-        static public List<string> includemodules = new List<string>();             // add to add new resource paths for #include
+        static public List<string> IncludePaths = new List<string>();               // add to add new include paths for #include
+        static public List<string> IncludeModules = new List<string>();             // add to add new resource paths for #include
 
         private ShaderType type;
 
@@ -134,7 +134,7 @@ namespace GLOFC.GL4
 
                     if (include == null)      // if not found, see if its in include modules
                     {
-                        foreach (string partial in includemodules)
+                        foreach (string partial in IncludeModules)
                         {
                             include = ResourceHelpers.GetResourceAsString(partial + "." + line);
                             if (include != null)
@@ -142,7 +142,7 @@ namespace GLOFC.GL4
                         }
                     }
 
-                    if (include == null)
+                    if (include == null)        // now try files
                     {
                         if (File.Exists(line))
                         {
@@ -150,7 +150,7 @@ namespace GLOFC.GL4
                         }
                         else
                         {
-                            foreach (string partial in includepaths)
+                            foreach (string partial in IncludePaths)        // try include paths
                             {
                                 string path = Path.Combine(partial, line);
                                 if (File.Exists(path))

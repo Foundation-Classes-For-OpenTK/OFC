@@ -81,11 +81,12 @@ namespace TestOpenTk
 
         public void Request9BoxConditional(Vector3 newpos)
         {
+            //return;
             if ((CurrentPos - newpos).Length >= SectorSize && requestedsectors.Count < MaxRequestedSectors )
             {
-                if (CurrentPos.Z < -100000)
-                    CurrentPos = newpos;
-                newpos = new Vector3(CurrentPos.X, CurrentPos.Y, CurrentPos.Z + 300);
+                //if (CurrentPos.Z < -100000)
+                //    CurrentPos = newpos;
+                //newpos = new Vector3(CurrentPos.X, CurrentPos.Y, CurrentPos.Z + 300);
 
                 Request9x3Box(newpos);
             }

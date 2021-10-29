@@ -65,7 +65,7 @@ void main(void)
     }
 
 
-    // Pipeline shader, Common Model Translation, Seperate World pos, transform
+    // Pipeline shader, Common Model Translation, Seperate World pos, transform, autoscaling of model due to eyedistance
     // Requires:
     //      location 0 : position: vec4 vertex array of positions model coords
     //      location 1 : world-position: vec4 vertex array of world pos for model, instanced.
@@ -83,13 +83,16 @@ void main(void)
     {
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
-        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
+// THIS ONE
+
+        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null, 
+                                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
         {
             object[] cvalues = null;
             if (basecolours != null)
-                cvalues = new object[] { "colours", basecolours };
+                cvalues = new object[] { "colours", basecolours, "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax  };
 
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues, completeoutfile:@"c:\code\code.out");
         }
 
         public override void Start(GLMatrixCalc c)
@@ -105,6 +108,7 @@ void main(void)
 @"
 #version 460 core
 #include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.vec4.glsl
 
 layout (location = 0) in vec4 modelposition;
 layout (location = 1) in vec4 worldposition;            // instanced, w ignored
@@ -124,6 +128,10 @@ layout (location = 4) out int drawid;       // 4.6 item
 
 const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs
 
+const float autoscale = 0;
+const float autoscalemax = 0;
+const float autoscalemin = 0;
+
 void main(void)
 {
     if ( worldposition.w <= -1 )
@@ -136,7 +144,12 @@ void main(void)
         basecolor = colours[int(worldposition.w)];
 
         modelpos = modelposition.xyz;
-        vec4 modelrot = transform * modelposition;
+
+        vec4 pos = modelposition;
+        if ( autoscale>0)
+            pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+
+        vec4 modelrot = transform * pos;
         vec4 wp = modelrot + vec4(worldposition.xyz,0);
         gl_Position = mc.ProjectionModelMatrix * wp;        // order important
         instance = gl_InstanceID;
@@ -516,7 +529,8 @@ void main(void)
     {
         gl_CullDistance[0] = +1;        // not culled
 
-        modelpos = modelposition.xyz;
+        modelpos = modelposition.xyz;       // passed thru unscaled
+
         vec4 modelrot = transform * modelposition;
         vec4 worldposition = vec4(worldpos[3][0],worldpos[3][1],worldpos[3][2],0);      // extract world position from row3 columns 0/1/2 (floats 12-14)
         vec4 wp = modelrot + worldposition + vec4(worldoffset,0);

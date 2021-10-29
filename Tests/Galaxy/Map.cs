@@ -335,7 +335,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
-            float sunsize = 2.0f;
+            float sunsize = .5f;
             if ((ctrlo & 128) != 0)
             {
                 Random rnd = new Random(52);
@@ -362,7 +362,7 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, sunsize, 0.8f, findstarblock, true);
+                travelpath.Create(items, rObjects, pos, sunsize, 0.5f, findstarblock, true);
                 travelpath.SetSystem(0);
             }
 
@@ -433,6 +433,7 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
+            gl3dcontroller.PosCamera.ZoomMax = 600;     // gives 5ly
             gl3dcontroller.ZoomDistance = 3000F/lyscale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
