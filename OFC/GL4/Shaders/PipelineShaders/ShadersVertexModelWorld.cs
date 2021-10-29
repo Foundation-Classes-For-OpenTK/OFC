@@ -14,6 +14,7 @@
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
+using System.Collections.Generic;
 
 // Vertex shaders, having a model input, some with world input, some with a common transform
 
@@ -86,13 +87,13 @@ void main(void)
 // THIS ONE
 
         public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null, 
-                                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
+                                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
-            object[] cvalues = null;
+            List<object> values = new List<object> { "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax, "useeyedistance", useeyedistance };
             if (basecolours != null)
-                cvalues = new object[] { "colours", basecolours, "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax  };
+                values.AddRange(new object[] { "colours", basecolours });
 
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues, completeoutfile:@"c:\code\code.out");
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: values.ToArray()); //, completeoutfile:@"c:\code\code.out");
         }
 
         public override void Start(GLMatrixCalc c)
@@ -131,6 +132,7 @@ const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, ne
 const float autoscale = 0;
 const float autoscalemax = 0;
 const float autoscalemin = 0;
+const bool useeyedistance = true;
 
 void main(void)
 {
@@ -146,11 +148,21 @@ void main(void)
         modelpos = modelposition.xyz;
 
         vec4 pos = modelposition;
+        vec4 worldp = vec4(worldposition.xyz,0);
+
         if ( autoscale>0)
-            pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+        {
+            if ( useeyedistance )
+                pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+            else
+            {
+                float d = distance(mc.EyePosition,worldp);            // find distance between eye and world pos
+                pos = Scale(pos,clamp(d/autoscale,autoscalemin,autoscalemax));
+            }
+        }
 
         vec4 modelrot = transform * pos;
-        vec4 wp = modelrot + vec4(worldposition.xyz,0);
+        vec4 wp = modelrot + worldp;
         gl_Position = mc.ProjectionModelMatrix * wp;        // order important
         instance = gl_InstanceID;
         drawid = gl_DrawID;

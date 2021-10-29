@@ -69,8 +69,8 @@ namespace TestOpenTk
             const int texbindingpoint = 1;
             var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false,       // a look at vertex shader
                                                         autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
-            var tcs = new GLPLTesselationControl(2f);
-            tes = new GLPLTesselationEvaluateSinewave(0.2f, 1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
+            var tcs = new GLPLTesselationControl(40f);
+            tes = new GLPLTesselationEvaluateSinewave(1f, 2f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
             var frag = new GLPLFragmentShaderTexture2DDiscard(texbindingpoint);       // binding - takes image pos from tes. imagepos < 0 means discard
 
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);

@@ -30,11 +30,11 @@ namespace GLOFC.GL4
     public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
         public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, bool commontransform = false,
-                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
+                                                    float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
                                                                     "usetransform", commontransform, "autoscale", autoscale,
-                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax });
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
         }
 
         string vert =
@@ -65,13 +65,23 @@ const bool usetransform = false;
 const float autoscale = 0;
 const float autoscalemax = 0;
 const float autoscalemin = 0;
+const bool useeyedistance = true;
 
 void main(void)
 {
     vec4 pos = vec4(modelposition.xyz,1);       
 
     if ( autoscale>0)
-        pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+    {
+        if ( useeyedistance )
+            pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+        else
+        {
+            float d = distance(mc.EyePosition,vec4(worldposition.xyz,0));            // find distance between eye and world pos
+            pos = Scale(pos,clamp(d/autoscale,autoscalemin,autoscalemax));
+        }
+    }
+
 
     if ( rotate )       // reverified after much work 21/7/21
     {

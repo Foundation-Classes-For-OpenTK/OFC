@@ -25,7 +25,8 @@ namespace TestOpenTk
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferbinding)
         {
-            sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) } );
+            sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
+                autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
             items.Add(sunvertex);
             sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
             //sunshader.StartAction += (s, w) => { Monitor.Enter(slset); System.Diagnostics.Debug.WriteLine("Begin render suns"); };
@@ -81,7 +82,7 @@ namespace TestOpenTk
 
         public void Request9BoxConditional(Vector3 newpos)
         {
-            //return;
+            return;
             if ((CurrentPos - newpos).Length >= SectorSize && requestedsectors.Count < MaxRequestedSectors )
             {
                 //if (CurrentPos.Z < -100000)
