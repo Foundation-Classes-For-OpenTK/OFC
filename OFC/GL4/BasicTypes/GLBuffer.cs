@@ -918,7 +918,7 @@ namespace GLOFC.GL4
         public void BindElement()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            if (elementbindindex != Id)
+            //if (elementbindindex != Id) // removed for testing
             {
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, Id);
                 GLStatics.Check();
@@ -930,7 +930,7 @@ namespace GLOFC.GL4
         public void BindIndirect()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            if (indirectbindindex != Id)
+            //if (indirectbindindex != Id) // removed for testing
             {
                 GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Id);
                 GLStatics.Check();
@@ -942,7 +942,7 @@ namespace GLOFC.GL4
         public void BindParameter()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
-            if (parameterbindindex != Id)
+            // if (parameterbindindex != Id) // removed for testing
             {
                 GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
                 GLStatics.Check();
