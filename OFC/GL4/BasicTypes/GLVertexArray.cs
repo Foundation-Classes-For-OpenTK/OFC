@@ -25,11 +25,12 @@ namespace GLOFC.GL4
     [System.Diagnostics.DebuggerDisplay("Id {Id}")]
     public class GLVertexArray : IGLVertexArray
     {
-        public int Id { get; private set; } 
+        public int Id { get; private set; } = -1;
 
         public GLVertexArray()
         {
             Id = GL.GenVertexArray();        // get the handle
+            GLStatics.RegisterAllocation(typeof(GLVertexArray));
         }
 
         public virtual void Bind()
@@ -42,8 +43,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteVertexArray(Id);
+                GLStatics.RegisterDeallocation(typeof(GLVertexArray));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
         // floats are being bound

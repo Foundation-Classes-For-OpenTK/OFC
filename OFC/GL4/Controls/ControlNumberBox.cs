@@ -28,9 +28,8 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl> ValueChanged;
         public Action<GLBaseControl,bool> ValidityChanged;
 
-        public T Minimum { get; set; }
-        public T Maximum { get; set; }
-
+        public T Minimum { get { return minimum; } set { minimum = value; InErrorCondition = !IsValid; } }
+        public T Maximum { get { return maximum; } set { maximum = value; InErrorCondition = !IsValid; } }
         public bool IsValid { get { T v; return ConvertFromString(base.Text, out v); } }        // is the text a valid value?
 
         public void SetComparitor(GLNumberBox<T> other, int compare)         // aka -2 (<=) -1(<) 0 (=) 1 (>) 2 (>=)
@@ -87,6 +86,8 @@ namespace GLOFC.GL4.Controls
         protected abstract bool AllowedChar(char c);
 
         private T number;
+        private T minimum;
+        private T maximum;
         private string format = "N";
         private System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CurrentCulture;
         protected GLNumberBox<T> othernumberbox { get; set; } = null;             // attach to another box for validation
@@ -218,7 +219,7 @@ namespace GLOFC.GL4.Controls
         {
             Minimum = long.MinValue;
             Maximum = long.MaxValue;
-            ValueNoChange = 0;
+            ValueNoChange = value;
             Format = "D";
         }
 

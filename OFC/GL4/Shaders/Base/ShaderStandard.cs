@@ -65,7 +65,8 @@ namespace GLOFC.GL4
                                  string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
                                 )
         {
-            Program = new GLOFC.GL4.GLProgram();
+            Program = new GLProgram();
+
             string ret;
 
             if (vertex != null)

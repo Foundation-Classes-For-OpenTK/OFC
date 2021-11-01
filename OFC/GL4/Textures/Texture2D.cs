@@ -42,9 +42,10 @@ namespace GLOFC.GL4
         {
             // if not there, or changed, we can't just replace it, size is fixed. Delete it
 
-            if (Id == -1 || Width != width || Height != height || mipmaplevels != MipMapLevels || multisample != MultiSample)
+            if (Id < 0 || Width != width || Height != height || mipmaplevels != MipMapLevels || multisample != MultiSample)
             {
-                Dispose();
+                if ( Id >= 0 )     // dispose if set
+                    Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
@@ -53,6 +54,7 @@ namespace GLOFC.GL4
                 MultiSample = multisample;
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisample : TextureTarget.Texture2D, 1, out int id);
+                GLStatics.RegisterAllocation(typeof(GLTexture2D));
                 GLStatics.Check();
                 Id = id;
 
@@ -85,9 +87,9 @@ namespace GLOFC.GL4
 
         public void CreateOrUpdateTexturePixelFormat(int width, int height, PixelInternalFormat pi, PixelFormat pf, PixelType pt)   // make with a pixel format..
         {
-            if (Id == -1 || Width != width || Height != height)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id < 0 || Width != width || Height != height)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
-                if (Id != -1)
+                if (Id >= 0)
                 {
                     Dispose();
                 }
@@ -98,6 +100,7 @@ namespace GLOFC.GL4
                 MipMapLevels = 1;
 
                 GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
+                GLStatics.RegisterAllocation(typeof(GLTexture2D));
                 GLStatics.Check();
                 Id = id;
 

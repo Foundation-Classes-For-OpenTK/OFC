@@ -47,9 +47,10 @@ namespace GLOFC.GL4
         public void CreateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1,
                                     int multisample = 0, bool fixedmultisampleloc = false)
         {
-            if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample )
+            if (Id < 0 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample )
             {
-                Dispose();
+                if (Id >= 0)
+                    Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
@@ -59,6 +60,7 @@ namespace GLOFC.GL4
                 MultiSample = multisample;
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture2DArray, 1, out int id);
+                GLStatics.RegisterAllocation(typeof(GLTexture2DArray));
                 GLStatics.Check();
                 Id = id;
 

@@ -65,9 +65,12 @@ namespace TestOpenTk
 
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
-             map.SaveState(mapdefaults);
+            map.SaveState(mapdefaults);
             mapdefaults.WriteToDisk(@"c:\code\mapdef.txt");
             map.Dispose();
+            GLStatics.VerifyAllDeallocated();
+            glwfc.Dispose();
+            glwfc = null;
         }
 
         private void SystemTick(object sender, EventArgs e)

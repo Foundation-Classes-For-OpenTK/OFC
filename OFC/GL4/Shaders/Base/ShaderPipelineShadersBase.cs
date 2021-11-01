@@ -20,9 +20,11 @@ namespace GLOFC.GL4
 {
     // base class for all pipeline shaders parts. these have to be compiled into a ShaderPipeline
 
+    [System.Diagnostics.DebuggerDisplay("P-Comp {Id} ref {References}")]
     public abstract class GLShaderPipelineComponentShadersBase : IGLPipelineComponentShader
     {
         public int Id { get { return Program.Id; } }
+        public int References { get; set; } = 0;
         protected GLProgram Program { get; private set; }
 
         protected void CompileLink( OpenTK.Graphics.OpenGL4.ShaderType st, string code, 
@@ -57,7 +59,11 @@ namespace GLOFC.GL4
 
         public virtual void Dispose()
         {
-            Program.Dispose();
+            if ( References <= 0)       // reference count error
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - Pipelineshader Ref Count {References} for {GetType().FullName}");
+            References--;
+            if ( References == 0 )
+                Program.Dispose();
         }
     }
 }

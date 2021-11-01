@@ -27,6 +27,7 @@ namespace GLOFC.GL4
         public GLFenceSync(SyncCondition c = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags f = WaitSyncFlags.None)
         {
             Id = GL.FenceSync(c, f);
+            GLStatics.RegisterAllocation(typeof(GLFenceSync));
         }
 
         public int[] Get(SyncParameterName p = SyncParameterName.SyncStatus)
@@ -54,8 +55,11 @@ namespace GLOFC.GL4
             if (Id != (IntPtr)0)
             {
                 GL.DeleteSync(Id);
+                GLStatics.RegisterDeallocation(typeof(GLFenceSync));
                 Id = (IntPtr)0;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
     }
 }

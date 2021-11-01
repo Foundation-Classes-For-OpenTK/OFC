@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -12,34 +12,21 @@
  * governing permissions and limitations under the License.
  */
 
+using OpenTK.Graphics.OpenGL4;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace GLOFC.GL4
 {
     // This is a memory class in which you can register GL type items and it will manage them
     // items have names to find them again
-    // Items to be held are
-    //      Textures
-    //      Program shaders
-    //      Uniform blocks
-    //      Storage blocks
-    //      Atomic blocks
-    //      Buffers
-    //      Vertex Arrays
 
     public class GLItemsList : IDisposable
     {
-        DisposableDictionary<string, IDisposable> items = new DisposableDictionary<string, IDisposable>();
-        private int unnamed = 0;
-
-        public void Dispose()
-        {
-            items.Dispose();
-        }
+        public static bool StackTrace { get; set; } = false;        // global set for stack trace disposal tracking
 
         // Get existing items
-
         public bool Contains(string name )
         {
             return items.ContainsKey(name);
@@ -109,66 +96,77 @@ namespace GLOFC.GL4
 
         public IGLTexture Add(IGLTexture disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public IGLProgramShader Add(IGLProgramShader disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public IGLPipelineComponentShader Add(IGLPipelineComponentShader disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLVertexArray Add(GLVertexArray disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLUniformBlock Add(GLUniformBlock disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLStorageBlock Add(GLStorageBlock disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLAtomicBlock Add( GLAtomicBlock disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLBuffer Add(GLBuffer disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public Bitmap Add(Bitmap disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public GLBitmaps Add(GLBitmaps disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
             return disp;
         }
 
         public void Add(IDisposable disp, string name = null)
         {
+            System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
             items.Add(EnsureName(name), disp);
         }
 
@@ -202,16 +200,48 @@ namespace GLOFC.GL4
             return sb;
         }
 
-        public GLBuffer NewBuffer(string name = null)
+        // a buffer returned
+        public GLBuffer NewBuffer(bool std430 = true, string name = null)
         {
-            GLBuffer b = new GLBuffer(true);        // a standard buffer returned is not for uniforms do not suffer the std140 restrictions
+            GLBuffer b = new GLBuffer(std430);        
+            items[EnsureName(name)] = b;
+            return b;
+        }
+        public GLBuffer NewBuffer(int size, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw, string name = null)
+        {
+            GLBuffer b = new GLBuffer(size,std430,bh);        
+            items[EnsureName(name)] = b;
+            return b;
+        }
+        public GLVertexArray NewVertexArray(string name = null)
+        {
+            var b = new GLVertexArray();        // a standard buffer returned is not for uniforms do not suffer the std140 restrictions
             items[EnsureName(name)] = b;
             return b;
         }
 
+        public GLBindlessTextureHandleBlock NewBindlessTextureHandleBlock(int bindingpoint, string name = null)
+        {
+            var b = new GLBindlessTextureHandleBlock(bindingpoint);
+            items[EnsureName(name)] = b;
+            return b;
+        }
+        public GLBindlessTextureHandleBlock NewBindlessTextureHandleBlock(int bindingpoint, IGLTexture[] textures, string name = null)
+        {
+            var b = new GLBindlessTextureHandleBlock(bindingpoint,textures);
+            items[EnsureName(name)] = b;
+            return b;
+        }
         public GLShaderPipeline NewShaderPipeline(string name, params Object[] cnst)
         {
             GLShaderPipeline s = (GLShaderPipeline)Activator.CreateInstance(typeof(GLShaderPipeline), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
+
+        public GLShaderPipeline NewShaderPipeline(string name, IGLPipelineComponentShader vertex, IGLPipelineComponentShader fragment)
+        {
+            GLShaderPipeline s = new GLShaderPipeline(vertex, fragment);
             items[EnsureName(name)] = s;
             return s;
         }
@@ -222,13 +252,43 @@ namespace GLOFC.GL4
             items[EnsureName(name)] = s;
             return s;
         }
+        public GLShaderCompute NewShaderCompute(string name, params Object[] cnst)
+        {
+            var s = (GLShaderCompute)Activator.CreateInstance(typeof(GLShaderCompute), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
+
+        public GLTexture1D NewTexture1D(string name, params Object[] cnst)
+        {
+            var s = (GLTexture1D)Activator.CreateInstance(typeof(GLTexture1D), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
+        public GLTexture2D NewTexture2D(string name, params Object[] cnst)
+        {
+            var s = (GLTexture2D)Activator.CreateInstance(typeof(GLTexture2D), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
+        public GLTexture2DArray NewTexture2DArray(string name, params Object[] cnst)
+        {
+            var s = (GLTexture2DArray)Activator.CreateInstance(typeof(GLTexture2DArray), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
+        public GLTexture3D NewTexture3D(string name, params Object[] cnst)
+        {
+            var s = (GLTexture3D)Activator.CreateInstance(typeof(GLTexture3D), cnst, null);
+            items[EnsureName(name)] = s;
+            return s;
+        }
 
         // remove
-
         public void Dispose(Object obj)     // dispose of this now, and remove from list
         {
             string keytodelete = null;
-            foreach (var kvp in items.Keys)
+            foreach (var kvp in items.Keys) //TBD
             {
                 if (items[kvp] == obj)
                 {
@@ -242,13 +302,39 @@ namespace GLOFC.GL4
                 items.Remove(keytodelete);
         }
 
+        public void Dispose()
+        {
+            if (StackTrace)
+            {
+                foreach (var r in items)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Disposing of {r.Key} {stacktrace[r.Key]}");
+                    r.Value.Dispose();
+                    System.Diagnostics.Debug.WriteLine($"----");
+                }
 
+                items.Clear();
+            }
+            else
+            {
+                items.Dispose();
+            }
+        }
+        
         // helpers
 
         private string EnsureName(string name)
         {
-            return (name == null) ? ("Unnamed_" + (unnamed++)) : name;
+            name = (name == null) ? ("Unnamed_" + (unnamed++)) : name;
+            if ( StackTrace )
+                stacktrace[name] = Environment.StackTrace;
+            return name; 
         }
+
+        private Dictionary<string, string> stacktrace = new Dictionary<string, string>();
+        private DisposableDictionary<string, IDisposable> items = new DisposableDictionary<string, IDisposable>();
+        private int unnamed = 0;
+
 
     }
 }

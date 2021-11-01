@@ -27,15 +27,17 @@ namespace GLOFC.GL4
 
         public void CreateOrUpdateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
         {
-            if (Id == -1 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id < 0 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
-                Dispose();
+                if (Id >= 0)
+                    Dispose();
 
                 InternalFormat = internalformat;
                 Width = width; Height = height; Depth = depth;
                 MipMapLevels = mipmaplevels;
 
                 GL.CreateTextures(TextureTarget.Texture3D, 1, out int id);
+                GLStatics.RegisterAllocation(typeof(GLTexture3D));
                 GLStatics.Check();
                 Id = id;
 

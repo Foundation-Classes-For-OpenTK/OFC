@@ -60,9 +60,11 @@ namespace GLOFC.GL4.Controls
             glwin = win;
             MatrixCalc = mc;
 
+            this.items = items;
+
             vertexes = items.NewBuffer();
 
-            vertexarray = new GLVertexArray();   
+            vertexarray = items.NewVertexArray();   
             vertexes.Bind(vertexarray,0, 0, vertexesperentry * sizeof(float));             // bind to 0, from 0, 2xfloats. Must bind after vertexarray is made as its bound during construction
 
             vertexarray.Attribute(0, 0, vertexesperentry, OpenTK.Graphics.OpenGL4.VertexAttribType.Float); // bind 0 on attr 0, 2 components per vertex
@@ -78,10 +80,11 @@ namespace GLOFC.GL4.Controls
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid,true));
+            shader = new GLShaderPipeline( new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid,true));
+            items.Add(shader);
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();
-            texturebinds = new GLBindlessTextureHandleBlock(arbbufferid);
+            texturebinds = items.NewBindlessTextureHandleBlock(arbbufferid);
 
             glwin.MouseMove += Gc_MouseMove;
             glwin.MouseClick += Gc_MouseClick;
@@ -108,7 +111,7 @@ namespace GLOFC.GL4.Controls
         public override void Add(GLBaseControl other, bool atback = false)           
         {
             System.Diagnostics.Debug.Assert(other is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
-            textures[other] = new GLTexture2D();                // we make a texture per top level control to render with
+            textures[other] = items.NewTexture2D(null);                // we make a texture per top level control to render with
             other.MakeLevelBitmap(Math.Max(1,other.Width),Math.Max(1,other.Height));    // ensure we make a bitmap
             base.Add(other,atback);
         }
@@ -217,7 +220,7 @@ namespace GLOFC.GL4.Controls
 
             if (ControlsZ.Contains(child))      // if its our child
             {
-                textures[child].Dispose();  // and delete textures
+                items.Dispose(textures[child]);  // and delete textures and remove from item list
                 textures.Remove(child);
             }
         }
@@ -265,7 +268,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (c.Visible)  // must be visible to be added to vlist
                     {
-                        //System.Diagnostics.Debug.WriteLine($"Update texture {c.Name} with {c.Opacity}");
+                      //  System.Diagnostics.Debug.WriteLine($"Update texture {c.Name} with {c.Opacity}");
                         float[] a;
                         float w = c.Opacity;
 
@@ -295,11 +298,12 @@ namespace GLOFC.GL4.Controls
 
                         if (updatetextures)
                         {
-                            if (textures[c].Id == -1 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
+                            if (textures[c].Id < 0 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
                             {
                                 textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
                             }
 
+                          //  System.Diagnostics.Debug.WriteLine($"Update tlist for {c.Name} with {c.Opacity}");
                             tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
                         }
                     }
@@ -312,8 +316,12 @@ namespace GLOFC.GL4.Controls
                 vertexes.StopReadWrite();
                 GLOFC.GLStatics.Check();
 
-                if ( tlist.Count>0)     // only if we had visible ones
+                if (tlist.Count > 0)     // only if we had visible ones
+                {
+                   // System.Diagnostics.Debug.WriteLine($"texture binds write");
                     texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order
+                    GLMemoryBarrier.All();
+                }
 
                 ri.DrawCount = (visible>0) ? (visible * 5 - 1) : 0;    // 4 vertexes per rectangle, 1 restart
             }
@@ -341,6 +349,7 @@ namespace GLOFC.GL4.Controls
         }
 
         const int vertexesperentry = 4;
+        private GLItemsList items;
         private GLWindowControl glwin;
         private GLBuffer vertexes;
         private GLVertexArray vertexarray;

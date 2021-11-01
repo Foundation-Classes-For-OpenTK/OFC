@@ -28,7 +28,7 @@ namespace GLOFC.GL4
         public bool Visible { get; set; } = true;                           // is visible (in this case active)
         public bool Enable { get => Visible; set => Visible = value; }      // use Visible, so same as
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; } // may be used by derived classes. Check your derived class
-        public int Id { get; set; }                                         // may be used by derived classes if its needs an Id
+        public int Id { get; set; } = -1;                                   // may be used by derived classes if its needs an Id
 
         // inactive when attached to render
 

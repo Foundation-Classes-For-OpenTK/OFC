@@ -25,7 +25,7 @@ namespace GLOFC.GL4
 
     public class GLProgram : IDisposable
     {
-        public int Id { get; private set; }
+        public int Id { get; private set; } = -1;
         public bool Created { get { return Id != -1; } }
 
         private List<GLShader> shaders;
@@ -33,6 +33,7 @@ namespace GLOFC.GL4
         public GLProgram()
         {
             Id = GL.CreateProgram();
+            GLStatics.RegisterAllocation(typeof(GLProgram));
             shaders = new List<GLShader>();
         }
 
@@ -116,8 +117,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteProgram(Id);
+                GLStatics.RegisterDeallocation(typeof(GLProgram));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
     }
 }

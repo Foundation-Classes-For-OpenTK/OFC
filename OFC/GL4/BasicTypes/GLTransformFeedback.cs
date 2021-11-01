@@ -27,6 +27,7 @@ namespace GLOFC.GL4
         public GLTransformFeedbackObject()
         {
             Id = GL.GenTransformFeedback();
+            GLStatics.RegisterAllocation(typeof(GLTransformFeedbackObject));
             GLStatics.Check();
         }
 
@@ -45,9 +46,12 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteTransformFeedback(Id);
+                GLStatics.RegisterDeallocation(typeof(GLTransformFeedbackObject));
                 GLStatics.Check();
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
         // use to start/end up the bound transform (either default or this one)

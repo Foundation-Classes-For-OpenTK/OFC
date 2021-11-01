@@ -32,6 +32,7 @@ namespace GLOFC.GL4
 
     public interface IGLPipelineComponentShader : IGLShader  // All pipeline components must come from this
     {
+        int References { get; set; }
         byte[] GetBinary(out OpenTK.Graphics.OpenGL4.BinaryFormat binformat);     // must have linked with wantbinary
         void Load(byte[] bin, OpenTK.Graphics.OpenGL4.BinaryFormat binformat);
     }

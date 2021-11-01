@@ -54,6 +54,7 @@ namespace TestOpenTk
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
+            GLStatics.VerifyAllDeallocated();
         }
 
         public class GLFixedShader : GLShaderPipeline

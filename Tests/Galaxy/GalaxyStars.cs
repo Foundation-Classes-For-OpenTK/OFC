@@ -27,13 +27,10 @@ namespace TestOpenTk
         {
             sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
                 autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
-            items.Add(sunvertex);
-            sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-            //sunshader.StartAction += (s, w) => { Monitor.Enter(slset); System.Diagnostics.Debug.WriteLine("Begin render suns"); };
-            //sunshader.FinishAction += (s, w) => { System.Diagnostics.Debug.WriteLine("End render suns"); Monitor.Exit(slset); };
-            items.Add(sunshader);
-            shapebuf = new GLBuffer();
-            items.Add(shapebuf);
+            var sunfrag = new GLPLStarSurfaceFragmentShader();
+            sunshader = items.NewShaderPipeline(null,sunvertex, sunfrag);
+
+            shapebuf = items.NewBuffer(false);
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
             shapebuf.AllocateFill(shape);
 
@@ -46,19 +43,16 @@ namespace TestOpenTk
             textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
             int texunitspergroup = 16;
-            var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0, 0, true, texunitspergroup));
-            //textshader.StartAction += (s, w) => { Monitor.Enter(slset); System.Diagnostics.Debug.WriteLine("Begin render text"); };
-            //textshader.FinishAction += (s, w) => { System.Diagnostics.Debug.WriteLine("End render text"); Monitor.Exit(slset); };
-            items.Add(textshader);
-
+            var textshader = items.NewShaderPipeline(null, new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0, 0, true, texunitspergroup));
+ 
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
                                                             textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8);
 
             items.Add(slset);
 
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(findbufferbinding, 16), null, null, null);
-            items.Add(findshader);
+            var geofind = new GLPLGeoShaderFindTriangles(findbufferbinding, 16);
+            findshader = items.NewShaderPipeline(null, sunvertex, null, null, geofind , null, null, null);
         }
 
         public void Start()
@@ -82,7 +76,6 @@ namespace TestOpenTk
 
         public void Request9BoxConditional(Vector3 newpos)
         {
-            return;
             if ((CurrentPos - newpos).Length >= SectorSize && requestedsectors.Count < MaxRequestedSectors )
             {
                 //if (CurrentPos.Z < -100000)

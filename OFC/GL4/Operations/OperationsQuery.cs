@@ -44,6 +44,8 @@ namespace GLOFC.GL4
                 GL.GenQueries(1, out id);
             }
 
+            GLStatics.RegisterAllocation(typeof(GLOperationQuery));
+
             System.Diagnostics.Debug.Assert(id != 0);
             GLStatics.Check();
             this.Id = id;
@@ -61,8 +63,15 @@ namespace GLOFC.GL4
 
         public override void Dispose()               // when dispose, delete query
         {
-            GL.DeleteQuery(Id);
-            GLStatics.Check();
+            if (Id != -1)
+            {
+                GL.DeleteQuery(Id);
+                GLStatics.RegisterDeallocation(typeof(GLOperationQuery));
+                Id = -1;
+                GLStatics.Check();
+            }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
         static public int GetQueryName(QueryTarget t, int index, GetQueryParam p = GetQueryParam.CurrentQuery) // only valid between begin and end..
@@ -171,6 +180,7 @@ namespace GLOFC.GL4
         {
             this.Id = GL.GenQuery();
             System.Diagnostics.Debug.Assert(Id != 0);
+            GLStatics.RegisterAllocation(typeof(GLOperationQueryTimeStamp));
             GLStatics.Check();
         }
 
@@ -182,8 +192,15 @@ namespace GLOFC.GL4
 
         public override void Dispose()               // when dispose, delete query
         {
-            GL.DeleteQuery(Id);
-            GLStatics.Check();
+            if (Id != -1)
+            {
+                GL.DeleteQuery(Id);
+                Id = -1;
+                GLStatics.RegisterDeallocation(typeof(GLOperationQueryTimeStamp));
+                GLStatics.Check();
+            }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
         public bool IsAvailable()

@@ -31,6 +31,7 @@ namespace GLOFC.GL4
         public GLBuffer(bool std430 = false) : base(std430)
         {
             GL.CreateBuffers(1, out int id);     // this actually makes the buffer, GenBuffer does not - just gets a name
+            GLStatics.RegisterAllocation(typeof(GLBuffer));
             GLStatics.Check();
             Id = id;
         }
@@ -1004,8 +1005,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteBuffer(Id);
+                GLStatics.RegisterDeallocation(typeof(GLBuffer));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
         #endregion

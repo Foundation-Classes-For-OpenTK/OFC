@@ -23,7 +23,7 @@ namespace GLOFC.WinForm
     // runs a GLControl from OpenTK, and vectors the GLControl events thru the GLWindowControl standard event interfaces.
     // events from GLControl are translated into GLWindowControl events for dispatch.
 
-    public class GLWinFormControl : GLWindowControl
+    public class GLWinFormControl : GLWindowControl, IDisposable
     {
         public Color BackColor { get; set; } = Color.Black;
         public int Width { get { return glControl.Width; } }
@@ -96,6 +96,15 @@ namespace GLOFC.WinForm
             glControl.Paint += GlControl_Paint;
 
             gltime.Start();
+        }
+
+        public void Dispose()
+        {
+            gltime.Stop();
+            Control parent = glControl.Parent;
+            parent.Controls.Remove(glControl);
+            glControl.Dispose();
+            glControl = null;
         }
 
         public void Invalidate()        // repaint
@@ -257,6 +266,8 @@ namespace GLOFC.WinForm
 
         private void Gc_Resize(object sender, EventArgs e)
         {
+            if (!gltime.IsRunning)          // we can get a resize when detaching, ignore it if timer is not going
+                return;
             if (EnsureCurrentPaintResize)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
             Resize?.Invoke(this);

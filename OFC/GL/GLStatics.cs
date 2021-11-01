@@ -14,6 +14,7 @@
 
 using OpenTK.Graphics.OpenGL;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace GLOFC
@@ -39,6 +40,38 @@ namespace GLOFC
             if (errmsg.HasChars())
             {
                 System.Diagnostics.Debug.Assert(false, errmsg);
+            }
+        }
+
+        // Allocation tracking, for debug mode, to check we are disposing correctly
+
+        public static Dictionary<Type, int> allocatecounts = new Dictionary<Type, int>();
+
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void RegisterAllocation(Type t)
+        {
+            if (!allocatecounts.ContainsKey(t))
+                allocatecounts[t] = 0;
+            allocatecounts[t]++;
+        }
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void RegisterDeallocation(Type t)
+        {
+            if ( --allocatecounts[t] < 0 )
+                System.Diagnostics.Debug.Assert(false, $"Type {t.Name} over deallocated");
+        }
+        [System.Diagnostics.Conditional("DEBUG")]
+        public static void VerifyAllDeallocated()
+        {
+            foreach (var t in allocatecounts)
+            {
+                System.Diagnostics.Debug.WriteLine($"OFC Block Type {t.Key.Name} Left {t.Value}");
+            }
+
+            foreach (var t in allocatecounts)
+            { 
+                if ( t.Value > 0)
+                    System.Diagnostics.Debug.Assert(false, $"OFC Warning - Block Type {t.Key.Name} not deallocated");
             }
         }
 

@@ -86,7 +86,7 @@ namespace GLOFC.GL4
 
         public void Dispose()           // you can double dispose.
         {
-            if (Id != -1)
+            if (Id >= 0)
             {
                 if (arbid != -1)        // if its been arb'd, de-arb it
                 {
@@ -95,20 +95,25 @@ namespace GLOFC.GL4
                 }
 
                 GL.DeleteTexture(Id);
-                Id = -1;
+                GLStatics.RegisterDeallocation(this.GetType());
+                Id = -2;    // -2 means made, then destroyed
 
                 if (BitMaps != null)
                 {
-                    for( int  i = 0; i < BitMaps.Length; i++ )
+                    for (int i = 0; i < BitMaps.Length; i++)
                     {
-                        if ( OwnBitMaps[i] && BitMaps[i] != null)     // we may have empty spaces in the bitmap list
+                        if (OwnBitMaps[i] && BitMaps[i] != null)     // we may have empty spaces in the bitmap list
                             BitMaps[i].Dispose();
                     }
 
                     BitMaps = null;
                     OwnBitMaps = null;
                 }
-
+            }
+            else
+            {
+                if ( Id == -2 )     // goes -1 -> ID -> -2, never uses stays as -1
+                    System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of a texture block in {this.GetType().FullName}");        // only an warning due to the fact you can create and not use
             }
         }
 

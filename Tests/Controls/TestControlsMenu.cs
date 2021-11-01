@@ -51,6 +51,7 @@ namespace TestOpenTk
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
+            GLStatics.VerifyAllDeallocated();
         }
 
         public class GLFixedShader : GLShaderPipeline
@@ -119,8 +120,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-                rObjects.Add(items.Shader("LINEYELLOW"),
-                GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
+                rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
             float h = 0;

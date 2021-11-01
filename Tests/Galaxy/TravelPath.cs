@@ -131,7 +131,6 @@ namespace TestOpenTk
 
                 sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
                          autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance:false); // below scale, 1f, above scale, scale up to x times (eyedist/scale)
-                items.Add(sunvertex);
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
                 items.Add(sunshader);
 
@@ -146,7 +145,6 @@ namespace TestOpenTk
                 // find compute
 
                 findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
-                items.Add(findshader);
                 rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, GLRenderState.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
                 // Sun names, handled by textrenderer

@@ -152,7 +152,7 @@ namespace TestOpenTk
                 rObjects.Add(new GLOperationClearDepthBuffer());
             }
 
-            int ctrlo = -1;
+            int ctrlo = 1023+1024;
 
             if ((ctrlo & 1) != 0) // galaxy
             {
@@ -183,6 +183,7 @@ namespace TestOpenTk
                 ComputeShaderNoise3D csn = new ComputeShaderNoise3D(noise3d.Width, noise3d.Height, noise3d.Depth, 128 * sc, 16 * sc, 128 * sc, gnoisetexbinding);       // must be a multiple of localgroupsize in csn
                 csn.StartAction += (A, m) => { noise3d.BindImage(gnoisetexbinding); };
                 csn.Run();      // compute noise
+                csn.Dispose();
 
                 GLTexture1D gaussiantex = new GLTexture1D(1024, OpenTK.Graphics.OpenGL4.SizedInternalFormat.R32f); // red channel only
                 items.Add(gaussiantex, "Gaussian");
@@ -192,6 +193,7 @@ namespace TestOpenTk
                 ComputeShaderGaussian gsn = new ComputeShaderGaussian(gaussiantex.Width, 2.0f, 2.0f, 1.4f, gdisttexbinding);
                 gsn.StartAction += (A, m) => { gaussiantex.BindImage(gdisttexbinding); };
                 gsn.Run();      // compute noise
+                gsn.Dispose();
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
 
@@ -238,7 +240,7 @@ namespace TestOpenTk
 
                 Random rnd = new Random(23);
 
-                GLBuffer buf = new GLBuffer(16 * 350000);     // since RND is fixed, should get the same number every time.
+                GLBuffer buf = items.NewBuffer(16 * 350000, false);     // since RND is fixed, should get the same number every time.
                 buf.StartWrite(0); // get a ptr to the whole schebang
 
                 int xcw = (right - left) / heat.Width;
@@ -304,12 +306,13 @@ namespace TestOpenTk
             if ((ctrlo & 32) != 0) 
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
-                items.Add(gridvertshader, "PLGRIDVertShader");
-                items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
+                //items.Add(gridvertshader, "PLGRIDVertShader");
+                var frag = new GLPLFragmentShaderVSColor();
+                //items.Add(frag, "PLGRIDFragShader");
 
                 GLRenderState rl = GLRenderState.Lines(1);
 
-                items.Add(new GLShaderPipeline(items.PLShader("PLGRIDVertShader"), items.PLShader("PLGRIDFragShader")), "DYNGRID");
+                items.Add(new GLShaderPipeline(gridvertshader, frag), "DYNGRID");
 
                 gridrenderable = GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.Lines, rl, drawcount: 2);
 
@@ -320,16 +323,14 @@ namespace TestOpenTk
             if ((ctrlo & 64) != 0) 
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
-                items.Add(gridbitmapvertshader, "PLGRIDBitmapVertShader");
-                items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding 1
+                var frag = new GLPLFragmentShaderTexture2DIndexed(0);
 
                 GLRenderState rl = GLRenderState.Tri(cullface: false);
 
                 GLTexture2DArray gridtexcoords = new GLTexture2DArray();
                 items.Add(gridtexcoords, "PLGridBitmapTextures");
 
-                GLShaderPipeline sp = new GLShaderPipeline(items.PLShader("PLGRIDBitmapVertShader"), items.PLShader("PLGRIDBitmapFragShader"));
-
+                GLShaderPipeline sp = new GLShaderPipeline(gridbitmapvertshader, frag);
                 items.Add(sp, "DYNGRIDBitmap");
 
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
@@ -568,6 +569,7 @@ namespace TestOpenTk
 
         public void SaveState(MapSaver defaults)
         {
+            return;
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
             defaults.PutSetting("TPD", TravelPathDisplay);
@@ -715,6 +717,8 @@ namespace TestOpenTk
             else
                 fpsavg = (fpsavg * 0.95) + fps * 0.05;
 
+            tmr1.Dispose();
+            tmr2.Dispose();
             if (diff > 0)
             {
 //                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");

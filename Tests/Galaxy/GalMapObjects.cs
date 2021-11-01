@@ -105,14 +105,13 @@ namespace TestOpenTk
             // add a find shader to look them up
 
             var geofind = new GLPLGeoShaderFindTriangles(bufferfindbinding, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
-            items.Add(geofind);
+            findshader = items.NewShaderPipeline(null, vert, tcs, tes, geofind, null, null, null);
 
-            findshader = items.NewShaderPipeline(null, vert, tcs, tes, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
 
             // hook to modelworldbuffer, at modelpos and worldpos.  UpdateEnables will fill in instance count
             rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, GLRenderState.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount,
                                                                             modelworldbuffer, worldpos, null, ic: 0, seconddivisor: 1);
-
+          
             GLStatics.Check();
 
             // Text renderer for the labels
@@ -195,7 +194,8 @@ namespace TestOpenTk
 
             modelworldbuffer.StopReadWrite();
             //var f = modelworldbuffer.ReadVector4(worldpos, renderablegalmapobjects.Count());  foreach (var v in f) System.Diagnostics.Debug.WriteLine("Vector " + v);
-            ridisplay.InstanceCount = rifind.InstanceCount = mwpos;
+            ridisplay.InstanceCount = mwpos;
+            rifind.InstanceCount = mwpos;
         }
 
 

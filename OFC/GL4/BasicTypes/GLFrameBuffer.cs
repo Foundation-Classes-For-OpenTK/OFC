@@ -30,9 +30,10 @@ namespace GLOFC.GL4
         public int Height { get; protected set; } = 1;
         public int ColorTarget { get; protected set; } = 0;
 
-        public GLFrameBuffer() 
+        public GLFrameBuffer()
         {
             GL.CreateFramebuffers(1, out int id);
+            GLStatics.RegisterAllocation(typeof(GLFrameBuffer));
             Id = id;
         }
 
@@ -61,7 +62,7 @@ namespace GLOFC.GL4
             ColorTarget = colourtarget;
             Width = tex.Width;
             Height = tex.Height;
-            GL.NamedFramebufferTextureLayer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget,tex.Id, mipmaplevel , layer);
+            GL.NamedFramebufferTextureLayer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, tex.Id, mipmaplevel, layer);
             GLStatics.Check();
         }
 
@@ -150,7 +151,7 @@ namespace GLOFC.GL4
         }
 
         // Read from bound Read Frame buffer target
-        public void ReadPixels(ReadBufferMode src, int x0, int y0, int x1, int y1, PixelFormat format, PixelType type , int bufsize )
+        public void ReadPixels(ReadBufferMode src, int x0, int y0, int x1, int y1, PixelFormat format, PixelType type, int bufsize)
         {
             GL.ReadBuffer(src);
             byte[] array = new byte[bufsize];
@@ -163,8 +164,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteFramebuffer(Id);
+                GLStatics.RegisterDeallocation(typeof(GLFrameBuffer));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
     }
 }

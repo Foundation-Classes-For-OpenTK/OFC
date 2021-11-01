@@ -33,6 +33,7 @@ namespace GLOFC.GL4
         public GLRenderBuffer() 
         {
             Id = GL.GenRenderbuffer();
+            GLStatics.RegisterAllocation(typeof(GLRenderBuffer));
         }
 
         public void Allocate(RenderbufferStorage storage, int width, int height)
@@ -71,8 +72,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteRenderbuffer(Id);
+                GLStatics.RegisterDeallocation(typeof(GLRenderBuffer));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
     }
 }

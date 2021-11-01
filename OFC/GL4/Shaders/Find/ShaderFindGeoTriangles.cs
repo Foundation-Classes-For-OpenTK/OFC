@@ -148,6 +148,7 @@ void main(void)
         public GLPLGeoShaderFindTriangles(int resultoutbufferbinding, int maximumresultsp, bool forwardfacing = true)   
         {
             vecoutbuffer = new GLStorageBlock(resultoutbufferbinding);      // buffer is disposed by overriden dispose below.
+            ownvecoutblock = true;
             Create(maximumresultsp, forwardfacing);
         }
 
@@ -202,7 +203,8 @@ void main(void)
 
         public override void Dispose()
         {
-            vecoutbuffer.Dispose();
+            if ( ownvecoutblock )
+                vecoutbuffer.Dispose();
             base.Dispose();
         }
 
@@ -215,6 +217,7 @@ void main(void)
         }
 
         private GLStorageBlock vecoutbuffer;
+        private bool ownvecoutblock;
         private int maximumresults;
     }
 

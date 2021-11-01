@@ -26,7 +26,7 @@ namespace GLOFC.GL4
 
     public class GLShader : IDisposable
     {
-        public int Id { get; private set; }
+        public int Id { get; private set; } = -1;
         public bool Compiled { get { return Id != -1; } }
 
         static public List<string> IncludePaths = new List<string>();               // add to add new include paths for #include
@@ -36,7 +36,6 @@ namespace GLOFC.GL4
 
         public GLShader( ShaderType t )
         {
-            Id = -1;
             type = t;
         }
 
@@ -57,6 +56,7 @@ namespace GLOFC.GL4
         public string Compile(string codelisting, Object[] constvalues = null, string completeoutfile = null)                // string return gives any errors
         {
             Id = GL.CreateShader(type);
+            GLStatics.RegisterAllocation(typeof(GLShader));
 
             string source = PreprocessShaderCode(codelisting, constvalues, completeoutfile);
             GL.ShaderSource(Id, source);
@@ -96,8 +96,11 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteShader(Id);
+                GLStatics.RegisterDeallocation(typeof(GLShader));
                 Id = -1;
             }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
         }
 
 

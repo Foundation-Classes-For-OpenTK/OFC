@@ -16,6 +16,7 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GLOFC.GL4
 {
@@ -28,6 +29,7 @@ namespace GLOFC.GL4
     //  this calls all the Finish() in each ShaderPipelineShaderBase
     // FinishAction, an optional hook to supply more finish functionality
 
+    [System.Diagnostics.DebuggerDisplay("Pipeline {Id} {Name} {Enable}")]
     public class GLShaderPipeline : IGLProgramShader
     {
         public int Id { get { return pipelineid + 100000; } }           // to avoid clash with standard ProgramIDs, use an offset for pipeline IDs
@@ -43,19 +45,19 @@ namespace GLOFC.GL4
         public T GetShader<T>(ShaderType t) where T : IGLShader { return (T)shaders[t]; }
         public T GetShader<T>() where T : IGLShader { foreach (var s in shaders) if (s.Value.GetType() == typeof(T)) return (T)s.Value; throw new InvalidCastException(); }    // get a subcomponent of type T. Excepts if not present
 
-        private int pipelineid;
-        private Dictionary<ShaderType, IGLPipelineComponentShader> shaders;
+        private int pipelineid = -1;
+        private Dictionary<ShaderType, IGLPipelineComponentShader> shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
 
         public GLShaderPipeline()
         {
             pipelineid = GL.GenProgramPipeline();
-            shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
+            GLStatics.RegisterAllocation(typeof(GLShaderPipeline));
         }
 
         public GLShaderPipeline(byte[] bin, BinaryFormat binformat)
         {
             pipelineid = GL.GenProgramPipeline();
-            shaders = new Dictionary<ShaderType, IGLPipelineComponentShader>();
+            GLStatics.RegisterAllocation(typeof(GLShaderPipeline));
             Load(bin, binformat);
         }
 
@@ -115,7 +117,9 @@ namespace GLOFC.GL4
 
         public void Add(IGLPipelineComponentShader p, ShaderType m)
         {
+            System.Diagnostics.Debug.Assert(!shaders.ContainsKey(m));
             shaders[m] = p;
+            p.References++;
             GL.UseProgramStages(pipelineid, convmask[m], p.Id);
             GLStatics.Check();
         }
@@ -158,10 +162,20 @@ namespace GLOFC.GL4
 
         public virtual void Dispose()
         {
-            foreach (var x in shaders)
-                x.Value.Dispose();
+            if (pipelineid != -1)
+            {
+                foreach (var x in shaders)
+                {
+                    x.Value.Dispose();
+                }
 
-            GL.DeleteProgramPipeline(pipelineid);
+                GL.DeleteProgramPipeline(pipelineid);
+                GLStatics.RegisterDeallocation(typeof(GLShaderPipeline));
+                pipelineid = -1;
+            }
+            else
+                System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
+
         }
 
         private static Dictionary<ShaderType, ProgramStageMask> convmask = new Dictionary<ShaderType, ProgramStageMask>()
