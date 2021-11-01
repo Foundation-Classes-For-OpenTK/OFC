@@ -117,15 +117,20 @@ namespace GLOFC.GL4
                 {
                     if (ParameterBuffer != null)                    // 4.6 feature ICE
                     {
+                        // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_indirect_parameters.txt
+                        // Says the parameter buffer offset is an offset into the buffer
+                        // same as MultiDrawElementsIndirect 
                         GL.MultiDrawElementsIndirectCount(PrimitiveType,(All)ElementIndexSize, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
                     }
                     else
                     {                                               // IE
+                        // says indirect is an offset if Indirect buffer is bound 
                         GL.MultiDrawElementsIndirect(PrimitiveType, ElementIndexSize, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
                     }
                 }
                 else
                 {                                                   // E element index
+                    // says same as glDrawElementsInstanced, says same as DrawElements, DrawElements does not say
                     GL.DrawElementsInstancedBaseVertexBaseInstance(PrimitiveType, DrawCount, ElementIndexSize, (IntPtr)BaseIndexOffset, 
                                                                     InstanceCount, BaseVertex, BaseInstance);
                 }
@@ -136,11 +141,18 @@ namespace GLOFC.GL4
                 {
                     if (ParameterBuffer != null)                    // 4.6 feature ICA
                     {
+                        // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_indirect_parameters.txt
+                        // ParameterBufferOffset defines an offset into the parameter buffer
+                        // behaves like MultiDrawArraysIndirect.
+                        // MultiDrawArraysIndirect says if the buffer is bound, BaseIndexOffset is an offset. 
                         GL.MultiDrawArraysIndirectCount(PrimitiveType, (IntPtr)BaseIndexOffset, (IntPtr)ParameterBufferOffset, DrawCount, MultiDrawCountStride);
                     }
                     else
                     {                                               // IA
+
+                        // explicity states if a buffer is bound to INDIRECT_BUFFER Then IntPtr is an offset into buffer in base machine units
                         GL.MultiDrawArraysIndirect(PrimitiveType, (IntPtr)BaseIndexOffset, DrawCount, MultiDrawCountStride);
+
                     }
                 }
                 else
