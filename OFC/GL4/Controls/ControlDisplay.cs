@@ -77,7 +77,7 @@ namespace GLOFC.GL4.Controls
             this.deltaz = deltaz;
 
             ri = new GLRenderableItem(PrimitiveType.TriangleStrip,rc, 0, vertexarray);     // create a renderable item
-            ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);
+            ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);             // note this limits top level controls number to 255/5.
             ri.DrawCount = 0;                               // nothing to draw at this point
 
             shader = new GLShaderPipeline( new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid,true));

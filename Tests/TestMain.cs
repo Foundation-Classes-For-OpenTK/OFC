@@ -102,6 +102,7 @@ namespace TestOpenTk
             ctrl = (1<<13) | (1<<12) | (1<<11);
             ctrl |= 1;
             ctrl |= 0xffffffff;
+          //  ctrl = (1 << 25);
 
 
 
@@ -109,8 +110,6 @@ namespace TestOpenTk
 
             if( (ctrl & (1<<0)) != 0)
             {
-                rObjects.Add(new GLOperationAction((s, m) => System.Diagnostics.Debug.WriteLine("Start render")));     // demo the operation action
-
                 rObjects.Add(new GLOperationClearDepthBuffer());     // demo the operation via the shader interface
 
                 GLRenderState lines = GLRenderState.Lines(1);
@@ -885,7 +884,7 @@ namespace TestOpenTk
             #region 4.6
 
             // indirect multi draw with count from a parameter buffer (4.6) static moon at front
-            if ((ctrl & (1 << 25)) != 0 || true)
+            if ((ctrl & (1 << 25)) != 0)
             {
                 GLRenderableItem rit;
                 GLBuffer ritpara;
@@ -904,11 +903,16 @@ namespace TestOpenTk
                 ritpara = new GLBuffer(128, true);
                 ritpara.StartWrite(0);
                 ritpara.Write((int)0);       // dummy to make an offset be needed
+                ritpara.Write((int)0);       // dummy to make an offset be needed
+                ritpara.Write((int)0);       // dummy to make an offset be needed
+                ritpara.Write((int)0);       // dummy to make an offset be needed
+                ritpara.Write((int)0);       // dummy to make an offset be needed
                 ritpara.Write((int)1);       // count 1
+                ritpara.Write((int)0);       // count 
                 ritpara.StopReadWrite();
                 var data2 = ritpara.ReadInts(0, 1);                            // notice both are red due to primitive ID=1
                 rit.ParameterBuffer = ritpara;
-                rit.ParameterBufferOffset = 4;  // pick up at 4
+                rit.ParameterBufferOffset = 20;  // pick up 
                 rit.DrawCount = 8;      // maximum due to 128 buffer size in indirect buffer
                 rit.MultiDrawCountStride = 16;
 
