@@ -40,7 +40,7 @@ namespace GLOFC.GL4
 
         public GLBitmaps(string name, GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, 
                                             OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat = OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, 
-                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue )
+                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue, bool yfixed = false )
         {
             this.name = name;
 
@@ -54,7 +54,7 @@ namespace GLOFC.GL4
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
+            shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
             renderstate = GLRenderState.Quads();      
@@ -190,6 +190,11 @@ namespace GLOFC.GL4
         public void Clear()
         {
             matrixbuffers.Clear();
+        }
+
+        public void SetY(float y)
+        {
+            shader.GetShader<GLPLVertexShaderQuadTextureWithMatrixTranslation>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
         }
 
         public virtual void Dispose()           // you can double dispose.

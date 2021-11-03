@@ -72,14 +72,15 @@ namespace GLOFC.Controller
         public void GoToZoom(Vector3 gotopos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             GoTo(gotopos, timeslewsec, unitspersecond);
-            GoToZoom(zoom, targetposSlewTime);
+            GoToZoom(zoom, Math.Max(targetposSlewTime,1));
         }
 
         public void GoToZoomPan(Vector3 gotopos, Vector2 cameradir, float zoom, float timeslewsec = 0, float unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             GoTo(gotopos, timeslewsec, unitspersecond);
-            GoToZoom(zoom, targetposSlewTime);
-            Pan(cameradir, targetposSlewTime);
+            float time = Math.Max(targetposSlewTime, 1);
+            GoToZoom(zoom, time);
+            Pan(cameradir, time);
         }
 
         #endregion
@@ -336,7 +337,7 @@ namespace GLOFC.Controller
                 else
                 {
                     float newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                   // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 

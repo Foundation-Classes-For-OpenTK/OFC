@@ -541,7 +541,6 @@ namespace TestOpenTk
 
         public void LoadState(MapSaver defaults)
         {
-            return;
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 
@@ -565,11 +564,11 @@ namespace TestOpenTk
             EliteRegionsOutlineEnable = defaults.GetSetting("ELoe", true);
             EliteRegionsShadingEnable = defaults.GetSetting("ELse", false);
             EliteRegionsTextEnable = defaults.GetSetting("ELte", true);
+            gl3dcontroller.SetPositionCamera(defaults.GetSetting("POSCAMERA", ""));     // go thru gl3dcontroller to set default position, so we reset the model matrix
         }
 
         public void SaveState(MapSaver defaults)
         {
-            return;
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
             defaults.PutSetting("TPD", TravelPathDisplay);
@@ -587,6 +586,7 @@ namespace TestOpenTk
             defaults.PutSetting("ELoe", EliteRegionsOutlineEnable);
             defaults.PutSetting("ELse", EliteRegionsShadingEnable);
             defaults.PutSetting("ELte", EliteRegionsTextEnable);
+            defaults.PutSetting("POSCAMERA", gl3dcontroller.PosCamera.StringPositionCamera);
         }
 
         #endregion
@@ -620,22 +620,27 @@ namespace TestOpenTk
 
             if (gridrenderable != null)
             {
-                if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis, set the vertical shader grid size
-                {
-                    gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
-                    lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
-                }
+                gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
+                lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
 
                 gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, gridrenderable.InstanceCount);
             }
 
-            // set the coords fader
-            if ( gridbitmapvertshader != null)
-            { 
+            if (gridbitmapvertshader != null)
+            {
                 float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
                 Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
                 gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
             }
+
+            if (edsmgalmapregions != null)
+                edsmgalmapregions.SetY(gl3dcontroller.PosCamera.LookAt.Y);
+
+            if (elitemapregions != null)
+                elitemapregions.SetY(gl3dcontroller.PosCamera.LookAt.Y);
+
+            // set the coords fader
+
 
             // set the galaxy volumetric block
 
@@ -659,6 +664,7 @@ namespace TestOpenTk
 
             if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400)
                 galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.LookAt);
+
 
             long t4 = hptimer.ElapsedTicks;
 

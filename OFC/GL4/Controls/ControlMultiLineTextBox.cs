@@ -1052,24 +1052,29 @@ namespace GLOFC.GL4.Controls
             ReturnPressed?.Invoke(this);
         }
 
+        // Find index in document of cursor, if within range.
         private int FindCursorPos(Point click, out int cpos, out int lineno)
         {
+            //System.Diagnostics.Debug.WriteLine($"Find MLTB Position {click}");
+
             Rectangle usablearea = UsableAreaForText(ClientRectangle);
             usablearea.Width = 7000;        // set so chars don't clip and extend across
 
             lineno = cpos = -1;
 
-            if (click.Y < usablearea.Y)
+            if (click.Y < usablearea.Y)     // if above usable area.. no return
                 return -1;
 
-            int lineoffset = (click.Y - usablearea.Y) / Font.Height;
-
-            int lineclicked = Math.Min(firstline + lineoffset, linelengths.Count - 1);
+            // calculate line and limit to number of lines
+            // if clicking below last line its the same as clicking the last one
+            int lineclicked = Math.Min(firstline + (click.Y - usablearea.Y) / Font.Height, linelengths.Count - 1); 
 
             lineno = 0;
             cpos = 0;
             while (lineno < lineclicked)            // setting cpos and lineno
                 cpos += linelengths[lineno++];
+
+          //  System.Diagnostics.Debug.WriteLine($"lc {lineclicked} cpos {cpos} lineno {lineno}");
 
             string s = GetLineWithoutCRLF(cpos, lineno, displaystartx);
 
@@ -1100,15 +1105,22 @@ namespace GLOFC.GL4.Controls
                             //System.Diagnostics.Debug.WriteLine("Region " + rect.Left + ".." + (rect.Right-1) + " mid " + mid + " char " + i + " " + s[i] + " vs " + click);
                             if ( click.X >= rect.Left && click.X < rect.Right)
                             {
-                                return cpos + displaystartx + i + ((click.X>=mid) ? 1 : 0);     // pick nearest edge
+                                int pos = cpos + displaystartx + i + ((click.X >= mid) ? 1 : 0);     // pick nearest edge
+                          //      System.Diagnostics.Debug.WriteLine($"Cursor found {pos} cpos {cpos} ds {displaystartx} i {i}");
+                                return pos;
+                            }
+                            else if ( i == 0 && click.X < rect.Left )       // if before first char
+                            {
+                                int pos = cpos + displaystartx;
+                            //    System.Diagnostics.Debug.WriteLine($"Cursor found before {pos}");
+                                return pos;
                             }
                         }
                     }
                 }
             }
 
-            //System.Diagnostics.Debug.WriteLine("Failed to find ");
-
+         //   System.Diagnostics.Debug.WriteLine($"Cursor not found return end of len");
             return cpos + displaystartx+ s.Length;
         }
 

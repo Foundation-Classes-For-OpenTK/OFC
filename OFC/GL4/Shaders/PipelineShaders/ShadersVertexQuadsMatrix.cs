@@ -36,9 +36,9 @@ namespace GLOFC.GL4
 
     public class GLPLVertexShaderQuadTextureWithMatrixTranslation : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderQuadTextureWithMatrixTranslation()
+        public GLPLVertexShaderQuadTextureWithMatrixTranslation(bool yfromuniform = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }
 
         private string Code()
@@ -51,6 +51,7 @@ namespace GLOFC.GL4
     #include Shaders.Functions.mat4.glsl
 
     layout (location = 4) in mat4 transform;
+    layout (location = 22) uniform  float replacementy;
 
     out gl_PerVertex {
             vec4 gl_Position;
@@ -69,22 +70,24 @@ namespace GLOFC.GL4
     vec4 vertex[] = { vec4(-0.5,0,0.5,1), vec4(-0.5,0,-0.5,1), vec4(0.5,0,-0.5,1), vec4(0.5,0,0.5,1)};      // flat on xz plane is the default
     vec2 tex[] = { vec2(0,0), vec2(0,1), vec2(1,1), vec2(1,0)};
 
+    layout (binding = 31, std430) buffer Positions      // For debug
+    {
+        vec4 txout;
+    };
 
-layout (binding = 31, std430) buffer Positions      // For debug
-{
-    vec4 txout;
-};
-
+    const bool yfromuniform = false;
 
     void main(void)
     {
         mat4 tx = transform;
         vs.vs_index = int(tx[0][3]);                                // row/col ordering
 
-        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 
+        if ( yfromuniform)                                          // optional fixed y
+            tx[3][1] = replacementy;
+
+        vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 , y possibly fixed
 
         //wpout = worldposition; epout = mc.EyePosition.xyz; // for debug
-
 
         if ( tx[2][3]>0)                                      // fade distance, >0 means fade out as eye goes in
             alpha = clamp((mc.EyeDistance-tx[3][3])/tx[2][3],0,1);  // fade end is 3,3
@@ -125,7 +128,10 @@ layout (binding = 31, std430) buffer Positions      // For debug
     }
     ";
         }
-
+        public void SetY(float y)
+        {
+            GL.ProgramUniform1(Id, 22, y);
+        }
 
         // create a matrix for this shader
         static public Matrix4 CreateMatrix(Vector3 worldpos,

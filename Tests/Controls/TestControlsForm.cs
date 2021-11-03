@@ -299,7 +299,7 @@ namespace TestOpenTk
                 if (true)
                 {
                     string l = "";
-                    for (int i = 0; i < 20; i++)
+                    for (int i = 0; i < 5; i++)
                     {
                         string s = string.Format("Line " + i);
                         if (i == 0)
@@ -309,7 +309,7 @@ namespace TestOpenTk
                     l += "trail ";
                     // l = "";
 
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 90), l);
+                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 300), l);
                     mtb.Font = new Font("Ms Sans Serif", 16);
                     mtb.LineColor = Color.Green;
                     mtb.EnableVerticalScrollBar = true;
@@ -348,7 +348,7 @@ namespace TestOpenTk
                     pform.Add(cal);
                 }
 
-                if ( false )
+                if ( true)
                 { 
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
                     glf.TabOrder = taborder++;
@@ -365,10 +365,11 @@ namespace TestOpenTk
                         var r = new List<string>() { "one", "two", "three" };
                         foreach(var x in r)
                         {
-                            if (s.StartsWith(x))
+                            if (x.StartsWith(s) || s.IsEmpty())
                                 set.Add(x);
                         }
                     };
+                    gla.SelectedEntry += (s) => { System.Diagnostics.Debug.WriteLine($"Autocomplete selected {s.Text}"); };
                     pform.Add(gla);
                 }
 

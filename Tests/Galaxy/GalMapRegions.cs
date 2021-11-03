@@ -49,7 +49,7 @@ namespace TestOpenTk
             List<ushort> vertexregionoutlineindex = new List<ushort>();
 
             Size bitmapsize = new Size(250, 22);
-            textrenderer = new GLBitmaps(name + "-bitmaps", rObjects, bitmapsize,depthtest:false);
+            textrenderer = new GLBitmaps(name + "-bitmaps", rObjects, bitmapsize, depthtest: false, yfixed: true);
             items.Add(textrenderer);
 
             StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
@@ -134,7 +134,7 @@ namespace TestOpenTk
 
             // regions
 
-            var vertregion = new GLPLVertexShaderFixedColorPalletWorldCoords(array.ToVector4(0.1f));
+            var vertregion = new GLPLVertexShaderFixedColorPalletWorldCoords(array.ToVector4(0.1f),true);
             var fragregion = new GLPLFragmentShaderVSColor();
 
             regionshader = new GLShaderPipeline(vertregion, fragregion, null, null);
@@ -147,7 +147,7 @@ namespace TestOpenTk
 
             // outlines
 
-            var vertoutline = new GLPLVertexShaderWorldCoord();
+            var vertoutline = new GLPLVertexShaderWorldCoord(true);
             var fragoutline = new GLPLFragmentShaderFixedColor(Color.Cyan);
 
             outlineshader = new GLShaderPipeline(vertoutline, fragoutline, null, null);
@@ -170,6 +170,13 @@ namespace TestOpenTk
         private int renderstate = 0;
         private bool enable = true;
 
+        public void SetY(float y)
+        {
+            y = y.Clamp(-2000, 2000);
+            outlineshader.GetShader<GLPLVertexShaderWorldCoord>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            regionshader.GetShader<GLPLVertexShaderFixedColorPalletWorldCoords>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            textrenderer.SetY(y);
+        }
         private void UpdateEnables()
         {
             regionshader.Enable = Regions;

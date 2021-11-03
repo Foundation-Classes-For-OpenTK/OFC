@@ -22,7 +22,7 @@ namespace GLOFC.GL4
 {
     // No extra translation, direct move
     // Requires:
-    //      location 0 : vec4 positions
+    //      location 0 : vec4 positions (W ignored)
     //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
 
     public class GLPLVertexShaderWorldCoord : GLShaderPipelineComponentShadersBase
@@ -36,22 +36,33 @@ namespace GLOFC.GL4
 #include UniformStorageBlocks.matrixcalc.glsl
 
 layout (location = 0) in vec4 position;
+layout (location = 22) uniform  float replacementy;
+
 out gl_PerVertex {
         vec4 gl_Position;
         float gl_PointSize;
         float gl_ClipDistance[];
     };
 
+const bool yfromuniform = false;
+
 void main(void)
 {
-	gl_Position = mc.ProjectionModelMatrix * position;        // order important
+    if ( yfromuniform )
+        gl_Position = mc.ProjectionModelMatrix * vec4(position.x,replacementy,position.z,1);        // order important
+    else
+	    gl_Position = mc.ProjectionModelMatrix * position;        // order important
 }
 ";
         }
 
-        public GLPLVertexShaderWorldCoord()
+        public GLPLVertexShaderWorldCoord(bool yfromuniform = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] {  "yfromuniform", yfromuniform }, auxname: GetType().Name);
+        }
+        public void SetY(float y)
+        {
+            GL.ProgramUniform1(Id, 22, y);
         }
     }
 
@@ -210,12 +221,19 @@ out gl_PerVertex {
     };
 
 layout(location = 0) out vec4 vs_color;
+layout (location = 22) uniform  float replacementy;
 
 const vec4[] palette = { };
+const bool yfromuniform = false;
 
 void main(void)
 {
-    vec4 pos = vec4(position.xyz,1);
+    vec4 pos;
+    if ( yfromuniform )
+        pos = vec4(position.x,replacementy,position.z,1);
+    else
+        pos = vec4(position.xyz,1);
+
     int colourindex = int(position.w);
 	gl_Position = mc.ProjectionModelMatrix * pos;        // order important
     vs_color = palette[colourindex];
@@ -223,13 +241,18 @@ void main(void)
 ";
         }
 
-        public GLPLVertexShaderFixedColorPalletWorldCoords(Vector4[] varray)
+        public GLPLVertexShaderFixedColorPalletWorldCoords(Vector4[] varray, bool yfromuniform = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", varray }, auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", varray, "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }
 
-        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] cpal) : this( cpal.ToVector4() )
+        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] cpal, bool yfromuniform) : this( cpal.ToVector4(), yfromuniform )
         { 
+        }
+
+        public void SetY(float y)
+        {
+            GL.ProgramUniform1(Id, 22, y);
         }
     }
 

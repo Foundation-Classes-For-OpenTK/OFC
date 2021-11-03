@@ -193,13 +193,13 @@ namespace GLOFC.GL4.Controls
 
                 if (e.KeyCode == System.Windows.Forms.Keys.Enter || e.KeyCode == System.Windows.Forms.Keys.Return)
                 {
-                    if (ListBox.Visible)
+                    if (ListBox.Visible && ListBox.FocusIndex>=0)       // if we are showing list and there is a focus, we use that
                     {
                         ListBox.SelectCurrentFocus();
                     }
                     else
                     {
-                        CancelAutoComplete();                   // close any list box, and select this
+                        CancelAutoComplete();                   // close any list box, and select this text, may be empty
                         SelectedEntry?.Invoke(this);
                     }
                 }

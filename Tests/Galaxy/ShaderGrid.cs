@@ -257,7 +257,7 @@ void main(void)
                     string label = bsx.ToStringInvariant() + "," + sy.ToStringInvariant("0") + "," + bsz.ToStringInvariant();
                     BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, textcol, backcol);
                     texcoords.LoadBitmap(texcoords.BitMaps[i], i, true, 1);
-                //    System.Diagnostics.Debug.WriteLine("At {0} Draw {1} {2}", i, bsx, bsz);
+                    System.Diagnostics.Debug.WriteLine("At {0} Draw {1}", i, label);
                 }
 
                 lastsx = sx;

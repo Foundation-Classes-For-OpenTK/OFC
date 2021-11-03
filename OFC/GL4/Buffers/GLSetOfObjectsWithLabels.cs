@@ -89,7 +89,7 @@ namespace GLOFC.GL4
 
             if (set.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
+                //System.Diagnostics.Debug.WriteLine($"No sets found, Create 0");
                 AddSet();
             }
 
@@ -100,7 +100,7 @@ namespace GLOFC.GL4
 
             while (endpos >= 0)    // if can't add
             {
-                System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {endpos}");
+                //System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {endpos}");
                 AddSet();
                 endpos = set.Last().Add(array, matrix, bitmaps, blocklist, endpos, arraylength);      // add the rest from endpos
             }
@@ -185,6 +185,11 @@ namespace GLOFC.GL4
 
         // remove until Objects <= count, oldest first
 
+        public void Clear()
+        {
+            RemoveUntil(0);
+        }
+
         public void RemoveUntil(int count)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -233,6 +238,8 @@ namespace GLOFC.GL4
                 s.Dispose();            // then dispose
             }
             set.Clear();
+            TagsToBlocks.Clear();
+            UserData.Clear();
         }
 
         // Return set, render group, render index in group, z of find, or null
