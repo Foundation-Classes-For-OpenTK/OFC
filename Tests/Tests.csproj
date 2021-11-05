@@ -77,6 +77,13 @@
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
+    <Compile Include="Orrery\KeplerOrbitElements.cs" />
+    <Compile Include="Orrery\TestOrrery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Orrery\TestOrrery.designer.cs">
+      <DependentUpon>TestOrrery.cs</DependentUpon>
+    </Compile>
     <Compile Include="MultiWindow\Window2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -94,6 +101,11 @@
     </Compile>
     <Compile Include="Program\TestProgram.designer.cs">
       <DependentUpon>TestProgram.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Queries\TestQueries3.cs">
       <SubType>Form</SubType>
@@ -377,6 +389,9 @@
     <EmbeddedResource Include="Geometry\ShaderTestGeoTest1.resx">
       <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Orrery\TestOrrery.resx">
+      <DependentUpon>TestOrrery.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MultiWindow\Window2.resx">
       <DependentUpon>Window2.cs</DependentUpon>
     </EmbeddedResource>
@@ -388,14 +403,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <EmbeddedResource Include="Queries\TestQueries3.resx">
       <DependentUpon>TestQueries3.cs</DependentUpon>
     </EmbeddedResource>
@@ -681,6 +691,24 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Regional.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Forward.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\backwards.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\minus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Forward1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

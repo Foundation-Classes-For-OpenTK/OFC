@@ -363,7 +363,7 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, sunsize, 0.5f, findstarblock, true);
+                travelpath.Create(items, rObjects, pos, sunsize, sunsize, findstarblock, true);
                 travelpath.SetSystem(0);
             }
 
@@ -375,7 +375,7 @@ namespace TestOpenTk
 
             if ((ctrlo & 512) != 0)
             {
-                galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
+              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
             }
 
             if ((ctrlo & 1024) != 0)

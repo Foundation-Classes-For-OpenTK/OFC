@@ -20,11 +20,18 @@ namespace GLOFC.GL4.Controls
 
     public class GLLabel : GLForeDisplayTextBase
     {
-        public GLLabel(string name, Rectangle location, string text) : base(name,location)
+        public GLLabel(string name, Rectangle location, string text) : base(name, location)
         {
             this.text = text;
             ForeColor = DefaultLabelForeColor;
             BackColor = Color.Transparent;
+        }
+
+        public GLLabel(string name, Rectangle location, string text, Color fore, Color? back = null) : this(name, location,text)
+        {
+            this.ForeColor = fore;
+            if ( back.HasValue)
+                this.BackColor = back.Value;
         }
 
         public GLLabel() : this("LB?", DefaultWindowRectangle, "")

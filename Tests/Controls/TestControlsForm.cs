@@ -97,7 +97,7 @@ namespace TestOpenTk
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
 
-            items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
+            items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
   

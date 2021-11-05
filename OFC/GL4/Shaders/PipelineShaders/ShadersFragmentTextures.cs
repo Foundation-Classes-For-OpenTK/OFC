@@ -334,9 +334,9 @@ void main(void)
     {
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
-        public GLPLBindlessFragmentShaderTextureOffsetArray(int arbblock, bool usealphablending = false)
+        public GLPLBindlessFragmentShaderTextureOffsetArray(int arbblock, bool usealphablending = false, bool discardiftransparent = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(arbblock), constvalues:new object[] { "usewvalue", usealphablending }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(arbblock), constvalues:new object[] { "usewvalue", usealphablending, "discardiftransparent", discardiftransparent }, auxname: GetType().Name);
         }
 
         public override void Start(GLMatrixCalc c)
@@ -361,13 +361,16 @@ layout (location = 24) uniform  vec2 offset;
 
 out vec4 color;
 const bool usewvalue = false;
+const bool discardiftransparent = false;
 
 void main(void)
 {
     int objno = gl_PrimitiveID/2;
     color = texture(tex[objno], vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
 
-    if ( usewvalue)
+    if ( discardiftransparent && color.w < 0.0001)
+        discard;
+    else if ( usewvalue)
         color.w *= wvalue;
 }
 ";

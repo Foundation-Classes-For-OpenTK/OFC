@@ -90,6 +90,14 @@ namespace GLOFC
                 return v;
             }
         }
+        public static double ToJulianDate(this DateTime date)       // verified that horizons 2451545.000000000 = A.D. 2000-Jan-01 12:00:00.0000 TDB gives same value for 1/1/2000 12:0:0
+        {
+            return date.ToOADate() + 2415018.5;
+        }
+        public static DateTime JulianToDateTime(this double jd)       // verified that horizons 2451545.000000000 = A.D. 2000-Jan-01 12:00:00.0000 TDB gives same value for 1/1/2000 12:0:0
+        {
+            return DateTime.FromOADate(jd - 2415018.5);
+        }
 
     }
 }
