@@ -78,6 +78,12 @@
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Orrery\KeplerOrbitElements.cs" />
+    <Compile Include="Orrery\TestOrreryImport.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Orrery\TestOrreryImport.designer.cs">
+      <DependentUpon>TestOrreryImport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Orrery\TestOrrery.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -388,6 +394,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Geometry\ShaderTestGeoTest1.resx">
       <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Orrery\TestOrreryImport.resx">
+      <DependentUpon>TestOrreryImport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Orrery\TestOrrery.resx">
       <DependentUpon>TestOrrery.cs</DependentUpon>

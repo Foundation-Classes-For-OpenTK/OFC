@@ -21,7 +21,7 @@ namespace TestOpenTk
 {
     public class KeplerOrbitElements
     {
-        public double SemiMajorAxis { get; set; }       // a the sum of the periapsis and apoapsis distances divided by two.
+        public double SemiMajorAxis { get; set; }       // a (meters) the sum of the periapsis and apoapsis distances divided by two.
         public double Eccentricity { get; set; }        // e Eccentricity of orbit
         public double Inclination { get; set; }         // i (radians) Orbital inclination of orbit from the reference plane measured at the ascending node, radians
         public double LongitudeOfAscendingNode { get; set; }    // omega (radians) - angle where the orbit passes upward through the reference plane, normally measured from the reference vernal point of the system, radians
@@ -31,14 +31,20 @@ namespace TestOpenTk
         public double T0 { get; set; }                  // epoch time in days where these values are valid at
 
         // orbiting mass
-        public double CentralMass { get; set; } = 1;    // in KG.  Needed only if your going to use the Cartesian or Orbital Period functions
+        public double CentralMass { get; set; } = 1;    // in KG.  Needed only if your going to use the OrbitPeriod, ToCartesian or Orbit functions
 
-        public double GM { get { return G * CentralMass; } }   
+        public object Tag { get; set; }                 // for other info
+       
+        public double OrbitalPeriodS { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / GM); } } // seconds, keplers third law 
 
+        public double CalculateMass(double orbitalperiodseconds)        // keplers third law backwards
+        {
+            return 4 * Math.PI * Math.PI * SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / G / (orbitalperiodseconds * orbitalperiodseconds);
+        }
+
+        public double GM { get { return G * CentralMass; } }
         public const double G = 6.67430E-11;                   // in m3.kg-1.s-2, wiki https://en.wikipedia.org/wiki/Gravitational_constant
-
         public const double J2000 = 2451545.0;                 // equals January 1st 2000 at 12:00 noon (Horizons 2451545.000000000 = A.D. 2000-Jan-01 12:00:00.0000 TDB)
-        public double OrbitalPeriodS { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / GM); } } // seconds
 
         // in km, degrees and days, as per horizons
         public KeplerOrbitElements(double semimajoraxis, double eccentricity, double inclination, double longitudeofascendingnode, double argumentofperiapsis,
@@ -54,12 +60,12 @@ namespace TestOpenTk
         }
 
         // in km, degrees and days, as per horizons. In form used by https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
-        public KeplerOrbitElements(bool markerunused, double semimajoraxis, double eccentricity,
+        public KeplerOrbitElements(bool markerunused, double semimajoraxiskm, double eccentricity,
                                     double inclination, double longitudeofascendingnode, double longitudeofperihelion,
                                     double meanlongitude, double T0)
         {
             this.Eccentricity = eccentricity;
-            this.SemiMajorAxis = semimajoraxis * 1000;    // to m
+            this.SemiMajorAxis = semimajoraxiskm * 1000;    // to m
             this.Inclination = inclination.Radians();
 
             this.LongitudeOfAscendingNode = ((longitudeofascendingnode + 360) % 360).Radians();
@@ -87,7 +93,7 @@ namespace TestOpenTk
 
             // 1 Calculate Mean Anomaly at time T. The mean anomaly M is a mathematically convenient fictitious "angle" which varies linearly with time, but which does not correspond to a real geometric angle.
 
-            System.Diagnostics.Debug.WriteLine($"At {tdays} A={SemiMajorAxis:E8}m EC={Eccentricity.Degrees():E8} deg OP={OrbitalPeriodS / 60 / 60 / 24:0.##}");
+           // System.Diagnostics.Debug.WriteLine($"At {tdays} A={SemiMajorAxis:E8}m EC={Eccentricity.Degrees():E8} deg OP={OrbitalPeriodS / 60 / 60 / 24:0.##}");
 
             double MAt = MeanAnomalyAtT0;
             if (tdays != T0)     // if not at epoch. T is in days, convert to seconds

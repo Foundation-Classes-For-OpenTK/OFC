@@ -62,59 +62,7 @@ namespace TestOpenTk
             InitializeComponent();
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-
-            Test();
         }
-
-        public void Test()
-        {
-            // JPL Horizons, Earth
-            // Mass x10^24 (kg)= 5.97219+-0.0006
-            // Mean sidereal day, hr    = 23.9344695944
-            // 2451544.500000000 = A.D. 2000 - Jan - 01 00:00:00.0000 TDB
-            // EC = 1.704239718110438E-02 QR = 1.471030419507748E+08 IN = 2.668809336274974E-04
-            // OM = 1.639748712430063E+02 W = 2.977671795415902E+02 Tp = 2451546.338324736338
-            // N = 1.140115369960723E-05 MA = 3.581891404240206E+02 TA = 3.581260865474801E+02
-            // A = 1.496534962738141E+08 AD = 1.522039505968534E+08 PR = 3.157575184802588E+07
-            // X =-2.627903751048988E+07 Y = 1.445101984929515E+08 Z = 3.025245352813601E+04
-            // VX = -2.983052803412253E+01 VY = -5.220465675237847E+00 VZ = -1.014855999592612E-04
-            // LT = 4.899395311714214E+02 RG = 1.468801763212481E+08 RR = 2.008918553953827E-01
-
-            double T0 = 2451544.500000000;
-            double Me = 5.97219E24;
-            Msol = 1.98840987096774E+30;        // https://en.wikipedia.org/wiki/Gravitational_constant
-
-            //KeplerOrbitElements kp = new KeplerOrbitElements(semimajoraxis: 1.496534962738141E+08,  
-            //                                                  eccentricity: 1.704239718110438E-02,      // 
-            //                                                  inclination: 2.668809336274974E-04,
-            //                                                  longitudeofascendingnode: 1.639748712430063E+02,
-            //                                                  argumentofperiapsis: 2.977671795415902E+02,
-            //                                                  meananomlalyT0: 3.581891404240206E+02,
-            //                                                  T0);
-            //KeplerOrbitElements kp = new KeplerOrbitElements(semimajoraxis: 1.4960E+06,  //verified against https://en.wikipedia.org/wiki/Earth%27s_orbit
-            //                                                     eccentricity: 0.0167086,
-            //                                                     inclination: 7.155,
-            //                                                     longitudeofascendingnode: 174.9,
-            //                                                     argumentofperiapsis: 288.1,
-            //                                                     meananomlalyT0: 3.581891404240206E+02,
-            //                                                     T0);
-
-            KeplerOrbitElements kp = new KeplerOrbitElements(semimajoraxis: 1.49596E+08,  //verified against https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
-                                                                 eccentricity: 0.0167086,
-                                                                 inclination: 7.155,
-                                                                 longitudeofascendingnode: (360 + -11.26064) % 360,
-                                                                 argumentofperiapsis: 102.94719,
-                                                                 meananomlalyT0: (360 + -11.26064 - 102.94719) % 360,
-                                                                 T0);
-
-            //var v1 = kp.ToCartesian(T0, Msol);
-            //var v2 = kp.ToCartesian(T0 + 1, Msol);
-            //var v3 = kp.ToCartesian(T0 + 2, Msol);
-            //var v4 = kp.ToCartesian(T0 + 3, Msol);
-
-        }
-
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -230,28 +178,28 @@ namespace TestOpenTk
             bodypositions = new GLRenderDataTranslationRotationTexture[4];
 
             // earth
-            bodies[0] = new KeplerOrbitElements(true, semimajoraxis: 0.38709893 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
+            bodies[0] = new KeplerOrbitElements(true, semimajoraxiskm: 0.38709893 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
                                                                  eccentricity: 0.20563069,
                                                                  inclination: 7.00487,
                                                                  longitudeofascendingnode: 48.33167,
                                                                  longitudeofperihelion: 77.45645,
                                                                  meanlongitude: 252.25084,
                                                                  currentjd);
-            bodies[1] = new KeplerOrbitElements(true, semimajoraxis: 0.72333199 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html
+            bodies[1] = new KeplerOrbitElements(true, semimajoraxiskm: 0.72333199 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html
                                                                  eccentricity: 0.00677323,
                                                                  inclination: 3.39471,
                                                                  longitudeofascendingnode: 76.68069,
                                                                  longitudeofperihelion: 131.53298,
                                                                  meanlongitude: 181.97973,
                                                                  currentjd);
-            bodies[2] = new KeplerOrbitElements(true, semimajoraxis: 1.49596E+08,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
+            bodies[2] = new KeplerOrbitElements(true, semimajoraxiskm: 1.49596E+08,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
                                                                  eccentricity: 0.0167086,
                                                                  inclination: 0.00005,
                                                                  longitudeofascendingnode: -11.26064,
                                                                  longitudeofperihelion: 102.94719,
                                                                  meanlongitude: 100.46435,
                                                                  currentjd);
-            bodies[3] = new KeplerOrbitElements(true, semimajoraxis: 1.52366231 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+            bodies[3] = new KeplerOrbitElements(true, semimajoraxiskm: 1.52366231 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
                                                                  eccentricity: 0.09341233,
                                                                  inclination: 1.85061,
                                                                  longitudeofascendingnode: 49.57854,
@@ -264,6 +212,9 @@ namespace TestOpenTk
             for (int i = 0; i < bodies.Length; i++)
             {
                 bodies[i].CentralMass = Msol;
+
+                System.Diagnostics.Debug.WriteLine($"{i} {bodies[i].OrbitalPeriodS/60/60/24} {bodies[i].CalculateMass(bodies[i].OrbitalPeriodS)}");
+
                 bodypositions[i] = new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(0, 0, 0));
 
                 GLRenderState rt = GLRenderState.Tri();

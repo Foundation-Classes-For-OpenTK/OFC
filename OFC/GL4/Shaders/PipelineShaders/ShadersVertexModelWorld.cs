@@ -355,10 +355,12 @@ void main(void)
     {
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
-        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation()
+        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             Transform = new GLRenderDataTranslationRotation();
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues:new object[] {
+                                                                    "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
         }
 
         public override void Start(GLMatrixCalc c)
@@ -376,6 +378,7 @@ void main(void)
 @"
 #version 450 core
 #include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.vec4.glsl
 
 layout (location = 0) in vec4 position;
 layout(location = 1) in vec2 texco;
@@ -388,11 +391,30 @@ out gl_PerVertex {
         float gl_ClipDistance[];
     };
 
+const float autoscale = 0;
+const float autoscalemax = 0;
+const float autoscalemin = 0;
+const bool useeyedistance = true;
+
 layout(location = 0) out vec2 vs_textureCoordinate;
 
 void main(void)
 {
-	gl_Position = mc.ProjectionModelMatrix * objecttransform *  commontransform * position;        // order important
+    vec4 pos = position;        // model positions
+
+    if ( autoscale>0)
+    {
+        if ( useeyedistance )
+            pos = Scale(pos,clamp(mc.EyeDistance/autoscale,autoscalemin,autoscalemax));
+        else
+        {
+            vec4 worldpos = vec4(objecttransform[3][0],objecttransform[3][1],objecttransform[3][2],0);
+            float d = distance(mc.EyePosition,worldpos);            // find distance between eye and world pos
+            pos = Scale(pos,clamp(d/autoscale,autoscalemin,autoscalemax));
+        }
+    }
+
+	gl_Position = mc.ProjectionModelMatrix * objecttransform *  commontransform * pos;        // order important
     vs_textureCoordinate = texco;
 }
 ";
