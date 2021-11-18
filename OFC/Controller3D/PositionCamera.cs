@@ -26,8 +26,8 @@ namespace GLOFC.Controller
     {
         #region Positions
 
-        public Vector3 LookAt { get { return lookat; } set { KillSlew(); float d = EyeDistance; lookat = value; SetEyePositionFromLookat(cameradir, d);} }
-        public Vector3 EyePosition { get { return eyeposition; } set { KillSlew(); float d = EyeDistance; eyeposition = value; SetLookatPositionFromEye(cameradir, d); } }
+        public Vector3 LookAt { get { return lookat; } set { KillSlew(); Vector3 el = eyeposition - lookat; lookat = value; eyeposition = lookat + el;} }
+        public Vector3 EyePosition { get { return eyeposition; } set { KillSlew(); Vector3 el = eyeposition - lookat; eyeposition = value; lookat = eyeposition-el; } }
 
         public float EyeDistance { get { return (lookat - EyePosition).Length; } }
 
