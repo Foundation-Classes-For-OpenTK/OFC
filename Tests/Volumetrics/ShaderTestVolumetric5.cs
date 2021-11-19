@@ -61,7 +61,7 @@ namespace TestOpenTk
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderModelViewCoord(), new GLPLFragmentShaderFixedColor(c));
+                AddVertexFragment(new GLPLVertexShaderViewSpaceCoord(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 

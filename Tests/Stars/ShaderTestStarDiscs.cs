@@ -128,15 +128,16 @@ namespace TestOpenTk
             {
                 Vector4[] pos = new Vector4[3];
                 pos[0] = new Vector4(-20, 0, 10, 0);
-                pos[1] = new Vector4(0, 0, 10, 0);
-                pos[2] = new Vector4(20, 0, 10, 0);
+                pos[1] = new Vector4(0, 0, 10, 1);
+                pos[2] = new Vector4(20, 0, 10, 2);
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(3, 10.0f);
 
                 GLRenderState rt = GLRenderState.Tri();
                 GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
 
-                var shader = new GLShaderPipeline(new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), new GLPLStarSurfaceFragmentShader());
+                var vertshader = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Red, Color.Green, Color.Blue });
+                var shader = new GLShaderPipeline(vertshader, new GLPLStarSurfaceFragmentShader());
                 items.Add(shader, "STAR-M2");
                 rObjects.Add(shader, ri);
             }
@@ -189,7 +190,7 @@ namespace TestOpenTk
             if (items.Contains("STAR-M3"))
             {
                 var vid = items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-                ((GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
+                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
                 var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;

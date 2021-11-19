@@ -48,6 +48,8 @@ namespace TestOpenTk
         GLMatrixCalc matrixcalc;
         List<KeplerOrbitElements> bodylist = new List<KeplerOrbitElements>();
         GLRenderDataTranslationRotationTexture[] bodypositions;
+        GLRenderDataWorldPositionColor[] orbitpositions;
+
         double currentjd;
         double jdscaling;
 
@@ -124,8 +126,6 @@ namespace TestOpenTk
                 return (float)ms * v;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-
             items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
             items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "dotted");
@@ -139,18 +139,22 @@ namespace TestOpenTk
                 int markers = (int)(gridlines * mscaling);
                 int nolines = gridsize / markers * 2 + 1;
 
+                var shader = new GLColorShaderWithWorldCoord();
+                items.Add(shader);
+
                 GLRenderState lines = GLRenderState.Lines(1);
                 lines.DepthTest = false;
 
+
                 Color gridcolour = Color.FromArgb(100, 60, 60, 60);
-                rObjects.Add(items.Shader("COSW"),
+                rObjects.Add(shader,
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(-gridsize, -0, gridsize), new Vector3(markers, 0, 0), nolines),
                                                         new Color4[] { gridcolour })
                                     );
 
 
-                rObjects.Add(items.Shader("COSW"),
+                rObjects.Add(shader,
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                     GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, markers), nolines),
                                                         new Color4[] { gridcolour }));
@@ -191,6 +195,10 @@ namespace TestOpenTk
             var baryshader = new GLShaderPipeline(baryvertshader, new GLPLFragmentShaderTexture());
             items.Add(baryshader);
 
+            var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.Red, Color.Yellow });
+            var orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
+
+            orbitpositions = new GLRenderDataWorldPositionColor[bodylist.Count];
 
             for (int i = 0 ; i < bodylist.Count; i++)
             {
@@ -207,7 +215,8 @@ namespace TestOpenTk
                 if ( ai.RadiusKm == 0 )
                 {
                     orbitcolour = Color.Yellow;
-                    imageradius = 1000e3f*mscaling;
+                    imageradius = 10000e3f * mscaling;
+                    imageradius = 1e3f * mscaling;
                     img = items.Tex("dotted");
                     shader = baryshader;
                 }
@@ -229,13 +238,17 @@ namespace TestOpenTk
                 if (kepler.SemiMajorAxis > 0)
                 {
                     Vector4[] orbit = bodylist[i].Orbit(currentjd, 0.1, mscaling);
+                    
 
                     GLRenderState lines = GLRenderState.Lines(1);
                     lines.DepthTest = false;
 
+                    orbitpositions[i] = new GLRenderDataWorldPositionColor();
+                    orbitpositions[i].ColorIndex = ai.RadiusKm > 0 ? 0 : 1;
+
+                    var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, orbitpositions[i]);
                     // TBD need to be able to offset this with a uniform
-                    rObjects.Add(items.Shader("COSW"),
-                                GLRenderableItem.CreateVector4Color4(items, PrimitiveType.LineStrip, lines, orbit, new Color4[] { orbitcolour }));
+                    rObjects.Add(orbitlineshader, ri);
                 }
 
                 GLRenderState rt = GLRenderState.Tri();
@@ -257,77 +270,6 @@ namespace TestOpenTk
             systemtimer.Tick += new EventHandler(SystemTick);
             systemtimer.Start();
         }
-
-        private void BodyList(JObject jo, List<KeplerOrbitElements> bodylist, double prevmass, int index)
-        {
-            var kepler = JSONtoKO(jo);
-            AdditionalInfo ai = kepler.Tag as AdditionalInfo;
-            if ( prevmass == 0 && kepler.SemiMajorAxis > 0 )
-            {
-                kepler.CentralMass = kepler.CalculateMass(ai.OrbitalPeriod);
-            }
-            else 
-                kepler.CentralMass = prevmass;
-
-            ai.CentralBodyIndex = index;
-
-            index = bodylist.Count;
-            bodylist.Add(kepler);
-
-            if (jo.ContainsKey("Bodies"))
-            {
-                JArray ja = jo["Bodies"] as JArray;
-                foreach (var o in ja)
-                {
-                    BodyList(o as JObject, bodylist, ai.Mass , index);
-                }
-            }
-        }
-
-        public class AdditionalInfo
-        {
-            public string Name { get; set; }                // for naming
-            public string FullName { get; set; }                // for naming
-            public string NodeType { get; set; }                // for naming
-            public string StarClass { get; set; }                // for naming
-            public string PlanetClass { get; set; }                // for naming
-            public Vector3d CalculatedPosition { get; set; }    // used during calculation
-            public int CentralBodyIndex { get; set; }            // central body reference
-            public double Mass { get; set; } = 1;        // in KG.  Not needed for orbital parameters
-            public double OrbitalPeriod { get; set; }
-            public double AxialTiltDeg { get; set; }
-            public double RadiusKm { get; set; }          // in km
-        }
-
-        private KeplerOrbitElements JSONtoKO(JObject json)
-        {
-            string time = json["Epoch"].Str();
-            DateTime epoch = DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-            KeplerOrbitElements k = new KeplerOrbitElements(true,
-                    json["SemiMajorAxis"].Double(0),        // km
-                    json["Eccentricity"].Double(0),
-                    json["Inclination"].Double(0),
-                    json["AscendingNode"].Double(0),
-                    json["Periapis"].Double(0),
-                    json["MeanAnomaly"].Double(0),
-                    epoch.ToJulianDate()
-                );
-            AdditionalInfo ai = new AdditionalInfo() 
-            {
-                Name = json["Name"].Str(),
-                FullName = json["FullName"].Str(),
-                NodeType = json["NodeType"].Str() , 
-                StarClass = json["StarClass"].StrNull(), PlanetClass = json["PlanetClass"].StrNull(),
-                Mass = json["Mass"].Double(0),
-                OrbitalPeriod = json["OrbitalPeriod"].Double(0),
-                AxialTiltDeg = json["AxialTilt"].Double(0),
-                RadiusKm = json["Radius"].Double(0),
-            };
-            k.Tag = ai;
-            return k;
-
-        }
-
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
@@ -346,13 +288,14 @@ namespace TestOpenTk
 
                 if (kepler.SemiMajorAxis > 0)
                 {
-                    positions[i] = kepler.ToCartesian(currentjd);
+                    positions[i] = kepler.ToCartesian(currentjd);       // in meters around 0,0,0
+                    var cbpos = positions[ai.CentralBodyIndex];         // central body position
+                    positions[i] += cbpos;                              // offset
 
-                    positions[i] += positions[ai.CentralBodyIndex];     // offset by central body index
+                    orbitpositions[i].WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
+                    //orbitpositions[i].WorldPosition = new Vector3(50e9f*mscaling, 0, 0);
 
                     // Kepler works around the XY plane, openGL uses the XZ plane
-                    
-                    // tbd causes some shudder knocking it down to float..
 
                     Vector3 pos3 = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
                     bodypositions[i].Position = pos3;
@@ -362,7 +305,6 @@ namespace TestOpenTk
             if (track >= 0)
             {
                 gl3dcontroller.MoveLookAt(new Vector3d(positions[track].X, positions[track].Z, positions[track].Y) * mscaling);
-                //gl3dcontroller.MoveLookAt(new Vector3((float)positions[track].X, (float)positions[track].Z, (float)positions[track].Y) * mscaling);
             }
 
             datalabel.Text = $"{bodypositions[1].Position/mscaling/1000}" + Environment.NewLine;
@@ -398,6 +340,79 @@ namespace TestOpenTk
 
             this.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance}";
         }
+
+
+        private void BodyList(JObject jo, List<KeplerOrbitElements> bodylist, double prevmass, int index)
+        {
+            var kepler = JSONtoKO(jo);
+            AdditionalInfo ai = kepler.Tag as AdditionalInfo;
+            if (prevmass == 0 && kepler.SemiMajorAxis > 0)
+            {
+                kepler.CentralMass = kepler.CalculateMass(ai.OrbitalPeriod);
+            }
+            else
+                kepler.CentralMass = prevmass;
+
+            ai.CentralBodyIndex = index;
+
+            index = bodylist.Count;
+            bodylist.Add(kepler);
+
+            if (jo.ContainsKey("Bodies"))
+            {
+                JArray ja = jo["Bodies"] as JArray;
+                foreach (var o in ja)
+                {
+                    BodyList(o as JObject, bodylist, ai.Mass, index);
+                }
+            }
+        }
+
+        public class AdditionalInfo
+        {
+            public string Name { get; set; }                // for naming
+            public string FullName { get; set; }                // for naming
+            public string NodeType { get; set; }                // for naming
+            public string StarClass { get; set; }                // for naming
+            public string PlanetClass { get; set; }                // for naming
+            public Vector3d CalculatedPosition { get; set; }    // used during calculation
+            public int CentralBodyIndex { get; set; }            // central body reference
+            public double Mass { get; set; } = 1;        // in KG.  Not needed for orbital parameters
+            public double OrbitalPeriod { get; set; }
+            public double AxialTiltDeg { get; set; }
+            public double RadiusKm { get; set; }          // in km
+        }
+
+        private KeplerOrbitElements JSONtoKO(JObject json)
+        {
+            string time = json["Epoch"].Str();
+            DateTime epoch = DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+            KeplerOrbitElements k = new KeplerOrbitElements(true,
+                    json["SemiMajorAxis"].Double(0),        // km
+                    json["Eccentricity"].Double(0),
+                    json["Inclination"].Double(0),
+                    json["AscendingNode"].Double(0),
+                    json["Periapis"].Double(0),
+                    json["MeanAnomaly"].Double(0),
+                    epoch.ToJulianDate()
+                );
+            AdditionalInfo ai = new AdditionalInfo()
+            {
+                Name = json["Name"].Str(),
+                FullName = json["FullName"].Str(),
+                NodeType = json["NodeType"].Str(),
+                StarClass = json["StarClass"].StrNull(),
+                PlanetClass = json["PlanetClass"].StrNull(),
+                Mass = json["Mass"].Double(0),
+                OrbitalPeriod = json["OrbitalPeriod"].Double(0),
+                AxialTiltDeg = json["AxialTilt"].Double(0),
+                RadiusKm = json["Radius"].Double(0),
+            };
+            k.Tag = ai;
+            return k;
+
+        }
+
 
 
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )

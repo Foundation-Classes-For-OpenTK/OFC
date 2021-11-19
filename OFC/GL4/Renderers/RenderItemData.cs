@@ -212,5 +212,23 @@ namespace GLOFC.GL4
     }
 
 
+    public class GLRenderDataWorldPositionColor : IGLRenderItemData
+    {
+        public Vector3 WorldPosition { get; set; }
+        public int ColorIndex { get; set; } = 0;
+
+        public int PositionBind { get; set; } = 22;
+
+        public GLRenderDataWorldPositionColor()
+        {
+        }
+
+        public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
+        {
+            GL.ProgramUniform4(shader.GetShader(ShaderType.VertexShader).Id, PositionBind, new Vector4(WorldPosition.X, WorldPosition.Y, WorldPosition.Z,ColorIndex));
+        }
+    }
+
+
 
 }
