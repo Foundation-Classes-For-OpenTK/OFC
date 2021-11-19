@@ -130,6 +130,7 @@ void main(void)
 
 
     // Pipeline shader, Translation, Texture, Common transform, Object transform, Auto Scale
+    // uniform 22 should be supplied via RenderItemData
     // Requires:
     //      location 0 : position: vec4 vertex array of model positions
     //      location 1 : vec2 texture co-ords

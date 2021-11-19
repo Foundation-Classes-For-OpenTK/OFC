@@ -497,7 +497,7 @@ namespace TestOpenTk
 
         private void Otherkeys(KeyboardMonitor h)
         {
-            if ( h.HasBeenPressed(Keys.F1))
+            if ( h.HasBeenPressed(Keys.F1, KeyboardMonitor.ShiftState.None))
             {
                 displaycontrol.DumpTrees(0,null);
             }

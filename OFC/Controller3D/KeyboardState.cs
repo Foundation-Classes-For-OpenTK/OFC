@@ -14,6 +14,7 @@
  * 
  */
 
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
@@ -50,16 +51,32 @@ namespace GLOFC.Controller
             return ret;
         }
 
-        public bool HasBeenPressed(Keys key)                        // is pressed, remove from list saying it has been pressed.  True if no shift state
+        public int HasBeenPressed(ShiftState state, params Keys[] keys)       // is pressed and in this state, remove from list saying it has been pressed.
         {
-            bool ret = false;
-            if (hasbeenpressed.ContainsKey(key) && hasbeenpressed[key] == ShiftState.None)
+            for (int i = 0; i < keys.Length; i++)
             {
-                ret = true;
-                hasbeenpressed.Remove(key);
+                if (hasbeenpressed.ContainsKey(keys[i]) && hasbeenpressed[keys[i]] == state)
+                {
+                    hasbeenpressed.Remove(keys[i]);
+                    return i;
+                }
             }
 
-            return ret;
+            return -1;
+        }
+        public Tuple<int,ShiftState> HasBeenPressed(params Keys[] keys)       // is pressed, return index and state 
+        {
+            for (int i = 0; i < keys.Length; i++)
+            {
+                if (hasbeenpressed.ContainsKey(keys[i]) )
+                {
+                    var state = hasbeenpressed[keys[i]];
+                    hasbeenpressed.Remove(keys[i]);
+                    return new Tuple<int, ShiftState>(i,state);
+                }
+            }
+
+            return null;
         }
 
         public void ClearHasBeenPressed()                                    // all has been checked, clear them
@@ -82,16 +99,16 @@ namespace GLOFC.Controller
                 return null;
         }
 
-        public bool IsCurrentlyPressed(ShiftState state, params Keys[] keys)  // is currently pressed and in this shift state
+        public int IsCurrentlyPressed(ShiftState state, params Keys[] keys)  // is currently pressed and in this shift state
         {
             System.Diagnostics.Debug.Assert(keys.Length > 0);
-            foreach (var k in keys)
+            for (int i = 0; i < keys.Length; i++)
             {
-                if (IsCurrentlyPressed(state, k))
-                    return true;
+                if (IsCurrentlyPressed(state, keys[i]))
+                    return i;
             }
 
-            return false;
+            return -1;
         }
 
         public ShiftState? IsCurrentlyPressed(params Keys[] keys)  // is currently pressed and in this shift state

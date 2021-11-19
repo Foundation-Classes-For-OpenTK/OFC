@@ -421,21 +421,23 @@ namespace TestOpenTk
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
+            int deckey = kb.HasBeenPressed(KeyboardMonitor.ShiftState.None, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
+            if (deckey>=0)
+            {
+                for(int i = 0; i < bodylist.Count; i++)
+                {
+                    var kepler = bodylist[i];
+                    AdditionalInfo ai = kepler.Tag as AdditionalInfo;
+                    if (ai.Name.InvariantParseInt(-1) == deckey+1)
+                    {
+                        track = i;
+                        break;
+                    }
+                }
+            }
             if (kb.HasBeenPressed(Keys.D0, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 track = -1;
-            }
-            if (kb.HasBeenPressed(Keys.D1, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                track = 1;
-            }
-            if (kb.HasBeenPressed(Keys.D2, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                track = 2;
-            }
-            if (kb.HasBeenPressed(Keys.D3, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
-            {
-                track = 3;
             }
 
 

@@ -533,13 +533,13 @@ namespace GLOFC.Controller
         {
             bool changed = false;
 
-            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.None, Keys.Add, Keys.M))
+            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.None, Keys.Add, Keys.M)>=0)
             {
                 Zoom(adjustment);
                 changed = true;
             }
 
-            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.None, Keys.Subtract, Keys.N))
+            if (kbd.IsCurrentlyPressed(KeyboardMonitor.ShiftState.None, Keys.Subtract, Keys.N)>=0)
             {
                 Zoom(1.0f / adjustment);
                 changed = true;
