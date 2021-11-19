@@ -78,6 +78,7 @@
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Orrery\KeplerOrbitElements.cs" />
+    <Compile Include="Orrery\OrbitalBodyInformation.cs" />
     <Compile Include="Orrery\TestOrreryImport.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -159,7 +160,7 @@
     <Compile Include="Galaxy\GalMap\GalacticMapObject.cs" />
     <Compile Include="Galaxy\GalMap\GalacticMapping.cs" />
     <Compile Include="Galaxy\GalMap\GalMapType.cs" />
-    <Compile Include="Galaxy\GalMap\Jsonext.cs" />
+    <Compile Include="BaseUtils\Jsonext.cs" />
     <Compile Include="Galaxy\Map.cs" />
     <Compile Include="Galaxy\MapMenu.cs" />
     <Compile Include="Galaxy\GalMapObjects.cs" />

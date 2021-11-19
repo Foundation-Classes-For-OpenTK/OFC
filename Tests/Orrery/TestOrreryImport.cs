@@ -180,8 +180,7 @@ namespace TestOpenTk
 
             string para = File.ReadAllText(@"c:\code\bodies.json");
             JObject jo = JObject.Parse(para);
-
-            BodyList(jo,bodylist,0,-1);
+            OrbitalBodyInformation.AddToBodyList(jo,bodylist,0,-1);
 
             bodypositions = new GLRenderDataTranslationRotationTexture[bodylist.Count];
 
@@ -191,7 +190,7 @@ namespace TestOpenTk
             var bodyvertplanetshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(0.25e6f * 1000 * mscaling, 1, 10000);
             var bodyplanetshader = new GLShaderPipeline(bodyvertplanetshader, new GLPLFragmentShaderTexture());
             items.Add(bodyplanetshader);
-            var baryvertshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(0.25e9f * mscaling, 1, 10000);
+            var baryvertshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(0.25e6f * 1000 * mscaling, 1, 10000);
             var baryshader = new GLShaderPipeline(baryvertshader, new GLPLFragmentShaderTexture());
             items.Add(baryshader);
 
@@ -203,7 +202,7 @@ namespace TestOpenTk
             for (int i = 0 ; i < bodylist.Count; i++)
             {
                 var kepler = bodylist[i];
-                AdditionalInfo ai = kepler.Tag as AdditionalInfo;
+                OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
 
                 double imageradius = ai.RadiusKm * 1000 * mscaling;
                 GLTextureBase img = null;
@@ -215,8 +214,7 @@ namespace TestOpenTk
                 if ( ai.RadiusKm == 0 )
                 {
                     orbitcolour = Color.Yellow;
-                    imageradius = 10000e3f * mscaling;
-                    imageradius = 1e3f * mscaling;
+                    imageradius = 2000e3f * mscaling;       // X km sphere
                     img = items.Tex("dotted");
                     shader = baryshader;
                 }
@@ -284,7 +282,7 @@ namespace TestOpenTk
             for (int i = 0; i < bodylist.Count; i++)
             {
                 var kepler = bodylist[i];
-                AdditionalInfo ai = kepler.Tag as AdditionalInfo;
+                OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
 
                 if (kepler.SemiMajorAxis > 0)
                 {
@@ -342,78 +340,6 @@ namespace TestOpenTk
         }
 
 
-        private void BodyList(JObject jo, List<KeplerOrbitElements> bodylist, double prevmass, int index)
-        {
-            var kepler = JSONtoKO(jo);
-            AdditionalInfo ai = kepler.Tag as AdditionalInfo;
-            if (prevmass == 0 && kepler.SemiMajorAxis > 0)
-            {
-                kepler.CentralMass = kepler.CalculateMass(ai.OrbitalPeriod);
-            }
-            else
-                kepler.CentralMass = prevmass;
-
-            ai.CentralBodyIndex = index;
-
-            index = bodylist.Count;
-            bodylist.Add(kepler);
-
-            if (jo.ContainsKey("Bodies"))
-            {
-                JArray ja = jo["Bodies"] as JArray;
-                foreach (var o in ja)
-                {
-                    BodyList(o as JObject, bodylist, ai.Mass, index);
-                }
-            }
-        }
-
-        public class AdditionalInfo
-        {
-            public string Name { get; set; }                // for naming
-            public string FullName { get; set; }                // for naming
-            public string NodeType { get; set; }                // for naming
-            public string StarClass { get; set; }                // for naming
-            public string PlanetClass { get; set; }                // for naming
-            public Vector3d CalculatedPosition { get; set; }    // used during calculation
-            public int CentralBodyIndex { get; set; }            // central body reference
-            public double Mass { get; set; } = 1;        // in KG.  Not needed for orbital parameters
-            public double OrbitalPeriod { get; set; }
-            public double AxialTiltDeg { get; set; }
-            public double RadiusKm { get; set; }          // in km
-        }
-
-        private KeplerOrbitElements JSONtoKO(JObject json)
-        {
-            string time = json["Epoch"].Str();
-            DateTime epoch = DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-            KeplerOrbitElements k = new KeplerOrbitElements(true,
-                    json["SemiMajorAxis"].Double(0),        // km
-                    json["Eccentricity"].Double(0),
-                    json["Inclination"].Double(0),
-                    json["AscendingNode"].Double(0),
-                    json["Periapis"].Double(0),
-                    json["MeanAnomaly"].Double(0),
-                    epoch.ToJulianDate()
-                );
-            AdditionalInfo ai = new AdditionalInfo()
-            {
-                Name = json["Name"].Str(),
-                FullName = json["FullName"].Str(),
-                NodeType = json["NodeType"].Str(),
-                StarClass = json["StarClass"].StrNull(),
-                PlanetClass = json["PlanetClass"].StrNull(),
-                Mass = json["Mass"].Double(0),
-                OrbitalPeriod = json["OrbitalPeriod"].Double(0),
-                AxialTiltDeg = json["AxialTilt"].Double(0),
-                RadiusKm = json["Radius"].Double(0),
-            };
-            k.Tag = ai;
-            return k;
-
-        }
-
-
 
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {
@@ -421,16 +347,19 @@ namespace TestOpenTk
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
-            int deckey = kb.HasBeenPressed(KeyboardMonitor.ShiftState.None, Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
-            if (deckey>=0)
+            var res = kb.HasBeenPressed(Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
+            if (res != null)
             {
-                for(int i = 0; i < bodylist.Count; i++)
+                for (int i = 0; i < bodylist.Count; i++)
                 {
                     var kepler = bodylist[i];
-                    AdditionalInfo ai = kepler.Tag as AdditionalInfo;
-                    if (ai.Name.InvariantParseInt(-1) == deckey+1)
+                    OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
+                    if (ai.Name.InvariantParseInt(-1) == res.Item1 + 1)
                     {
-                        track = i;
+                        if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
+                            track = ai.CentralBodyIndex;
+                        else
+                            track = i;
                         break;
                     }
                 }
