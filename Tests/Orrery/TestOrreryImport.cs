@@ -35,7 +35,7 @@ namespace TestOpenTk
     public partial class TestOrreryImport : Form
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
-        private Controller3D gl3dcontroller;
+        private Controller3Dd gl3dcontroller;
         GLControlDisplay displaycontrol;
         GLLabel status;
         GLLabel datalabel;
@@ -110,12 +110,12 @@ namespace TestOpenTk
             displaycontrol.Add(datalabel);
 
 
-            gl3dcontroller = new Controller3D();
+            gl3dcontroller = new Controller3Dd();
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.ZoomDistance = 4000F;
             gl3dcontroller.PosCamera.ZoomMin = 0.001f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.05f;
-            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(135f, 0, 0f), 0.025F);
+            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0f), 0.025F);
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
                 double eyedistr = Math.Pow(eyedist, 1.0);
@@ -228,7 +228,7 @@ namespace TestOpenTk
 
                 if (kepler.SemiMajorAxis > 0)
                 {
-                    Vector4[] orbit = bodylist[i].Orbit(currentjd, 1, mscaling);
+                    Vector4[] orbit = bodylist[i].Orbit(currentjd, 0.1, mscaling);
 
                     GLRenderState lines = GLRenderState.Lines(1);
                     lines.DepthTest = false;
@@ -333,37 +333,8 @@ namespace TestOpenTk
             items.Dispose();
         }
 
-        ulong lasttime = ulong.MaxValue;
-        private void ControllerDraw(Controller3D mc, ulong time)
-        {
-            //System.Diagnostics.Debug.WriteLine("Draw");
-
-            GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
-
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc,false);
-
-            if (jdscaling != 0 && lasttime != ulong.MaxValue)
-            {
-                var diff = time - lasttime;     // ms between calls
-                currentjd += diff / (60.0 * 60 * 24 * 1000) * jdscaling;        // convert ms delta to days, with scaling
-            }
-            lasttime = time;
-
-            var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.LookAt, true);
-
-            this.Text = $"Looking at {gl3dcontroller.MatrixCalc.LookAt.X / mscaling / 1000:0.},{gl3dcontroller.MatrixCalc.LookAt.Y / mscaling / 1000:0.},{gl3dcontroller.MatrixCalc.LookAt.Z / mscaling / 1000:0.} " +
-                        $"from {gl3dcontroller.MatrixCalc.EyePosition.X / mscaling / 1000:0.},{gl3dcontroller.MatrixCalc.EyePosition.Y / mscaling / 1000:0.},{gl3dcontroller.MatrixCalc.EyePosition.Z / mscaling / 1000:0.} "+
-                        $"cdir {gl3dcontroller.PosCamera.CameraDirection} azel {azel} zoom {gl3dcontroller.PosCamera.ZoomFactor} " +
-                        $"dist {gl3dcontroller.MatrixCalc.EyeDistance / mscaling/1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
-
-            float scale = 0.25e9f * mscaling;
-            this.Text += $" {scale} eye {gl3dcontroller.MatrixCalc.EyeDistance} {gl3dcontroller.MatrixCalc.EyeDistance / scale}";
-        }
-
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             status.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}";
 
             Vector3d[] positions = new Vector3d[bodylist.Count];
@@ -380,18 +351,54 @@ namespace TestOpenTk
                     positions[i] += positions[ai.CentralBodyIndex];     // offset by central body index
 
                     // Kepler works around the XY plane, openGL uses the XZ plane
+                    
+                    // tbd causes some shudder knocking it down to float..
+
                     Vector3 pos3 = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
                     bodypositions[i].Position = pos3;
                 }
             }
 
             if (track >= 0)
-                gl3dcontroller.PosCamera.LookAt = bodypositions[track].Position;
+            {
+                gl3dcontroller.MoveLookAt(new Vector3d(positions[track].X, positions[track].Z, positions[track].Y) * mscaling);
+                //gl3dcontroller.MoveLookAt(new Vector3((float)positions[track].X, (float)positions[track].Z, (float)positions[track].Y) * mscaling);
+            }
 
             datalabel.Text = $"{bodypositions[1].Position/mscaling/1000}" + Environment.NewLine;
 
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys,0.0001f,0.0001f);
+
             gl3dcontroller.Redraw();
         }
+
+        ulong lasttime = ulong.MaxValue;
+        private void ControllerDraw(Controller3Dd mc, ulong time)
+        {
+            //System.Diagnostics.Debug.WriteLine("Draw");
+
+            GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
+            mcub.SetText(gl3dcontroller.MatrixCalc);
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
+
+            if (jdscaling != 0 && lasttime != ulong.MaxValue)
+            {
+                var diff = time - lasttime;     // ms between calls
+                currentjd += diff / (60.0 * 60 * 24 * 1000) * jdscaling;        // convert ms delta to days, with scaling
+            }
+            lasttime = time;
+
+            var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.LookAt, true);
+
+            this.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.} " +
+                        $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.} " +
+                        $"cdir {gl3dcontroller.PosCamera.CameraDirection} azel {azel} zoom {gl3dcontroller.PosCamera.ZoomFactor} " +
+                        $"dist {gl3dcontroller.PosCamera.EyeDistance / mscaling / 1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
+
+            this.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance}";
+        }
+
 
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )
         {

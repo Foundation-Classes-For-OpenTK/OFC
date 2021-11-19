@@ -184,6 +184,51 @@ namespace GLOFC
             CountMatrixCalcs++;
         }
 
+
+        private Vector3d cameranormald = new Vector3d(0, 0, 1);
+
+        // double version
+        public void CalculateModelMatrix(Vector3d lookatd, Vector3d eyepositiond, Vector2d cameradirection, double camerarotation)
+        {
+            LookAt = new Vector3((float)lookatd.X, (float)lookatd.Y, (float)lookatd.Z);      // record for shader use
+            EyePosition = new Vector3((float)eyepositiond.X, (float)eyepositiond.Y, (float)eyepositiond.Z);
+            EyeDistance = (float)((lookatd-eyepositiond).Length);
+
+            //  System.Diagnostics.Debug.WriteLine($"CMM {lookat} {eyeposition} dist {EyeDistance} {cameradirection} {camerarotation}");
+
+            if (InPerspectiveMode)
+            {
+                Matrix4d transform = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees
+
+                transform *= Matrix4d.CreateRotationX((double)(cameradirection.X.Radians()));     // rotate around cameradir
+                transform *= Matrix4d.CreateRotationY((double)(cameradirection.Y.Radians()));
+                transform *= Matrix4d.CreateRotationZ((double)(camerarotation.Radians()));
+
+                Vector3d cameranormalrot = Vector3d.Transform(cameranormald, transform);       // move cameranormal to rotate around current direction
+
+                var mm = Matrix4d.LookAt(eyepositiond, lookatd, cameranormalrot);   // from eye, look at target, with normal giving the rotation of the look
+                ModelMatrix = new Matrix4((float)mm.M11, (float)mm.M12, (float)mm.M13, (float)mm.M14, (float)mm.M21, (float)mm.M22, (float)mm.M23, (float)mm.M24, (float)mm.M31, (float)mm.M32, (float)mm.M33, (float)mm.M34, (float)mm.M41, (float)mm.M42, (float)mm.M43, (float)mm.M44);
+            }
+            else
+            {
+                Size scr = ViewPort.Size;
+                double orthoheight = (OrthographicDistance / 5.0f) * scr.Height / scr.Width;  // this comes from the projection calculation, and allows us to work out the scale factor the eye vs lookat has
+
+                //Matrix4d scale = Matrix4.CreateScale(orthoheight/EyeDistance);    // create a scale based on eyedistance compensated for by the orth projection scaling
+
+                //Matrix4 mat = Matrix4.CreateTranslation(-lookat.X, 0, -lookat.Z);        // we offset by the negative of the position to give the central look
+                //mat = Matrix4.Mult(mat, scale);          // translation world->View = scale + offset
+
+                //Matrix4 rotcam = Matrix4.CreateRotationX((double)((90) * Math.PI / 180.0f));        // flip 90 along the x axis to give the top down view
+                //ModelMatrix = Matrix4.Mult(mat, rotcam);
+            }
+
+            //System.Diagnostics.Debug.WriteLine("MM\r\n{0}", ModelMatrix);
+
+            ProjectionModelMatrix = Matrix4.Mult(ModelMatrix, ProjectionMatrix);        // order order order ! so important.
+            CountMatrixCalcs++;
+        }
+
         public bool FovScale(bool direction)        // direction true is scale up FOV - need to tell it its changed
         {
             float curfov = Fov;

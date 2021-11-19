@@ -86,6 +86,42 @@ namespace GLOFC
             return new Vector2(inclination, azimuth);
         }
 
+        public static Vector2d AzEl(this Vector3d curpos, Vector3d target, bool returndegrees)     // az and elevation between curpos and target
+        {
+            Vector3d delta = Vector3d.Subtract(target, curpos);
+            //Console.WriteLine("{0}->{1} d {2}", curpos, target, delta);
+
+            double radius = delta.Length;
+
+            if (radius < 0.0000001)
+                return new Vector2d(180, 0);     // point forward, level
+
+            double inclination = (double)Math.Acos(delta.Y / radius);
+
+            double azimuth = (double)(delta.X == 0 ? (delta.Z >= 0 ? Math.PI / 2 : -Math.PI / 2) : Math.Atan(delta.Z / delta.X));
+
+            System.Diagnostics.Debug.Assert(!double.IsNaN(inclination) && !double.IsNaN(azimuth));
+
+            if (delta.X >= 0)      // atan wraps -90 (south)->+90 (north), then -90 to +90 around the y axis, going anticlockwise
+                azimuth = (double)(Math.PI / 2) - azimuth;     // adjust
+            else
+                azimuth = -(double)(Math.PI / 2) - azimuth;
+
+            if (returndegrees)
+            {
+                inclination = inclination.Degrees();
+                azimuth = azimuth.Degrees();
+            }
+
+
+            //System.Diagnostics.Debug.WriteLine("inc " + inclination + " az " + azimuth + " delta" + delta);
+
+            //System.Diagnostics.Debug.WriteLine(" -> inc " + inclination + " az " + azimuth);
+            return new Vector2d(inclination, azimuth);
+        }
+
+
+
         public static Vector4 ToVector4(this Vector3 v, float w = 0)
         {
             return new Vector4(v.X, v.Y, v.Z,w);
@@ -102,9 +138,19 @@ namespace GLOFC
             transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
 
             Vector3 eyerel = Vector3.Transform(cameravector, transform);
-            return eyeposition + eyerel * distance;       
+            return eyeposition + eyerel * distance;
         }
-           
+        public static Vector3d CalculateLookatPositionFromEye(this Vector3d eyeposition, Vector2d cameradirdegreesp, double distance)
+        {
+            Matrix4d transform = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees
+
+            transform *= Matrix4d.CreateRotationX((cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
+            transform *= Matrix4d.CreateRotationY((cameradirdegreesp.Y * Math.PI / 180.0f));
+
+            Vector3d eyerel = Vector3d.Transform(new Vector3d(0, 1, 0), transform);
+            return eyeposition + eyerel * distance;
+        }
+
 
         // from current lookat, calculate eyeposition, given a camera angle and a distance
         public static Vector3 CalculateEyePositionFromLookat(this Vector3 lookat, Vector2 cameradirdegreesp, float distance)
@@ -115,6 +161,17 @@ namespace GLOFC
             transform *= Matrix3.CreateRotationY((float)(cameradirdegreesp.Y * Math.PI / 180.0f));
 
             Vector3 eyerel = Vector3.Transform(cameravector, transform);       // the 0,1,0 sets the axis of the camera dir
+
+            return lookat - eyerel * distance;
+        }
+        public static Vector3d CalculateEyePositionFromLookat(this Vector3d lookat, Vector2d cameradirdegreesp, double distance)
+        {
+            Matrix4d transform = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees
+
+            transform *= Matrix4d.CreateRotationX((cameradirdegreesp.X * Math.PI / 180.0f));      // we rotate the camera vector around X and Y to get a vector which points from eyepos to lookat pos
+            transform *= Matrix4d.CreateRotationY((cameradirdegreesp.Y * Math.PI / 180.0f));
+
+            Vector3d eyerel = Vector3d.Transform(new Vector3d(0, 1, 0), transform);       // the 0,1,0 sets the axis of the camera dir
 
             return lookat - eyerel * distance;
         }

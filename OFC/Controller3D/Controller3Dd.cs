@@ -11,7 +11,7 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  *
- * 
+ *
  */
 
 using OpenTK;
@@ -26,9 +26,9 @@ namespace GLOFC.Controller
     // handles keyboard actions and mouse actions to provide a nice method of controlling the 3d playfield
     // Attaches to a GLWindowControl and hooks its events to provide control
 
-    public class Controller3D
+    public class Controller3Dd
     {
-        public float ZoomDistance { get { return PosCamera.Zoom1Distance; } set { PosCamera.Zoom1Distance = value; } }
+        public double ZoomDistance { get { return PosCamera.Zoom1Distance; } set { PosCamera.Zoom1Distance = value; } }
 
         private GLWindowControl glwin;
 
@@ -40,14 +40,14 @@ namespace GLOFC.Controller
         public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;     // per pixel movement at zoom 1 (zoom scaled)
         public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 10.0f;  // per pixel movement at zoom 1
 
-        public Action<Controller3D, ulong> PaintObjects;                        // Mandatory. ulong is time in ms
+        public Action<Controller3Dd, ulong> PaintObjects;                        // Mandatory. ulong is time in ms
 
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
-        public PositionCamera PosCamera { get; private set; } = new PositionCamera();
+        public PositionCamerad PosCamera { get; private set; } = new PositionCamerad();
         public Point MouseDownPos { get; private set; }
 
-        // Start with externs MC/PC 
-        public void Start(GLMatrixCalc mc, PositionCamera pc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
+        // Start with externs MC/PC
+        public void Start(GLMatrixCalc mc, PositionCamerad pc, GLWindowControl win, Vector3d lookat, Vector3d cameradirdegrees, float zoomn)
         {
             MatrixCalc = mc;
             PosCamera = pc;
@@ -56,7 +56,7 @@ namespace GLOFC.Controller
 
         // Start with exterma; <C
 
-        public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn,
+        public void Start(GLMatrixCalc mc, GLWindowControl win, Vector3d lookat, Vector3d cameradirdegrees, float zoomn,
                         bool registermouseui = true, bool registerkeyui = true)
         {
             MatrixCalc = mc;
@@ -65,7 +65,7 @@ namespace GLOFC.Controller
 
         // set up starting conditions. If registerui = false, you handle the direct window mouse/keyboard actions
 
-        public void Start(GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn,
+        public void Start(GLWindowControl win, Vector3d lookat, Vector3d cameradirdegrees, float zoomn,
                             bool registermouseui = true, bool registerkeyui = true)
         {
             glwin = win;
@@ -81,15 +81,15 @@ namespace GLOFC.Controller
                 win.MouseWheel += MouseWheel;
             }
 
-            if ( registerkeyui )
-            { 
+            if (registerkeyui)
+            {
                 win.KeyDown += KeyDown;
                 win.KeyUp += KeyUp;
             }
 
-            MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
+            MatrixCalc.ResizeViewPort(this, win.Size);               // inform matrix calc of window size
 
-            PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
+            PosCamera.SetPositionZoom(lookat, new Vector2d(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
             MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
         }
@@ -98,17 +98,19 @@ namespace GLOFC.Controller
         public bool YHoldMovement { get { return PosCamera.YHoldMovement; } set { PosCamera.YHoldMovement = value; } }      // hold Y steady when moving, whatever the camera direction
 
         // Pos Direction interface - all of these will cause movement, which will be detected by the PosCamera different tracker. Use RecalcMatrixIfMoved
-        public void SetPositionCamera(Vector3 lookat, Vector3 eyepos, float camerarot) { PosCamera.SetPositionCamera(lookat, eyepos, camerarot); }
-        public void MoveLookAt(Vector3 pos) { PosCamera.MoveLookAt(pos); }
-        public void TranslatePosition(Vector3 posx) { PosCamera.Translate(posx); }
-        public void SlewToPosition(Vector3 normpos, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoTo(normpos, timeslewsec, unitspersecond); }
-        public void SlewToPositionZoom(Vector3 normpos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoToZoom(normpos, zoom,timeslewsec, unitspersecond); }
 
-        public void SetCameraDir(Vector2 pos) { PosCamera.CameraDirection = pos; }
-        public void Pan(Vector2 pos, float timeslewsec = 0) { PosCamera.Pan(pos, timeslewsec); }
-        public void PanTo(Vector3 normtarget, float timeslewsec = 0) { PosCamera.PanTo(normtarget, timeslewsec); }
-        public void PanZoomTo(Vector3 normtarget, float zoom, float time = 0)  {  PosCamera.PanZoomTo(normtarget, zoom, time); }
-        public bool SetPositionCamera(string s)     // String holds pos/eye
+        public void SetPositionCamera(Vector3d lookat, Vector3d eyepos, float camerarot) { PosCamera.SetPositionCamera(lookat, eyepos, camerarot); }
+        public void MoveLookAt(Vector3d pos) { PosCamera.MoveLookAt(pos); }
+        public void TranslatePosition(Vector3d posx) { PosCamera.Translate(posx); }
+        public void SlewToPosition(Vector3d normpos, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoTo(normpos, timeslewsec, unitspersecond); }
+        public void SlewToPositionZoom(Vector3d normpos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoToZoom(normpos, zoom, timeslewsec, unitspersecond); }
+
+        public void SetCameraDir(Vector2d pos) { PosCamera.CameraDirection = pos; }
+        public void Pan(Vector2d pos, float timeslewsec = 0) { PosCamera.Pan(pos, timeslewsec); }
+        public void PanTo(Vector3d normtarget, float timeslewsec = 0) { PosCamera.PanTo(normtarget, timeslewsec); }
+        public void PanZoomTo(Vector3d normtarget, float zoom, float time = 0) { PosCamera.PanZoomTo(normtarget, zoom, time); }
+
+        public bool SetPositionCamera(string s)
         {
             if (PosCamera.SetPositionCamera(s))
             {
@@ -118,6 +120,7 @@ namespace GLOFC.Controller
             else
                 return false;
         }
+
         public void KillSlew()
         {
             PosCamera.KillSlew();
@@ -136,12 +139,12 @@ namespace GLOFC.Controller
 
         public void Redraw() { glwin.Invalidate(); }            // invalidations causes a glControl_Paint
 
-        public long Redraw(int times)                               // for testing, redraw the scene N times and give ms 
+        public long Redraw(int times)                               // for testing, redraw the scene N times and give ms
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
             for (int i = 0; i < times; i++)
-                glControl_Paint(null,(ulong)sw.ElapsedMilliseconds);
+                glControl_Paint(null, (ulong)sw.ElapsedMilliseconds);
             long time = sw.ElapsedMilliseconds;
             sw.Stop();
             return time;
@@ -185,21 +188,21 @@ namespace GLOFC.Controller
         // Polls for keyboard movement
         // and with Invalidate on movement
 
-        public bool HandleKeyboardSlewsAndInvalidateIfMoved(bool activated, Action<KeyboardMonitor> handleotherkeys = null, float minmove = 0.01f, float mincamera = 1.0f)
+        public bool HandleKeyboardSlewsAndInvalidateIfMoved(bool activated, Action<KeyboardMonitor> handleotherkeys = null, double minmove = 0.01f, double mincamera = 1.0f)
         {
             HandleKeyboardSlews(activated, handleotherkeys);
             bool moved = RecalcMatrixIfMoved(minmove, mincamera);
-            if ( moved )
+            if (moved)
                 glwin.Invalidate();
             return moved;
         }
 
         // Recalc matrix if moved
-        public bool RecalcMatrixIfMoved(float minmove = 0.01f, float mincamera = 1.0f)
-        { 
-            bool moved = PosCamera.IsMoved(minmove,mincamera);
+        public bool RecalcMatrixIfMoved(double minmove = 0.01f, double mincamera = 1.0f)
+        {
+            bool moved = PosCamera.IsMoved(minmove, mincamera);
 
-            if (moved )
+            if (moved)
             {
                 //System.Diagnostics.Debug.WriteLine("Changed");
                 MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
@@ -246,13 +249,13 @@ namespace GLOFC.Controller
                 {
                     int dx = mousepos.X - mouseDeltaPos.X;
                     int dy = mousepos.Y - mouseDeltaPos.Y;
-                   // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
+                    // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
 
                     KillSlew();    // all slews
 
                     mouseDeltaPos = mousepos;        // we reset both since the other button may be clicked later
 
-                    PosCamera.RotateCamera(new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
+                    PosCamera.RotateCamera(new Vector2d((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
                 }
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
@@ -268,7 +271,7 @@ namespace GLOFC.Controller
 
                     mouseDeltaPos = mousepos;
 
-                    PosCamera.Translate(new Vector3(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
+                    PosCamera.Translate(new Vector3d(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
                 }
             }
             else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
@@ -283,19 +286,19 @@ namespace GLOFC.Controller
 
                     mouseDeltaPos = mousepos;
 
-                    Vector3 translation = new Vector3(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
+                    Vector3d translation = new Vector3d(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
 
                     if (MatrixCalc.InPerspectiveMode)
                     {
                         //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
 
-                        Matrix3 transform = Matrix3.CreateRotationZ((float)(-PosCamera.CameraDirection.Y * Math.PI / 180.0f));
-                        translation = Vector3.Transform(translation, transform);
+                        Matrix4d transform = Matrix4d.CreateRotationZ((float)(-PosCamera.CameraDirection.Y * Math.PI / 180.0f));
+                        translation = Vector3d.Transform(translation, transform);
 
-                        PosCamera.Translate(new Vector3(translation.X, 0, translation.Y));
+                        PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
                     }
                     else
-                        PosCamera.Translate(new Vector3(translation.X, 0, translation.Y));
+                        PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
                 }
             }
 
@@ -334,10 +337,10 @@ namespace GLOFC.Controller
 
 
         // from the window, a resize event. Must have the correct context, if multiple, set glwin.EnsureCurrentPaintResize
-        private void glControl_Resize(object sender)         
+        private void glControl_Resize(object sender)
         {
             //System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
-            MatrixCalc.ResizeViewPort(this,glwin.Size);
+            MatrixCalc.ResizeViewPort(this, glwin.Size);
             MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
             MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
@@ -345,8 +348,8 @@ namespace GLOFC.Controller
 
         // Paint the scene - just pass the call down to the installed PaintObjects
 
-        // gl paint hook, invoke paint objects for 3d 
-        private void glControl_Paint(Object obj,ulong ts)
+        // gl paint hook, invoke paint objects for 3d
+        private void glControl_Paint(Object obj, ulong ts)
         {
             PaintObjects?.Invoke(this, ts);
         }

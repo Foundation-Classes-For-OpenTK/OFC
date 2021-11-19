@@ -54,7 +54,9 @@
     <Compile Include="BaseUtils\FileHelpers.cs" />
     <Compile Include="BaseUtils\StringObjectExtensionsLists.cs" />
     <Compile Include="BaseUtils\Timers.cs" />
+    <Compile Include="Controller3D\Controller3Dd.cs" />
     <Compile Include="Controller3D\KeyboardState.cs" />
+    <Compile Include="Controller3D\PositionCamerad.cs" />
     <Compile Include="GL4\BasicTypes\GLRenderBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLFrameBuffer.cs" />
     <Compile Include="GL4\BasicTypes\GLLayoutStandards.cs" />
