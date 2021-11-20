@@ -71,7 +71,6 @@ namespace TestOpenTk
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
 
-
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
             matrixcalc.PerspectiveFarZDistance = worldsize * 2;
@@ -82,12 +81,26 @@ namespace TestOpenTk
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
 
-            displaycontrol.Paint += (o, ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {
-                    // MCUB set up by Controller3DDraw which did the work first
-                    displaycontrol.Render(glwfc.RenderState, ts);
-                };
+            gl3dcontroller = new Controller3Dd();
+            gl3dcontroller.PaintObjects = ControllerDraw;
+            gl3dcontroller.ZoomDistance = 4000F;
+            gl3dcontroller.PosCamera.ZoomMin = 0.001f;
+            gl3dcontroller.PosCamera.ZoomScaling = 1.05f;
+            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0f), 0.025F);
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
+            {
+                double eyedistr = Math.Pow(eyedist, 1.0);
+                float v = (float)Math.Max(eyedistr / 1200, 0);
+                //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
+                return (float)ms * v;
+            };
 
+            displaycontrol.Paint += (o, ts) =>        // subscribing after Controller start means we paint over the scene
+            {
+                // MCUB set up by Controller3DDraw which did the work first
+                System.Diagnostics.Debug.WriteLine("Controls Draw");
+                displaycontrol.Render(glwfc.RenderState, ts);
+            };
 
             double startspeed = 60 * 60 * 6; // in sec
             GLImage minus = new GLImage("plus", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
@@ -111,20 +124,6 @@ namespace TestOpenTk
             datalabel.TextAlign = ContentAlignment.TopLeft;
             displaycontrol.Add(datalabel);
 
-
-            gl3dcontroller = new Controller3Dd();
-            gl3dcontroller.PaintObjects = ControllerDraw;
-            gl3dcontroller.ZoomDistance = 4000F;
-            gl3dcontroller.PosCamera.ZoomMin = 0.001f;
-            gl3dcontroller.PosCamera.ZoomScaling = 1.05f;
-            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0f), 0.025F);
-            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
-            {
-                double eyedistr = Math.Pow(eyedist, 1.0);
-                float v = (float)Math.Max(eyedistr / 1200, 0);
-                //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
-                return (float)ms * v;
-            };
 
             items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
@@ -158,15 +157,21 @@ namespace TestOpenTk
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                     GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, markers), nolines),
                                                         new Color4[] { gridcolour }));
-            
-                var maps = new GLBitmaps("bitmap1", rObjects, new Size(128,20), 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
-                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
+
+                Size bmpsize = new Size(128, 30);
+                var maps = new GLBitmaps("bitmap1", rObjects, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
                 {
+                    float hsize = 20e6f * 1000 * mscaling; // million km -> m -> scaling
+                    float vsize = hsize * bmpsize.Height / bmpsize.Width;
+
                     Font f = new Font("MS sans serif", 12f);
-                    for (int i = 0; i < nolines / 2; i++)
+                    for (int i = 1; i < nolines / 2; i++)
                     {
-                        maps.Add(i, (i*gridlines/1000).ToString("N0"), f, Color.White, Color.Gray, new Vector3(i*markers+1500, 0, 300),
-                                            new Vector3(3000, 0, 0), new Vector3(0, 0, 0), fmt);
+                        maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, vsize/2),
+                                            new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                        maps.Add(i, (i * gridlines / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, -vsize/2),
+                                            new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
                     }
                 }
             }
@@ -236,7 +241,6 @@ namespace TestOpenTk
                 if (kepler.SemiMajorAxis > 0)
                 {
                     Vector4[] orbit = bodylist[i].Orbit(currentjd, 0.1, mscaling);
-                    
 
                     GLRenderState lines = GLRenderState.Lines(1);
                     lines.DepthTest = false;
@@ -309,13 +313,14 @@ namespace TestOpenTk
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys,0.0001f,0.0001f);
 
+            System.Diagnostics.Debug.WriteLine("Tick");
             gl3dcontroller.Redraw();
         }
 
         ulong lasttime = ulong.MaxValue;
         private void ControllerDraw(Controller3Dd mc, ulong time)
         {
-            //System.Diagnostics.Debug.WriteLine("Draw");
+            System.Diagnostics.Debug.WriteLine("Controller Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetText(gl3dcontroller.MatrixCalc);
