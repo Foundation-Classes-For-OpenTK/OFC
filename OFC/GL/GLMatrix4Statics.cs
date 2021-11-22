@@ -49,5 +49,19 @@ namespace GLOFC
             return r;
         }
 
+        static public Matrix4 CreateMatrix(Vector3 worldpos,  Vector3 size,  Vector3 rotationradians)
+        {
+            Matrix4 mat = Matrix4.Identity;
+            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
+            if (rotationradians.LengthSquared > 0)   
+            {
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
+            }
+            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            return mat;
+        }
+
     }
 }

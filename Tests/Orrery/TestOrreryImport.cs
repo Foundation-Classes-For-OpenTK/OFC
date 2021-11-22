@@ -39,16 +39,18 @@ namespace TestOpenTk
         GLControlDisplay displaycontrol;
         GLLabel status;
         GLLabel datalabel;
-        //GLLabel earthmars;
 
         private Timer systemtimer = new Timer();
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
+        GLRenderProgramSortedList rBodyObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
         GLMatrixCalc matrixcalc;
-        List<KeplerOrbitElements> bodylist = new List<KeplerOrbitElements>();
-        GLRenderDataTranslationRotationTexture[] bodypositions;
+
+        List<KeplerOrbitElements> bodylist;
         GLRenderDataWorldPositionColor[] orbitpositions;
+        GLBuffer bodymatrixbuffer;
+
 
         double currentjd;
         double jdscaling;
@@ -98,7 +100,7 @@ namespace TestOpenTk
             displaycontrol.Paint += (o, ts) =>        // subscribing after Controller start means we paint over the scene
             {
                 // MCUB set up by Controller3DDraw which did the work first
-                System.Diagnostics.Debug.WriteLine("Controls Draw");
+           //     System.Diagnostics.Debug.WriteLine("Controls Draw");
                 displaycontrol.Render(glwfc.RenderState, ts);
             };
 
@@ -128,11 +130,10 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
             items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "dotted");
-
             #region coloured lines
 
 
-            if ( true)
+            if (true)
             {
                 int gridsize = (int)(worldsize * mscaling);
                 int markers = (int)(gridlines * mscaling);
@@ -168,9 +169,9 @@ namespace TestOpenTk
                     Font f = new Font("MS sans serif", 12f);
                     for (int i = 1; i < nolines / 2; i++)
                     {
-                        maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, vsize/2),
+                        maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, vsize / 2),
                                             new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                        maps.Add(i, (i * gridlines / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, -vsize/2),
+                        maps.Add(i, (i * gridlines / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, -vsize / 2),
                                             new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
                     }
                 }
@@ -183,24 +184,55 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
+            var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.Red, Color.Yellow });
+            orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
+
+            // set up ARB IDs for all images we are going to use..
+            const int arbbufferid = 13;
+            var tbs = items.NewBindlessTextureHandleBlock(arbbufferid);
+            var texs = items.NewTexture2D(null, Properties.Resources.golden, SizedInternalFormat.Rgba8);
+            var texp = items.NewTexture2D(null, Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8);
+            var texb = items.NewTexture2D(null, Properties.Resources.dotted, SizedInternalFormat.Rgba8);
+            var texs2 = items.NewTexture2D(null, Properties.Resources.wooden, SizedInternalFormat.Rgba8);
+            tbs.WriteHandles(new IGLTexture[] { texs, texp, texb,texs2 });
+
+            // using 0 tex coord, 4 image id and arb text binding 
+            var bodyfragshader = new GLPLFragmentShaderBindlessTexture(arbbufferid, discardiftransparent: true, useprimidover2: false);
+
+            // takes 0:Vector4 model, 1: vec2 text, 4:matrix, out is 0:tex, 1: modelpos, 2: instance, 4 = matrix[3][3]
+            var bodyvertshader = new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(500000 * 1000 * mscaling, useeyedistance: false);
+            bodyshader = new GLShaderPipeline(bodyvertshader, bodyfragshader);
+            items.Add(bodyshader);
+
+            // hold shape
+            var sphereshape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(3, 1.0f);
+            spherebuffer = items.NewBuffer();      // fill buffer with model co-ords
+            spherebuffer.AllocateFill(sphereshape.Item1);
+            spheretexcobuffer = items.NewBuffer(); // fill buffer with tex coords
+            spheretexcobuffer.AllocateFill(sphereshape.Item2);
+
+            bodymatrixbuffer = items.NewBuffer();    // this holds the matrix to set position and size
+
+            // read file
+
             string para = File.ReadAllText(@"c:\code\bodies.json");
             JObject jo = JObject.Parse(para);
-            OrbitalBodyInformation.AddToBodyList(jo,bodylist,0,-1);
+            bodylist = new List<KeplerOrbitElements>();
+            OrbitalBodyInformation.AddToBodyList(jo, bodylist, 0, -1);
 
-            bodypositions = new GLRenderDataTranslationRotationTexture[bodylist.Count];
+            CreateBodies(bodylist);
 
-            var bodyvertSunshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(100000, 1, 2);
-            var bodysunshader = new GLShaderPipeline(bodyvertSunshader, new GLPLFragmentShaderTexture());
-            items.Add(bodysunshader);
-            var bodyvertplanetshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(0.25e6f * 1000 * mscaling, 1, 10000);
-            var bodyplanetshader = new GLShaderPipeline(bodyvertplanetshader, new GLPLFragmentShaderTexture());
-            items.Add(bodyplanetshader);
-            var baryvertshader = new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(0.25e6f * 1000 * mscaling, 1, 10000);
-            var baryshader = new GLShaderPipeline(baryvertshader, new GLPLFragmentShaderTexture());
-            items.Add(baryshader);
+            jdscaling = 0;
+            currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
 
-            var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.Red, Color.Yellow });
-            var orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
+        }
+
+        void CreateBodies(List<KeplerOrbitElements> bodylist)
+        {
+            rBodyObjects.Clear();
 
             orbitpositions = new GLRenderDataWorldPositionColor[bodylist.Count];
 
@@ -209,34 +241,7 @@ namespace TestOpenTk
                 var kepler = bodylist[i];
                 OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
 
-                double imageradius = ai.RadiusKm * 1000 * mscaling;
-                GLTextureBase img = null;
-
-                Color orbitcolour = Color.FromArgb(255, 255, 0, 0);
-
-                GLShaderPipeline shader;
-
-                if ( ai.RadiusKm == 0 )
-                {
-                    orbitcolour = Color.Yellow;
-                    imageradius = 2000e3f * mscaling;       // X km sphere
-                    img = items.Tex("dotted");
-                    shader = baryshader;
-                }
-                else if ( ai.StarClass.HasChars() )
-                {
-                    img = items.Tex("golden");
-                    shader = bodysunshader;
-                }
-                else
-                {
-                    img = items.Tex("moon");
-                    shader = bodyplanetshader;
-                }
-
-                bodypositions[i] = new GLRenderDataTranslationRotationTexture(img, new Vector3(0, 0, 0));
-
-                System.Diagnostics.Debug.WriteLine($"Body {ai.Name} SMA {kepler.SemiMajorAxis / oneAU_m} AU Ecc {kepler.Eccentricity} Orbital Period {kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {ai.RadiusKm} km");
+                System.Diagnostics.Debug.WriteLine($"Body {ai.Name} {ai.StarClass} {ai.PlanetClass} SMA {kepler.SemiMajorAxis / oneAU_m} AU Ecc {kepler.Eccentricity} Orbital Period {kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {ai.RadiusKm} km");
 
                 if (kepler.SemiMajorAxis > 0)
                 {
@@ -248,30 +253,31 @@ namespace TestOpenTk
                     orbitpositions[i] = new GLRenderDataWorldPositionColor();
                     orbitpositions[i].ColorIndex = ai.RadiusKm > 0 ? 0 : 1;
 
-                    var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, orbitpositions[i]);
-                    // TBD need to be able to offset this with a uniform
-                    rObjects.Add(orbitlineshader, ri);
+                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, orbitpositions[i]);
+                    rBodyObjects.Add(orbitlineshader, riol);
                 }
-
-                GLRenderState rt = GLRenderState.Tri();
-                rt.DepthTest = false;
-                rObjects.Add(shader,
-                        "Body" + i,
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rt,
-                        GLSphereObjectFactory.CreateTexturedSphereFromTriangles(3, (float)(imageradius)), bodypositions[i]));
-
             }
 
-            // need to be able to click on item and make it follow
-            // for now, use 1-n to track body Nt
-   
-            jdscaling = 0;
-            currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
+            // hold planet and barycentre positions/sizes/imageno
+            bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodylist.Count);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
+            GLRenderState rt = GLRenderState.Tri();
+            rt.DepthTest = false;
+            ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, spherebuffer, spheretexcobuffer, bodymatrixbuffer,
+                                            spherebuffer.Length / sizeof(float)/4, 
+                                            ic: 0, matrixdivisor: 1);
+            rBodyObjects.Add(bodyshader, ribody);
+
         }
+
+        GLBuffer spherebuffer, spheretexcobuffer;
+        GLShaderPipeline orbitlineshader, bodyshader;
+        GLRenderableItem ribody;
+
+
+
+
+
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
@@ -283,10 +289,14 @@ namespace TestOpenTk
 
             Vector3d[] positions = new Vector3d[bodylist.Count];
 
+            Matrix4[] bodymats = new Matrix4[bodylist.Count];
+            int bno = 0;
+
             for (int i = 0; i < bodylist.Count; i++)
             {
                 var kepler = bodylist[i];
                 OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
+                Vector3 pos = Vector3.Zero;
 
                 if (kepler.SemiMajorAxis > 0)
                 {
@@ -295,37 +305,55 @@ namespace TestOpenTk
                     positions[i] += cbpos;                              // offset
 
                     orbitpositions[i].WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
-                    //orbitpositions[i].WorldPosition = new Vector3(50e9f*mscaling, 0, 0);
 
                     // Kepler works around the XY plane, openGL uses the XZ plane
 
-                    Vector3 pos3 = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
-                    bodypositions[i].Position = pos3;
+                    pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
                 }
+
+                float imageradius = (float)(Math.Max(ai.RadiusKm * 1000, 1000e3) * mscaling);
+
+                bool planet = ai.PlanetClass.HasChars();
+                bool bary = ai.RadiusKm == 0;
+
+                bodymats[bno] = GLStaticsMatrix4.CreateMatrix(pos, new Vector3(1,1,1), new Vector3(0, 0, 0));
+
+                // more clever, knowing orbit paras
+                bodymats[bno].M14 = (bary ? 100000 : planet ? 100000 : 1000000) * 1000 * mscaling;      // min size in km
+                bodymats[bno].M24 = (bary ? 100000 : planet ? 10000000 : 3e6f) *1000 * mscaling;           // maximum size in scaling
+                bodymats[bno].M34 = imageradius;
+                bodymats[bno].M44 = ai.PlanetClass.HasChars() ? 1 : ai.RadiusKm == 0 ? 2 : 0;      // select image
+                bno++;
             }
+
+            ribody.InstanceCount = bno;
+            bodymatrixbuffer.ResetFillPos();
+            bodymatrixbuffer.Fill(bodymats);
 
             if (track >= 0)
             {
                 gl3dcontroller.MoveLookAt(new Vector3d(positions[track].X, positions[track].Z, positions[track].Y) * mscaling);
             }
 
-            datalabel.Text = $"{bodypositions[1].Position/mscaling/1000}" + Environment.NewLine;
+//            datalabel.Text = $"{bodypositionscaling[1].Position/mscaling/1000}" + Environment.NewLine;
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys,0.0001f,0.0001f);
 
-            System.Diagnostics.Debug.WriteLine("Tick");
+          //  System.Diagnostics.Debug.WriteLine("Tick");
             gl3dcontroller.Redraw();
         }
+
 
         ulong lasttime = ulong.MaxValue;
         private void ControllerDraw(Controller3Dd mc, ulong time)
         {
-            System.Diagnostics.Debug.WriteLine("Controller Draw");
+       //    System.Diagnostics.Debug.WriteLine("Controller Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetText(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
+            rBodyObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
 
             if (jdscaling != 0 && lasttime != ulong.MaxValue)
             {
@@ -341,7 +369,8 @@ namespace TestOpenTk
                         $"cdir {gl3dcontroller.PosCamera.CameraDirection} azel {azel} zoom {gl3dcontroller.PosCamera.ZoomFactor} " +
                         $"dist {gl3dcontroller.PosCamera.EyeDistance / mscaling / 1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
 
-            this.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance}";
+            float sr = gl3dcontroller.MatrixCalc.EyeDistance / (0.05e6f * 1000 * mscaling);
+            this.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance} sr {sr}";
         }
 
 

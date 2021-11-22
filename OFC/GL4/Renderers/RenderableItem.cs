@@ -446,6 +446,28 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
+        public static GLRenderableItem CreateVector4Vector2Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
+                                                                    GLBuffer vbuf1, GLBuffer vbuf2, GLBuffer vbuf3,
+                                                                    int vertexcount,
+                                                                    IGLRenderItemData id = null, int ic = 1,
+                                                                    int matrixdivisor = 1,
+                                                                    int buf1pos = 0, int buf2pos = 0, int buf3pos = 0)
+        {
+            var va = items.NewArray();
+
+            vbuf1.Bind(va, 0, buf1pos, 16);
+            va.Attribute(0, 0, 4, VertexAttribType.Float);      // bp 0 at 0 
+
+            vbuf2.Bind(va, 1, buf2pos, 8);
+            va.Attribute(1, 1, 2, VertexAttribType.Float);      // bp 1 at 1
+
+            va.MatrixAttribute(2, 4);                           // bp 2 at 4-7
+            vbuf3.Bind(va, 2, buf3pos, 64, matrixdivisor);            // use a binding 
+
+            return new GLRenderableItem(prim, pt, vertexcount, va, id, ic);
+        }
+
+
         // in 0,4-7 set up
         public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Matrix4[] matrix, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)

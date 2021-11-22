@@ -118,6 +118,7 @@
     <Compile Include="GL4\Operations\Operations.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewaveInstanced.cs" />
     <Compile Include="GL4\Shaders\Find\ShaderFindGeoTriangles.cs" />
+    <Compile Include="GL4\Shaders\Fragment\ShadersFragmentBindless.cs" />
     <Compile Include="GL4\Shaders\Fragment\ShadersFragmentTristrip.cs" />
     <Compile Include="GL4\Shaders\Tesselation\ShadersTesselationEvaluateSinewave.cs" />
     <Compile Include="GL4\Shaders\Tesselation\ShadersTesselationControl.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
+    <Compile Include="GL\GLMatrixArray.cs" />
     <Compile Include="GL\GLMatrixString.cs" />
     <Compile Include="GL\GLMatrix4Statics.cs" />
     <Compile Include="Models\WaveFrontObj\GLWavefrontObj.cs" />

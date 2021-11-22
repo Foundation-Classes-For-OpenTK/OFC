@@ -27,7 +27,7 @@ namespace TestOpenTk
         public static KeplerOrbitElements Read(JObject json)
         {
             string time = json["Epoch"].Str();
-            DateTime epoch = DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+            DateTime epoch = time.HasChars() ? DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal) : DateTime.UtcNow;
      
             KeplerOrbitElements k = new KeplerOrbitElements(true,
                     json["SemiMajorAxis"].Double(0),        // km

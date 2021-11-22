@@ -104,6 +104,11 @@ namespace GLOFC.GL4
 
         #region Fill - all perform alignment
 
+        public void ResetFillPos(int pos = 0)       // call to reset the current fill position to this value, then you can refill
+        {
+            CurrentPos = pos;
+        }
+
         // length = -1 use floats.length, else take a subset starting at zero index
         public void Fill(float[] floats, int length = -1)
         {
@@ -115,6 +120,11 @@ namespace GLOFC.GL4
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, floats);
                 GLStatics.Check();
             }
+        }
+
+        public void Fill(GLMatrixArray a)
+        {
+            Fill(a.MatrixArray, a.Count * 16);
         }
 
         public void AllocateFill(float[] vertices)

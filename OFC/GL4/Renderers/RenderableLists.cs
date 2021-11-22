@@ -84,6 +84,12 @@ namespace GLOFC.GL4
             return r != null ? Remove(f.Item1, r) : false;
         }
 
+        public void Clear()
+        {
+            byname.Clear();
+            renderables.Clear();
+        }
+
         public bool Remove(IGLProgramShader prog, IGLRenderableItem r)
         {
             Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> found = renderables.Find(x => x.Item1 == prog); // find the shader

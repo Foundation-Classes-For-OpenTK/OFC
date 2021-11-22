@@ -171,8 +171,6 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Exit requestor");
         }
 
-        int threads = 0;
-
         // in a thread, look up the sector 
         private void FillSectorThread(Object seco)
         {

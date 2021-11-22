@@ -16,3 +16,8 @@ vec4 Scale(vec4 i, float v)
 {
 	return vec4(i.x*v,i.y*v,i.z*v,i.w);
 }
+
+vec4 ScaleClamp(vec4 i, float v,float min,float max)
+{
+	return vec4(clamp(i.x*v,min,max),clamp(i.y*v,min,max),clamp(i.z*v,min,max),i.w);
+}

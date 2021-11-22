@@ -1085,7 +1085,7 @@ namespace TestOpenTk
     {
         public GLBindlessTextureShaderWithWorldCoord(int arbbindingpoint, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbindingpoint));
+            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), new GLPLFragmentShaderBindlessTexture(arbbindingpoint));
         }
     }
 

@@ -16,6 +16,7 @@
 using GLOFC;
 using OpenTK;
 using System;
+using System.Collections.Generic;
 
 namespace TestOpenTk
 {
@@ -181,21 +182,20 @@ namespace TestOpenTk
 
 
         // return vector path of orbit, in GL format, on XZ plane, given the day start, day resolution (ie. 2 means every two days), and scaling to GL units
-        public Vector4[] Orbit(double tdays, double daysresolution, double scaling)
+        public Vector4[] Orbit(double tdays, double angleresolutiondeg, double scaling)
         {
-            double orbitalperiod = OrbitalPeriodS / 60 / 60 / 24;
-            int steps = (int)((orbitalperiod + 2) / daysresolution);    // little extra for rounding and ending
+            double orbitalperioddays = OrbitalPeriodS / 60 / 60 / 24;
+            System.Diagnostics.Debug.WriteLine($"Orbit {OrbitalPeriodS} = {orbitalperioddays} days res {angleresolutiondeg} {CentralMass}");
 
-            Vector4[] ret = new Vector4[steps];
-
-            for (int i = 0; i < steps; i++)
+            List<Vector4> ret = new List<Vector4>();
+            for ( double a = 0; a <= 360.0;  a = a +angleresolutiondeg)
             {
-                double t = tdays + i * daysresolution;
+                double t = tdays + orbitalperioddays / 360.0 * a;
                 Vector3d posd = ToCartesian(t);
-                ret[i] = new Vector4((float)(posd.X * scaling), (float)(posd.Z * scaling), (float)(posd.Y * scaling), 1);
+                ret.Add( new Vector4((float)(posd.X * scaling), (float)(posd.Z * scaling), (float)(posd.Y * scaling), 1) );
             }
 
-            return ret;
+            return ret.ToArray();
         }
 
     }

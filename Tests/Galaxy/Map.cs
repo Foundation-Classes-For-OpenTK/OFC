@@ -63,7 +63,7 @@ namespace TestOpenTk
         private GalMapRegions edsmgalmapregions;
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
-        private GalaxyStars galaxystars;
+        private GalaxyStars galaxystars = null;
 
         private GLContextMenu rightclickmenu;
 
