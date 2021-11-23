@@ -34,7 +34,7 @@ namespace TestOpenTk
         private GLMatrixCalc matrixcalc;
 
         private StarScan.ScanNode nodes;        // heirarchical list
-        private List<BodyInfo> orbitinfo;       // linear list pointing to nodes with kepler info etc
+        private List<BodyInfo> bodyinfo;       // linear list pointing to nodes with kepler info etc
         private GLBuffer bodymatrixbuffer;
 
         private double currentjd;
@@ -150,8 +150,8 @@ namespace TestOpenTk
                     MouseClick = (s, e) =>
                     {
                         int body = (int)rightclickmenubody.Tag;
-                        if (orbitinfo[body].parentindex >= 0)
-                            track = orbitinfo[body].parentindex;
+                        if (bodyinfo[body].parentindex >= 0)
+                            track = bodyinfo[body].parentindex;
                     }
                 },
                 new GLMenuItem("RCMZoomIn", "Zoom In")
@@ -290,14 +290,22 @@ namespace TestOpenTk
         {
             rBodyObjects.Clear();
 
-            orbitinfo = new List<BodyInfo>();
+            bodyinfo = new List<BodyInfo>();
 
-            BodyInfo.CreateInfoTree(node, null, -1, 0, orbitinfo);
+            BodyInfo.CreateInfoTree(node, null, -1, 0, bodyinfo);
 
-            foreach (var o in orbitinfo)
+            foreach (var o in bodyinfo)
             {
-                System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} {o.node.scandata.StarType} {o.node.scandata.PlanetClass} SMA {o.kepler.SemiMajorAxis / oneAU_m} AU Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
-                if (o.kepler.SemiMajorAxis > 0)
+                if (o.kepler != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} {o.node.scandata.StarType} {o.node.scandata.PlanetClass} SMA {o.kepler.SemiMajorAxis / oneAU_m} AU Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} no kepler");
+                }
+
+                if (o.kepler != null)
                 {
                     Vector4[] orbit = o.kepler.Orbit(currentjd, 0.1, mscaling);
                     GLRenderState lines = GLRenderState.Lines(1);
@@ -310,7 +318,7 @@ namespace TestOpenTk
                 }
             }
 
-            int bodies = orbitinfo.Count;
+            int bodies = bodyinfo.Count;
 
             // hold planet and barycentre positions/sizes/imageno
             bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodies);
@@ -329,31 +337,30 @@ namespace TestOpenTk
 
         public void SystemTick()
         {
-            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}";
+            Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
+            Vector3d[] positions = new Vector3d[bodyinfo.Count];
 
-            Matrix4[] bodymats = new Matrix4[orbitinfo.Count];
-            Vector3d[] positions = new Vector3d[orbitinfo.Count];
-
-            for (int i = 0; i < orbitinfo.Count; i++)
+            for (int i = 0; i < bodyinfo.Count; i++)
             {
-                var kepler = orbitinfo[i].kepler;
+                var bi = bodyinfo[i];
                 Vector3 pos = Vector3.Zero;
 
-                if (kepler.SemiMajorAxis > 0)
+                if (bi.kepler != null)
                 {
-                    positions[i] = kepler.ToCartesian(currentjd);       // in meters around 0,0,0
-                    var cbpos = positions[orbitinfo[i].parentindex];         // central body position
+                    positions[i] = bi.kepler.ToCartesian(currentjd);       // in meters around 0,0,0
+                    var cbpos = positions[bi.parentindex];         // central body position
                     positions[i] += cbpos;                              // offset
 
-                    orbitinfo[i].rd.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
+                    bi.rd.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
                 }
 
                 pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
 
-                float imageradius = (float)(Math.Max(orbitinfo[i].node.scandata.nRadius.Value, 1000e3) * mscaling);
+                float imageradius = bi.node.scandata != null && bi.node.scandata.nRadius.HasValue ? (float)bi.node.scandata.nRadius.Value : 1000e3f;
+                imageradius *= mscaling;
 
-                bool planet = orbitinfo[i].node.scandata.PlanetClass.HasChars();
-                bool bary = orbitinfo[i].node.scandata.nRadius == 0;
+                bool planet = bi.node.scandata != null && bi.node.scandata.PlanetClass.HasChars();
+                bool bary = bi.node.scandata == null || bi.node.scandata.nRadius == null;
 
                 bodymats[i] = GLStaticsMatrix4.CreateMatrix(pos, new Vector3(1, 1, 1), new Vector3(0, 0, 0));
 
@@ -373,9 +380,20 @@ namespace TestOpenTk
                 gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling);
             }
 
+
             //            datalabel.Text = $"{bodypositionscaling[1].Position/mscaling/1000}" + Environment.NewLine;
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys, 0.0001f, 0.0001f);
+
+            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (track >= 0 ? " Tracking " + bodyinfo[track].node.FullName : "");
+
+            status.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.0} " +
+                        $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.0} " +
+                        $"cdir {gl3dcontroller.PosCamera.CameraDirection.X:0.0},{gl3dcontroller.PosCamera.CameraDirection.Y:0.0} zoom {gl3dcontroller.PosCamera.ZoomFactor:0.0000} " +
+                        $"dist {gl3dcontroller.PosCamera.EyeDistance / mscaling / 1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
+
+            //float sr = gl3dcontroller.MatrixCalc.EyeDistance / (0.05e6f * 1000 * mscaling);
+            //status.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance} sr {sr}";
 
             //  System.Diagnostics.Debug.WriteLine("Tick");
             gl3dcontroller.Redraw();
@@ -398,16 +416,6 @@ namespace TestOpenTk
                 currentjd += diff / (60.0 * 60 * 24 * 1000) * jdscaling;        // convert ms delta to days, with scaling
             }
             lasttime = time;
-
-            var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.LookAt, true);
-
-            status.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.} " +
-                        $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.} " +
-                        $"cdir {gl3dcontroller.PosCamera.CameraDirection} azel {azel} zoom {gl3dcontroller.PosCamera.ZoomFactor} " +
-                        $"dist {gl3dcontroller.PosCamera.EyeDistance / mscaling / 1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
-
-            float sr = gl3dcontroller.MatrixCalc.EyeDistance / (0.05e6f * 1000 * mscaling);
-            status.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance} sr {sr}";
         }
 
         public void Dispose()

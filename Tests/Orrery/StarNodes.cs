@@ -19,7 +19,7 @@ namespace TestOpenTk
 
         public string BodyName { get; private set; }                        // direct (meaning no translation)
 
-        public double? nRadius { get; private set; }                        // direct (m)
+        public double? nRadius { get; set; }                        // direct (m)
 
         public string StarType { get; private set; }                        // null if no StarType, direct from journal, K, A, B etc
         public double? nStellarMass { get; private set; }                   // direct
@@ -65,8 +65,8 @@ namespace TestOpenTk
         public const double oneAU_LS = oneAU_m / oneLS_m;
         public const double oneDay_s = 86400;
 
-        public JournalScan(string name, string sc, string pc, double mass, double op, double axialtiltdeg, double radius,
-            double s,double e,double i,double an,double p,double ma, DateTime t
+        public JournalScan(string name, string sc, string pc, double? mass, double? op, double? axialtiltdeg, double? radius,
+            double? s,double? e,double? i,double? an,double? p,double? ma, DateTime t
             )
         {
             BodyName = name;
@@ -119,20 +119,25 @@ namespace TestOpenTk
             ScanNode n = new ScanNode();
 
             n.OwnName = jo["Name"].Str();
-            n.FullName = jo["FullName"].Str();
+            n.FullName = jo["FullName"].Str(n.OwnName);
             string nt = jo["NodeType"].Str();
             n.NodeType = nt.Equals("barycentre") ? ScanNodeType.barycentre : nt.Equals("body") ? ScanNodeType.body : ScanNodeType.star;
 
-            n.scandata = new JournalScan(n.OwnName, jo["StarClass"].StrNull(), jo["PlanetClass"].StrNull(), jo["Mass"].Double(0),
-                                        jo["OrbitalPeriod"].Double(0), jo["AxialTilt"].Double(0), jo["Radius"].Double(0) * 1000,
-                jo["SemiMajorAxis"].Double(0),        // km
-                jo["Eccentricity"].Double(0),
-                jo["Inclination"].Double(0),        // deg all
-                jo["AscendingNode"].Double(0),
-                jo["Periapis"].Double(0),
-                jo["MeanAnomaly"].Double(0),
-                epoch
-                                            );
+            if (jo.ContainsKey("SemiMajorAxis"))
+            {
+                n.scandata = new JournalScan(n.OwnName, jo["StarClass"].StrNull(), jo["PlanetClass"].StrNull(), jo["Mass"].DoubleNull(),
+                                        jo["OrbitalPeriod"].DoubleNull(), jo["AxialTilt"].DoubleNull(), jo["Radius"].DoubleNull(),
+                                        jo["SemiMajorAxis"].DoubleNull(),        // km
+                                        jo["Eccentricity"].DoubleNull(),
+                                        jo["Inclination"].DoubleNull(),        // deg all
+                                        jo["AscendingNode"].DoubleNull(),
+                                        jo["Periapis"].DoubleNull(),
+                                        jo["MeanAnomaly"].DoubleNull(),
+                                        epoch);
+                if (n.scandata.nRadius.HasValue)
+                    n.scandata.nRadius *= 1000;
+            }
+
 
             if (jo.ContainsKey("Bodies"))
             {

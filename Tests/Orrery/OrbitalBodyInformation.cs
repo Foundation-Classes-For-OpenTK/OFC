@@ -22,7 +22,11 @@ namespace TestOpenTk
 
         static public void CreateInfoTree(StarScan.ScanNode sn, StarScan.ScanNode parent, int p, double prevmasskg, List<BodyInfo> oilist)
         {
-            KeplerOrbitElements kepler = new KeplerOrbitElements(true,
+            KeplerOrbitElements kepler = null;
+
+            if (sn.scandata != null && sn.scandata.nSemiMajorAxis.HasValue)
+            {
+                kepler = new KeplerOrbitElements(true,
                     sn.scandata.nSemiMajorAxis.Value,
                     sn.scandata.nEccentricity.Value,
                     sn.scandata.nOrbitalInclination.Value,
@@ -31,6 +35,11 @@ namespace TestOpenTk
                     sn.scandata.nMeanAnomaly.Value,
                     sn.scandata.EventTimeUTC.ToJulianDate()
                 );
+            }
+            else
+            {
+
+            }
 
             BodyInfo oi = new BodyInfo();
             oi.kepler = kepler;
@@ -39,12 +48,15 @@ namespace TestOpenTk
             oi.parentindex = p;
             oilist.Add(oi);
 
-            if (prevmasskg == 0 && kepler.SemiMajorAxis > 0)
+            if (kepler != null)
             {
-                kepler.CentralMass = kepler.CalculateMass(sn.scandata.nOrbitalPeriod.Value);
+                if (prevmasskg == 0 && kepler.SemiMajorAxis > 0)
+                {
+                    kepler.CentralMass = kepler.CalculateMass(sn.scandata.nOrbitalPeriod.Value);
+                }
+                else
+                    kepler.CentralMass = prevmasskg;
             }
-            else
-                kepler.CentralMass = prevmasskg;
 
             oi.rd = new GLRenderDataWorldPositionColor();
 
