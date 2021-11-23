@@ -53,7 +53,7 @@ namespace TestOpenTk
 
             orrery = new Orrery();
             orrery.Start(glwfc);
-            orrery.ReadBodies(@"c:\code\bodies.json");
+            orrery.CreateBodies(@"c:\code\bodies.json");
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

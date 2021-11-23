@@ -22,6 +22,7 @@ namespace TestOpenTk
 {
     public class KeplerOrbitElements
     {
+        // keplarian parameters
         public double SemiMajorAxis { get; set; }       // a (meters) the sum of the periapsis and apoapsis distances divided by two.
         public double Eccentricity { get; set; }        // e Eccentricity of orbit
         public double Inclination { get; set; }         // i (radians) Orbital inclination of orbit from the reference plane measured at the ascending node, radians
@@ -31,17 +32,19 @@ namespace TestOpenTk
         public double MeanAnomalyAtT0 { get; set; }     // v (radians) where it is in its orbit, 0 - 2PI, at epoch T0. Mean Anomaly is not a true geometric angle, rather a linear value varying over orbital period
         public double T0 { get; set; }                  // epoch time in days where these values are valid at
 
-        // orbiting mass
+        // Other info
         public double CentralMass { get; set; } = 1;    // in KG.  Needed only if your going to use the OrbitPeriod, ToCartesian or Orbit functions
-
-        public object Tag { get; set; }                 // for other info
-       
+     
         public double OrbitalPeriodS { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / GM); } } // seconds, keplers third law 
 
         public double CalculateMass(double orbitalperiodseconds)        // keplers third law backwards
         {
             return 4 * Math.PI * Math.PI * SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / G / (orbitalperiodseconds * orbitalperiodseconds);
         }
+
+        public Vector3d LastCartensianPosition { get; private set; } // set when ToCartesian is run
+
+        public object Tag { get; set; }                 // for other info
 
         public double GM { get { return G * CentralMass; } }
         public const double G = 6.67430E-11;                   // in m3.kg-1.s-2, wiki https://en.wikipedia.org/wiki/Gravitational_constant
@@ -174,10 +177,10 @@ namespace TestOpenTk
                 ot.Y * (Math.Cos(ArgumentOfPeriapsis) * Math.Cos(Inclination) * Math.Cos(LongitudeOfAscendingNode) - Math.Sin(ArgumentOfPeriapsis) * Math.Sin(LongitudeOfAscendingNode)));
             double rz = (ot.X * (Math.Sin(ArgumentOfPeriapsis) * Math.Sin(Inclination)) + ot.Y * (Math.Cos(ArgumentOfPeriapsis) * Math.Sin(Inclination)));
 
-            Vector3d r = new Vector3d(rx, ry, rz); //Position vector in meters
+            LastCartensianPosition = new Vector3d(rx, ry, rz); //Position vector in meters
                                                    //  System.Diagnostics.Debug.WriteLine($"Result {r}");
 
-            return r;
+            return LastCartensianPosition;
         }
 
 
@@ -185,7 +188,7 @@ namespace TestOpenTk
         public Vector4[] Orbit(double tdays, double angleresolutiondeg, double scaling)
         {
             double orbitalperioddays = OrbitalPeriodS / 60 / 60 / 24;
-            System.Diagnostics.Debug.WriteLine($"Orbit {OrbitalPeriodS} = {orbitalperioddays} days res {angleresolutiondeg} {CentralMass}");
+         //   System.Diagnostics.Debug.WriteLine($"Orbit {OrbitalPeriodS} = {orbitalperioddays} days res {angleresolutiondeg} {CentralMass}");
 
             List<Vector4> ret = new List<Vector4>();
             for ( double a = 0; a <= 360.0;  a = a +angleresolutiondeg)

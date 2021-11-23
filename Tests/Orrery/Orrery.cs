@@ -33,10 +33,9 @@ namespace TestOpenTk
         private GLItemsList items = new GLItemsList();
         private GLMatrixCalc matrixcalc;
 
-        private List<KeplerOrbitElements> bodylist;
-        private GLRenderDataWorldPositionColor[] orbitpositions;
+        private StarScan.ScanNode nodes;        // heirarchical list
+        private List<BodyInfo> orbitinfo;       // linear list pointing to nodes with kepler info etc
         private GLBuffer bodymatrixbuffer;
-
 
         private double currentjd;
         private double jdscaling;
@@ -146,6 +145,15 @@ namespace TestOpenTk
                         track = (int)rightclickmenubody.Tag;
                     }
                 },
+                new GLMenuItem("RCMZoomIn", "Track Central Body")
+                {
+                    MouseClick = (s, e) =>
+                    {
+                        int body = (int)rightclickmenubody.Tag;
+                        if (orbitinfo[body].parentindex >= 0)
+                            track = orbitinfo[body].parentindex;
+                    }
+                },
                 new GLMenuItem("RCMZoomIn", "Zoom In")
                 {
                 },
@@ -160,7 +168,7 @@ namespace TestOpenTk
 
             rightclickmenubody.Opening += (ms) =>
             {
-                ms["RCMUntrack"].Enabled = track >= 0;
+                ms["RCMUntrack"].Enabled = track != -1;
             };
 
             rightclickmenuscreen = new GLContextMenu("RightClickMenuBody",
@@ -181,7 +189,7 @@ namespace TestOpenTk
 
             rightclickmenuscreen.Opening += (ms) =>
             {
-                ms["RCMUntrack"].Enabled = track >= 0;
+                ms["RCMUntrack"].Enabled = track != -1;
             };
 
             int gridsize = (int)(worldsize * mscaling);
@@ -264,110 +272,105 @@ namespace TestOpenTk
 
         }
 
-        public void ReadBodies(string file)
+        public void CreateBodies(string file)
         { 
             string para = File.ReadAllText(file);
             JObject jo = JObject.Parse(para);
-            bodylist = new List<KeplerOrbitElements>();
-            OrbitalBodyInformation.AddToBodyList(jo, bodylist, 0, -1);
-            CreateBodies(bodylist);
+
+            nodes = StarScan.ReadJSON(jo);
+            CreateBodies(nodes);
+
             jdscaling = 0;
             currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
         }
 
 
-        private void CreateBodies(List<KeplerOrbitElements> bodylist)
+
+        private void CreateBodies(StarScan.ScanNode node)
         {
             rBodyObjects.Clear();
 
-            orbitpositions = new GLRenderDataWorldPositionColor[bodylist.Count];
+            orbitinfo = new List<BodyInfo>();
 
-            for (int i = 0; i < bodylist.Count; i++)
+            BodyInfo.CreateInfoTree(node, null, -1, 0, orbitinfo);
+
+            foreach (var o in orbitinfo)
             {
-                var kepler = bodylist[i];
-                OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
-
-                System.Diagnostics.Debug.WriteLine($"Body {ai.Name} {ai.StarClass} {ai.PlanetClass} SMA {kepler.SemiMajorAxis / oneAU_m} AU Ecc {kepler.Eccentricity} Orbital Period {kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {ai.RadiusKm} km");
-
-                if (kepler.SemiMajorAxis > 0)
+                System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} {o.node.scandata.StarType} {o.node.scandata.PlanetClass} SMA {o.kepler.SemiMajorAxis / oneAU_m} AU Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
+                if (o.kepler.SemiMajorAxis > 0)
                 {
-                    Vector4[] orbit = bodylist[i].Orbit(currentjd, 0.1, mscaling);
-
+                    Vector4[] orbit = o.kepler.Orbit(currentjd, 0.1, mscaling);
                     GLRenderState lines = GLRenderState.Lines(1);
                     lines.DepthTest = false;
 
-                    orbitpositions[i] = new GLRenderDataWorldPositionColor();
-                    orbitpositions[i].ColorIndex = ai.RadiusKm > 0 ? 0 : 1;
+                    o.rd.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
 
-                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, orbitpositions[i]);
+                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.rd);
                     rBodyObjects.Add(orbitlineshader, riol);
                 }
             }
 
+            int bodies = orbitinfo.Count;
+
             // hold planet and barycentre positions/sizes/imageno
-            bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodylist.Count);
+            bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodies);
 
             GLRenderState rt = GLRenderState.Tri();
             rt.DepthTest = false;
             ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, spherebuffer, spheretexcobuffer, bodymatrixbuffer,
                                             spherebuffer.Length / sizeof(float) / 4,
-                                            ic: bodylist.Count, matrixdivisor: 1);
+                                            ic: bodies, matrixdivisor: 1);
             rBodyObjects.Add(bodyshader, ribody);
 
             rifind = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, GLRenderState.Tri(), spherebuffer, spheretexcobuffer, bodymatrixbuffer,
                                             spherebuffer.Length / sizeof(float) / 4,
-                                            ic: bodylist.Count, matrixdivisor: 1);
+                                            ic: bodies, matrixdivisor: 1);
         }
 
         public void SystemTick()
         {
             timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}";
 
-            Vector3d[] positions = new Vector3d[bodylist.Count];
+            Matrix4[] bodymats = new Matrix4[orbitinfo.Count];
+            Vector3d[] positions = new Vector3d[orbitinfo.Count];
 
-            Matrix4[] bodymats = new Matrix4[bodylist.Count];
-            int bno = 0;
-
-            for (int i = 0; i < bodylist.Count; i++)
+            for (int i = 0; i < orbitinfo.Count; i++)
             {
-                var kepler = bodylist[i];
-                OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
+                var kepler = orbitinfo[i].kepler;
                 Vector3 pos = Vector3.Zero;
 
                 if (kepler.SemiMajorAxis > 0)
                 {
                     positions[i] = kepler.ToCartesian(currentjd);       // in meters around 0,0,0
-                    var cbpos = positions[ai.CentralBodyIndex];         // central body position
+                    var cbpos = positions[orbitinfo[i].parentindex];         // central body position
                     positions[i] += cbpos;                              // offset
 
-                    orbitpositions[i].WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
-
-                    // Kepler works around the XY plane, openGL uses the XZ plane
-
-                    pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
+                    orbitinfo[i].rd.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
                 }
 
-                float imageradius = (float)(Math.Max(ai.RadiusKm * 1000, 1000e3) * mscaling);
+                pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
 
-                bool planet = ai.PlanetClass.HasChars();
-                bool bary = ai.RadiusKm == 0;
+                float imageradius = (float)(Math.Max(orbitinfo[i].node.scandata.nRadius.Value, 1000e3) * mscaling);
 
-                bodymats[bno] = GLStaticsMatrix4.CreateMatrix(pos, new Vector3(1, 1, 1), new Vector3(0, 0, 0));
+                bool planet = orbitinfo[i].node.scandata.PlanetClass.HasChars();
+                bool bary = orbitinfo[i].node.scandata.nRadius == 0;
+
+                bodymats[i] = GLStaticsMatrix4.CreateMatrix(pos, new Vector3(1, 1, 1), new Vector3(0, 0, 0));
 
                 // more clever, knowing orbit paras
-                bodymats[bno].M14 = (bary ? 100000 : planet ? 100000 : 1000000) * 1000 * mscaling;      // min size in km
-                bodymats[bno].M24 = (bary ? 100000 : planet ? 10000000 : 3e6f) * 1000 * mscaling;           // maximum size in scaling
-                bodymats[bno].M34 = imageradius;
-                bodymats[bno].M44 = ai.PlanetClass.HasChars() ? 1 : ai.RadiusKm == 0 ? 2 : 0;      // select image
-                bno++;
+                bodymats[i].M14 = (bary ? 100000 : planet ? 100000 : 1000000) * 1000 * mscaling;      // min size in km
+                bodymats[i].M24 = (bary ? 100000 : planet ? 10000000 : 3e6f) * 1000 * mscaling;           // maximum size in scaling
+                bodymats[i].M34 = imageradius;
+                bodymats[i].M44 = planet ? 1 : bary ? 2 : 0;      // select image
             }
 
             bodymatrixbuffer.ResetFillPos();
             bodymatrixbuffer.Fill(bodymats);
 
-            if (track >= 0)
+            if (track != -1)
             {
-                gl3dcontroller.MoveLookAt(new Vector3d(positions[track].X, positions[track].Z, positions[track].Y) * mscaling);
+                Vector3d pos = positions[track];
+                gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling);
             }
 
             //            datalabel.Text = $"{bodypositionscaling[1].Position/mscaling/1000}" + Environment.NewLine;
@@ -477,22 +480,22 @@ namespace TestOpenTk
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
             var res = kb.HasBeenPressed(Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
-            if (res != null)
-            {
-                for (int i = 0; i < bodylist.Count; i++)
-                {
-                    var kepler = bodylist[i];
-                    OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
-                    if (ai.Name.InvariantParseInt(-1) == res.Item1 + 1)
-                    {
-                        if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
-                            track = ai.CentralBodyIndex;
-                        else
-                            track = i;
-                        break;
-                    }
-                }
-            }
+            //if (res != null)
+            //{
+            //    for (int i = 0; i < bodylist.Count; i++)
+            //    {
+            //        var kepler = bodylist[i];
+            //        OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
+            //        if (ai.Name.InvariantParseInt(-1) == res.Item1 + 1)
+            //        {
+            //            if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
+            //                track = ai.CentralBodyIndex;
+            //            else
+            //                track = i;
+            //            break;
+            //        }
+            //    }
+            //}
             if (kb.HasBeenPressed(Keys.D0, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 track = -1;
@@ -501,8 +504,6 @@ namespace TestOpenTk
 
 
         #endregion
-
-
 
 
     }

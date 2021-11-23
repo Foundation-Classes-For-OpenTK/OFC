@@ -41,16 +41,9 @@ namespace GLOFC.GL4
         public float XRotRadians { get { return rot.X; } set { rot.X = value; Calc(); } }
         public float YRotRadians { get { return rot.Y; } set { rot.Y = value; Calc(); } }
         public float ZRotRadians { get { return rot.Z; } set { rot.Z = value; Calc(); } }
-
         public Matrix4 Transform { get { return transform; } }
 
-        private Vector3 pos;
-        private Vector3 rot;
-        private float scale = 1.0f;
-
-        private Matrix4 transform;
-
-        bool lookatangle = false;
+        public object Tag { get; set; }     // to associate data with this RD
 
         public GLRenderDataTranslationRotation(float rxradians = 0, float ryradians = 0, float rzradians = 0, float scale = 1.0f, bool calclookat = false)
         {
@@ -108,6 +101,12 @@ namespace GLOFC.GL4
 
             GLStatics.Check();
         }
+
+        private Vector3 pos;
+        private Vector3 rot;
+        private float scale = 1.0f;
+        private Matrix4 transform;
+        private bool lookatangle = false;
     }
 
     // class to use above easily with textures
