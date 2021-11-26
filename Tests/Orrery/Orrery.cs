@@ -21,28 +21,26 @@ namespace TestOpenTk
     public class Orrery
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
+        private GLItemsList items = new GLItemsList();
+        private GLMatrixCalc matrixcalc;
+
+        private GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
+        private GLRenderProgramSortedList rBodyObjects = new GLRenderProgramSortedList();
 
         private Controller3Dd gl3dcontroller;
         private GLControlDisplay displaycontrol;
         private GLLabel timedisplay;
+        private GLLabel mastersystem;
         private GLLabel datalabel;
         private GLLabel status;
 
-        private GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
-        private GLRenderProgramSortedList rBodyObjects = new GLRenderProgramSortedList();
-        private GLItemsList items = new GLItemsList();
-        private GLMatrixCalc matrixcalc;
-
-        private StarScan.ScanNode nodes;        // heirarchical list
+        private StarScan.ScanNode starsystemnodes;        // heirarchical list, all
+        private int displaysubnode = 0; // subnode, 0 all, 1 first, etc
         private List<BodyInfo> bodyinfo;       // linear list pointing to nodes with kepler info etc
-        private GLBuffer bodymatrixbuffer;
-
-        private double currentjd;
-        private double jdscaling;
 
         private const double oneAU_m = 149597870700;
         private float worldsize = 7500e9f;        // size of playfield in meters
-        private float gridlines = 50e9f;              // every 10m km
+        private long gridlines = 50000000000;   // m
         private float mscaling = 1 / 1e6f;       // convert to units used by GL, 1e6 = 1e11 m, earth is at 1.49e11 m.  1,000,000m = 1000km = 1 unit
 
         private int track = -1;
@@ -50,12 +48,17 @@ namespace TestOpenTk
         private const int findblock = 3;
         private const int arbblock = 4;
 
+
+        private double currentjd;
+        private double jdscaling;
+
         private GLBuffer spherebuffer, spheretexcobuffer;
         private GLShaderPipeline orbitlineshader, bodyshader;
-        private GLRenderableItem ribody;
 
         private GLShaderPipeline findshader;
         private GLRenderableItem rifind;
+
+        private GLBuffer bodymatrixbuffer;
 
         private GLContextMenu rightclickmenubody;
         private GLContextMenu rightclickmenuscreen;
@@ -75,6 +78,7 @@ namespace TestOpenTk
             displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc);       // hook form to the window - its the master, it takes its size from mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
+            displaycontrol.Font = new Font("Arial", 12);
 
             gl3dcontroller = new Controller3Dd();
             gl3dcontroller.PaintObjects = ControllerDraw;
@@ -104,23 +108,37 @@ namespace TestOpenTk
             displaycontrol.MouseWheel += MouseWheelOnMap;
 
             double startspeed = 60 * 60 * 6; // in sec
-            GLImage minus = new GLImage("plus", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
+            GLImage minus = new GLImage("timeplus1y", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
             minus.MouseClick += (e1, m1) => { currentjd -= 365; };
             displaycontrol.Add(minus);
-            GLImage back = new GLImage("back", new Rectangle(40, 0, 32, 32), Properties.Resources.Backwards);
+            GLImage back = new GLImage("timeback", new Rectangle(40, 0, 32, 32), Properties.Resources.Backwards);
             back.MouseClick += (e1, m1) => { if (jdscaling > 0) jdscaling /= 2; else if (jdscaling < 0) jdscaling *= 2; else jdscaling = -startspeed; };
             displaycontrol.Add(back);
-            GLImage pause = new GLImage("back", new Rectangle(80, 0, 32, 32), Properties.Resources.Pause);
+            GLImage pause = new GLImage("timepause", new Rectangle(80, 0, 32, 32), Properties.Resources.Pause);
             pause.MouseClick += (e1, m1) => { jdscaling = 0; };
             displaycontrol.Add(pause);
-            GLImage fwd = new GLImage("fwd", new Rectangle(120, 0, 32, 32), Properties.Resources.Forward);
+            GLImage fwd = new GLImage("timefwd", new Rectangle(120, 0, 32, 32), Properties.Resources.Forward);
             fwd.MouseClick += (e1, m1) => { if (jdscaling < 0) jdscaling /= 2; else if (jdscaling > 0) jdscaling *= 2; else jdscaling = startspeed; };
             displaycontrol.Add(fwd);
-            GLImage plus = new GLImage("plus", new Rectangle(160, 0, 32, 32), Properties.Resources.GoForward);
+            GLImage plus = new GLImage("timeplus1y", new Rectangle(160, 0, 32, 32), Properties.Resources.GoForward);
             plus.MouseClick += (e1, m1) => { currentjd += 365; };
             displaycontrol.Add(plus);
-            timedisplay = new GLLabel("state", new Rectangle(200, 0, 400, 20), "Label", Color.DarkOrange);
+
+            GLImage sysleft = new GLImage("sysleft", new Rectangle(200, 0, 32, 32), Properties.Resources.GoBackward);
+            sysleft.MouseClick += (e1, m1) => { DisplayNode(-1); };
+            displaycontrol.Add(sysleft);
+
+            mastersystem = new GLLabel("sysname", new Rectangle(230, 6, 70, 20), "All", Color.DarkOrange);
+            mastersystem.TextAlign = ContentAlignment.MiddleCenter;
+            displaycontrol.Add(mastersystem);
+
+            GLImage sysright = new GLImage("sysright", new Rectangle(300, 0, 32, 32), Properties.Resources.GoForward);
+            sysright.MouseClick += (e1, m1) => { DisplayNode(1); };
+            displaycontrol.Add(sysright);
+
+            timedisplay = new GLLabel("state", new Rectangle(340, 6, 800, 20), "Label", Color.DarkOrange);
             displaycontrol.Add(timedisplay);
+
             datalabel = new GLLabel("datalabel", new Rectangle(0, 40, 400, 100), "", Color.DarkOrange);
             datalabel.TextAlign = ContentAlignment.TopLeft;
             displaycontrol.Add(datalabel);
@@ -192,54 +210,64 @@ namespace TestOpenTk
                 ms["RCMUntrack"].Enabled = track != -1;
             };
 
-            int gridsize = (int)(worldsize * mscaling);
-            int markers = (int)(gridlines * mscaling);
-            int nolines = gridsize / markers * 2 + 1;
-
-            var shader = new GLColorShaderWithWorldCoord();
-            items.Add(shader);
-
-            GLRenderState lines = GLRenderState.Lines(1);
-            lines.DepthTest = false;
-
-            Color gridcolour = Color.FromArgb(80, 80, 80, 80);
-            rObjects.Add(shader,
-                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
-                                                    GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(-gridsize, -0, gridsize), new Vector3(markers, 0, 0), nolines),
-                                                    new Color4[] { gridcolour })
-                                );
-
-
-            rObjects.Add(shader,
-                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
-                                GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, markers), nolines),
-                                                    new Color4[] { gridcolour }));
-
-            Size bmpsize = new Size(128, 30);
-            var maps = new GLBitmaps("bitmap1", rObjects, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
-            using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
+            if ( true )
             {
-                float hsize = 20e6f * 1000 * mscaling; // million km -> m -> scaling
-                float vsize = hsize * bmpsize.Height / bmpsize.Width;
+                var shader = new GLColorShaderWithWorldCoord();
+                items.Add(shader);
 
-                Font f = new Font("MS sans serif", 12f);
-                for (int i = 1; i < nolines / 2; i++)
+                GLRenderState lines = GLRenderState.Lines(1);
+                lines.DepthTest = false;
+
+                int gridsize = (int)(worldsize * mscaling);
+                int gridoffset = (int)(gridlines * mscaling);
+                int nolines = gridsize / gridoffset * 2 + 1;
+
+                Color gridcolour = Color.FromArgb(80, 80, 80, 80);
+                rObjects.Add(shader,
+                                GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
+                                                        GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(-gridsize, -0, gridsize), new Vector3(gridoffset, 0, 0), nolines),
+                                                        new Color4[] { gridcolour })
+                                    );
+
+
+                rObjects.Add(shader,
+                                GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
+                                    GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, gridoffset), nolines),
+                                                        new Color4[] { gridcolour }));
+
+                Size bmpsize = new Size(128, 30);
+                var maps = new GLBitmaps("bitmap1", rObjects, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
+                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
                 {
-                    maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, vsize / 2),
-                                        new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                    maps.Add(i, (i * gridlines / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, -vsize / 2),
-                                        new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt); maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * markers + hsize / 2, 0, vsize / 2),
-                                         new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                    maps.Add(i, (i * gridlines / 1000).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * markers + vsize / 2),
-                                        new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                    maps.Add(i, (i * gridlines / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * markers - vsize / 2),
-                                        new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                    float hsize = 40e6f * 1000 * mscaling; // million km -> m -> scaling
+                    float vsize = hsize * bmpsize.Height / bmpsize.Width;
 
+                    Font f = new Font("MS sans serif", 12f);
+                    long pos = -nolines / 2 * (gridlines / 1000);
+                    for (int i = -nolines / 2; i < nolines / 2; i++)
+                    {
+                        if (i != 0)
+                        {
+                            double v = Math.Abs(pos * 1000);
+                            long p = Math.Abs(pos);
+
+                            maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, vsize / 2),
+                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                            maps.Add(i, (v / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, -vsize / 2),
+                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                            maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset + vsize / 2),
+                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                            maps.Add(i, (v / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset - vsize / 2),
+                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
+                        }
+                        pos += 50000000;
+                    }
                 }
             }
 
             var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
+            //   bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
 
             // set up ARB IDs for all images we are going to use..
             var tbs = items.NewBindlessTextureHandleBlock(arbblock);
@@ -277,8 +305,10 @@ namespace TestOpenTk
             string para = File.ReadAllText(file);
             JObject jo = JObject.Parse(para);
 
-            nodes = StarScan.ReadJSON(jo);
-            CreateBodies(nodes);
+            starsystemnodes = StarScan.ReadJSON(jo);
+
+            displaysubnode = 0;
+            CreateBodies(starsystemnodes, displaysubnode);
 
             jdscaling = 0;
             currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
@@ -286,24 +316,34 @@ namespace TestOpenTk
 
 
 
-        private void CreateBodies(StarScan.ScanNode node)
+        private void CreateBodies(StarScan.ScanNode node, int subnode)
         {
             rBodyObjects.Clear();
 
             bodyinfo = new List<BodyInfo>();
 
+            bool sysenabled = false;
+            if (subnode > 0 && node.NodeType == StarScan.ScanNodeType.barycentre && node.Children != null)
+            {
+                node = node.Children.Values[subnode - 1];
+                sysenabled = true;
+            }
+
+            displaycontrol.ApplyToControlOfName("sys*", (c) => { c.Visible = sysenabled; });
+
             BodyInfo.CreateInfoTree(node, null, -1, 0, bodyinfo);
 
             foreach (var o in bodyinfo)
             {
+                System.Diagnostics.Debug.Write($"Body {o.node.OwnName} {o.node.scandata?.StarType} {o.node.scandata?.PlanetClass} Lvl {o.node.Level} ");
+
                 if (o.kepler != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} {o.node.scandata.StarType} {o.node.scandata.PlanetClass} SMA {o.kepler.SemiMajorAxis / oneAU_m} AU Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
+                    System.Diagnostics.Debug.Write($"SMA {o.kepler.SemiMajorAxis / oneAU_m} AU {o.kepler.SemiMajorAxis / 1000} km " +
+                                $" Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
                 }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Body {o.node.OwnName} no kepler");
-                }
+
+                System.Diagnostics.Debug.WriteLine("");
 
                 if (o.kepler != null)
                 {
@@ -311,9 +351,9 @@ namespace TestOpenTk
                     GLRenderState lines = GLRenderState.Lines(1);
                     lines.DepthTest = false;
 
-                    o.rd.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
+                    o.orbitpos.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
 
-                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.rd);
+                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.orbitpos);
                     rBodyObjects.Add(orbitlineshader, riol);
                 }
             }
@@ -325,7 +365,7 @@ namespace TestOpenTk
 
             GLRenderState rt = GLRenderState.Tri();
             rt.DepthTest = false;
-            ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, spherebuffer, spheretexcobuffer, bodymatrixbuffer,
+            var ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, spherebuffer, spheretexcobuffer, bodymatrixbuffer,
                                             spherebuffer.Length / sizeof(float) / 4,
                                             ic: bodies, matrixdivisor: 1);
             rBodyObjects.Add(bodyshader, ribody);
@@ -345,13 +385,24 @@ namespace TestOpenTk
                 var bi = bodyinfo[i];
                 Vector3 pos = Vector3.Zero;
 
-                if (bi.kepler != null)
+                if (bi.kepler != null)      // this body is orbiting
                 {
-                    positions[i] = bi.kepler.ToCartesian(currentjd);       // in meters around 0,0,0
-                    var cbpos = positions[bi.parentindex];         // central body position
-                    positions[i] += cbpos;                              // offset
+                    if (i > 0)              // not the root node, so a normal orbit
+                    {
+                        positions[i] = bi.kepler.ToCartesian(currentjd);    // in meters around 0,0,0
+                        var cbpos = positions[bi.parentindex];              // central body position
+                        positions[i] += cbpos;                              // offset
 
-                    bi.rd.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
+                        bi.orbitpos.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
+                    }
+                    else
+                    {
+                        // node 0 is the root node, always displayed at 0,0,0
+                        // If we remove the root node, and just display a body or barycentre which is in orbit around the root node
+                        // the orbit of this node body is calculated at T0, and then the orbit position of offset so the line passes thru 0,0,0
+                        var orbitpos = bi.kepler.ToCartesian(bi.kepler.T0);       // find the orbit of the root at T0 (fixed so it does not move)
+                        bi.orbitpos.WorldPosition = new Vector3((float)-orbitpos.X, (float)-orbitpos.Z, (float)-orbitpos.Y) * mscaling;
+                    }
                 }
 
                 pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
@@ -488,31 +539,37 @@ namespace TestOpenTk
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
             var res = kb.HasBeenPressed(Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
-            //if (res != null)
-            //{
-            //    for (int i = 0; i < bodylist.Count; i++)
-            //    {
-            //        var kepler = bodylist[i];
-            //        OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
-            //        if (ai.Name.InvariantParseInt(-1) == res.Item1 + 1)
-            //        {
-            //            if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
-            //                track = ai.CentralBodyIndex;
-            //            else
-            //                track = i;
-            //            break;
-            //        }
-            //    }
-            //}
+            if (res != null)
+            {
+                int n = res.Item1;
+                if (n < bodyinfo.Count)
+                    track = bodyinfo[n].index;
+            }
+
             if (kb.HasBeenPressed(Keys.D0, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
                 track = -1;
             }
         }
 
-
         #endregion
 
+
+        #region helpers
+
+        public void DisplayNode(int dir)
+        {
+            if (starsystemnodes.NodeType == StarScan.ScanNodeType.barycentre && starsystemnodes.Children != null)
+            {
+                int number = starsystemnodes.Children.Count + 1;
+                displaysubnode = (displaysubnode + dir + number) % number; // rotate between 0 and N
+                CreateBodies(starsystemnodes, displaysubnode);
+                mastersystem.Text = displaysubnode == 0 ? "All" : starsystemnodes.Children.Values[displaysubnode - 1].OwnName;
+                track = -1;
+            }
+        }
+
+        #endregion
 
     }
 }

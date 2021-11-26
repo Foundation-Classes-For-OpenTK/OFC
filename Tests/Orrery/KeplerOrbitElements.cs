@@ -56,7 +56,7 @@ namespace TestOpenTk
         {
             this.Eccentricity = eccentricity;
             this.SemiMajorAxis = semimajoraxis * 1000;    // to m
-            this.Inclination = inclination.Radians();
+            this.Inclination = ((inclination + 360) % 360).Radians();
             this.LongitudeOfAscendingNode = ((longitudeofascendingnode + 360) % 360).Radians();
             this.ArgumentOfPeriapsis = ((argumentofperiapsis + 360) % 360).Radians();
             this.MeanAnomalyAtT0 = ((meananomlalyT0 + 360) % 360).Radians();
@@ -70,7 +70,7 @@ namespace TestOpenTk
         {
             this.Eccentricity = eccentricity;
             this.SemiMajorAxis = semimajoraxiskm * 1000;    // to m
-            this.Inclination = inclination.Radians();
+            this.Inclination = ((inclination + 360) % 360).Radians();
 
             this.LongitudeOfAscendingNode = ((longitudeofascendingnode + 360) % 360).Radians();
 

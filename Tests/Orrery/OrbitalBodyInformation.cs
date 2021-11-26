@@ -14,7 +14,7 @@ namespace TestOpenTk
     public class BodyInfo
     {
         public KeplerOrbitElements kepler;
-        public GLRenderDataWorldPositionColor rd;
+        public GLRenderDataWorldPositionColor orbitpos;
         public StarScan.ScanNode node;
         public StarScan.ScanNode parent;
         public int index;
@@ -38,7 +38,7 @@ namespace TestOpenTk
             }
             else
             {
-
+                System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info");
             }
 
             BodyInfo oi = new BodyInfo();
@@ -46,6 +46,7 @@ namespace TestOpenTk
             oi.node = sn;
             oi.index = oilist.Count;
             oi.parentindex = p;
+            oi.orbitpos = new GLRenderDataWorldPositionColor();
             oilist.Add(oi);
 
             if (kepler != null)
@@ -58,7 +59,6 @@ namespace TestOpenTk
                     kepler.CentralMass = prevmasskg;
             }
 
-            oi.rd = new GLRenderDataWorldPositionColor();
 
             if (sn.Children != null)
             {

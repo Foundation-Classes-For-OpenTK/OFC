@@ -372,6 +372,9 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
         }
 
+
+        // feed keys to focus is present and enabled, else the control display gets them
+
         protected void Gc_KeyUp(object sender, GLKeyEventArgs e)
         {
             if (currentfocus != null && currentfocus.Enabled)
@@ -381,8 +384,9 @@ namespace GLOFC.GL4.Controls
 
                 if (!e.Handled)                                    // send to control
                     currentfocus.OnKeyUp(e);
-
             }
+            else
+                OnKeyUp(e);
         }
 
         protected void Gc_KeyDown(object sender, GLKeyEventArgs e)
@@ -395,8 +399,9 @@ namespace GLOFC.GL4.Controls
 
                 if (!e.Handled)                                    // send to control
                     currentfocus.OnKeyDown(e);
-
             }
+            else
+                OnKeyDown(e);
         }
 
         protected void Gc_KeyPress(object sender, GLKeyEventArgs e)
@@ -409,6 +414,8 @@ namespace GLOFC.GL4.Controls
                 if (!e.Handled)
                     currentfocus.OnKeyPress(e);                     // send to control
             }
+            else
+                OnKeyPress(e);
         }
 
     }
