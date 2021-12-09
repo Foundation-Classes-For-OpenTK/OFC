@@ -99,8 +99,8 @@ namespace GLOFC.Controller
 
         // Pos Direction interface - all of these will cause movement, which will be detected by the PosCamera different tracker. Use RecalcMatrixIfMoved
         public void SetPositionCamera(Vector3 lookat, Vector3 eyepos, float camerarot) { PosCamera.SetPositionCamera(lookat, eyepos, camerarot); }
-        public void MoveLookAt(Vector3 pos) { PosCamera.MoveLookAt(pos); }
-        public void TranslatePosition(Vector3 posx) { PosCamera.Translate(posx); }
+        public void MoveLookAt(Vector3 pos, bool killslew = true) { PosCamera.MoveLookAt(pos, killslew); }
+        public void TranslatePosition(Vector3 posx, bool killslew = true) { PosCamera.Translate(posx, killslew); }
         public void SlewToPosition(Vector3 normpos, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoTo(normpos, timeslewsec, unitspersecond); }
         public void SlewToPositionZoom(Vector3 normpos, float zoom, float timeslewsec = 0, float unitspersecond = 10000F) { PosCamera.GoToZoom(normpos, zoom,timeslewsec, unitspersecond); }
 

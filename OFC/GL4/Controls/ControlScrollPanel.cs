@@ -47,7 +47,7 @@ namespace GLOFC.GL4.Controls
             if (ControlsZ.Count > 0)
             {
                 Rectangle r = ChildArea();
-                int childheight = r.Bottom;
+                int childheight = r.Bottom + r.Top;
 
                 needbitmap = childheight > Height;
 

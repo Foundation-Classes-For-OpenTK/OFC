@@ -278,9 +278,9 @@ namespace GLOFC
                 {
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit; 
                     if ( fmt != null )
-                        return g.MeasureString(text, f, new Size(10000, 10000), fmt);
+                        return g.MeasureString(text, f, new Size(20000, 20000), fmt);
                     else
-                        return g.MeasureString(text, f, new Size(10000, 10000));
+                        return g.MeasureString(text, f, new Size(20000, 20000));
                 }
             }
         }

@@ -217,6 +217,13 @@ namespace TestOpenTk
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
                     pform.Add(b4);
+
+                    GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Button 5");
+                    b5.TabOrder = taborder++;
+                    b5.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b5.ToolTipText = "Button 4 tip\r\nLine 2 of it";
+                    b5.Click += (c, ev) => { ConfDialog2(); };
+                    pform.Add(b5);
                 }
 
                 if (true)
@@ -320,6 +327,17 @@ namespace TestOpenTk
                     pform.Add(mtb);
                     //mtb.FlashingCursor = false;
                     //mtb.ReadOnly = true;
+
+                    GLMultiLineTextBox mtb2 = new GLMultiLineTextBox("mltb2", new Rectangle(410, 400, 2000, 200), l);
+                    mtb2.Font = new Font("Ms Sans Serif", 11);
+                    mtb2.LineColor = Color.Green;
+                    mtb2.EnableVerticalScrollBar = true;
+                    mtb2.EnableHorizontalScrollBar = true;
+                    mtb2.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                    mtb2.TabOrder = taborder++;
+                    mtb2.RightClickMenuFont = new Font("Arial", 14f);
+                    mtb2.AutoSize = true;
+                    pform.Add(mtb2);
                 }
 
                 if (false)
@@ -401,11 +419,11 @@ namespace TestOpenTk
             {
                 if (ctrl == null || !pform.IsThisOrChildOf(ctrl))
                 {
-                    System.Diagnostics.Debug.WriteLine("Not on form");
+                  //  System.Diagnostics.Debug.WriteLine("Not on form");
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine("Click on form");
+                  //  System.Diagnostics.Debug.WriteLine("Click on form");
                 }
             };
 
@@ -441,26 +459,56 @@ namespace TestOpenTk
 
         private void ConfDialog()
         {
-            GLFormConfigurable c1 = new GLFormConfigurable("test");
-            c1.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
-            c1.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
-            c1.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT"));
+            GLFormConfigurable cform = new GLFormConfigurable("test");
+            cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
+            cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
+            cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
+            cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
+            cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { Anchor = AnchorType.Right | AnchorType.Bottom });
             // c1.Size = new Size(400, 400);
-            c1.Init(new Point(200, 200), "Config Form Test");
-            c1.Trigger += (cb, en, ctrlname, args) =>
+            cform.InitCentered("Config Form Test");
+            cform.Trigger += (cb, en, ctrlname, args) =>
             {
                 if (ctrlname == "OK")
-                    c1.Close();
+                    cform.Close();
             };
-            displaycontrol.Add(c1);
+            displaycontrol.Add(cform);
+        }
+
+        private void ConfDialog2()
+        {
+            GLFormConfigurable cform = new GLFormConfigurable("test");
+            //cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
+            //cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
+            //cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
+            //cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
+
+            GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(10, 10, 1000, 1000), "this is some text\r\nAnd some more");
+            var sizer = tb.CalculateTextArea(new Size(50, 24), new Size(400, 400));
+            tb.Size = sizer.Item1;
+            tb.CursorToEnd();
+
+            cform.Add(new GLFormConfigurable.Entry("info", tb) );
+
+
+            cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
+            cform.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
+            cform.Add(new GLFormConfigurable.Entry("Abort", typeof(GLButton), "Abort", new Point(0, 0), new Size(100, 24), "TT") { Anchor =  AnchorType.DialogButtonLine });
+            cform.SetMinimumSize = true;
+            cform.Init(new Point(200, 200), "Config Form Test");
+            cform.Trigger += (cb, en, ctrlname, args) =>
+            {
+                if (ctrlname == "OK")
+                    cform.Close();
+            };
+            displaycontrol.Add(cform);
+            cform.Resizeable = true;        
         }
 
         private void MsgDialog()
         {
             string t = "";
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 100; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
             GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
@@ -468,7 +516,14 @@ namespace TestOpenTk
 
         private void MsgDialog2()
         {
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.OKCancel);
+
+            string t = "";
+            for (int i = 0; i < 30; i++)
+                t += "Line " + i + " is here" + " and lets make it very long for an example" +  Environment.NewLine;
+
+            //            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message\r\nShorter than\r\nThe other" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
+            //GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, "Longer message message\r\nShorter than\r\nThe other", "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
         }
 
         private void MsgReturn(GLMessageBox msg, GLOFC.GL4.Controls.DialogResult res)

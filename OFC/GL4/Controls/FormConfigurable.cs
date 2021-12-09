@@ -33,6 +33,11 @@ namespace GLOFC.GL4.Controls
 
         public event Action<GLFormConfigurable, Entry, string, Object> Trigger;
 
+        // if you want it resizable, set Resizable=true AFTER adding to displaycontrol etc.
+        // if you want it moveable, set Moveable=true AFTER adding to displaycontrol etc.
+        public bool SetMinimumSize { get; set; } = false;       // if true, on size, set the MinimumSize value. Set before Init
+
+
         // You give an array of Entries describing the controls
         // either added programatically by Add(entry) or via a string descriptor Add(string) (disabled for now)
         // Directly Supported Types (string name/base type)
@@ -43,49 +48,57 @@ namespace GLOFC.GL4.Controls
         // Or any type if you set controltype=null and set control field directly.
         // Set controlname, text,pos,size, tooltip
         // for specific type, set the other fields.
-        // See action document for string descriptor format
+
+        // Buttons at 0,0 are auto aligned along the bottom, right to left, allowing the rest of the dialog to measure the other data
 
         public class Entry
         {
-            public string controlname;                  // logical name of control
-            public Type controltype;                    // if non null, activate this type.  Else if null, control should be filled up with your specific type
+            public string Name;                 // logical name of control
+            public Type ControlType;            // if non null, activate this type.  Else if null, control should be filled up with your specific type
+            public int TabOrder = -1;           // tab order
+            public Object Tag;                  // for use by caller
+            public Point Location;
+            public Size Size;
+            public string ToolTip;              // can be null.
 
-            public string text;                         // for certain types, the text
-            public System.Drawing.Point pos;
-            public System.Drawing.Size size;
-            public string tooltip;                      // can be null.
+            // properties applied if this control makes it
 
-            // normal ones
-            public Entry(string nam, Type c, string t, System.Drawing.Point p, System.Drawing.Size s, string tt = null, Object tag = null)
+            public AnchorType Anchor = AnchorType.None;
+            public string Text;                 // for certain types, the text
+            public bool Checked;                // fill in for checkbox
+            public bool ClearOnFirstChar;       // fill in for textbox
+            public string ComboBoxItems;        // fill in for combobox. comma separ list.
+            public string CustomDateFormat;     // fill in for datetimepicker
+            public double NumberBoxDoubleMinimum = double.MinValue;   // for double box
+            public double NumberBoxDoubleMaximum = double.MaxValue;
+            public long NumberBoxLongMinimum = long.MinValue;   // for long box
+            public long NumberBoxLongMaximum = long.MaxValue;
+            public string NumberBoxFormat;      // for both number boxes
+            public ContentAlignment? TextAlign;  // label,button. nominal not applied
+            public bool ReadOnly = false;       // text box
+            public bool AutoSize = false;       // all
+
+            public GLBaseControl Control; // if controltype is set, don't set.  If contrDaveoltype=null, pass your control type.
+
+            // normal ones, by type
+            public Entry(string name, Type c, string t, System.Drawing.Point p, System.Drawing.Size s, string tt = null, Object tag = null)
             {
-                controltype = c; text = t; pos = p; size = s; tooltip = tt; controlname = nam; customdateformat = "long"; this.tag = tag;
+                ControlType = c; Text = t; Location = p; Size = s; ToolTip = tt; Name = name; CustomDateFormat = "long"; this.Tag = tag;
             }
 
-            public Entry( GLBaseControl ctrl, string tt = null, Object tag = null)
+            // direct control
+            public Entry( string name, GLBaseControl ctrl, string tt = null, Object tag = null)
             {
-                control = ctrl; tooltip = tt; this.tag = tag;
+                Control = ctrl; Name = name; ToolTip = tt; this.Tag = tag;
             }
 
             // ComboBox
             public Entry(string nam, string t, System.Drawing.Point p, System.Drawing.Size s, string tt, List<string> comboitems, Object tag = null)
             {
-                controltype = typeof(GLComboBox); text = t; pos = p; size = s; tooltip = tt; controlname = nam; this.tag = null;
-                comboboxitems = string.Join(",", comboitems);
+                ControlType = typeof(GLComboBox); Text = t; Location = p; Size = s; ToolTip = tt; Name = nam; this.Tag = tag;
+                ComboBoxItems = string.Join(",", comboitems);
             }
 
-            public bool checkboxchecked;        // fill in for checkbox
-            public bool clearonfirstchar;       // fill in for textbox
-            public string comboboxitems;        // fill in for combobox. comma separ list.
-            public string customdateformat;     // fill in for datetimepicker
-            public double numberboxdoubleminimum = double.MinValue;   // for double box
-            public double numberboxdoublemaximum = double.MaxValue;
-            public long numberboxlongminimum = long.MinValue;   // for long box
-            public long numberboxlongmaximum = long.MaxValue;
-            public string numberboxformat;      // for both number boxes
-            public int taborder = -1;           // tab order
-            public Object tag;                  // for use by caller
-
-            public GLBaseControl control; // if controltype is set, don't set.  If contrDaveoltype=null, pass your control type.
         }
 
         #region Public interface
@@ -93,37 +106,76 @@ namespace GLOFC.GL4.Controls
         public GLFormConfigurable(string name) : base(name, "TitleConfigDefault",DefaultWindowRectangle)     // title changed on Init
         {
             entries = new List<Entry>();
+            Moveable = Resizeable = false;
         }
-
-        public Size ExtraClientMargin { get; set; } = new Size(20, 10);         // extra space left/bot to add
 
         public void Add(Entry e)               // add an entry..
         {
             entries.Add(e);
         }
 
+        public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null)
+        {
+            if (sz == null)
+                sz = new Size(80, 24);
+            Add(new Entry(ctrlname, typeof(GLButton), text, p, sz.Value, tooltip) {});
+        }
+
+        public void AddOK(string text, Point p, string tooltip = null, Size? sz = null)
+        {
+            AddButton("OK", text, p, tooltip, sz);
+        }
+        public void AddCancel(string text, Point p, string tooltip = null, Size? sz = null)
+        {
+            AddButton("Cancel", text, p, tooltip, sz);
+        }
+
+        public void InstallStandardTriggers()
+        {
+            Trigger += (cfg, en, controlname, args) =>
+            {
+                if (controlname == "OK")
+                {
+                    cfg.DialogResult = DialogResult.OK;
+                    Close();
+                }
+                else if (controlname == "Close" || controlname == "Escape" || controlname == "Cancel")
+                {
+                    cfg.DialogResult = DialogResult.Cancel;
+                    Close();
+                }
+            };
+        }
+
         public Entry Last { get { return entries.Last(); } }
 
         public void Init(Point pos, string caption, Object callertag = null)
         {
-            InitInt(pos, caption, callertag);
+            location = pos;
+            InitInt(caption, callertag);
+        }
+
+        public void InitCentered(string caption, Object callertag = null)
+        {
+            centred = true;
+            InitInt(caption, callertag);
         }
 
         public T GetControl<T>(string controlname) where T : GLBaseControl      // return value of dialog control
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
-                return (T)t.control;
+                return (T)t.Control;
             else
                 return null;
         }
 
         public string Get(string controlname)      // return value of dialog control
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                GLBaseControl c = t.control;
+                GLBaseControl c = t.Control;
                 if (c is GLMultiLineTextBox)
                     return (c as GLMultiLineTextBox).Text;
                 else if (c is GLCheckBox)
@@ -152,10 +204,10 @@ namespace GLOFC.GL4.Controls
 
         public double? GetDouble(string controlname)     // Null if not valid
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                var cn = t.control as GLNumberBoxDouble;
+                var cn = t.Control as GLNumberBoxDouble;
                 if (cn.IsValid)
                     return cn.Value;
             }
@@ -164,10 +216,10 @@ namespace GLOFC.GL4.Controls
 
         public long? GetLong(string controlname)     // Null if not valid
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                var cn = t.control as GLNumberBoxLong;
+                var cn = t.Control as GLNumberBoxLong;
                 if (cn.IsValid)
                     return cn.Value;
             }
@@ -176,10 +228,10 @@ namespace GLOFC.GL4.Controls
 
         public DateTime? GetDateTime(string controlname)
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                GLDateTimePicker c = t.control as GLDateTimePicker;
+                GLDateTimePicker c = t.Control as GLDateTimePicker;
                 if (c != null)
                     return c.Value;
             }
@@ -189,10 +241,10 @@ namespace GLOFC.GL4.Controls
 
         public bool Set(string controlname, string value)      // set value of dialog control
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                GLBaseControl c = t.control;
+                GLBaseControl c = t.Control;
                 if (c is GLTextBox)
                 {
                     (c as GLTextBox).Text = value;
@@ -246,10 +298,10 @@ namespace GLOFC.GL4.Controls
 
         public bool SetEnabled(string controlname, bool state)      // set enable state of dialog control
         {
-            Entry t = entries.Find(x => x.controlname.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
             {
-                var cn = t.control as GLBaseControl;
+                var cn = t.Control as GLBaseControl;
                 cn.Enabled = state;
                 return true;
             }
@@ -262,33 +314,40 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        private void InitInt(System.Drawing.Point pos, string caption, Object callertag)
+        private void InitInt(string caption, Object callertag)
         {
             this.callertag = callertag;      // passed back to caller via trigger
             this.Text = caption;
+
+            SuspendLayout();
 
             for (int i = 0; i < entries.Count; i++)
             {
                 Entry ent = entries[i];
 
-                bool oursmade = ent.control == null;
+                bool oursmade = ent.Control == null;
 
                 if (oursmade)
                 {
-                    ent.control = (GLBaseControl)Activator.CreateInstance(ent.controltype);
-                    ent.control.Size = ent.size;
-                    ent.control.Location = ent.pos;
-                    ent.control.Name = ent.controlname;
+                    ent.Control = (GLBaseControl)Activator.CreateInstance(ent.ControlType);
+                    ent.Control.Name = ent.Name;
+                    ent.Control.SetNI(ent.Location,ent.Size);
+                    ent.Control.Anchor = ent.Anchor;
+                    ent.Control.AutoSize = ent.AutoSize;
                 }
 
-                GLBaseControl c = ent.control;
+                GLBaseControl c = ent.Control;
                 c.Tag = ent;     // point control tag at ent structure
-                c.TabOrder = ent.taborder;
+                c.TabOrder = ent.TabOrder;
 
                 if ( c is GLLabel)
                 {
+                    var l = c as GLLabel;
                     if (oursmade)
-                        ((GLLabel)c).Text = ent.text;
+                        l.Text = ent.Text;
+
+                    if (ent.TextAlign.HasValue)
+                        l.TextAlign = ent.TextAlign.Value;
                 }
                 else if ( c is GLMultiLineTextBox ) // also TextBox as its inherited
                 {
@@ -296,8 +355,9 @@ namespace GLOFC.GL4.Controls
 
                     if (oursmade)
                     {
-                        tb.Text = ent.text;
-                        tb.ClearOnFirstChar = ent.clearonfirstchar;
+                        tb.Text = ent.Text;
+                        tb.ClearOnFirstChar = ent.ClearOnFirstChar;
+                        tb.ReadOnly = ent.ReadOnly;
                     }
 
                     tb.ReturnPressed += (box) =>        // only works for text box
@@ -311,29 +371,32 @@ namespace GLOFC.GL4.Controls
                 { 
                     GLButton b = c as GLButton;
                     if (oursmade)
-                        b.Text = ent.text;
+                        b.Text = ent.Text;
+                    
+                    if (ent.TextAlign.HasValue)
+                        b.TextAlign = ent.TextAlign.Value;
 
                     b.Click += (sender, ev) =>
                     {
                         Entry en = (Entry)(((GLBaseControl)sender).Tag);
-                        Trigger?.Invoke(this, en, en.controlname, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                        Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
 
                     b.Return += (sender) =>
                     {
                         Entry en = (Entry)(((GLBaseControl)sender).Tag);
-                        Trigger?.Invoke(this, en, en.controlname, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                        Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
                 }
                 else if (c is GLCheckBox)
                 {
                     GLCheckBox cb = c as GLCheckBox;
                     if (oursmade)
-                        cb.Checked = ent.checkboxchecked;
+                        cb.Checked = ent.Checked;
                     cb.CheckChanged = (sender) =>
                     {
                         Entry en = (Entry)(((GLBaseControl)sender).Tag);
-                        Trigger?.Invoke(this, en, en.controlname, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                        Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
                 }
                 else if (c is GLDateTimePicker)
@@ -342,11 +405,11 @@ namespace GLOFC.GL4.Controls
                     if (oursmade)
                     {
                         DateTime t;
-                        if (DateTime.TryParse(ent.text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeLocal, out t))     // assume local, so no conversion
+                        if (DateTime.TryParse(ent.Text, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeLocal, out t))     // assume local, so no conversion
                             dt.Value = t;
                     }
 
-                    switch (ent.customdateformat.ToLowerInvariant())
+                    switch (ent.CustomDateFormat.ToLowerInvariant())
                     {
                         case "short":
                             dt.Format = GLDateTimePicker.DateTimePickerFormat.Short;
@@ -358,7 +421,7 @@ namespace GLOFC.GL4.Controls
                             dt.Format = GLDateTimePicker.DateTimePickerFormat.Time;
                             break;
                         default:
-                            dt.CustomFormat = ent.customdateformat;
+                            dt.CustomFormat = ent.CustomDateFormat;
                             break;
                     }
                 }
@@ -368,9 +431,9 @@ namespace GLOFC.GL4.Controls
 
                     if (oursmade)
                     {
-                        cb.Items.AddRange(ent.comboboxitems.Split(','));
-                        if (cb.Items.Contains(ent.text))
-                            cb.SelectedItem = ent.text;
+                        cb.Items.AddRange(ent.ComboBoxItems.Split(','));
+                        if (cb.Items.Contains(ent.Text))
+                            cb.SelectedItem = ent.Text;
                     }
 
                     cb.SelectedIndexChanged += (sender) =>
@@ -379,7 +442,7 @@ namespace GLOFC.GL4.Controls
                         if (ctr.Enabled)
                         {
                             Entry en = (Entry)(ctr.Tag);
-                            Trigger?.Invoke(this, en, en.controlname, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                            Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                         }
                     };
 
@@ -390,12 +453,12 @@ namespace GLOFC.GL4.Controls
 
                     if (oursmade)
                     {
-                        cb.Minimum = ent.numberboxdoubleminimum;
-                        cb.Maximum = ent.numberboxdoublemaximum;
-                        double? v = ent.text.InvariantParseDoubleNull();
+                        cb.Minimum = ent.NumberBoxDoubleMinimum;
+                        cb.Maximum = ent.NumberBoxDoubleMaximum;
+                        double? v = ent.Text.InvariantParseDoubleNull();
                         cb.Value = v.HasValue ? v.Value : cb.Minimum;
-                        if (ent.numberboxformat != null)
-                            cb.Format = ent.numberboxformat;
+                        if (ent.NumberBoxFormat != null)
+                            cb.Format = ent.NumberBoxFormat;
                     }
 
                     cb.ReturnPressed += (box) =>
@@ -414,12 +477,12 @@ namespace GLOFC.GL4.Controls
                     GLNumberBoxLong cb = c as GLNumberBoxLong;
                     if (oursmade)
                     {
-                        cb.Minimum = ent.numberboxlongminimum;
-                        cb.Maximum = ent.numberboxlongmaximum;
-                        long? v = ent.text.InvariantParseLongNull();
+                        cb.Minimum = ent.NumberBoxLongMinimum;
+                        cb.Maximum = ent.NumberBoxLongMaximum;
+                        long? v = ent.Text.InvariantParseLongNull();
                         cb.Value = v.HasValue ? v.Value : cb.Minimum;
-                        if (ent.numberboxformat != null)
-                            cb.Format = ent.numberboxformat;
+                        if (ent.NumberBoxFormat != null)
+                            cb.Format = ent.NumberBoxFormat;
                     }
 
                     cb.ReturnPressed += (box) =>
@@ -437,9 +500,83 @@ namespace GLOFC.GL4.Controls
                 Add(c);
             }
 
-            Location = pos;
-            Rectangle area = ChildArea();
-            Size = new Size(area.Right + Margin.TotalWidth + ExtraClientMargin.Width, area.Bottom + Margin.TotalHeight + ExtraClientMargin.Height + Padding.TotalHeight + BorderWidth);
+            ResumeLayout();
+        }
+
+        private const int butspacing = 8;
+
+        // after the children have sized, estimate the size of the form
+        protected override void SizeControlPostChild(Size parentsize)
+        {
+            base.SizeControlPostChild(parentsize);
+
+            if (ControlsIZ.Count>0 && Parent != null)       // if not resizable, and we have stuff
+            {
+                if (!Resizeable)
+                {
+                    Rectangle area = ChildArea(x => (x.Anchor & AnchorType.DialogButtonLine) == 0);   // get the clients area , ignoring anchor buttons
+
+                    int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max();
+                    int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum();
+
+                    Size csize = new Size(Math.Max(area.Left + area.Width, buttonswidth) + AutoSizeClientMargin.Width, area.Top + area.Height + AutoSizeClientMargin.Height + buttonsmaxh);
+                    System.Diagnostics.Debug.WriteLine($"AutoSize FC {area} {csize}");
+                    SetNI(clientsize: csize);
+
+                    if (SetMinimumSize)       // ensures that the dialog never goes below this during resize
+                        MinimumSize = Size;
+                }
+
+                if (!Moveable)
+                {
+                    Size psize = Parent.Size;
+
+                    if (centred)
+                    {
+                        int left = psize.Width / 2 - Size.Width / 2;
+                        int top = psize.Height / 2 - Size.Height / 2;
+                        SetNI(location: new Point(left, top));
+                    }
+                    else
+                    {
+                        int left = location.X;
+                        if (left + Width > psize.Width)
+                            left = psize.Width - Width;
+                        int top = location.Y;
+                        if (top + Height > psize.Height)
+                            top = psize.Height - Height;
+
+                        SetNI(location: new Point(left,top));
+
+                    }
+
+                }
+
+            }
+        }
+
+
+
+        // and after sizing, layout any anchor buttons
+        public override void Layout(ref Rectangle parentarea)      
+        {
+            int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height).DefaultIfEmpty(0).Max();
+            int buttonline = ClientHeight - AutoSizeClientMargin.Height - buttonsmaxh;
+            int buttonright = ClientWidth - AutoSizeClientMargin.Width;
+
+            foreach (var control in ControlsIZ)
+            {
+                if ((control.Anchor & AnchorType.DialogButtonLine) != 0)        // if dialog line anchor
+                {
+                    buttonright -= control.Width;
+                    var pos = new Point(buttonright, buttonline);
+                    System.Diagnostics.Debug.WriteLine($"{control.Name} {control.Size} to {pos}");
+                    control.SetNI(location: pos);
+                    buttonright -= butspacing;
+                }
+            }
+
+            base.Layout(ref parentarea);
         }
 
         protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children
@@ -456,6 +593,8 @@ namespace GLOFC.GL4.Controls
 
         private List<Entry> entries;
         private Object callertag;
+        private bool centred;
+        private Point location;
     }
 }
 

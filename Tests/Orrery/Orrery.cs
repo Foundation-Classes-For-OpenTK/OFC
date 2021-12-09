@@ -53,7 +53,7 @@ namespace TestOpenTk
         private double jdscaling;
 
         private GLBuffer spherebuffer, spheretexcobuffer;
-        private GLShaderPipeline orbitlineshader, bodyshader;
+        private GLShaderPipeline orbitlineshader, bodyshader, bodyplaneshader;
 
         private GLShaderPipeline findshader;
         private GLRenderableItem rifind;
@@ -82,9 +82,10 @@ namespace TestOpenTk
 
             gl3dcontroller = new Controller3Dd();
             gl3dcontroller.PaintObjects = ControllerDraw;
-            gl3dcontroller.ZoomDistance = 4000F;
+            gl3dcontroller.ZoomDistance = 20e6*1000*mscaling;       // zoom 1 is X km
             gl3dcontroller.PosCamera.ZoomMin = 0.001f;
-            gl3dcontroller.PosCamera.ZoomScaling = 1.05f;
+            gl3dcontroller.PosCamera.ZoomMax = 300f;
+            gl3dcontroller.PosCamera.ZoomScaling = 1.08f;
             gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0f), 0.025F, registermouseui: false, registerkeyui: true);
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
@@ -93,6 +94,13 @@ namespace TestOpenTk
                 //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
                 return (float)ms * v;
             };
+
+            for( int i = 1; i <= 10; i++ )
+            {
+                int v = i * i;
+                double f = (gl3dcontroller.PosCamera.ZoomMax - gl3dcontroller.PosCamera.ZoomMin) * v / 100.0 + gl3dcontroller.PosCamera.ZoomMin;
+                System.Diagnostics.Debug.WriteLine($"{i} {v} {f}");
+            }
 
             displaycontrol.Paint += (o, ts) =>        // subscribing after Controller start means we paint over the scene
             {
@@ -267,7 +275,7 @@ namespace TestOpenTk
 
             var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
-            //   bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
+            bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
 
             // set up ARB IDs for all images we are going to use..
             var tbs = items.NewBindlessTextureHandleBlock(arbblock);
@@ -335,12 +343,12 @@ namespace TestOpenTk
 
             foreach (var o in bodyinfo)
             {
-                System.Diagnostics.Debug.Write($"Body {o.node.OwnName} {o.node.scandata?.StarType} {o.node.scandata?.PlanetClass} Lvl {o.node.Level} ");
+                System.Diagnostics.Debug.Write($"Body {o.scannode.OwnName} {o.scannode.scandata?.StarType} {o.scannode.scandata?.PlanetClass} Lvl {o.scannode.Level} ");
 
                 if (o.kepler != null)
                 {
                     System.Diagnostics.Debug.Write($"SMA {o.kepler.SemiMajorAxis / oneAU_m} AU {o.kepler.SemiMajorAxis / 1000} km " +
-                                $" Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.node.scandata.nRadius} m CM {o.kepler.CentralMass}");
+                                $" Ecc {o.kepler.Eccentricity} Orbital Period {o.kepler.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.scannode.scandata.nRadius} m CM {o.kepler.CentralMass} axt {o.scannode.scandata.nAxialTilt}");
                 }
 
                 System.Diagnostics.Debug.WriteLine("");
@@ -355,6 +363,13 @@ namespace TestOpenTk
 
                     var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.orbitpos);
                     rBodyObjects.Add(orbitlineshader, riol);
+
+                    GLRenderState quad = GLRenderState.Quads(cullface: false);
+                    quad.DepthTest = false;
+                    var s = 100000e3f * mscaling;
+                    var quadpos = new Vector4[] { new Vector4(-s, 0, -s, 1), new Vector4(-s, 0, +s, 1), new Vector4(+s, 0, +s, 1), new Vector4(+s, 0, -s, 1) };
+                    var plane = GLRenderableItem.CreateVector4(items, PrimitiveType.Quads, quad, quadpos, o.bodypos);
+                    rBodyObjects.Add(bodyplaneshader, plane);
                 }
             }
 
@@ -375,6 +390,7 @@ namespace TestOpenTk
                                             ic: bodies, matrixdivisor: 1);
         }
 
+        float planetrot = 0;
         public void SystemTick()
         {
             Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
@@ -405,15 +421,19 @@ namespace TestOpenTk
                     }
                 }
 
-                pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
+                double axialtilt = (bi.scannode.scandata?.nAxialTilt ?? 0).Radians();
 
-                float imageradius = bi.node.scandata != null && bi.node.scandata.nRadius.HasValue ? (float)bi.node.scandata.nRadius.Value : 1000e3f;
+                pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
+                bi.bodypos.WorldPosition = pos;
+
+                float imageradius = bi.scannode.scandata != null && bi.scannode.scandata.nRadius.HasValue ? (float)bi.scannode.scandata.nRadius.Value : 1000e3f;
                 imageradius *= mscaling;
 
-                bool planet = bi.node.scandata != null && bi.node.scandata.PlanetClass.HasChars();
-                bool bary = bi.node.scandata == null || bi.node.scandata.nRadius == null;
+                bool planet = bi.scannode.scandata != null && bi.scannode.scandata.PlanetClass.HasChars();
+                bool bary = bi.scannode.scandata == null || bi.scannode.scandata.nRadius == null;
 
-                bodymats[i] = GLStaticsMatrix4.CreateMatrix(pos, new Vector3(1, 1, 1), new Vector3(0, 0, 0));
+                bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1, 1, 1), 23f.Radians(),planetrot.Radians());
+                planetrot += 0.1f;
 
                 // more clever, knowing orbit paras
                 bodymats[i].M14 = (bary ? 100000 : planet ? 100000 : 1000000) * 1000 * mscaling;      // min size in km
@@ -428,7 +448,7 @@ namespace TestOpenTk
             if (track != -1)
             {
                 Vector3d pos = positions[track];
-                gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling);
+                gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling, false);
             }
 
 
@@ -436,7 +456,7 @@ namespace TestOpenTk
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys, 0.0001f, 0.0001f);
 
-            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (track >= 0 ? " Tracking " + bodyinfo[track].node.FullName : "");
+            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (track >= 0 ? " Tracking " + bodyinfo[track].scannode.FullName : "");
 
             status.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.0} " +
                         $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.0} " +

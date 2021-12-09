@@ -15,7 +15,8 @@ namespace TestOpenTk
     {
         public KeplerOrbitElements kepler;
         public GLRenderDataWorldPositionColor orbitpos;
-        public StarScan.ScanNode node;
+        public GLRenderDataWorldPositionColor bodypos;
+        public StarScan.ScanNode scannode;
         public StarScan.ScanNode parent;
         public int index;
         public int parentindex;
@@ -28,11 +29,11 @@ namespace TestOpenTk
             {
                 kepler = new KeplerOrbitElements(true,
                     sn.scandata.nSemiMajorAxis.Value,
-                    sn.scandata.nEccentricity.Value,
-                    sn.scandata.nOrbitalInclination.Value,
-                    sn.scandata.nAscendingNode.Value,
-                    sn.scandata.nPeriapsis.Value,
-                    sn.scandata.nMeanAnomaly.Value,
+                    sn.scandata.nEccentricity != null ? sn.scandata.nEccentricity.Value : 0,                    // protect against missing data
+                    sn.scandata.nOrbitalInclination != null ? sn.scandata.nOrbitalInclination.Value : 0,
+                    sn.scandata.nAscendingNode != null ? sn.scandata.nAscendingNode.Value : 0,
+                    sn.scandata.nPeriapsis != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.nMeanAnomaly != null ? sn.scandata.nPeriapsis.Value : 0,
                     sn.scandata.EventTimeUTC.ToJulianDate()
                 );
             }
@@ -43,10 +44,11 @@ namespace TestOpenTk
 
             BodyInfo oi = new BodyInfo();
             oi.kepler = kepler;
-            oi.node = sn;
+            oi.scannode = sn;
             oi.index = oilist.Count;
             oi.parentindex = p;
             oi.orbitpos = new GLRenderDataWorldPositionColor();
+            oi.bodypos = new GLRenderDataWorldPositionColor();
             oilist.Add(oi);
 
             if (kepler != null)

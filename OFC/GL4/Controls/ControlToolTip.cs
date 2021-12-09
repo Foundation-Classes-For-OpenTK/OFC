@@ -80,6 +80,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible == false)
             {
+                SuspendLayout();
                 var size = BitMapHelpers.MeasureStringInBitmap(text, Font, StringFormat);
                 Location = new Point(pos.X+AutoPlacementOffset.X, pos.Y + AutoPlacementOffset.Y);
                 ClientSize = new Size((int)size.Width + 1, (int)size.Height + 1);
@@ -87,6 +88,7 @@ namespace GLOFC.GL4.Controls
                 tiptext = text;
                 Visible = true;
                 Invalidate();       // must invalidate as paint uses tiptext.
+                ResumeLayout();
 
                 if (Parent is GLControlDisplay)
                 {

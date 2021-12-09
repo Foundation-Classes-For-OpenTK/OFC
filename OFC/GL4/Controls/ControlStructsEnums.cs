@@ -55,4 +55,15 @@ namespace GLOFC.GL4.Controls
         Bottom, BottomCentre, BottomLeft, BottomRight,
     };
 
+    [Flags]
+    public enum AnchorType
+    {
+        None = 0,
+        //Left = 1,     // not yet.
+        Right = 2,
+        //Top = 4,
+        Bottom = 8,
+        DialogButtonLine = 16,  // configuration form only, align on bottom line
+    };
+
 }

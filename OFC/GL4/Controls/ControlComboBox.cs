@@ -105,11 +105,11 @@ namespace GLOFC.GL4.Controls
                     {
                         size = BitMapHelpers.MeasureStringInBitmap(longest, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleLeft));
                         int arrowwidth = Font.ScalePixels(20);
-                        size.Width += arrowwidth + ClientWidthMargin + textspacing*2;
-                        size.Height += ClientHeightMargin + textspacing*2;
+                        size.Width += arrowwidth + textspacing*2;
+                        size.Height += textspacing*2;
                     }
                 }
-                SetNI(size: new Size((int)size.Width,(int)size.Height));
+                SetNI(clientsize: new Size((int)size.Width,(int)size.Height));
             }
         }
 

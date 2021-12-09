@@ -119,10 +119,10 @@ namespace GLOFC.GL4.Controls
             if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
                 size = new SizeF(size.Width + Image.Width, Math.Max(Image.Height, (int)(size.Height + 0.999)));
 
-            Size s = new Size((int)(size.Width + 0.999 + extra.Width) + ClientWidthMargin + 4,
-                             (int)(size.Height + 0.999 + extra.Height) + ClientHeightMargin + 4);
+            Size s = new Size((int)(size.Width + 0.999 + extra.Width) + 4,
+                             (int)(size.Height + 0.999 + extra.Height) + 4);
 
-            SetNI(size: s);
+            SetNI(clientsize: s);
         }
 
     }

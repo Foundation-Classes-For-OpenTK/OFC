@@ -30,7 +30,7 @@ namespace GLOFC.GL4.Controls
         // bounds of the window - include all margin/padding/borders/
         // co-ords are in offsets from 0,0 being the parent top left corner. See also Set()
 
-        public Rectangle Bounds { get { return window; } set { SetPos(value.Left, value.Top, value.Width, value.Height); } }
+        public Rectangle Bounds { get { return window; } set { SetPos(value.Left, value.Top, value.Width, value.Height); } } 
         public int Left { get { return window.Left; } set { SetPos(value, window.Top, window.Width, window.Height); } }
         public int Right { get { return window.Right; } set { SetPos(window.Left, window.Top, value - window.Left, window.Height); } }
         public int Top { get { return window.Top; } set { SetPos(window.Left, value, window.Width, window.Height); } }
@@ -39,6 +39,9 @@ namespace GLOFC.GL4.Controls
         public int Height { get { return window.Height; } set { SetPos(window.Left, window.Top, window.Width, value); } }
         public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y, window.Width, window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
+
+        public Size MinimumSize { get { return minimumsize; } set { if (value != minimumsize) { minimumsize = value; SetPos(window.Left, window.Top, window.Width, window.Height); } } }
+        public Size MaximumSize { get { return maximumsize; } set { if (value != maximumsize) { maximumsize = value; SetPos(window.Left, window.Top, window.Width, window.Height); } } }
 
         // only for top level windows at the moment, we can throw them on the screen scaled..  <1 smaller, >1 bigger
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } }
@@ -68,6 +71,7 @@ namespace GLOFC.GL4.Controls
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; InvalidateLayoutParent(); } } }
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
+        public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; InvalidateLayoutParent(); } } }
         // Autosize
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
 
@@ -195,11 +199,6 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultLineSeparColor = Color.Green;
 
-        // privates
-        private SizeF? altscale = null;
-        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
-        private float opacity = 1.0f;
-
         // Invalidate this and therefore its children
         public virtual void Invalidate()
         {
@@ -289,20 +288,23 @@ namespace GLOFC.GL4.Controls
         }
 
         // Area needed for children controls
-        public Rectangle ChildArea()        
+        public Rectangle ChildArea(Predicate<GLBaseControl> test = null)        
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
 
             foreach (var c in childrenz)
             {
-                if (c.Left < left)
-                    left = c.Left;
-                if (c.Right > right)
-                    right = c.Right;
-                if (c.Top < top)
-                    top = c.Top;
-                if (c.Bottom > bottom)
-                    bottom = c.Bottom;
+                if (test == null || test(c))
+                {
+                    if (c.Left < left)
+                        left = c.Left;
+                    if (c.Right > right)
+                        right = c.Right;
+                    if (c.Top < top)
+                        top = c.Top;
+                    if (c.Bottom > bottom)
+                        bottom = c.Bottom;
+                }
             }
 
             return new Rectangle(left, top, right - left, bottom - top);
@@ -580,49 +582,6 @@ namespace GLOFC.GL4.Controls
             return scale;
         }
 
-        // Set multiple items at once.  Default is to invalidate it
-        public void Set(Point? location = null,
-                   Size? size = null,           // size in bounds or clientsize
-                   Size? clientsize = null,
-                   Margin? margin = null,
-                   Padding? padding = null,
-                   int? borderwidth = null,
-                   bool clipsizetobounds = false,
-                   bool invalidate = true)
-        {
-            Point oldloc = Location;
-            Size oldsize = Size;
-
-            if (clipsizetobounds)
-            {
-                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
-            }
-
-            if (margin != null)
-                this.margin = margin.Value;
-            if (padding != null)
-                this.padding = padding.Value;
-            if (borderwidth != null)
-                this.borderwidth = borderwidth.Value;
-            if (location.HasValue)
-                window.Location = location.Value;
-            if (size.HasValue)
-                window.Size = size.Value;
-            else if (clientsize.HasValue)
-                window.Size = new Size(clientsize.Value.Width + ClientWidthMargin, clientsize.Value.Height + ClientHeightMargin);
-
-            CalcClientRectangle();
-
-            if (window.Location != oldloc)
-                OnMoved();
-
-            if (oldsize != window.Size)
-                OnResize();
-
-            if (invalidate)
-                Parent?.InvalidateLayout();
-        }
-
         #endregion
 
         #region For Inheritors
@@ -637,13 +596,14 @@ namespace GLOFC.GL4.Controls
                 AutoSize = true;
             }
 
-            this.window = location;
+            lastlocation = Point.Empty;
+            lastsize = Size.Empty;
+            window = location;
+
             CalcClientRectangle();
         }
 
         static protected readonly Rectangle DefaultWindowRectangle = new Rectangle(0, 0, 10, 10);
-        static protected readonly int MinimumResizeWidth = 10;
-        static protected readonly int MinimumResizeHeight = 10;
 
         // these change without invalidation or layout - for constructors of inheritors or for Layout/SizeControl overrides
 
@@ -653,7 +613,48 @@ namespace GLOFC.GL4.Controls
         public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
         {
-            Set(location, size, clientsize, margin, padding, borderwidth, clipsizetobounds, false);
+            Point oldloc = Location;
+            Size oldsize = Size;
+
+            if (clipsizetobounds)
+            {
+                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
+            }
+
+            Rectangle pw = window;      // remember previous window position in case it gets changed
+
+            if (margin != null)
+                this.margin = margin.Value;
+            if (padding != null)
+                this.padding = padding.Value;
+            if (borderwidth != null)
+                this.borderwidth = borderwidth.Value;
+            if (location.HasValue)
+                window.Location = location.Value;
+            if ( size.HasValue || clientsize.HasValue)
+            {
+                int width = size.HasValue ? size.Value.Width : clientsize.Value.Width + ClientWidthMargin;
+                int height = size.HasValue ? size.Value.Height : clientsize.Value.Height + ClientHeightMargin;
+                width = Math.Max(width, minimumsize.Width);
+                width = Math.Min(width, maximumsize.Width);
+                height = Math.Max(height, minimumsize.Height);
+                height = Math.Min(height, maximumsize.Height);
+                window.Size = new Size(width, height);
+            }
+
+            CalcClientRectangle();
+
+            if (window.Location != oldloc)      // if we moved, set previouswindow and call moved
+            {
+                lastlocation = pw.Location;
+                OnMoved();
+            }
+
+            if (oldsize != window.Size)         // if we sized, set previouswindow and call sized
+            {
+                lastsize = pw.Size;
+                OnResize();
+            }
         }
 
         protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
@@ -779,10 +780,40 @@ namespace GLOFC.GL4.Controls
             int wl = Width;
             int hl = Height;
 
-            Rectangle oldwindow = window;
             Rectangle areaout = parentarea;
 
-            if (docktype == DockingType.Fill)
+            if (docktype == DockingType.None)
+            {
+                // this relies on the previouswindow property to be right, so not multiple resizes before layout. Hopefully this works
+
+                if ( Parent != null && Anchor != AnchorType.None )
+                {
+                    int clientpreviouswidth = (Parent.lastsize.Width - Parent.ClientWidthMargin);
+                    int clientpreviousheight = (Parent.lastsize.Height - Parent.ClientHeightMargin);
+
+                    if ((Anchor & AnchorType.Right) != 0)
+                    {
+                        if (clientpreviouswidth > Right)        // wait till bigger than window size
+                        {
+                            int rightoffset = clientpreviouswidth - Right;
+                            int newright = parentarea.Right - rightoffset;
+                            window = new Rectangle(newright - Width, window.Top, Width, Height);
+                            //System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {rightoffset} -> {newright}");
+                        }
+                    }
+                    if ((Anchor & AnchorType.Bottom) != 0)
+                    {
+                        if (clientpreviousheight > Bottom)
+                        {
+                            int bottomoffset = clientpreviousheight - Bottom;
+                            int newbottom = parentarea.Bottom - bottomoffset;
+                            window = new Rectangle(window.Left, newbottom - Height, Width, Height);
+                           // System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {bottomoffset} -> {newbottom}");
+                        }
+                    }
+                }
+            }
+            else if (docktype == DockingType.Fill)
             {
                 window = parentarea;
                 areaout = new Rectangle(0, 0, 0, 0);
@@ -794,9 +825,6 @@ namespace GLOFC.GL4.Controls
                 Width = Math.Min(parentarea.Width, Width);
                 Height = Math.Min(parentarea.Height, Height);
                 window = new Rectangle(xcentre - Width / 2, ycentre - Height / 2, Width, Height);       // centre in area, bounded by area, no change in area in
-            }
-            else if (docktype == DockingType.None)
-            {
             }
             else if (docktype >= DockingType.Bottom)
             {
@@ -862,6 +890,7 @@ namespace GLOFC.GL4.Controls
             CheckBitmapAfterLayout();       // check bitmap, virtual as inheritors may need to override this, make sure bitmap is the same width/height as ours
                                             // needs to be done in layout as ControlDisplay::PerformRecursiveLayout sets the textures up to match.
 
+            
             parentarea = areaout;
         }
 
@@ -1176,10 +1205,14 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        // Set Position, causing an invalidation layout at parent level
+        // Set Position, causing an invalidation layout at parent level, only if changed
 
         private void SetPos(int left, int top, int width, int height)
         {
+            width = Math.Max(width, minimumsize.Width);
+            width = Math.Min(width, maximumsize.Width);
+            height = Math.Max(height, minimumsize.Height);
+            height = Math.Min(height, maximumsize.Height);
             Rectangle w = new Rectangle(left, top, width, height);
 
             if (w != window)        // if changed
@@ -1187,8 +1220,15 @@ namespace GLOFC.GL4.Controls
                 bool resized = w.Size != window.Size;
                 bool moved = w.Location != window.Location;
 
-                window = w;
+                if (resized)
+                    lastsize = Size;
 
+                if (moved)
+                    lastlocation = Location;
+
+                window = w;
+                //System.Diagnostics.Debug.WriteLine($"SetPos {Name} {window} prev {previouswindow}");
+                
                 if (resized)
                     CalcClientRectangle();
 
@@ -1284,13 +1324,22 @@ namespace GLOFC.GL4.Controls
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
         private Font font = null;
+
+        private Point lastlocation;    // setpos/setNI changes these if changed sizes
+        private Size lastsize;       
+
         private Rectangle window;       // total area owned, in parent co-ords
+
+        protected Size minimumsize = new Size(1, 1);
+        protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
         private bool needLayout { get; set; } = false;        // need a layout after suspend layout was called
         private int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
         private bool enabled { get; set; } = true;
         private bool visible { get; set; } = true;
         private DockingType docktype { get; set; } = DockingType.None;
         private float dockpercent { get; set; } = 0;
+        private AnchorType anchortype = AnchorType.None;
+
         private Color backcolor { get; set; } = DefaultControlBackColor;
         private Color backcolorgradientalt { get; set; } = DefaultControlBackColor;
         private int backcolorgradientdir { get; set; } = int.MinValue;           // in degrees
@@ -1307,6 +1356,10 @@ namespace GLOFC.GL4.Controls
         private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
         private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
         private bool topMost { get; set; } = false;              // if set, always force to top
+
+        private SizeF? altscale = null;
+        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
+        private float opacity = 1.0f;
 
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
 
