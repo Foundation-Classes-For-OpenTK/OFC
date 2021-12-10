@@ -25,9 +25,9 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     // not fired by programatically 
         public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     
 
-        public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; InvalidateLayoutParent(); } }
-        public List<Image> ImageItems { get { return images; } set { images = value; InvalidateLayoutParent(); } }
-        public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; InvalidateLayoutParent(); } }
+        public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; ParentInvalidateLayout(); } }
+        public List<Image> ImageItems { get { return images; } set { images = value; ParentInvalidateLayout(); } }
+        public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; ParentInvalidateLayout(); } }
 
         public int SelectedIndex { get { return selectedIndex; } set { setSelectedIndex(value,false); } }       // does not fire SelectedIndexChanged
         public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { setSelectedItem(value); } }     // does not fire SelectedIndexChanged
@@ -43,7 +43,7 @@ namespace GLOFC.GL4.Controls
 
         public int DisplayableItems { get { return displayableitems; } }            // not valid until first layout
 
-        public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; InvalidateLayoutParent(); } }
+        public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; ParentInvalidateLayout(); } }
 
         public Color SelectedItemBackColor { get { return selectedItemBackColor; } set { selectedItemBackColor = value; Invalidate(); } }
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
@@ -218,8 +218,6 @@ namespace GLOFC.GL4.Controls
         {
             if (itemheight < 1)     // can't paint yet
                 return;
-
-            gr.SetClip(ClientRectangle);   // normally we can do the whole area including border, we don't want to
 
             Rectangle itemarea = new Rectangle(0, 0, ClientRectangle.Width - (scrollbar.Visible ? scrollbar.Width : 0), ClientRectangle.Height);     // total width area
             itemarea.Height = itemheight;

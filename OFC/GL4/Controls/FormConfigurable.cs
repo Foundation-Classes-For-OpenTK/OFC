@@ -23,23 +23,22 @@ namespace GLOFC.GL4.Controls
 {
     public class GLFormConfigurable : GLForm
     {
-        // returns GLformConfiguratble, Entry (or null) actioning, logical string action, callertag
+        // Trigger returns GLformConfiguratble, Entry (or null) actioning, logical string action, callertag
         // logical string action:
-        //  Return for number box, textBox.  
-        //  Cancel for ending dialog,
-        //  Validity:value for number boxes
-        //  otherwise logical control name
-        //  Escape for escape (Entry = null)
+        // GLButton,GLCheckBox: control name is returned when clicked or return is pressed
+        // GLComboBox : control name is returned when selection made
+        // GLNumberBox: "Return" if return is pressed, or "Validity:true/false" when validity changes. Entry can give you the name
+        // GLMultiLineTextBox: "Return" if return is pressed
 
         public event Action<GLFormConfigurable, Entry, string, Object> Trigger;
 
         // if you want it resizable, set Resizable=true AFTER adding to displaycontrol etc.
         // if you want it moveable, set Moveable=true AFTER adding to displaycontrol etc.
+
         public bool SetMinimumSize { get; set; } = false;       // if true, on size, set the MinimumSize value. Set before Init
 
-
         // You give an array of Entries describing the controls
-        // either added programatically by Add(entry) or via a string descriptor Add(string) (disabled for now)
+        // either added programatically by Add(entry) 
         // Directly Supported Types (string name/base type)
         //      "button" ButtonExt, "textbox" TextBoxBorder, "checkbox" CheckBoxCustom, 
         //      "label" Label, "datetime" CustomDateTimePicker, 
@@ -49,7 +48,7 @@ namespace GLOFC.GL4.Controls
         // Set controlname, text,pos,size, tooltip
         // for specific type, set the other fields.
 
-        // Buttons at 0,0 are auto aligned along the bottom, right to left, allowing the rest of the dialog to measure the other data
+        // if the item has AnchorType == DialogButtonLine, they are auto arranged in add order right to left along a line below all other items
 
         public class Entry
         {
@@ -464,12 +463,12 @@ namespace GLOFC.GL4.Controls
                     cb.ReturnPressed += (box) =>
                     {
                         Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, "Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                        Trigger?.Invoke(this, en, ":Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
-                    cb.ValidityChanged += (box, s) =>
+                    cb.ValidityChanged += (box, b) =>
                     {
                         Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, "Validity:" + s.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                        Trigger?.Invoke(this, en, "Validity:" + b.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
                 }
                 else if (c is GLNumberBoxLong)
@@ -512,10 +511,11 @@ namespace GLOFC.GL4.Controls
 
             if (ControlsIZ.Count>0 && Parent != null)       // if not resizable, and we have stuff
             {
-                if (!Resizeable)
+                if (!Resizeable)        // as long as not resizable (turned on AFTER added into the display control etc) we can set the size
                 {
                     Rectangle area = ChildArea(x => (x.Anchor & AnchorType.DialogButtonLine) == 0);   // get the clients area , ignoring anchor buttons
 
+                    // need to find the anchor buttons height and width
                     int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max();
                     int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum();
 
@@ -527,7 +527,7 @@ namespace GLOFC.GL4.Controls
                         MinimumSize = Size;
                 }
 
-                if (!Moveable)
+                if (!Moveable)          // as long as not movable (turned on AFTER added into the display control etc) we can set the position
                 {
                     Size psize = Parent.Size;
 
@@ -549,17 +549,15 @@ namespace GLOFC.GL4.Controls
                         SetNI(location: new Point(left,top));
 
                     }
-
                 }
-
             }
         }
 
-
-
-        // and after sizing, layout any anchor buttons
-        public override void Layout(ref Rectangle parentarea)      
+        // layout any anchor line buttons
+        protected override void PerformRecursiveLayout()      
         {
+            base.PerformRecursiveLayout();      // do normal layout on children
+
             int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height).DefaultIfEmpty(0).Max();
             int buttonline = ClientHeight - AutoSizeClientMargin.Height - buttonsmaxh;
             int buttonright = ClientWidth - AutoSizeClientMargin.Width;
@@ -576,7 +574,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            base.Layout(ref parentarea);
         }
 
         protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children

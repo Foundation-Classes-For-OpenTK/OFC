@@ -45,6 +45,22 @@ namespace GLOFC.GL4.Controls
 
             GLFormConfigurable cf = new GLFormConfigurable(logicalname);
             cf.SuspendLayout();
+            cf.TopMost = true;
+            cf.Font = fnt;
+            if (backcolor != null)
+                cf.BackColor = backcolor.Value;
+            if (forecolor != null)
+                cf.ForeColor = forecolor.Value;
+
+
+            GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(0,0,100,100), text);
+            tb.SuspendLayout();
+            tb.Font = fnt;
+            tb.BackColor = Color.Transparent;
+            tb.ForeColor = cf.ForeColor;
+            tb.ReadOnly = readonlymarked;
+            tb.EnableVerticalScrollBar = true;
+            tb.CursorToTop();
 
             const int butwidth = 80;
             const int butheight = 20;
@@ -53,13 +69,7 @@ namespace GLOFC.GL4.Controls
             const int butxspacing = 20;
             const int textmargin = 10;
             const int windowmargin = 10;
-            bool horzscrollon = false;
-            Rectangle textboxpos;
-
             Size availablespace = attachto.Size;
-
-            GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(0,0,100,100), text);
-            tb.Font = fnt;
 
             int buts = (buttons == MessageBoxButtons.AbortRetryIgnore || buttons == MessageBoxButtons.YesNoCancel) ? 3 : 2;     // guess of how many, just to set min but width
             int buttonswidth = (butwidth + butxspacing) * buts + butxspacing;
@@ -71,11 +81,12 @@ namespace GLOFC.GL4.Controls
 
             var estsize = tb.CalculateTextArea(new Size(buttonswidth, 24), new Size(availablewidthforclient, availableheightforclient));
 
-            textboxpos = new Rectangle(textmargin, textoffsettop, estsize.Item1.Width,estsize.Item1.Height);
-            horzscrollon = estsize.Item2;
+            tb.Bounds = new Rectangle(textmargin, textoffsettop, estsize.Item1.Width, estsize.Item1.Height);
+            tb.EnableHorizontalScrollBar = estsize.Item2;
+            tb.ResumeLayout();
 
-            int butright = textboxpos.Right - butwidth;
-            int butline = textboxpos.Bottom + butspacingundertext;
+            int butright = tb.Bounds.Right - butwidth;
+            int butline = tb.Bounds.Bottom + butspacingundertext;
 
             if (buttons == MessageBoxButtons.AbortRetryIgnore)
             {
@@ -109,26 +120,9 @@ namespace GLOFC.GL4.Controls
                 cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.OK));
             }
 
-            tb.SuspendLayout();
-            
-            tb.Bounds = textboxpos;
-            tb.BackColor = Color.Transparent;
-            tb.ForeColor = cf.ForeColor;
-            tb.ReadOnly = readonlymarked;
-            tb.EnableHorizontalScrollBar = horzscrollon;
-            tb.EnableVerticalScrollBar = true;
-            tb.CursorToTop();
-            tb.ResumeLayout();
-
             cf.Add(new GLFormConfigurable.Entry("MTL-MB",tb));
 
             cf.Init(offsetinparent, caption);
-            cf.TopMost = true;
-            cf.Font = fnt;
-            if (backcolor != null)
-                cf.BackColor = backcolor.Value;
-            if (forecolor != null)
-                cf.ForeColor = forecolor.Value;
 
             cf.Tag = this;
             cf.DialogCallback = DialogCallback;

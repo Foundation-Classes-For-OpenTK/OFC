@@ -172,10 +172,10 @@ namespace TestOpenTk
                 //pform.ScaleWindow = new SizeF(0.75f, 0.75f);
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
                 //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
-                pform.ScaleWindow = new SizeF(0.0f, 0.0f);
-                pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
-                pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
-                pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
+              //  pform.ScaleWindow = new SizeF(0.0f, 0.0f);
+             //   pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
+              //  pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
+              //  pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
                 displaycontrol.Add(pform);
 
                 int taborder = 0;
@@ -292,7 +292,7 @@ namespace TestOpenTk
 
                 if (true)
                 {
-                    List<string> i1 = new List<string>() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve" };
+                    List<string> i1 = new List<string>() { "one two three four five six seven eight", "two", "three", "four", "five", "six", "seven is very long too to check", "eight", "nine", "ten", "eleven", "twelve" };
                     GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
                     lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
@@ -328,7 +328,7 @@ namespace TestOpenTk
                     //mtb.FlashingCursor = false;
                     //mtb.ReadOnly = true;
 
-                    GLMultiLineTextBox mtb2 = new GLMultiLineTextBox("mltb2", new Rectangle(410, 400, 2000, 200), l);
+                    GLMultiLineTextBox mtb2 = new GLMultiLineTextBox("mltb2", new Rectangle(500, 400, 495, 200), l);
                     mtb2.Font = new Font("Ms Sans Serif", 11);
                     mtb2.LineColor = Color.Green;
                     mtb2.EnableVerticalScrollBar = true;
@@ -348,7 +348,7 @@ namespace TestOpenTk
                     pform.Add(tb1);
                 }
 
-                if (false)
+                if (true)
                 {
                     GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 550, 26, 46));
                     upc1.TabOrder = taborder++;
@@ -356,7 +356,7 @@ namespace TestOpenTk
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
                 }
 
-                if (false)
+                if (true)
                 {
                     GLCalendar cal = new GLCalendar("Cal", new Rectangle(500, 10, 300, 200));
                     cal.TabOrder = taborder++;
@@ -489,8 +489,6 @@ namespace TestOpenTk
             tb.CursorToEnd();
 
             cform.Add(new GLFormConfigurable.Entry("info", tb) );
-
-
             cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
             cform.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
             cform.Add(new GLFormConfigurable.Entry("Abort", typeof(GLButton), "Abort", new Point(0, 0), new Size(100, 24), "TT") { Anchor =  AnchorType.DialogButtonLine });

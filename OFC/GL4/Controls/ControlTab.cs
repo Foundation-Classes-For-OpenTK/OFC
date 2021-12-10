@@ -92,6 +92,7 @@ namespace GLOFC.GL4.Controls
             return maxheight;
         }
 
+        // override the base layout for this control
 
         protected override void PerformRecursiveLayout()
         {

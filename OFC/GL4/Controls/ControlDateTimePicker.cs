@@ -28,7 +28,7 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
-        public CultureInfo Culture { get { return culture; } set { culture = value; InvalidateLayoutParent(); } }
+        public CultureInfo Culture { get { return culture; } set { culture = value; ParentInvalidateLayout(); } }
 
         public enum DateTimePickerFormat
         {
@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Controls
         public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }     // format control, primary
 
         // returns current format, or sets a custom format
-        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  InvalidateLayoutParent(); } }
+        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  ParentInvalidateLayout(); } }
 
         public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
         public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
@@ -107,7 +107,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
-            InvalidateLayoutParent();
+            ParentInvalidateLayout();
         }
 
         #region Layout paint

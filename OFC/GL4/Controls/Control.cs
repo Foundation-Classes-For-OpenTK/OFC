@@ -68,16 +68,16 @@ namespace GLOFC.GL4.Controls
         public Rectangle ClientRectangle { get; private set; }
 
         // docking control
-        public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; InvalidateLayoutParent(); } } }
-        public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
+        public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; ParentInvalidateLayout(); } } }
+        public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; ParentInvalidateLayout(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
-        public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; InvalidateLayoutParent(); } } }
+        public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; ParentInvalidateLayout(); } } }
         // Autosize
-        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
+        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; ParentInvalidateLayout(); } } }
 
         // toggle controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
-        public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
+        public bool Visible { get { return visible; } set { if (visible != value) { visible = value; ParentInvalidateLayout(); } } }
 
         // Top level windows only, control Opacity
         public float Opacity { get { return opacity; } set { if (value != Opacity) { opacity = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } } }
@@ -109,8 +109,8 @@ namespace GLOFC.GL4.Controls
         public string ToolTipText { get; set; } = null;
 
         // Table layout
-        public int Row { get { return row; } set { row = value; InvalidateLayoutParent(); } }       // for table layouts
-        public int Column { get { return column; } set { column = value; InvalidateLayoutParent(); } } // for table layouts
+        public int Row { get { return row; } set { row = value; ParentInvalidateLayout(); } }       // for table layouts
+        public int Column { get { return column; } set { column = value; ParentInvalidateLayout(); } } // for table layouts
 
         // Flow layout
         public Point FlowOffsetPosition { get; set; } = Point.Empty;        // optionally offset this control from its flow position by this value
@@ -211,7 +211,7 @@ namespace GLOFC.GL4.Controls
                 Parent?.Invalidate();
             }
 
-            FindDisplay()?.ReRender();
+            FindDisplay()?.ReRender(); // and we need to tell the display to redraw
         }
 
         // Invalidate and relayout
@@ -221,8 +221,8 @@ namespace GLOFC.GL4.Controls
             PerformLayout();
         }
 
-        // Invalidate and layout the parent, and therefore us
-        public void InvalidateLayoutParent()
+        // Invalidate and layout the parent, and therefore us (since it the parent invalidates, all children get redrawn)
+        public void ParentInvalidateLayout()
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
             if (parent != null)
@@ -605,7 +605,9 @@ namespace GLOFC.GL4.Controls
 
         static protected readonly Rectangle DefaultWindowRectangle = new Rectangle(0, 0, 10, 10);
 
-        // these change without invalidation or layout - for constructors of inheritors or for Layout/SizeControl overrides
+        // all inheritors should use these NI functions
+        // in constructors of inheritors or for Layout/SizeControl overrides
+        // these change without invalidation or layout 
 
         protected Color BorderColorNI { set { bordercolor = value; } }
         protected Color BackColorNI { set { backcolor = value; } }
@@ -712,7 +714,7 @@ namespace GLOFC.GL4.Controls
         // first,perform recursive sizing. 
         // pass in the parent size of client rectangle to each size to give them a hint what they can autosize into
 
-        protected virtual void PerformRecursiveSize(Size parentclientrect)   
+        protected void PerformRecursiveSize(Size parentclientrect)   
         {
             //System.Diagnostics.Debug.WriteLine("Size " + Name + " against " + parentclientrect);
             SizeControl(parentclientrect);              // size ourselves against the parent
@@ -729,21 +731,22 @@ namespace GLOFC.GL4.Controls
         }
 
         // override to auto size before children. 
-        // Only use the NI functions to change size. 
+        // Only use the NI functions to change size. You can change position as well if you want to
         protected virtual void SizeControl(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Size " + Name + " area est is " + parentclientrect);
         }
 
         // override to auto size after the children sized themselves.
-        // Only use the NI functions to change size. 
+        // Only use the NI functions to change size. You can change position as well if you want to
         protected virtual void SizeControlPostChild(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Post Size " + Name + " area est is " + parentclientrect);
         }
 
-        // second, layout after sizing, layout children.  We are layedout by parent, and lay out our children inside our client rectangle
-
+        // performed after sizing, layout children on your control.
+        // pass our client rectangle to the children and let them layout to it
+        // if you override and do not call base, call ClearLayoutFlags after procedure to clear the layout
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
             //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
@@ -772,6 +775,8 @@ namespace GLOFC.GL4.Controls
         }
 
         // standard layout function, layout yourself inside the area, return area left.
+        // you can override this one to perform your own specific layout
+        // if so, you must call CalcClientRectangle and CheckBitMapAfterLayout
         public virtual void Layout(ref Rectangle parentarea)     
         {
             //System.Diagnostics.Debug.WriteLine("Control " + Name + " " + window + " " + Dock);
@@ -786,7 +791,7 @@ namespace GLOFC.GL4.Controls
             {
                 // this relies on the previouswindow property to be right, so not multiple resizes before layout. Hopefully this works
 
-                if ( Parent != null && Anchor != AnchorType.None )
+                if (Parent != null && Anchor != AnchorType.None)
                 {
                     int clientpreviouswidth = (Parent.lastsize.Width - Parent.ClientWidthMargin);
                     int clientpreviousheight = (Parent.lastsize.Height - Parent.ClientHeightMargin);
@@ -808,7 +813,7 @@ namespace GLOFC.GL4.Controls
                             int bottomoffset = clientpreviousheight - Bottom;
                             int newbottom = parentarea.Bottom - bottomoffset;
                             window = new Rectangle(window.Left, newbottom - Height, Width, Height);
-                           // System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {bottomoffset} -> {newbottom}");
+                            // System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {bottomoffset} -> {newbottom}");
                         }
                     }
                 }
@@ -883,19 +888,15 @@ namespace GLOFC.GL4.Controls
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
             }
 
-            CalcClientRectangle(); // ensure client rectangle tracks window
+            CalcClientRectangle();
+            CheckBitmapAfterLayout();
 
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
 
-            CheckBitmapAfterLayout();       // check bitmap, virtual as inheritors may need to override this, make sure bitmap is the same width/height as ours
-                                            // needs to be done in layout as ControlDisplay::PerformRecursiveLayout sets the textures up to match.
-
-            
             parentarea = areaout;
         }
 
         // Override if required if you run a bitmap. Standard actions is to replace it if width/height is different.
-
         protected virtual void CheckBitmapAfterLayout()
         {
             if (levelbmp != null && ( levelbmp.Width != Width || levelbmp.Height != Height ))
@@ -938,7 +939,7 @@ namespace GLOFC.GL4.Controls
                 NeedRedraw = false;             // we have been redrawn
                 redrawn = true;                 // and signal up we have been redrawn
 
-                gr.SetClip(cliparea);   // set graphics to the clip area so we can draw the background/border
+                gr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
                 gr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
                 //System.Diagnostics.Debug.WriteLine("..PaintBack {0} in ca {1} clip {2}", Name, bounds, cliparea);
@@ -983,9 +984,11 @@ namespace GLOFC.GL4.Controls
             if ( forceredraw)       // will be set if NeedRedrawn or forceredrawn
             {
                 //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
-                gr.SetClip(cliparea);   // set graphics to the clip area
+                gr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
 
                 gr.TranslateTransform(clientarea.X, clientarea.Y);   // move to client 0,0
+
+                //using (Pen p = new Pen(new SolidBrush(Color.Red))) { gr.DrawLine(p, new Point(0, 0), new Point(1000, 95)); } //for showing where the clip is
 
                 Paint(gr);
 
@@ -1004,7 +1007,7 @@ namespace GLOFC.GL4.Controls
             return redrawn;
         }
 
-        // draw border area, override to draw something different
+        // draw border area, override to draw something different. Co-ords are at 0,0 and clip area set to whole window bounds
         protected virtual void DrawBorder(Graphics gr, Color bc, float bw)
         {
             if (bw > 0)
@@ -1021,7 +1024,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // draw back area - override to paint something different
+        // draw back area - override to paint something different. Co-ords are at 0,0 and clip area set to whole window bounds
         protected virtual void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
         {
             if ( levelbmp != null)                  // if we own a bitmap, reset back to transparent, erasing anything that we drew before
@@ -1047,13 +1050,17 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // called with the clip set to your ClientRectangle or less. See Multilinetextbox code if you need to further reduce the clip area
+        // Co-ords are 0,0 - top left client rectangle. May be smaller than client rectange if clipped by parent
         protected virtual void Paint(Graphics gr)                   // normal override
         {
             //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
         }
 
-        protected virtual void PaintIntoParent(Rectangle parentarea, Graphics parentgr) // only called if you've defined a bitmap yourself, 
-        {                                                                        // gives you a chance to paint to the parent bitmap
+        // only called if you've defined a bitmap yourself, 
+        // gives you a chance to paint to the parent bitmap
+        protected virtual void PaintIntoParent(Rectangle parentarea, Graphics parentgr) 
+        {                                                                        
            // System.Diagnostics.Debug.WriteLine("Paint Into parent {0} to {1}", Name, parentarea);
         }
 
@@ -1205,7 +1212,7 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        // Set Position, causing an invalidation layout at parent level, only if changed
+        // Set Position, clipped to max/min size, causing an invalidation layout at parent level, only if changed
 
         private void SetPos(int left, int top, int width, int height)
         {
@@ -1256,7 +1263,8 @@ namespace GLOFC.GL4.Controls
             return true;
         }
 
-        private void CalcClientRectangle()       // client rectangle calc
+        // client rectangle calc - call if you change the window bounds, margin, padding
+        private void CalcClientRectangle()      
         {
             ClientRectangle = new Rectangle(0, 0, Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2, Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2);
         }
@@ -1311,7 +1319,7 @@ namespace GLOFC.GL4.Controls
 
         public void DumpTrees(int l, GLBaseControl prev)
         {
-            string prefix = "                           ".Substring(0, l);
+            string prefix = new string(' ',64).Substring(0, l);
             System.Diagnostics.Debug.WriteLine("{0}{1} {2}", prefix, Name, Parent == prev ? "OK" : "Not linked");
             if (ControlsZ.Count > 0)
             {

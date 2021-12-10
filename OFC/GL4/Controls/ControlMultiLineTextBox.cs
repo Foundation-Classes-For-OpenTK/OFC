@@ -849,8 +849,16 @@ namespace GLOFC.GL4.Controls
                 return;
 
             //System.Diagnostics.Debug.WriteLine($"Paint MLTB {startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
-            Rectangle usablearea = UsableAreaForText(ClientRectangle);
-            gr.SetClip(usablearea);     // so we don't paint outside of this
+            Rectangle usablearea = UsableAreaForText(ClientRectangle);      // area inside out client rectangle where text is
+
+            var clipregion = gr.Clip.GetBounds(gr);     // get the region which was set up by our caller, this is where we have permission to paint (0,0 = client origin)
+            
+            // work out the area, which is useable top/left, with width limited by the usablewidth or the clip left
+            Rectangle areatoclip = new Rectangle(usablearea.Left, usablearea.Top, Math.Min((int)clipregion.Width - usablearea.Left, usablearea.Width), Math.Min((int)clipregion.Height - usablearea.Top, usablearea.Height));
+
+//            System.Diagnostics.Debug.WriteLine($"{Name} Clip reset to {usablearea} {ClientRectangle} current clip {clipregion} -> {areatoclip}");
+
+            gr.SetClip(areatoclip);     // so we don't paint outside of this
 
             using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
             {

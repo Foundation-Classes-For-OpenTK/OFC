@@ -99,6 +99,8 @@ namespace GLOFC.GL4.Controls
                 c.CallPerformRecursiveLayout();
               //  System.Diagnostics.Debug.WriteLine(".... " + c.Size);
             });
+
+            ClearLayoutFlags();
         }
 
         // flow in size and perform action if required
