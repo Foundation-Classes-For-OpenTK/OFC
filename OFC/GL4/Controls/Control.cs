@@ -196,6 +196,7 @@ namespace GLOFC.GL4.Controls
         // Invalidate and relayout us
         public void InvalidateLayout()
         {
+            //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout");
             Invalidate();
             PerformLayout();
         }
@@ -393,6 +394,7 @@ namespace GLOFC.GL4.Controls
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, true, true);
                 parent.InvalidateLayout();
+                child.NeedRedraw = true;        // next time, it will need to be drawn if reused
             }
         }
 
@@ -404,6 +406,7 @@ namespace GLOFC.GL4.Controls
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, false, false);
                 parent.InvalidateLayout();
+                child.NeedRedraw = true;        // next time, it will need to be drawn
             }
         }
 
@@ -928,6 +931,10 @@ namespace GLOFC.GL4.Controls
 
                 DrawBorder(backgr, BorderColor, BorderWidth);
                 backgr.ResetTransform();
+            }
+            else
+            {
+             //   System.Diagnostics.Debug.WriteLine($"{Name} does not need draw");
             }
 
             // now do the children
