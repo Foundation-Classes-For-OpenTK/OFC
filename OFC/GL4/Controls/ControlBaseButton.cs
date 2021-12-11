@@ -65,7 +65,7 @@ namespace GLOFC.GL4.Controls
 
         protected Color PaintButtonBackColor(bool lockhighlight = false, bool disablehoverhighlight = false)
         {
-            Color colBack = Color.Empty;
+            Color colBack;
 
             if (Enabled == false)
                 colBack = ButtonFaceColour;// Previously ButtonBackColor.Multiply(DisabledScaling); but its too strong

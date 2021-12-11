@@ -1421,6 +1421,7 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultDTPForeColor = SystemColors.WindowText;
         static public Color DefaultDTPBackColor = SystemColors.Window;
+        static public Color DefaultDTPSelectedColor = Color.FromArgb(220,220,220);
 
         static public Color DefaultCalendarForeColor = SystemColors.WindowText;
         static public Color DefaultCalendarBackColor = SystemColors.Window;
@@ -1435,7 +1436,6 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
         static public Color DefaultTextBoxHighlightColor = Color.Red;
-        static public Color DefaultTextBoxLineSeparColor = Color.Green;
         static public Color DefaultTextBoxBackColor = SystemColors.Window;
         static public Color DefaultTextBoxForeColor = SystemColors.WindowText;
 

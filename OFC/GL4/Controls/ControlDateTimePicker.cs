@@ -625,7 +625,7 @@ namespace GLOFC.GL4.Controls
         private int selectedpart = 0;                            // always select first part as default.  -1 means checkbox
 
         private string keybuffer;
-        private Color selectedColor = Color.Green;
+        private Color selectedColor = DefaultDTPSelectedColor;
 
 
         #endregion
