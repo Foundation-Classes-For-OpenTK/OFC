@@ -45,6 +45,9 @@ namespace GLOFC.GL4.Controls
 
         public GLVerticalScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {
+            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+
             scrollpanel = new GLVerticalScrollPanel();
             scrollpanel.Dock = DockingType.Fill;
             scrollpanel.BackColor = BackColor;

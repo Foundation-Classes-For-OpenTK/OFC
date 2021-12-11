@@ -25,6 +25,7 @@ namespace GLOFC.GL4.Controls
             this.text = text;
             ForeColor = DefaultLabelForeColor;
             BackColor = Color.Transparent;
+            BorderColorNI = DefaultLabelBorderColor;
         }
 
         public GLLabel(string name, Rectangle location, string text, Color fore, Color? back = null) : this(name, location,text)

@@ -47,6 +47,10 @@ namespace GLOFC.GL4.Controls
     {
         public string Text { get { return text; } set { text = value; Invalidate(); } }
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
+        public enum SymbolType { None, LeftTriangle, RightTriangle };
+        public SymbolType Symbol { get { return buttonsymbol; } set { buttonsymbol = value; Invalidate(); } }
+        public float SymbolSize { get { return buttonsymbolsize; } set { buttonsymbolsize = value;Invalidate(); } }
+
 
         public GLButtonTextBase(string name, Rectangle window) : base(name, window)
         {
@@ -54,6 +58,8 @@ namespace GLOFC.GL4.Controls
 
         protected string TextNI { set { text = value; } }
 
+        private SymbolType buttonsymbol = SymbolType.None;
+        private float buttonsymbolsize = 0.75f;
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
@@ -109,6 +115,24 @@ namespace GLOFC.GL4.Controls
                     {
                         gr.DrawString(this.Text, this.Font, textb, buttonarea, fmt);
                     }
+                }
+            }
+
+            if ( buttonsymbol != SymbolType.None)
+            {
+                using (var b = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                {
+                    int vcentre = (buttonarea.Top + buttonarea.Bottom) / 2;
+                    int hcentre = (buttonarea.Left + buttonarea.Right) / 2;
+                    int hright = hcentre + (int)(buttonarea.Width * buttonsymbolsize / 2);
+                    int hleft = hcentre - (int)(buttonarea.Width * buttonsymbolsize / 2);
+                    int htop = vcentre + (int)(buttonarea.Height * buttonsymbolsize / 2);
+                    int hbottom = vcentre - (int)(buttonarea.Height * buttonsymbolsize / 2);
+
+                    if ( buttonsymbol == SymbolType.LeftTriangle )
+                        gr.FillPolygon(b, new Point[] { new Point(hleft, vcentre), new Point(hright, htop), new Point(hright, hbottom) });
+                    else if ( buttonsymbol == SymbolType.RightTriangle)
+                        gr.FillPolygon(b, new Point[] { new Point(hright, vcentre), new Point(hleft, htop), new Point(hleft, hbottom) });
                 }
             }
         }

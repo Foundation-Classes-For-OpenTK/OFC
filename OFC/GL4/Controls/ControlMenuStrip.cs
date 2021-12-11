@@ -38,6 +38,8 @@ namespace GLOFC.GL4.Controls
         public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }    // Set Color.Empty for no override
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
 
+        public int SubMenuBorderWidth { get; set; } = 0;
+
         public int AutoOpenDelay { get; set; } = 250;     // open after a delay, 0 for off
 
         // if you specify items, make sure the direction is right also.
@@ -45,6 +47,7 @@ namespace GLOFC.GL4.Controls
         public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : base(name, location)
         {
             BackColorGradientAltNI = BackColorNI = DefaultMenuBackColor;
+            BorderColorNI = DefaultMenuBorderColor;
             FlowDirection = direction;
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
@@ -128,8 +131,8 @@ namespace GLOFC.GL4.Controls
                     Point p = FindScreenCoords(offset);     // find this point in bounds on screen
 
                     submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
-                    submenu.ScaleWindow = FindScaler();
                     submenu.SuspendLayout();
+                    submenu.ScaleWindow = FindScaler();
 
                     System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
 
@@ -142,6 +145,8 @@ namespace GLOFC.GL4.Controls
                     submenu.AutoOpenDelay = AutoOpenDelay;
                     submenu.parentmenu = this;
                     submenu.TopMost = true;
+                    submenu.BorderWidth = SubMenuBorderWidth;
+                    submenu.SubMenuBorderWidth = SubMenuBorderWidth;
 
                     submenu.AddItems(mi.SubMenuItems);
                     submenu.SetSelected(-1);                                    // release all items for hover highlighting

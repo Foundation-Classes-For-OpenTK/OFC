@@ -202,7 +202,9 @@ namespace TestOpenTk
             {
                 GLTableLayoutPanel ptable = new GLTableLayoutPanel("tablelayout", new Rectangle(5, 200, 190, 190));
                 ptable.SuspendLayout();
-                ptable.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                ptable.Margin = new Margin(2);
+                ptable.Padding = new GLOFC.GL4.Controls.Padding(2);
+                ptable.BorderWidth = 1;
                 ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
                 ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
                 pform.Add(ptable);
@@ -242,105 +244,112 @@ namespace TestOpenTk
             if (true)
             {
                 GLVerticalScrollPanel sp1 = new GLVerticalScrollPanel("VSP1", new Rectangle(5, 600, 200, 200));
-                sp1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                sp1.BorderWidth = 1;
+                sp1.BackColor = Color.Yellow;
+               // sp1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
                 pform.Add(sp1);
-                GLImage sp1i1 = new GLImage("SP1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                GLImage sp1i1 = new GLImage("SP1I1", new Rectangle(0, 0, 190, 100), Properties.Resources.dotted);
                 sp1.Add(sp1i1);
-                GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
                 sp1.Add(sp1i2);
-                //sp1.ScrollPos = 100;
+                sp1.ScrollPos = 50;
             }
 
-            //int col2 = 200;
-            //if (testvsp2)
-            //{
-            //    GLVerticalScrollPanelScrollBar spb1 = new GLVerticalScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
-            //    pform.Add(spb1);
-            //    GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
-            //    spb1.Add(spb1i1);
-            //    GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
-            //    spb1.Add(spb1i2);
-            //}
+            int col2 = 200;
+            if (true)
+            {
+                GLVerticalScrollPanelScrollBar spb1 = new GLVerticalScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
+                spb1.BackColor = Color.Yellow;
+                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                pform.Add(spb1);
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                spb1.Add(spb1i1);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                spb1.Add(spb1i2);
+            }
 
-            //if (testgroupbox)
-            //{
-            //    GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", DockingType.Right, 0.15f);
-            //    p3.BorderColor = Color.White;
-            //    p3.ForeColor = Color.Yellow;
-            //    pform.Add(p3);
-            //}
+            if (true)
+            {
+                GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", new Rectangle(col2,200,190,190));
+                pform.Add(p3);
+            }
 
-            //if (testtabcontrol)
-            //{
-            //    GLTabControl tc = new GLTabControl("Tabc", new Rectangle(col2, 200, 200, 190));
-            //    tc.TabStyle = new TabStyleRoundedEdge();
-            //    tc.TabStyle = new TabStyleSquare();
-            //    tc.TabStyle = new TabStyleAngled();
-            //    tc.Font = new Font("Ms Sans Serif",9);
+            if (true)
+            {
+                GLTabControl tc = new GLTabControl("Tabc", new Rectangle(col2, 400, 200, 190));
+                tc.TabNotSelectedColor = Color.Yellow;
+                tc.TabSelectedColor = Color.Red;
+                tc.TabStyle = new TabStyleRoundedEdge();
+                tc.TabStyle = new TabStyleSquare();
+                tc.TabStyle = new TabStyleAngled();
+                tc.Font = new Font("Ms Sans Serif", 9);
 
-            //    GLTabPage tabp1 = new GLTabPage("tabp1", "TAB 1", Color.Blue);
-            //    tc.Add(tabp1);
+                GLTabPage tabp1 = new GLTabPage("tabp1", "TAB 1", Color.Blue);
+                tc.Add(tabp1);
 
-            //    GLButton tabp1b1 = new GLButton("B1", new Rectangle(5, 5, 80, 40), "Button 1");
-            //    tabp1.Add(tabp1b1);
-            //    tabp1b1.Click += (c, ev) => { System.Diagnostics.Debug.WriteLine("On click for " + c.Name + " " + ev.Button); };
-            //    tabp1b1.ToolTipText = "Button 1";
+                GLButton tabp1b1 = new GLButton("B1", new Rectangle(5, 5, 80, 40), "Button 1");
+                tabp1.Add(tabp1b1);
+                tabp1b1.Click += (c, ev) => { System.Diagnostics.Debug.WriteLine("On click for " + c.Name + " " + ev.Button); };
+                tabp1b1.ToolTipText = "Button 1";
 
-            //    GLTabPage tabp2 = new GLTabPage("tabp2", "TAB Page 2", Color.Yellow);
-            //    GLButton tabp2b1 = new GLButton("B2-2", new Rectangle(5, 25, 80, 40), "Button 2-2");
-            //    tabp2.Add(tabp2b1);
-            //    tc.Add(tabp2);
+                GLTabPage tabp2 = new GLTabPage("tabp2", "TAB Page 2", Color.Yellow);
+                GLButton tabp2b1 = new GLButton("B2-2", new Rectangle(5, 25, 80, 40), "Button 2-2");
+                tabp2.Add(tabp2b1);
+                tc.Add(tabp2);
 
-            //    GLTabPage tabp3 = new GLTabPage("tabp3", "TAB Page 3", Color.Green);
-            //    tc.Add(tabp3);
-            //    GLTabPage tabp4 = new GLTabPage("tabp4", "TAB Page 4", Color.Magenta);
-            //    tc.Add(tabp4);
+                GLTabPage tabp3 = new GLTabPage("tabp3", "TAB Page 3", Color.Green);
+                tc.Add(tabp3);
+                GLTabPage tabp4 = new GLTabPage("tabp4", "TAB Page 4", Color.Magenta);
+                tc.Add(tabp4);
 
-            //    pform.Add(tc);
-            //    tc.SelectedTab = 0;
-            //}
+                pform.Add(tc);
+                tc.SelectedTab = 0;
+            }
 
-            //if (testscrollbar && false)
-            //{
-            //    GLPanel psb = new GLPanel("panelsb", new Rectangle(col2, 400, 190,190));
-            //    pform.Add(psb);
+            if (true)
+            {
+                GLPanel psb = new GLPanel("panelsb", new Rectangle(col2+20, 600, 150, 190));
+                pform.Add(psb);
 
-            //    GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(0, 0, 20, 100), 0, 100);
-            //    psb.Add(sb1);
+                GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(0, 0, 20, 100), 0, 100);
+                psb.Add(sb1);
 
-            //    GLScrollBar sb2 = new GLScrollBar("SB2", new Rectangle(40, 10, 150, 20), 0, 100);
-            //    sb2.HorizontalScroll = true;
-            //    psb.Add(sb2);
-            //}
+                GLScrollBar sb2 = new GLScrollBar("SB2", new Rectangle(40, 10, 100, 20), 0, 100);
+                sb2.HorizontalScroll = true;
+                psb.Add(sb2);
+            }
 
-            //if (testflowlayout && false)
-            //{
-            //    GLFlowLayoutPanel pflow2;
-            //    pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col2,600,300,300));
-            //    pflow2.AutoSize = true;
-            //    pflow2.SuspendLayout();
-            //    pflow2.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
-            //    pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
-            //    pform.Add(pflow2);
+            int col3 = 400;
+            if (true)
+            {
+                GLFlowLayoutPanel pflow2;
+                pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col3, 10, 300, 300));
+                pflow2.AutoSize = true;
+                pflow2.SuspendLayout();
+                pflow2.Margin = new Margin(2);
+                pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
+                pflow2.BorderWidth = 1;
+                pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
+                pform.Add(pflow2);
 
-            //    GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
-            //    pflow2.Add(pti1);
-            //    GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
-            //    pflow2.Add(pti2);
-            //    GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
-            //    pflow2.Add(pti3);
+                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
+                pflow2.Add(pti1);
+                GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
+                pflow2.Add(pti2);
+                GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
+                pflow2.Add(pti3);
 
-            //    for (int i = 0; i < 5; i++)
-            //    {
-            //        GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
-            //        pflow2.Add(pti4);
-            //    }
-            //}
+                for (int i = 0; i < 5; i++)
+                {
+                    GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
+                    pflow2.Add(pti4);
+                }
+            }
 
-            //{
-            //    GLToolTip tip = new GLToolTip("ToolTip");
-            //    displaycontrol.Add(tip);
-            //}
+            {
+                GLToolTip tip = new GLToolTip("ToolTip");
+                displaycontrol.Add(tip);
+            }
 
             pform.ResumeLayout();
 

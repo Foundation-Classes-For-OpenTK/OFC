@@ -239,12 +239,6 @@
   <ItemGroup>
     <None Include="GL4\Shaders\Base\PlanShaders.txt" />
     <None Include="Readme.txt" />
-    <None Include="Resources\Up.png" />
-    <None Include="Resources\Right.png" />
-    <None Include="Resources\Left.png" />
-    <None Include="Resources\Calendar111.png" />
-    <None Include="Resources\Calendar11.png" />
-    <None Include="Resources\Calendar1.png" />
     <None Include="Resources\Calendar.png" />
   </ItemGroup>
   <ItemGroup />

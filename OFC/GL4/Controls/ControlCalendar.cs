@@ -39,13 +39,13 @@ namespace GLOFC.GL4.Controls
             foreColor = DefaultCalendarForeColor;
             BackColorNI = BackColorGradientAltNI = DefaultCalendarBackColor;
 
-            ButLeft.Image = GLOFC.Properties.Resources.Left;
+            ButLeft.Symbol = GLButtonTextBase.SymbolType.LeftTriangle;
             ButLeft.Click += GoLeft;
             ButLeft.Dock = DockingType.TopLeft;
             ButLeft.Size = new Size(24, 24);
             ButLeft.Name = "CalLeft";
             ButLeft.GiveFocusToParent = true;
-            ButRight.Image = Properties.Resources.Right;
+            ButRight.Symbol = GLButtonTextBase.SymbolType.RightTriangle;
             ButRight.Click += GoRight;
             ButRight.Dock = DockingType.TopRight;
             ButRight.Size = new Size(24, 24);

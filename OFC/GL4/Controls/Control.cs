@@ -174,80 +174,9 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;       // sent to all controls on a click. GLBaseControl may be null
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only hook on GLControlDisplay.  Has all the GLMouseEventArgs fields filled out including control ones
 
-        // default color schemes and sizes
+        // global Thermer
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
-
-        static public Color DefaultButtonBackColor = SystemColors.Control;
-        static public Color DefaultButtonFaceColor = SystemColors.Control;
-        static public Color DefaultButtonBorderColor = SystemColors.ControlText;
-        static public Color DefaultButtonForeColor = SystemColors.ControlText;      // text
-        static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
-
-        static public Color DefaultListBoxBackColor = SystemColors.Window;
-        static public Color DefaultListBoxBorderColor = SystemColors.ControlText;
-        static public Color DefaultListBoxForeColor = SystemColors.WindowText;
-        static public Color DefaultListBoxLineSeparColor = Color.Green;
-        static public Color DefaultListBoxMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultListBoxSelectedItemColor = Color.FromArgb(230, 230, 230);
-
-        static public Color DefaultComboBoxBackColor = SystemColors.Window;
-        static public Color DefaultComboBoxFaceColor = SystemColors.Window;
-        static public Color DefaultComboBoxBorderColor = SystemColors.ControlText;
-        static public Color DefaultComboBoxForeColor = SystemColors.ControlText;      // text
-
-        static public Color DefaultScrollbarSliderColor = SystemColors.Control;
-        static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;      
-        static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;
-        static public Color DefaultScrollbarArrowButtonBorderColor = SystemColors.ControlText;
-        static public Color DefaultScrollbarMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultScrollbarMouseDownColor = Color.FromArgb(230, 230, 230);
-        static public Color DefaultScrollbarThumbColor = SystemColors.Control;
-        static public Color DefaultScrollbarThumbBorderColor = SystemColors.ControlText;
-
-        static public Color DefaultGroupBoxBorderColor = SystemColors.ControlText;
-
-        static public Color DefaultFormBackColor = SystemColors.Control;
-        static public Color DefaultFormBorderColor = SystemColors.ControlText;
-        static public Color DefaultFormTextColor = SystemColors.ControlText;
-
-        static public Color DefaultPanelBackColor = SystemColors.Control;
-
-        static public Color DefaultDTPForeColor = SystemColors.WindowText;
-        static public Color DefaultDTPBackColor = SystemColors.Window;
-
-        static public Color DefaultMenuBackColor = SystemColors.Control;
-        static public Color DefaultMenuForeColor = SystemColors.ControlText;
-        static public Color DefaultMenuMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(160, 160, 160);
-
-        static public Color DefaultToolTipBackColor = SystemColors.Info;       // text
-        static public Color DefaultToolTipForeColor = SystemColors.InfoText;       // text
-
-
-        static public Color DefaultTabNotSelectedColor = SystemColors.Control;       // text
-
-        static public Color DefaultCalendarForeColor = SystemColors.WindowText;
-        static public Color DefaultCalendarBackColor = SystemColors.Window;
-
-
-        static public Color DefaultLabelForeColor = SystemColors.WindowText;
-
-        static public Color DefaultCheckBackColor = SystemColors.Control;
-        static public Color DefaultCheckForeColor = SystemColors.ControlText;       // text
-        static public Color DefaultCheckColor = SystemColors.ControlText;
-        static public Color DefaultCheckBoxBorderColor = SystemColors.ControlText;
-        static public Color DefaultCheckBoxInnerColor = SystemColors.Window;
-        static public Color DefaultCheckMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultCheckMouseDownColor = Color.FromArgb(230, 230, 230);
-
-        static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
-        static public Color DefaultTextBoxHighlightColor = Color.Red;
-        static public Color DefaultTextBoxLineSeparColor = Color.Green;
-        static public Color DefaultTextBoxBackColor = SystemColors.Window;
-        static public Color DefaultTextBoxForeColor = SystemColors.WindowText;
-
 
         // Invalidate this and therefore its children
         public virtual void Invalidate()
@@ -973,20 +902,16 @@ namespace GLOFC.GL4.Controls
 
         public virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
         {
-            Rectangle parentarea = bounds;                      // remember the bounds passed
+            Graphics backgr = parentgr;
 
-            Graphics gr = parentgr;                             // we normally use the parent gr
-
-            if (levelbmp != null)                               // bitmap on this level, use it for itself and its children
+            if (parentgr == null)     // top level window
             {
                 cliparea = bounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
 
-                gr = Graphics.FromImage(levelbmp);              // get graphics for it
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                backgr = Graphics.FromImage(levelbmp);              // get graphics for it
+                backgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                backgr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             }
-
-            System.Diagnostics.Debug.Assert(gr != null);        // must normally be set, as bitmaps are created for controls under display
 
             bool redrawn = false;
 
@@ -998,75 +923,94 @@ namespace GLOFC.GL4.Controls
                 NeedRedraw = false;             // we have been redrawn
                 redrawn = true;                 // and signal up we have been redrawn
 
-                gr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
-                gr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
+                backgr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
+                backgr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
-                //System.Diagnostics.Debug.WriteLine("..PaintBack {0} in ca {1} clip {2}", Name, bounds, cliparea);
-                DrawBack(new Rectangle(0,0,Width,Height), gr, BackColor, BackColorGradientAlt, BackColorGradientDir);
+                System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
+                DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
-                DrawBorder(gr, BorderColor, BorderWidth);
-                gr.ResetTransform();
+                DrawBorder(backgr, BorderColor, BorderWidth);
+                backgr.ResetTransform();
             }
 
-            // client area, in terms of last bitmap
-            Rectangle clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
-
-            foreach( var c in childreniz)       // in inverse Z order, last is top Z
+            // now do the children
             {
-                if (c.Visible)
+                Rectangle ccliparea = cliparea;     
+                Rectangle cbounds = bounds;
+                Graphics clientgr = backgr;
+                Margin cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
+                Rectangle clientarea;
+
+                if (parentgr != null && levelbmp != null)      // if we have a sub bitmap, which is the bitmap for the client region only
                 {
-                    Rectangle childbounds = new Rectangle(clientarea.Left + c.Left,     // not bounded by clip area, in bitmap coords
-                                                          clientarea.Top + c.Top,
-                                                          c.Width,
-                                                          c.Height);
+                    // restate area in terms of bitmap, this is the bounds and the clip area
+                    clientarea = ccliparea = cbounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      
+                    cmargin = new Margin(0);        // no margins around the bitmap - because its the client bitmap we are dealing with
 
-                    // clip area is progressively narrowed as we go down the children
-                    // its the minimum of the previous clip area
-                    // the child bounds
-                    // and the client rectangle
- 
-                    int cleft = Math.Max(childbounds.Left, cliparea.Left);          // clipped to child left or cliparea left
-                    cleft = Math.Max(cleft, bounds.Left + this.ClientLeftMargin);
-                    int ctop = Math.Max(childbounds.Top, cliparea.Top);             // clipped to child top or cliparea top
-                    ctop = Math.Max(ctop, bounds.Top + this.ClientTopMargin);
-                    int cright = Math.Min(childbounds.Left + c.Width, cliparea.Right);  // clipped to child left+width or the cliparea right
-                    cright = Math.Min(cright, bounds.Right - this.ClientRightMargin);     // additionally clipped to our bounds right less its client margin
-                    int cbot = Math.Min(childbounds.Top + c.Height, cliparea.Bottom);   // clipped to child bottom or cliparea bottom
-                    cbot = Math.Min(cbot, bounds.Bottom - this.ClientBottomMargin);       // additionally clipped to bounds bottom less its client margin
-
-                    Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
-
-                    redrawn |= c.Redraw(gr, childbounds, childcliparea, forceredraw);   // draw, into current gr
+                    clientgr = Graphics.FromImage(levelbmp);              // get graphics for it
+                    clientgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                    clientgr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
                 }
+                else
+                {
+                    clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
+                }
+
+                // client area, in terms of last bitmap
+
+                foreach (var c in childreniz)       // in inverse Z order, last is top Z
+                {
+                    if (c.Visible)
+                    {
+                        Rectangle childbounds = new Rectangle(clientarea.Left + c.Left,     // not bounded by clip area, in bitmap coords
+                                                              clientarea.Top + c.Top,
+                                                              c.Width,
+                                                              c.Height);
+
+                        // clip area is progressively narrowed as we go down the children
+                        // its the minimum of the previous clip area
+                        // the child bounds
+                        // and the client rectangle
+
+                        int cleft = Math.Max(childbounds.Left, ccliparea.Left);             // first clip to child bounds, or clip left
+                        cleft = Math.Max(cleft, cbounds.Left + cmargin.Left);      // then clip to client left
+
+                        int ctop = Math.Max(childbounds.Top, ccliparea.Top);             // clipped to child top or ccliparea top
+                        ctop = Math.Max(ctop, cbounds.Top + cmargin.Top);
+
+                        int cright = Math.Min(childbounds.Left + c.Width, ccliparea.Right);  // clipped to child left+width or the ccliparea right
+                        cright = Math.Min(cright, cbounds.Right - cmargin.Right);     // additionally clipped to our cbounds right less its client margin
+
+                        int cbot = Math.Min(childbounds.Top + c.Height, ccliparea.Bottom);   // clipped to child bottom or ccliparea bottom
+                        cbot = Math.Min(cbot, cbounds.Bottom - cmargin.Bottom);       // additionally clipped to cbounds bottom less its client margin
+
+                        Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
+
+                        redrawn |= c.Redraw(clientgr, childbounds, childcliparea, forceredraw);   // draw, into current gr
+                    }
+                }
+
+                if (parentgr != null && levelbmp != null)      // if we have a sub bitmap
+                    clientgr.Dispose();
             }
 
             if ( forceredraw)       // will be set if NeedRedrawn or forceredrawn
             {
-                //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
-                gr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
-
-                gr.TranslateTransform(clientarea.X, clientarea.Y);   // move to client 0,0
+                backgr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
+                    
+                backgr.TranslateTransform(bounds.X + ClientLeftMargin, bounds.Y + ClientTopMargin);   // move to client 0,0
 
                 //using (Pen p = new Pen(new SolidBrush(Color.Red))) { gr.DrawLine(p, new Point(0, 0), new Point(1000, 95)); } //for showing where the clip is
 
-                Paint(gr);
-
-                gr.ResetTransform();
-
-                if (parentgr != null && levelbmp != null)  // have a parent gr, and we have our own level bmp, we may be a scrollable panel
-                {
-                    System.Diagnostics.Debug.WriteLine($"Draw level bmp  into parent {parentarea}");
-                    // move the parent area to the client portion of the area. Still its physical parent bitmap positions
-                    parentarea = new Rectangle(parentarea.Left + ClientLeftMargin, parentarea.Top + ClientTopMargin, parentarea.Width - ClientWidthMargin,
-                                                parentarea.Height - ClientHeightMargin);
-                    System.Diagnostics.Debug.WriteLine($".. to client parent {parentarea}");
-                    parentgr.SetClip(parentarea);       // must set the clip area again to address the parent area      
-                    PaintIntoParent(parentarea, parentgr);      // give it a chance to draw our bitmap into the parent bitmap
-                }
+                Paint(backgr);
+                    
+                backgr.ResetTransform();
             }
 
-            if (levelbmp != null)        // bitmap on this level, we made a GR, dispose
-                gr.Dispose();
+            if (parentgr == null)
+            {
+                backgr.Dispose();
+            }
 
             return redrawn;
         }
@@ -1116,16 +1060,9 @@ namespace GLOFC.GL4.Controls
 
         // called with the clip set to your ClientRectangle or less. See Multilinetextbox code if you need to further reduce the clip area
         // Co-ords are 0,0 - top left client rectangle. May be smaller than client rectange if clipped by parent
-        protected virtual void Paint(Graphics gr)                   // normal override
+        protected virtual void Paint(Graphics gr)              
         {
             //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
-        }
-
-        // only called if you've defined a bitmap yourself, 
-        // gives you a chance to paint to the parent bitmap
-        protected virtual void PaintIntoParent(Rectangle parentarea, Graphics parentgr) 
-        {                                                                        
-           // System.Diagnostics.Debug.WriteLine("Paint Into parent {0} to {1}", Name, parentarea);
         }
 
         #endregion
@@ -1437,6 +1374,98 @@ namespace GLOFC.GL4.Controls
 
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();
+
+        #endregion
+
+        #region Colours
+
+        // default color schemes and sizes
+
+        static public Color DefaultButtonBackColor = SystemColors.Control;
+        static public Color DefaultButtonFaceColor = SystemColors.Control;
+        static public Color DefaultButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultButtonForeColor = SystemColors.ControlText;      // text
+        static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultListBoxBackColor = SystemColors.Window;
+        static public Color DefaultListBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultListBoxForeColor = SystemColors.WindowText;
+        static public Color DefaultListBoxLineSeparColor = Color.Green;
+        static public Color DefaultListBoxMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultListBoxSelectedItemColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultComboBoxBackColor = SystemColors.Window;
+        static public Color DefaultComboBoxFaceColor = SystemColors.Window;
+        static public Color DefaultComboBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultComboBoxForeColor = SystemColors.ControlText;      // text
+
+        static public Color DefaultScrollbarSliderColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;
+        static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;
+        static public Color DefaultScrollbarArrowButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultScrollbarMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarMouseDownColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultScrollbarThumbColor = SystemColors.Control;
+        static public Color DefaultScrollbarThumbBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultGroupBoxBackColor = SystemColors.Control;
+        static public Color DefaultGroupBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultGroupBoxForeColor = SystemColors.ControlText;
+
+        static public Color DefaultFormBackColor = SystemColors.Control;
+        static public Color DefaultFormBorderColor = SystemColors.ControlText;
+        static public Color DefaultFormTextColor = SystemColors.ControlText;
+
+        static public Color DefaultPanelBackColor = SystemColors.Control;
+        static public Color DefaultPanelBorderColor = SystemColors.ControlText;
+        static public Color DefaultTableLayoutBackColor = SystemColors.Control;
+        static public Color DefaultTableLayoutBorderColor = SystemColors.ControlText;
+        static public Color DefaultFlowLayoutBackColor = SystemColors.Control;
+        static public Color DefaultFlowLayoutBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultVerticalScrollPanelBorderColor = SystemColors.ControlText;
+        static public Color DefaultVerticalScrollPanelBackColor = SystemColors.Control;
+
+        static public Color DefaultDTPForeColor = SystemColors.WindowText;
+        static public Color DefaultDTPBackColor = SystemColors.Window;
+
+        static public Color DefaultCalendarForeColor = SystemColors.WindowText;
+        static public Color DefaultCalendarBackColor = SystemColors.Window;
+
+        static public Color DefaultCheckBackColor = SystemColors.Control;
+        static public Color DefaultCheckForeColor = SystemColors.ControlText;       // text
+        static public Color DefaultCheckColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxInnerColor = SystemColors.Window;
+        static public Color DefaultCheckMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultCheckMouseDownColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
+        static public Color DefaultTextBoxHighlightColor = Color.Red;
+        static public Color DefaultTextBoxLineSeparColor = Color.Green;
+        static public Color DefaultTextBoxBackColor = SystemColors.Window;
+        static public Color DefaultTextBoxForeColor = SystemColors.WindowText;
+
+        static public Color DefaultTabControlForeColor = SystemColors.ControlText;      // of selected text
+        static public Color DefaultTabControlBackColor = SystemColors.Control;
+        static public Color DefaultTabControlBorderColor = SystemColors.ControlText;
+        static public Color DefaultTabControlSelectedBackColor = SystemColors.Control;
+        static public Color DefaultTabControlNotSelectedBackColor = SystemColors.Control;
+        static public Color DefaultTabControlNotSelectedForeColor = SystemColors.ControlText;
+        static public Color DefaultTabControlMouseOverColor = Color.FromArgb(200, 200, 200);
+
+        static public Color DefaultMenuBackColor = SystemColors.Control;
+        static public Color DefaultMenuBorderColor = SystemColors.ControlText;
+        static public Color DefaultMenuForeColor = SystemColors.ControlText;
+        static public Color DefaultMenuMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(220, 220, 220);
+
+        static public Color DefaultToolTipBackColor = SystemColors.Info;       // text
+        static public Color DefaultToolTipForeColor = SystemColors.InfoText;       // text
+
+        static public Color DefaultLabelForeColor = SystemColors.WindowText;
+        static public Color DefaultLabelBorderColor = SystemColors.ControlText;
 
         #endregion
 

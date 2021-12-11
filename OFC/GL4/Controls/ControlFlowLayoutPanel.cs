@@ -21,6 +21,9 @@ namespace GLOFC.GL4.Controls
     {
         public GLFlowLayoutPanel(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultFlowLayoutBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultFlowLayoutBackColor;
+
         }
 
         public GLFlowLayoutPanel(string name, DockingType type, float dockpercent) : base(name, DefaultWindowRectangle)

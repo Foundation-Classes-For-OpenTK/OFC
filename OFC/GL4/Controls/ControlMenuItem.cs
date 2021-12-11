@@ -22,6 +22,7 @@ namespace GLOFC.GL4.Controls
     {
         public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
+            // don't need to set back colour etc, the menu strip does this on an OnControlAdd
             SetNI(borderwidth: 0);
             Text = text;
             ShowFocusBox = false;

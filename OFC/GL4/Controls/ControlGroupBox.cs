@@ -28,7 +28,9 @@ namespace GLOFC.GL4.Controls
         public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
         {
             SetNI(padding: new Padding(GBPadding), margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
+            BackColorGradientAltNI = BackColorNI = DefaultGroupBoxBackColor;
             BorderColorNI = DefaultGroupBoxBorderColor;
+            foreColor = DefaultGroupBoxForeColor;
             text = title;
         }
 

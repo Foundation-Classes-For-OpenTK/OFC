@@ -24,15 +24,18 @@ namespace GLOFC.GL4.Controls
         public int SelectedTab { get { return seltab; } set { if (seltab != value) { seltab = value; ReselectTab(); } } }
         public TabStyleCustom TabStyle { get { return tabstyle; } set { tabstyle = value;InvalidateLayout();; } }
 
-        Color TabSelectedColor { get { return tabSelectedColor; } set { tabSelectedColor = value; Invalidate(); } }
-        Color TabNotSelectedColor { get { return tabNotSelectedColor; } set { tabNotSelectedColor = value; Invalidate(); } }
-        Color TextNotSelectedColor { get { return textNotSelectedColor; } set { textNotSelectedColor = value; Invalidate(); } }
-        Color TabMouseOverColor { get { return tabMouseOverColor; } set { tabMouseOverColor = value; Invalidate(); } }
-        Color TabControlBorderColor { get { return tabControlBorderColor; } set { tabControlBorderColor = value; Invalidate(); } }
-        float TabColorScaling { get { return tabColorScaling; } set { tabColorScaling = value; Invalidate(); } }
+        public Color TabSelectedColor { get { return tabSelectedColor; } set { tabSelectedColor = value; Invalidate(); } }
+        public Color TabNotSelectedColor { get { return tabNotSelectedColor; } set { tabNotSelectedColor = value; Invalidate(); } }
+        public Color TextNotSelectedColor { get { return textNotSelectedColor; } set { textNotSelectedColor = value; Invalidate(); } }
+        public Color TabMouseOverColor { get { return tabMouseOverColor; } set { tabMouseOverColor = value; Invalidate(); } }
+        public Color TabControlBorderColor { get { return tabControlBorderColor; } set { tabControlBorderColor = value; Invalidate(); } }
+        public float TabColorScaling { get { return tabColorScaling; } set { tabColorScaling = value; Invalidate(); } }
 
         public GLTabControl(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultTabControlBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultTabControlBackColor;
+            foreColor = DefaultTabControlForeColor;
         }
 
         public GLTabControl() : this("TBC?", DefaultWindowRectangle)
@@ -210,11 +213,11 @@ namespace GLOFC.GL4.Controls
         private int seltab = -1;
         private int mouseover = -1;
         private TabStyleCustom tabstyle = new TabStyleSquare();    // change for the shape of tabs.
-        private Color tabSelectedColor = DefaultMouseDownButtonColor;
-        private Color tabNotSelectedColor = DefaultButtonBackColor;
-        private Color textNotSelectedColor = DefaultTabNotSelectedColor;
-        private Color tabMouseOverColor = DefaultMouseOverButtonColor;
-        private Color tabControlBorderColor = DefaultButtonBorderColor;
+        private Color tabSelectedColor = DefaultTabControlSelectedBackColor;
+        private Color tabNotSelectedColor = DefaultTabControlNotSelectedBackColor;
+        private Color textNotSelectedColor = DefaultTabControlNotSelectedForeColor;
+        private Color tabMouseOverColor = DefaultTabControlMouseOverColor;
+        private Color tabControlBorderColor = DefaultTabControlBorderColor;
         private float tabColorScaling = 0.5f;
     }
 

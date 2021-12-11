@@ -162,11 +162,11 @@ namespace TestOpenTk
                 if (testform1)
                 {
                     GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
-                    pform.BackColor = Color.FromArgb(200, Color.Red);
+                  //  pform.BackColor = Color.FromArgb(200, Color.Red);
                     pform.SuspendLayout();
-                    pform.BackColorGradientDir = 90;
-                    pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
-                    pform.ScaleWindow = new SizeF(1.25f, 1.25f);
+                    //pform.BackColorGradientDir = 90;
+                    //pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
+                   // pform.ScaleWindow = new SizeF(1.25f, 1.25f);
                     displaycontrol.Add(pform);
 
                     if (true)
@@ -175,6 +175,7 @@ namespace TestOpenTk
                         menubar.AutoOpenDelay = 1000;
                         menubar.Font = new Font("Euro Caps", 12);
                         menubar.Dock = DockingType.Top;
+                        menubar.SubMenuBorderWidth = 1;
 
                         GLMenuItem l1 = new GLMenuItem("MI-0A", "MenuA");
                         menubar.Add(l1);

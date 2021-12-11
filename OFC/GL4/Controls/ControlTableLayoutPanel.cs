@@ -22,6 +22,8 @@ namespace GLOFC.GL4.Controls
     {
         public GLTableLayoutPanel(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultTableLayoutBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
         }
 
         public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
