@@ -180,11 +180,11 @@ namespace TestOpenTk
 
                 int taborder = 0;
 
-                GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400,0,0, 0), "From Check");
-                pform.Add(lab1);
-
                 if (true)
                 {
+                    GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
+                    pform.Add(lab1);
+
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1");
                     b1.Margin = new Margin(2);
                     b1.TabOrder = taborder++;
@@ -244,7 +244,7 @@ namespace TestOpenTk
                     pform.Add(cbstars);
                 }
 
-                if ( true )
+                if (true)
                 { 
 
                     GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "CheckBox 1");
@@ -348,7 +348,7 @@ namespace TestOpenTk
                     pform.Add(mtb2);
                 }
 
-                if (false)
+                if (true)
                 {
                     GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
                     tb1.Font = new Font("Arial", 12);
@@ -374,7 +374,7 @@ namespace TestOpenTk
                     pform.Add(cal);
                 }
 
-                if ( true)
+                if (true)
                 { 
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
                     glf.TabOrder = taborder++;
@@ -402,7 +402,7 @@ namespace TestOpenTk
                 pform.ResumeLayout();
             }
 
-            if (false)
+            if (true)
             {
                 GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 400));
                 pform2.BackColor = Color.FromArgb(200, Color.Red);
@@ -412,7 +412,7 @@ namespace TestOpenTk
                 pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
                 displaycontrol.Add(pform2);
 
-                GLButton b1 = new GLButton("F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
+                GLButton b1 = new GLButton("*********** F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
                 pform2.Add(b1);
             }
 

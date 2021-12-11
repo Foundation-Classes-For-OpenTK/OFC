@@ -233,13 +233,18 @@ namespace GLOFC.GL4.Controls
             glwin.Invalidate();
         }
 
-        // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
-
-        protected override bool InvalidateDueToLocationChange(GLBaseControl child)
+        // after changing position, this gets called, optimise for display control
+        protected override void CheckParentInvalidation(bool moved, bool resized, GLBaseControl child)
         {
-            //System.Diagnostics.Debug.WriteLine("Control display location change");
-            UpdateVertexTexturePositions(false);
-            return false;       // we don't need to invalidate due to just a location change, we can handle that without it
+            if (resized)
+            {
+                //   child.PerformLayout(true);     // this worked, but can't guarantee its not suspended, so I don't think its a good idea
+                // child.Invalidate();
+                //UpdateVertexTexturePositions(true);
+                base.CheckParentInvalidation(moved, resized, child); // or this
+            }
+            else
+                UpdateVertexTexturePositions(false);
         }
 
         // override this to provide translation between form co-ords and viewport/screen coords
@@ -300,10 +305,11 @@ namespace GLOFC.GL4.Controls
                         {
                             if (textures[c].Id < 0 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
                             {
+                                //System.Diagnostics.Debug.WriteLine($"Create new texture for {c.Name} {c.Size} {c.LevelBitmap.Size}");
                                 textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
                             }
 
-                          //  System.Diagnostics.Debug.WriteLine($"Update tlist for {c.Name} with {c.Opacity}");
+                            //  System.Diagnostics.Debug.WriteLine($"Update tlist for {c.Name} with {c.Opacity}");
                             tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
                         }
                     }
@@ -318,7 +324,7 @@ namespace GLOFC.GL4.Controls
 
                 if (tlist.Count > 0)     // only if we had visible ones
                 {
-                   // System.Diagnostics.Debug.WriteLine($"texture binds write");
+                    //System.Diagnostics.Debug.WriteLine($"texture binds write");
                     texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order
                     GLMemoryBarrier.All();
                 }

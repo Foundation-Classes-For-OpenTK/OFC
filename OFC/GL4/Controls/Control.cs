@@ -193,7 +193,7 @@ namespace GLOFC.GL4.Controls
             FindDisplay()?.ReRender(); // and we need to tell the display to redraw
         }
 
-        // Invalidate and relayout
+        // Invalidate and relayout us
         public void InvalidateLayout()
         {
             Invalidate();
@@ -201,16 +201,9 @@ namespace GLOFC.GL4.Controls
         }
 
         // Invalidate and layout the parent, and therefore us (since it the parent invalidates, all children get redrawn)
-        public void ParentInvalidateLayout()
+        public virtual void ParentInvalidateLayout()
         {
-            //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
-            if (parent != null)
-            {
-                FindDisplay()?.ReRender();
-                //System.Diagnostics.Debug.WriteLine(".. Redraw and layout on " + Parent.Name);
-                parent.NeedRedraw = true;
-                parent.PerformLayout();
-            }
+            parent?.InvalidateLayout();
         }
 
         // is ctrl us, or one of our children?  may want to override to associate other controls as us
@@ -289,10 +282,10 @@ namespace GLOFC.GL4.Controls
             return left == int.MaxValue ? Rectangle.Empty : new Rectangle(left, top, right - left, bottom - top);
         }
 
-        // Perform layout on this and all children
-        public void PerformLayout()             // perform layout on all child containers inside us. Does not call Layout on ourselves
+        // perform layout on all child containers inside us. Does not call Layout on ourselves unless layoutonus = true. This is not a normal thing
+        public void PerformLayout()             
         {
-            if (suspendLayoutCount>0)
+            if (suspendLayoutCount > 0)
             {
                 needLayout = true;
                 //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
@@ -300,6 +293,11 @@ namespace GLOFC.GL4.Controls
             else
             {
                 PerformRecursiveSize(Parent?.ClientSize ?? ClientSize);         // we recusively size
+                //if (layoutonus && Parent != null)     // experimental, it sort of worked with CheckParentInvalidation but can't guarantee it
+                //{
+                //    Rectangle area = Parent.ClientRectangle;
+                //    Layout(ref area);
+                //}
                 PerformRecursiveLayout();       // and we layout, recursively
             }
         }
@@ -696,7 +694,7 @@ namespace GLOFC.GL4.Controls
 
         protected void PerformRecursiveSize(Size parentclientrect)   
         {
-            //System.Diagnostics.Debug.WriteLine("Size " + Name + " against " + parentclientrect);
+            System.Diagnostics.Debug.WriteLine($"{Name} Perform Size {parentclientrect}");
             SizeControl(parentclientrect);              // size ourselves against the parent
 
             foreach (var c in childrenz) // in Z order
@@ -729,8 +727,8 @@ namespace GLOFC.GL4.Controls
         // if you override and do not call base, call ClearLayoutFlags after procedure to clear the layout
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
-            //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
             Rectangle area = ClientRectangle;
+            //System.Diagnostics.Debug.WriteLine($"{Name} Laying out {area}");
 
             foreach (var c in childrenz)     // in z order, top gets first go
             {
@@ -740,8 +738,6 @@ namespace GLOFC.GL4.Controls
                     c.PerformRecursiveLayout();
                 }
             }
-
-            //System.Diagnostics.Debug.WriteLine("Finished Laying out " + Name);
 
             //if (suspendLayoutSet)  System.Diagnostics.Debug.WriteLine("Removing suspend on " + Name);
 
@@ -759,7 +755,7 @@ namespace GLOFC.GL4.Controls
         // if so, you must call CalcClientRectangle and CheckBitMapAfterLayout
         public virtual void Layout(ref Rectangle parentarea)     
         {
-            //System.Diagnostics.Debug.WriteLine("Control " + Name + " " + window + " " + Dock);
+            //System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea}");
             int dockedwidth = DockPercent > 0 ? ((int)(parentarea.Width * DockPercent)) : (window.Width);
             int dockedheight = DockPercent > 0 ? ((int)(parentarea.Height * DockPercent)) : (window.Height);
             int wl = Width;
@@ -882,6 +878,7 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
 
             parentarea = areaout;
+          //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
         }
 
         // Override if required if you run a bitmap. Standard actions is to replace it if width/height is different.
@@ -889,7 +886,7 @@ namespace GLOFC.GL4.Controls
         {
             if (levelbmp != null && ( levelbmp.Width != Width || levelbmp.Height != Height ))
             {
-                //System.Diagnostics.Debug.WriteLine("Remake bitmap for " + Name);
+                //System.Diagnostics.Debug.WriteLine($"{Name} Remake bitmap {Width} {Height}");
                 levelbmp.Dispose();
                 levelbmp = new Bitmap(Width, Height);       // occurs for controls directly under form
             }
@@ -926,7 +923,7 @@ namespace GLOFC.GL4.Controls
                 backgr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
                 backgr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
-                System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
+                //System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
                 DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
                 DrawBorder(backgr, BorderColor, BorderWidth);
@@ -1246,22 +1243,17 @@ namespace GLOFC.GL4.Controls
                 if (resized)
                     OnResize();
 
-                if (resized || (Parent?.InvalidateDueToLocationChange(this) ?? true) == true)   // if resized, or we invalidate due to location change
-                {
-                    NeedRedraw = true;      // we need a redraw
-                                            // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
-                    parent?.Invalidate();   // parent is invalidated as well, and the whole form needs reendering
-                    parent?.PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
-                }
+                Parent?.CheckParentInvalidation(moved, resized, this);      // call to invalidate
             }
         }
 
-        // normally a location changed (left,top) means a invalidate of parent and re-layout. But for top level windows under GLDisplayControl
-        // we don't need to lay them out as they are top level GL objects and we just need to move the texture co-ords
-        // this bit does that - allows the top level parent to not have to invalidate if it returns false. Default is true, must invalidate
-        protected virtual bool InvalidateDueToLocationChange(GLBaseControl child)
+        // In the parent, see if we want to invalidate due to a change in the child. Normally we do. displaycontrol overrides this
+        protected virtual void CheckParentInvalidation(bool moved, bool resized, GLBaseControl child)
         {
-            return true;
+            child.NeedRedraw = true;      // we need a redraw
+                                    // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
+            Invalidate();   // parent is invalidated as well, and the whole form needs reendering
+            PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
         }
 
         // client rectangle calc - call if you change the window bounds, margin, padding
