@@ -46,7 +46,7 @@ namespace GLOFC.GL4.Controls
         public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; ParentInvalidateLayout(); } }
 
         public Color SelectedItemBackColor { get { return selectedItemBackColor; } set { selectedItemBackColor = value; Invalidate(); } }
-        public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
+        public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
         public Color ItemSeperatorColor { get { return itemSeperatorColor; } set { itemSeperatorColor = value; Invalidate(); } }
 
         // normal behaviour is a dotted focus box following the keystrokes/hover, A hover over box, plus a solid highlight on the selected item. These allow change of mode
@@ -91,6 +91,10 @@ namespace GLOFC.GL4.Controls
         {
             items = texts;
             Focusable = true;
+            BackColorNI = BackColorGradientAltNI = DefaultListBoxBackColor;
+            BorderColorNI = DefaultListBoxBorderColor;
+            foreColor = DefaultListBoxForeColor;
+            SetNI(margin: new Margin(0), borderwidth: 1, padding: new Padding(1));
             InvalidateOnFocusChange = true;
             InvalidateOnEnterLeave = true;
             scrollbar = new GLScrollBar();
@@ -145,7 +149,7 @@ namespace GLOFC.GL4.Controls
             setSelectedIndex(focusindex,true);
         }
 
-        #region Implementation
+        #region Implementation;
 
         protected override void OnFontChanged()
         {
@@ -277,7 +281,7 @@ namespace GLOFC.GL4.Controls
                             {
                                 if (offset == focusindex)                                  // default is if hovering, show hover box
                                 {
-                                    using (Brush highlight = new SolidBrush(Hover ? MouseOverBackColor : SelectedItemBackColor))
+                                    using (Brush highlight = new SolidBrush(Hover ? MouseOverColor : SelectedItemBackColor))
                                         gr.FillRectangle(highlight, itemarea);
                                 }
                             }
@@ -285,7 +289,7 @@ namespace GLOFC.GL4.Controls
                             {
                                 if (offset == focusindex && Hover)                                  // default is if hovering, show hover box
                                 {
-                                    using (Brush highlight = new SolidBrush(MouseOverBackColor))
+                                    using (Brush highlight = new SolidBrush(MouseOverColor))
                                         gr.FillRectangle(highlight, itemarea);
                                 }
                                 else if (offset == selectedIndex && HighlightSelectedItem)          // else if on selected item, show
@@ -296,7 +300,7 @@ namespace GLOFC.GL4.Controls
 
                                 if (ShowFocusBox && Focused && offset == indextodrawfocusbox)       // if showing focus box, and focused, draw
                                 {
-                                    Color b = selectedIndex == offset ? MouseOverBackColor : SelectedItemBackColor;
+                                    Color b = selectedIndex == offset ? MouseOverColor : SelectedItemBackColor;
                                     using (Pen p1 = new Pen(b) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                                         gr.DrawRectangle(p1, itemarea);
                                 }
@@ -330,7 +334,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (ShowFocusBox && Focused )
                 {
-                    using (Pen p1 = new Pen(MouseOverBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    using (Pen p1 = new Pen(MouseOverColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                         gr.DrawRectangle(p1, itemarea);
                 }
             }
@@ -457,9 +461,9 @@ namespace GLOFC.GL4.Controls
         private bool fitToItemsHeight { get; set; } = true;              // if set, move the border to integer of item height.
         private bool fitImagesToItemHeight { get; set; } = false;        // if set images scaled to fit within item height
         private float gradientColorScaling = 0.5F;
-        private Color selectedItemBackColor { get; set; } = DefaultMouseDownButtonColor;
-        private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
-        private Color itemSeperatorColor { get; set; } = DefaultLineSeparColor;
+        private Color selectedItemBackColor { get; set; } = DefaultListBoxSelectedItemColor;
+        private Color mouseOverColor { get; set; } = DefaultListBoxMouseOverColor;
+        private Color itemSeperatorColor { get; set; } = DefaultListBoxLineSeparColor;
 
         private GLScrollBar scrollbar;
         private List<string> items;

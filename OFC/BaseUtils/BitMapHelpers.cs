@@ -270,17 +270,33 @@ namespace GLOFC
             return newbmp;
         }
 
-        public static SizeF MeasureStringInBitmap(string text, Font f, StringFormat fmt = null )
+        public static SizeF MeasureStringInBitmap(string text, Font f, StringFormat fmt)
         {
             using (Bitmap t = new Bitmap(1, 1))
             {
                 using (Graphics g = Graphics.FromImage(t))
                 {
-                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit; 
-                    if ( fmt != null )
-                        return g.MeasureString(text, f, new Size(20000, 20000), fmt);
-                    else
-                        return g.MeasureString(text, f, new Size(20000, 20000));
+                    g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                    return g.MeasureString(text, f, new Size(20000, 20000), fmt);
+                }
+            }
+        }
+
+        public static SizeF MeasureStringInBitmap(string text, Font f)      // standard format - near/near/nowrap
+        {
+            using (var pfmt = new StringFormat())
+            {
+                pfmt.Alignment = StringAlignment.Near;
+                pfmt.LineAlignment = StringAlignment.Near;
+                pfmt.FormatFlags = StringFormatFlags.NoWrap;
+
+                using (Bitmap t = new Bitmap(1, 1))
+                {
+                    using (Graphics g = Graphics.FromImage(t))
+                    {
+                        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                        return g.MeasureString(text, f, new Size(20000, 20000), pfmt);
+                    }
                 }
             }
         }

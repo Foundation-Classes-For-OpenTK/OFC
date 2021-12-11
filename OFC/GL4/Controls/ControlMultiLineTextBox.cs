@@ -60,6 +60,8 @@ namespace GLOFC.GL4.Controls
             cursortimer.Tick += CursorTick;
             CalculateTextParameters();
             Finish(false, false, false);
+            foreColor = DefaultTextBoxForeColor;
+            BackColorGradientAltNI = BackColorNI = DefaultTextBoxBackColor;
 
             rightclickmenu = new GLContextMenu("MLTBRightClickMenu",
                         new GLMenuItem("MTLBEditCut", "Cut")
@@ -421,26 +423,11 @@ namespace GLOFC.GL4.Controls
         // this needs the font set up and TextBoundary
         // estimate size needed.  Set min and max sizes
         // return size available and horz scroll state
-        public Tuple<Size, bool> CalculateTextArea(Size min, Size max, string auxtext = null)
+        public Tuple<Size, bool> CalculateTextArea(Size min, Size max)
         {
             bool horzscroll = false;
 
-            SizeF area = SizeF.Empty;
-
-            using (var pfmt = new StringFormat())   // for some reasons, using set measurable characters above on fmt screws it up when it comes to paint, vs not using it
-            {
-                pfmt.Alignment = StringAlignment.Near;
-                pfmt.LineAlignment = StringAlignment.Near;
-                pfmt.FormatFlags = StringFormatFlags.NoWrap;
-
-                area = BitMapHelpers.MeasureStringInBitmap(Text, Font, pfmt);
-
-                if (auxtext.HasChars())
-                {
-                    var area2 = BitMapHelpers.MeasureStringInBitmap(auxtext, Font, pfmt);
-                    area = new SizeF(Math.Max(area.Width, area2.Width), area.Height);
-                }
-            }
+            SizeF area = BitMapHelpers.MeasureStringInBitmap(Text, Font);
 
             int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + Font.Height/2));       // add a nerf based on font height
             width += TextBoundary.TotalWidth;
@@ -457,12 +444,11 @@ namespace GLOFC.GL4.Controls
             if (height > max.Height)
             {
                 height = max.Height;
+                width += ScrollBarWidth;
             }
 
             return new Tuple<Size, bool>(new Size(width, height), horzscroll);
         }
-
-
 
         #endregion
 
@@ -859,6 +845,9 @@ namespace GLOFC.GL4.Controls
 //            System.Diagnostics.Debug.WriteLine($"{Name} Clip reset to {usablearea} {ClientRectangle} current clip {clipregion} -> {areatoclip}");
 
             gr.SetClip(areatoclip);     // so we don't paint outside of this
+
+            //using (Pen p = new Pen(this.ForeColor))   {  gr.DrawLine(p, new Point(0, 0), new Point(100,100));   }
+
 
             using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
             {
@@ -1337,9 +1326,9 @@ namespace GLOFC.GL4.Controls
 
         // Display
 
-        private Color highlightColor { get; set; } = DefaultHighlightColor;
+        private Color highlightColor { get; set; } = DefaultTextBoxHighlightColor;
         private Color lineColor { get; set; } = Color.Transparent;
-        private Color backerrorcolor { get; set; } = DefaultErrorColor;
+        private Color backerrorcolor { get; set; } = DefaultTextBoxErrorColor;
         private bool inerror = false;
 
         private int scrollbarwidth = 20;

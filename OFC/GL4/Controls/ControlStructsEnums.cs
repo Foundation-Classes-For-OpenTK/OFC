@@ -48,7 +48,10 @@ namespace GLOFC.GL4.Controls
 
     public enum DockingType
     {
-        None, Fill, Center,
+        None, Fill, 
+        Center,             // in centre of the window with the Width/Height given
+        Width,              // at its ypos/Height, full width
+        Height,             // at its xpos/Width, full height
         Left, LeftCenter, LeftTop, LeftBottom,              // order vital to layout test, keep
         Right, RightCenter, RightTop, RightBottom,
         Top, TopCenter, TopLeft, TopRight,
@@ -63,7 +66,7 @@ namespace GLOFC.GL4.Controls
         Right = 2,
         //Top = 4,
         Bottom = 8,
-        DialogButtonLine = 16,  // configuration form only, align on bottom line
+        AutoPlacement = 16,  // indicates its autoplaced.. see ConfigurationForm
     };
 
 }

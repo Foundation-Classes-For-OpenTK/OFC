@@ -61,6 +61,9 @@ namespace GLOFC.GL4.Controls
         {
             SuspendLayout();
 
+            foreColor = DefaultDTPForeColor;
+            BackColorNI = DefaultDTPBackColor;
+
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
             CheckBox.KeyDown += OnKeyFromChild;

@@ -168,7 +168,7 @@ namespace GLOFC.GL4.Controls
         public Action<Object> Moved { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlAdd { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlRemove { get; set; } = null;
-
+        // globals
         public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change. Either may be null
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;       // sent to all controls on a click. GLBaseControl may be null
@@ -178,26 +178,76 @@ namespace GLOFC.GL4.Controls
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
 
-        static public Color DefaultFormBackColor = Color.FromArgb(255,255,255);
-        static public Color DefaultFormTextColor = Color.Black;
-        static public Color DefaultControlBackColor = Color.Gray;
-        static public Color DefaultControlForeColor = Color.White;
-        static public Color DefaultPanelBackColor = Color.FromArgb(140, 140, 140);
-        static public Color DefaultLabelForeColor = Color.Black;
-        static public Color DefaultBorderColor = Color.Gray;
-        static public Color DefaultButtonBorderBackColor = Color.FromArgb(80, 80, 80);
-        static public Color DefaultButtonBackColor = Color.Gray;
-        static public Color DefaultButtonBorderColor = Color.FromArgb(100, 100, 100);
+        static public Color DefaultButtonBackColor = SystemColors.Control;
+        static public Color DefaultButtonFaceColor = SystemColors.Control;
+        static public Color DefaultButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultButtonForeColor = SystemColors.ControlText;      // text
         static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
         static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
-        static public Color DefaultCheckBoxBorderColor = Color.White;
-        static public Color DefaultCheckBoxInnerColor = Color.Wheat;
-        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(160, 160, 160);
-        static public Color DefaultCheckColor = Color.DarkBlue;
-        static public Color DefaultErrorColor = Color.OrangeRed;
-        static public Color DefaultHighlightColor = Color.Red;
 
-        static public Color DefaultLineSeparColor = Color.Green;
+        static public Color DefaultListBoxBackColor = SystemColors.Window;
+        static public Color DefaultListBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultListBoxForeColor = SystemColors.WindowText;
+        static public Color DefaultListBoxLineSeparColor = Color.Green;
+        static public Color DefaultListBoxMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultListBoxSelectedItemColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultComboBoxBackColor = SystemColors.Window;
+        static public Color DefaultComboBoxFaceColor = SystemColors.Window;
+        static public Color DefaultComboBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultComboBoxForeColor = SystemColors.ControlText;      // text
+
+        static public Color DefaultScrollbarSliderColor = SystemColors.Control;
+        static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;      
+        static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;
+        static public Color DefaultScrollbarArrowButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultScrollbarMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarMouseDownColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultScrollbarThumbColor = SystemColors.Control;
+        static public Color DefaultScrollbarThumbBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultGroupBoxBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultFormBackColor = SystemColors.Control;
+        static public Color DefaultFormBorderColor = SystemColors.ControlText;
+        static public Color DefaultFormTextColor = SystemColors.ControlText;
+
+        static public Color DefaultPanelBackColor = SystemColors.Control;
+
+        static public Color DefaultDTPForeColor = SystemColors.WindowText;
+        static public Color DefaultDTPBackColor = SystemColors.Window;
+
+        static public Color DefaultMenuBackColor = SystemColors.Control;
+        static public Color DefaultMenuForeColor = SystemColors.ControlText;
+        static public Color DefaultMenuMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(160, 160, 160);
+
+        static public Color DefaultToolTipBackColor = SystemColors.Info;       // text
+        static public Color DefaultToolTipForeColor = SystemColors.InfoText;       // text
+
+
+        static public Color DefaultTabNotSelectedColor = SystemColors.Control;       // text
+
+        static public Color DefaultCalendarForeColor = SystemColors.WindowText;
+        static public Color DefaultCalendarBackColor = SystemColors.Window;
+
+
+        static public Color DefaultLabelForeColor = SystemColors.WindowText;
+
+        static public Color DefaultCheckBackColor = SystemColors.Control;
+        static public Color DefaultCheckForeColor = SystemColors.ControlText;       // text
+        static public Color DefaultCheckColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxInnerColor = SystemColors.Window;
+        static public Color DefaultCheckMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultCheckMouseDownColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
+        static public Color DefaultTextBoxHighlightColor = Color.Red;
+        static public Color DefaultTextBoxLineSeparColor = Color.Green;
+        static public Color DefaultTextBoxBackColor = SystemColors.Window;
+        static public Color DefaultTextBoxForeColor = SystemColors.WindowText;
+
 
         // Invalidate this and therefore its children
         public virtual void Invalidate()
@@ -287,7 +337,7 @@ namespace GLOFC.GL4.Controls
             return found;
         }
 
-        // Area needed for children controls
+        // Area needed for children controls. empty if none
         public Rectangle ChildArea(Predicate<GLBaseControl> test = null)        
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
@@ -307,7 +357,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            return new Rectangle(left, top, right - left, bottom - top);
+            return left == int.MaxValue ? Rectangle.Empty : new Rectangle(left, top, right - left, bottom - top);
         }
 
         // Perform layout on this and all children
@@ -611,6 +661,7 @@ namespace GLOFC.GL4.Controls
 
         protected Color BorderColorNI { set { bordercolor = value; } }
         protected Color BackColorNI { set { backcolor = value; } }
+        protected Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
         protected bool VisibleNI { set { visible = value; } }
         public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
@@ -831,6 +882,14 @@ namespace GLOFC.GL4.Controls
                 Height = Math.Min(parentarea.Height, Height);
                 window = new Rectangle(xcentre - Width / 2, ycentre - Height / 2, Width, Height);       // centre in area, bounded by area, no change in area in
             }
+            else if (docktype == DockingType.Width)
+            {
+                window = new Rectangle(0, Top, parentarea.Width, Height);       // dock to full width, but with same Y/Height
+            }
+            else if (docktype == DockingType.Height)
+            {
+                window = new Rectangle(Left, 0, Width, parentarea.Height);       // dock to full width, but with same Y/Height
+            }
             else if (docktype >= DockingType.Bottom)
             {
                 if (docktype == DockingType.Bottom)     // only if we just the whole of the bottom do we modify areaout
@@ -996,6 +1055,11 @@ namespace GLOFC.GL4.Controls
 
                 if (parentgr != null && levelbmp != null)  // have a parent gr, and we have our own level bmp, we may be a scrollable panel
                 {
+                    System.Diagnostics.Debug.WriteLine($"Draw level bmp  into parent {parentarea}");
+                    // move the parent area to the client portion of the area. Still its physical parent bitmap positions
+                    parentarea = new Rectangle(parentarea.Left + ClientLeftMargin, parentarea.Top + ClientTopMargin, parentarea.Width - ClientWidthMargin,
+                                                parentarea.Height - ClientHeightMargin);
+                    System.Diagnostics.Debug.WriteLine($".. to client parent {parentarea}");
                     parentgr.SetClip(parentarea);       // must set the clip area again to address the parent area      
                     PaintIntoParent(parentarea, parentgr);      // give it a chance to draw our bitmap into the parent bitmap
                 }
@@ -1348,8 +1412,8 @@ namespace GLOFC.GL4.Controls
         private float dockpercent { get; set; } = 0;
         private AnchorType anchortype = AnchorType.None;
 
-        private Color backcolor { get; set; } = DefaultControlBackColor;
-        private Color backcolorgradientalt { get; set; } = DefaultControlBackColor;
+        private Color backcolor { get; set; } = Color.Red;
+        private Color backcolorgradientalt { get; set; } = Color.Red;
         private int backcolorgradientdir { get; set; } = int.MinValue;           // in degrees
         private Color bordercolor { get; set; } = Color.Transparent;         // Margin - border - padding is common to all controls. Area left is control area to draw in
         private int borderwidth { get; set; } = 0;

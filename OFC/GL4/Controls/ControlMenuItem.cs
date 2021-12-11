@@ -66,19 +66,19 @@ namespace GLOFC.GL4.Controls
                         gr.FillRectangle(br, new Rectangle(0, 0, IconTickAreaWidth, ClientHeight));
                     }
 
-                    base.PaintButtonBack(butarea, gr, back);
+                    base.PaintButtonFace(butarea, gr, back);
                 }
                 else
-                    base.PaintButtonBack(ClientRectangle, gr, back);
+                    base.PaintButtonFace(ClientRectangle, gr, back);
             }
             else
             {
-                base.PaintButtonBack(ClientRectangle, gr, back);
+                base.PaintButtonFace(ClientRectangle, gr, back);
             }
 
             //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
 
-            base.PaintButton(butarea, gr, false);       // don't paint the image
+            base.PaintButtonTextImageFocus(butarea, gr, false);       // don't paint the image
 
             if (IconTickAreaWidth > 0)
             {
@@ -89,7 +89,7 @@ namespace GLOFC.GL4.Controls
                 if (CheckState != CheckState.Unchecked)
                 {
                     Color checkboxbordercolour = CheckBoxBorderColor.Multiply(discaling); //(Enabled && Hover) ? MouseOverBackColor : 
-                    Color backcolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
+                    Color backcolour = (Enabled && Hover) ? MouseOverColor : ButtonFaceColour.Multiply(discaling);
 
                     using (Brush inner = new System.Drawing.Drawing2D.LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
                         gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted

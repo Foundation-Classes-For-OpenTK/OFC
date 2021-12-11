@@ -32,10 +32,9 @@ namespace GLOFC.GL4.Controls
 
         public event Action<GLFormConfigurable, Entry, string, Object> Trigger;
 
+        // you must turn off autosize if you want it resizable.  Do this AFTER adding to displaycontrol etc.
         // if you want it resizable, set Resizable=true AFTER adding to displaycontrol etc.
         // if you want it moveable, set Moveable=true AFTER adding to displaycontrol etc.
-
-        public bool SetMinimumSize { get; set; } = false;       // if true, on size, set the MinimumSize value. Set before Init
 
         // You give an array of Entries describing the controls
         // either added programatically by Add(entry) 
@@ -106,6 +105,8 @@ namespace GLOFC.GL4.Controls
         {
             entries = new List<Entry>();
             Moveable = Resizeable = false;
+            AutoSize = true;
+            AutoSizeToTitle = true;
         }
 
         public void Add(Entry e)               // add an entry..
@@ -113,20 +114,20 @@ namespace GLOFC.GL4.Controls
             entries.Add(e);
         }
 
-        public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null)
+        public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.None)
         {
             if (sz == null)
                 sz = new Size(80, 24);
-            Add(new Entry(ctrlname, typeof(GLButton), text, p, sz.Value, tooltip) {});
+            Add(new Entry(ctrlname, typeof(GLButton), text, p, sz.Value, tooltip) {Anchor = ac});
         }
 
-        public void AddOK(string text, Point p, string tooltip = null, Size? sz = null)
+        public void AddOK(string text, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.AutoPlacement)
         {
-            AddButton("OK", text, p, tooltip, sz);
+            AddButton("OK", text, new Point(0, 0), tooltip, sz,ac);
         }
-        public void AddCancel(string text, Point p, string tooltip = null, Size? sz = null)
+        public void AddCancel(string text, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.AutoPlacement)
         {
-            AddButton("Cancel", text, p, tooltip, sz);
+            AddButton("Cancel", text, new Point(0, 0), tooltip, sz, ac);
         }
 
         public void InstallStandardTriggers()
@@ -504,27 +505,30 @@ namespace GLOFC.GL4.Controls
 
         private const int butspacing = 8;
 
-        // after the children have sized, estimate the size of the form
-        protected override void SizeControlPostChild(Size parentsize)
+        protected override void SizeControl(Size parentsize)
         {
-            base.SizeControlPostChild(parentsize);
-
-            if (ControlsIZ.Count>0 && Parent != null)       // if not resizable, and we have stuff
+            if (ControlsIZ.Count > 0 && Parent != null)       // if not resizable, and we have stuff
             {
-                if (!Resizeable)        // as long as not resizable (turned on AFTER added into the display control etc) we can set the size
+                if (AutoSize && !Resizeable)        // if autosizable, and not resizable (turned off and on AFTER added into the display control etc) we can set the size
                 {
-                    Rectangle area = ChildArea(x => (x.Anchor & AnchorType.DialogButtonLine) == 0);   // get the clients area , ignoring anchor buttons
+                    //System.Diagnostics.Debug.WriteLine($"conf {Name} Attempt resize");
 
-                    // need to find the anchor buttons height and width
-                    int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max();
-                    int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum();
+                    base.SizeControl(parentsize);           // first perform the Form Autosize - taking into consideration title and objects other than the autoplacement items
 
-                    Size csize = new Size(Math.Max(area.Left + area.Width, buttonswidth) + AutoSizeClientMargin.Width, area.Top + area.Height + AutoSizeClientMargin.Height + buttonsmaxh);
-                    System.Diagnostics.Debug.WriteLine($"AutoSize FC {area} {csize}");
-                    SetNI(clientsize: csize);
+                    Rectangle area = ChildArea(x => (x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area , ignoring anchor buttons
 
-                    if (SetMinimumSize)       // ensures that the dialog never goes below this during resize
-                        MinimumSize = Size;
+                    int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max() + AutoSizeClientMargin.Height;
+                    int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum() + AutoSizeClientMargin.Width;
+
+                    if (ClientWidth < buttonswidth || ClientHeight < area.Top + area.Height + buttonsmaxh)
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"Conf {Name} Need to make it wider/height for buttons {buttonswidth} {buttonsmaxh} ");
+                        Size news = new Size(Math.Max(ClientWidth, buttonswidth), Math.Max(ClientHeight, area.Top + area.Height + buttonsmaxh));
+                        SetNI(clientsize: news);
+
+                        if (SetMinimumSizeOnAutoSize)
+                            MinimumSize = Size;
+                    }
                 }
 
                 if (!Moveable)          // as long as not movable (turned on AFTER added into the display control etc) we can set the position
@@ -546,25 +550,24 @@ namespace GLOFC.GL4.Controls
                         if (top + Height > psize.Height)
                             top = psize.Height - Height;
 
-                        SetNI(location: new Point(left,top));
-
+                        SetNI(location: new Point(left, top));
                     }
                 }
             }
         }
 
         // layout any anchor line buttons
-        protected override void PerformRecursiveLayout()      
+        protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();      // do normal layout on children
 
-            int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.DialogButtonLine) != 0).Select(x => x.Height).DefaultIfEmpty(0).Max();
+            int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(x => x.Height).DefaultIfEmpty(0).Max();
             int buttonline = ClientHeight - AutoSizeClientMargin.Height - buttonsmaxh;
             int buttonright = ClientWidth - AutoSizeClientMargin.Width;
 
             foreach (var control in ControlsIZ)
             {
-                if ((control.Anchor & AnchorType.DialogButtonLine) != 0)        // if dialog line anchor
+                if ((control.Anchor & AnchorType.AutoPlacement) != 0)        // if dialog line anchor
                 {
                     buttonright -= control.Width;
                     var pos = new Point(buttonright, buttonline);
@@ -573,7 +576,6 @@ namespace GLOFC.GL4.Controls
                     buttonright -= butspacing;
                 }
             }
-
         }
 
         protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children

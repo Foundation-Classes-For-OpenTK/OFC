@@ -52,7 +52,6 @@ namespace GLOFC.GL4.Controls
             if (forecolor != null)
                 cf.ForeColor = forecolor.Value;
 
-
             GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(0,0,100,100), text);
             tb.SuspendLayout();
             tb.Font = fnt;
@@ -67,19 +66,17 @@ namespace GLOFC.GL4.Controls
             const int textoffsettop = 10;
             const int butspacingundertext = 8;
             const int butxspacing = 20;
-            const int textmargin = 10;
+            const int textmargin = 4;
             const int windowmargin = 10;
             Size availablespace = attachto.Size;
 
-            int buts = (buttons == MessageBoxButtons.AbortRetryIgnore || buttons == MessageBoxButtons.YesNoCancel) ? 3 : 2;     // guess of how many, just to set min but width
-            int buttonswidth = (butwidth + butxspacing) * buts + butxspacing;
             int windowextrawidth = textmargin + tb.ClientWidthMargin + cf.AutoSizeClientMargin.Width;
             int availablewidthforclient = availablespace.Width - windowextrawidth - windowmargin * 2;
 
             int windowsextraheight = textoffsettop + butspacingundertext + butheight + cf.ClientHeightMargin + cf.AutoSizeClientMargin.Height;
             int availableheightforclient = availablespace.Height - windowsextraheight - windowmargin * 2;
 
-            var estsize = tb.CalculateTextArea(new Size(buttonswidth, 24), new Size(availablewidthforclient, availableheightforclient));
+            var estsize = tb.CalculateTextArea(new Size(20, 24), new Size(availablewidthforclient, availableheightforclient));
 
             tb.Bounds = new Rectangle(textmargin, textoffsettop, estsize.Item1.Width, estsize.Item1.Height);
             tb.EnableHorizontalScrollBar = estsize.Item2;
@@ -90,30 +87,30 @@ namespace GLOFC.GL4.Controls
 
             if (buttons == MessageBoxButtons.AbortRetryIgnore)
             {
-                cf.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Ignore) { TabOrder = 2, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Retry) { TabOrder = 1, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.DialogButtonLine });
+                cf.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Ignore) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Retry) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.OKCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { TabOrder = 1, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.DialogButtonLine });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.RetryCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Retry) { TabOrder = 1, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.DialogButtonLine });
+                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Retry) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.YesNo)
             {
-                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.No) { TabOrder = 1, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { TabOrder = 0, Anchor = AnchorType.DialogButtonLine });
+                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.No) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.YesNoCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { TabOrder = 2, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.No) { TabOrder = 1, Anchor = AnchorType.DialogButtonLine });
-                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { TabOrder = 0, Anchor = AnchorType.DialogButtonLine });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResult.Cancel) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResult.No) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResult.Yes) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
             }
             else
             {
@@ -140,9 +137,14 @@ namespace GLOFC.GL4.Controls
                 }
             };
 
+         //  cf.SizeComplete += (cf) => { System.Diagnostics.Debug.WriteLine($"Size complete tb {tb.Size}"); tb.SetNI(size:new Size(cf.Width - 20, tb.Height)); };
+
             cf.ResumeLayout();
-            attachto.AddToDesktop(cf);
+            attachto.AddToDesktop(cf);      // this autosizes the form
+
+            cf.AutoSize = false;            // now we turn autosize off, and allow it to move
             cf.Moveable = moveable;
+            tb.Width = cf.ClientWidth - textmargin*2;
         }
 
         private void DialogCallback(GLForm p, DialogResult r)

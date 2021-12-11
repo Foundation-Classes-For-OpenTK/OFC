@@ -212,7 +212,7 @@ namespace GLOFC.GL4.Controls
         private TabStyleCustom tabstyle = new TabStyleSquare();    // change for the shape of tabs.
         private Color tabSelectedColor = DefaultMouseDownButtonColor;
         private Color tabNotSelectedColor = DefaultButtonBackColor;
-        private Color textNotSelectedColor = DefaultControlForeColor;
+        private Color textNotSelectedColor = DefaultTabNotSelectedColor;
         private Color tabMouseOverColor = DefaultMouseOverButtonColor;
         private Color tabControlBorderColor = DefaultButtonBorderColor;
         private float tabColorScaling = 0.5f;

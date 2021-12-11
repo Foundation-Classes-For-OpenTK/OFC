@@ -46,16 +46,23 @@ namespace GLOFC.GL4.Controls
 
         public GLCheckBoxBase(string name, Rectangle window) : base(name, window)
         {
+            buttonFaceColor = DefaultCheckBackColor;
+            foreColor = DefaultCheckForeColor;
+            mouseOverColor = DefaultCheckMouseOverColor;
+            mouseDownColor = DefaultCheckMouseDownColor;
         }
 
         protected void CheckBoxAutoSize()        // autosize for a check box display type
         {
-            SizeF size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
+            SizeF size = SizeF.Empty;
+            using( var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
             size = new SizeF(Math.Max(size.Width, 16), Math.Max(size.Height, 16));
-            Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
-                             (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);
+            int h = (int)(size.Height + 0.999);
+            Size s = new Size((int)(size.Width + 0.999) + h + 4, h + 4);        // add h to width to account for the tick
 
-            SetNI(size: s);
+            //System.Diagnostics.Debug.WriteLine($"Check box {Name} Autosize to {s}");
+            SetNI(clientsize: s);
         }
 
         protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk, Graphics gr)

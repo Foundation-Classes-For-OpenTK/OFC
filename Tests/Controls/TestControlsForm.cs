@@ -164,18 +164,18 @@ namespace TestOpenTk
             if (true)
             {
                 pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
-                pform.BackColor = Color.FromArgb(200, Color.Red);
-                pform.Opacity = 0.7f;
                 pform.SuspendLayout();
-                pform.BackColorGradientDir = 90;
-                pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
+                //pform.BackColor = Color.FromArgb(200, Color.Red);
+                //pform.Opacity = 0.7f;
+                // pform.BackColorGradientDir = 90;
+                //  pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
                 //pform.ScaleWindow = new SizeF(0.75f, 0.75f);
                 //pform.AlternatePos = new RectangleF(100, 100, 500, 400);
                 //pform.AlternatePos = new RectangleF(100, 100, 1200, 1000);
-              //  pform.ScaleWindow = new SizeF(0.0f, 0.0f);
-             //   pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
-              //  pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
-              //  pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
+                //  pform.ScaleWindow = new SizeF(0.0f, 0.0f);
+                //   pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
+                //  pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
+                //  pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
                 displaycontrol.Add(pform);
 
                 int taborder = 0;
@@ -234,42 +234,51 @@ namespace TestOpenTk
                     cb1.ToolTipText = "Combo Box";
                     pform.Add(cb1);
 
-                    GLCheckBox chk1 = new GLCheckBox("Checkbox", new Rectangle(0, 150, 0, 0), "CheckBox 1");
-                    chk1.Margin = new Margin(16, 0, 0, 0);
-                    chk1.TabOrder = taborder++;
-                    pform.Add(chk1);
-                    GLCheckBox chk2 = new GLCheckBox("Checkbox", new Rectangle(100, 150, 0, 0), "CheckBox 2");
-                    chk2.Appearance = CheckBoxAppearance.Radio;
-                    chk2.TabOrder = taborder++;
-                    pform.Add(chk2);
-                    GLCheckBox chk3 = new GLCheckBox("Checkbox", new Rectangle(200, 150, 0, 0), "CheckBox 3");
-                    chk3.Appearance = CheckBoxAppearance.Button;
-                    chk3.TabOrder = taborder++;
-                    pform.Add(chk3);
-                    GLCheckBox chk4 = new GLCheckBox("Checkbox", new Rectangle(300, 150, 0, 0), "");
-                    chk4.TabOrder = taborder++;
-                    pform.Add(chk4);
-                    GLCheckBox chk5 = new GLCheckBox("Checkbox", new Rectangle(350, 150, 0, 0), "R1");
-                    chk5.Appearance = CheckBoxAppearance.Radio;
-                    chk5.GroupRadioButton = true;
-                    chk5.TabOrder = taborder++;
-                    pform.Add(chk5);
-                    GLCheckBox chk6 = new GLCheckBox("Checkbox", new Rectangle(400, 150, 0, 0), "");
-                    chk6.Appearance = CheckBoxAppearance.Radio;
-                    chk6.GroupRadioButton = true;
-                    chk6.TabOrder = taborder++;
-                    pform.Add(chk6);
-                }
-
-                if (true)
-                {
-                    GLComboBox cbstars = new GLComboBox("GalaxyStarsNumber", new Rectangle(350, 340, 100, 32));
+                    GLComboBox cbstars = new GLComboBox("GalaxyStarsNumber", new Rectangle(100, 100, 100, 32));
                     cbstars.ToolTipText = "Control how many stars are shown when zoomes in";
                     cbstars.Items = new List<string>() { "Ultra", "High", "Medium", "Low" };
+                    cbstars.TabOrder = taborder++;
                     var list = new List<int>() { 1000000, 500000, 250000, 100000 };
                     int itemno = 1;
                     cbstars.SelectedIndex = itemno >= 0 ? itemno : 1;       // high default
                     pform.Add(cbstars);
+                }
+
+                if ( true )
+                { 
+
+                    GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "CheckBox 1");
+                    chk1.Margin = new Margin(16, 0, 0, 0);
+                    chk1.TabOrder = taborder++;
+                    chk1.ShowFocusBox = true;
+                    //chk1.Checked = true;
+                    //chk1.Enabled = false; 
+                    pform.Add(chk1);
+                    GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "CheckBox 2");
+                    chk2.Appearance = CheckBoxAppearance.Radio;
+                    chk2.TabOrder = taborder++;
+                    chk2.Checked = true;
+                    chk2.ShowFocusBox = true;
+                    pform.Add(chk2);
+                    GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "CheckBox 3");
+                    chk3.Appearance = CheckBoxAppearance.Button;
+                    chk3.TabOrder = taborder++;
+                    chk3.ShowFocusBox = true;
+                    pform.Add(chk3);
+                    GLCheckBox chk4 = new GLCheckBox("Checkbox4", new Rectangle(300, 150, 0, 0), "");
+                    chk4.TabOrder = taborder++;
+                    chk4.ShowFocusBox = true;
+                    pform.Add(chk4);
+                    GLCheckBox chk5 = new GLCheckBox("Checkbox5", new Rectangle(350, 150, 0, 0), "R1");
+                    chk5.Appearance = CheckBoxAppearance.Radio;
+                    chk5.GroupRadioButton = true;
+                    chk5.TabOrder = taborder++;
+                    pform.Add(chk5);
+                    GLCheckBox chk6 = new GLCheckBox("Checkbox6", new Rectangle(400, 150, 0, 0), "R2");
+                    chk6.Appearance = CheckBoxAppearance.Radio;
+                    chk6.GroupRadioButton = true;
+                    chk6.TabOrder = taborder++;
+                    pform.Add(chk6);
                 }
 
                 if (true)
@@ -294,7 +303,6 @@ namespace TestOpenTk
                 {
                     List<string> i1 = new List<string>() { "one two three four five six seven eight", "two", "three", "four", "five", "six", "seven is very long too to check", "eight", "nine", "ten", "eleven", "twelve" };
                     GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
-                    lb1.SetMarginBorderWidth(new Margin(2), 1, Color.Wheat, new GLOFC.GL4.Controls.Padding(2));
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     lb1.ShowFocusBox = true;
@@ -477,30 +485,50 @@ namespace TestOpenTk
 
         private void ConfDialog2()
         {
-            GLFormConfigurable cform = new GLFormConfigurable("test");
-            //cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
-            //cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            //cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
-            //cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
+            ////cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
+            ////cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
+            ////cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
+            ////cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
 
             GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(10, 10, 1000, 1000), "this is some text\r\nAnd some more");
             var sizer = tb.CalculateTextArea(new Size(50, 24), new Size(400, 400));
             tb.Size = sizer.Item1;
+            tb.EnableHorizontalScrollBar = sizer.Item2;
             tb.CursorToEnd();
 
+            
+
+            //cform.SetMinimumSize = true;
+            //cform.Init(new Point(200, 200), "Config Form Test Long Title");
+            //cform.Trigger += (cb, en, ctrlname, args) =>
+            //{
+            //    if (ctrlname == "OK")
+            //        cform.Close();
+            //};
+            //displaycontrol.Add(cform);
+            //cform.Resizeable = true;        
+
+            GLFormConfigurable cform = new GLFormConfigurable("ConfDialog2");
             cform.Add(new GLFormConfigurable.Entry("info", tb) );
-            cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
-            cform.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(0, 0), new Size(100, 24), "TT") { Anchor = AnchorType.DialogButtonLine });
-            cform.Add(new GLFormConfigurable.Entry("Abort", typeof(GLButton), "Abort", new Point(0, 0), new Size(100, 24), "TT") { Anchor =  AnchorType.DialogButtonLine });
-            cform.SetMinimumSize = true;
-            cform.Init(new Point(200, 200), "Config Form Test");
-            cform.Trigger += (cb, en, ctrlname, args) =>
-            {
-                if (ctrlname == "OK")
-                    cform.Close();
-            };
-            displaycontrol.Add(cform);
-            cform.Resizeable = true;        
+            cform.AddOK("OK");
+            cform.AddCancel("Cancel");
+            cform.InstallStandardTriggers();
+            cform.Init(new Point(200, 200), "Config Form Test Long Title and even longer one");
+            cform.SetMinimumSizeOnAutoSize = true;
+            displaycontrol.Add(cform);      // display and autosize
+            cform.AutoSize = false;
+            cform.Moveable = true;
+            cform.Resizeable = true;
+            tb.Width = cform.ClientWidth - 10 * 2;
+            System.Diagnostics.Debug.WriteLine($"Autosize {cform.AutoSize}");
+        }
+
+        private void FormAutoSize()
+        {
+            GLForm f = new GLForm("FormAutoTest", "This is a long title with many characters", new Rectangle(100, 100, 50, 50));
+            f.AutoSizeToTitle = true;
+            f.AutoSize = true;
+            displaycontrol.Add(f);
         }
 
         private void MsgDialog()

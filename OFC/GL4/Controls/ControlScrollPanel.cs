@@ -55,35 +55,44 @@ namespace GLOFC.GL4.Controls
                 {
                     if (LevelBitmap == null )
                     {
-                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
+                        System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
                         MakeLevelBitmap(Width, childheight);
                     }
                     else if ( childheight != LevelBitmap.Height || LevelBitmap.Width != Width) // if height is different, or width is different
                     {
                         MakeLevelBitmap(Width, childheight);
-                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
+                        System.Diagnostics.Debug.WriteLine("Change SP bitmap " + Width + "," + childheight);
                     }
                 }
             }
 
             if ( !needbitmap && LevelBitmap != null)
             {
-                MakeLevelBitmap(0,0);
+                MakeLevelBitmap(0,0);       // dispose of bitmap
             }
         }
 
         // override back draw to draw the whole scrolable area 
         protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
         {
-            base.DrawBack(new Rectangle(0, 0, LevelBitmap.Width, LevelBitmap.Height), gr, bc, bcgradientalt, bcgradientdir);
+            //if ( LevelBitmap != null)
+            //    base.DrawBack(new Rectangle(0, 0, LevelBitmap.Width, LevelBitmap.Height), gr, bc, bcgradientalt, bcgradientdir);
+            //else
+              // base.DrawBack(area, gr, bc, bcgradientalt, bcgradientdir);
         }
 
         // called because we have a bitmap.  We need to draw this bitmap, which we drawn our children into, into the parent bitmap
         protected override void PaintIntoParent(Rectangle parentarea, Graphics parentgr)
         {
-          //  System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
+            System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
 
-            parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
+            // parentarea.Left/Top is the bounds (0,0) of the window
+          //  if ( LevelBitmap != null )
+            //    parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
+            using( Brush b = new SolidBrush(Color.Red))
+            {
+                //parentgr.FillRectangle(b, parentarea);
+            }
         }
 
         protected override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed

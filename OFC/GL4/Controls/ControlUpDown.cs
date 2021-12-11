@@ -53,7 +53,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (Focused)
                 {
-                    using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     {
                         gr.DrawRectangle(p, new Rectangle(area.Left, area.Top, area.Width - 1, area.Height - 1));
                     }
@@ -80,7 +80,7 @@ namespace GLOFC.GL4.Controls
             if ( Enabled && (Hover || amitimer.Running) )
             {
                 bool mbd = MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left || amitimer.Running;
-                Color back = mbd ? MouseDownBackColor : MouseOverBackColor;
+                Color back = mbd ? MouseDownColor : MouseOverColor;
                 Color fore = mbd ? ForeColor.Multiply(MouseSelectedColorScaling) : ForeColor;
 
                 if (amitimer.Running ? (repeatdir==-1) : mouseoverbottom)           // if ami, we use savedir, else mouse pos
@@ -95,10 +95,10 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            using (Brush b = new LinearGradientBrush(sareaupper, pcup, pcup.Multiply(BackColorScaling), 90))
+            using (Brush b = new LinearGradientBrush(sareaupper, pcup, pcup.Multiply(FaceColorScaling), 90))
                 gr.FillRectangle(b, drawupper);
 
-            using (Brush b = new LinearGradientBrush(sarealower, pcdown, pcdown.Multiply(BackColorScaling), 270))
+            using (Brush b = new LinearGradientBrush(sarealower, pcdown, pcdown.Multiply(FaceColorScaling), 270))
                 gr.FillRectangle(b, drawlower);
 
             using (Pen p = new Pen(pencolorup))

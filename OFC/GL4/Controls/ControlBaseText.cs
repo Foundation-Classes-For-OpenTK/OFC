@@ -25,7 +25,7 @@ namespace GLOFC.GL4.Controls
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
         public float DisabledScaling { get { return disabledScaling; } set { if (value != disabledScaling) { disabledScaling = value; Invalidate(); } } }
 
-        private Color foreColor { get; set; } = DefaultControlForeColor;
+        protected Color foreColor { get; set; } = Color.Red;
         private float disabledScaling = 0.5F;
     }
 

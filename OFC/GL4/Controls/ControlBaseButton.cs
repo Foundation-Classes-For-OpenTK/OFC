@@ -21,10 +21,10 @@ namespace GLOFC.GL4.Controls
     public abstract class GLButtonBase : GLImageBase
     {
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
-        public Color ButtonBackColor { get { return buttonBackColor; } set { buttonBackColor = value; Invalidate(); } }
-        public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
-        public Color MouseDownBackColor { get { return mouseDownBackColor; } set { mouseDownBackColor = value; Invalidate(); } }
-        public float BackColorScaling { get { return backColorScaling; } set { backColorScaling = value; Invalidate(); } }
+        public Color ButtonFaceColour { get { return buttonFaceColor; } set { buttonFaceColor = value; Invalidate(); } }    // of button
+        public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        public Color MouseDownColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
+        public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
 
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
 
@@ -34,12 +34,12 @@ namespace GLOFC.GL4.Controls
             InvalidateOnMouseDownUp = true;
         }
 
-        private Color buttonBackColor { get; set; } = DefaultButtonBackColor;
-        private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
-        private Color mouseDownBackColor { get; set; } = DefaultMouseDownButtonColor;
-        private Color foreColor { get; set; } = DefaultControlForeColor;
-        private float backColorScaling = 0.5F;
-        private bool showfocusbox = true;
+        protected Color buttonFaceColor { get; set; } = DefaultButtonFaceColor;
+        protected Color mouseOverColor { get; set; } = DefaultMouseOverButtonColor;
+        protected Color mouseDownColor { get; set; } = DefaultMouseDownButtonColor;
+        protected Color foreColor { get; set; } = DefaultButtonForeColor;
+        protected float faceColorScaling = 0.5F;
+        protected bool showfocusbox = true;
 
     }
 
@@ -62,30 +62,33 @@ namespace GLOFC.GL4.Controls
             Color colBack = Color.Empty;
 
             if (Enabled == false)
-                colBack = ButtonBackColor;// Previously ButtonBackColor.Multiply(DisabledScaling); but its too strong
+                colBack = ButtonFaceColour;// Previously ButtonBackColor.Multiply(DisabledScaling); but its too strong
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
-                colBack = MouseDownBackColor;
+                colBack = MouseDownColor;
             else if (lockhighlight || (Hover && !disablehoverhighlight))
-                colBack = MouseOverBackColor;
+                colBack = MouseOverColor;
             else
-                colBack = ButtonBackColor;
+                colBack = ButtonFaceColour;
 
             return colBack;
         }
 
-        protected void PaintButtonBack(Rectangle backarea, Graphics gr, Color colBack)
+        protected void PaintButtonFace(Rectangle backarea, Graphics gr, Color facecolour)
         {
-            using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
+            using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1),
+                            facecolour, facecolour.Multiply(FaceColorScaling), 90))
+            {
                 gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
+            }
         }
 
-        protected void PaintButton(Rectangle buttonarea, Graphics gr, bool paintimage)
+        protected void PaintButtonTextImageFocus(Rectangle buttonarea, Graphics gr, bool paintimage)
         {
             if (ShowFocusBox)
             {
                 if (Focused)
                 {
-                    using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     {
                         gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));
                     }
@@ -112,9 +115,12 @@ namespace GLOFC.GL4.Controls
 
         protected void ButtonAutoSize(Size extra )     // call if autosize as button
         {
-            SizeF size = new Size(0, 0);
+            SizeF size = SizeF.Empty;
             if (Text.HasChars())
-                size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
+            {
+                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                    size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+            }
 
             if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
                 size = new SizeF(size.Width + Image.Width, Math.Max(Image.Height, (int)(size.Height + 0.999)));

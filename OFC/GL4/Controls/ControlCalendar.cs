@@ -36,6 +36,8 @@ namespace GLOFC.GL4.Controls
         {
             Focusable = true;
             InvalidateOnFocusChange = true;
+            foreColor = DefaultCalendarForeColor;
+            BackColorNI = BackColorGradientAltNI = DefaultCalendarBackColor;
 
             ButLeft.Image = GLOFC.Properties.Resources.Left;
             ButLeft.Click += GoLeft;
@@ -176,14 +178,14 @@ namespace GLOFC.GL4.Controls
 
                         if (i == curselectedoffset && Enabled)
                         {
-                            using (Brush mouseover = new SolidBrush(MouseDownBackColor))
+                            using (Brush mouseover = new SolidBrush(MouseDownColor))
                             {
                                 gr.FillRectangle(mouseover, butarea);
                             }
                         }
                         else if (i == hoveredpos && Enabled)
                         {
-                            using (Brush mouseover = new SolidBrush(MouseOverBackColor))
+                            using (Brush mouseover = new SolidBrush(MouseOverColor))
                             {
                                 gr.FillRectangle(mouseover, butarea);
                             }
@@ -191,7 +193,7 @@ namespace GLOFC.GL4.Controls
 
                         if ( i == curdateoffset )
                         {
-                            using (Pen outline = new Pen(MouseDownBackColor))
+                            using (Pen outline = new Pen(MouseDownColor))
                             {
                                 gr.DrawRectangle(outline, butarea);
                             }
@@ -199,7 +201,7 @@ namespace GLOFC.GL4.Controls
 
                         if ( i == focuspos && ShowFocusBox && Focused)
                         {
-                            using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                            using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                             {
                                 gr.DrawRectangle(p, focusrect);
                             }

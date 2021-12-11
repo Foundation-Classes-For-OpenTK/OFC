@@ -31,7 +31,8 @@ namespace GLOFC.GL4.Controls
 
         public GLToolTip(string name, Color? backcolour = null) : base(name, DefaultWindowRectangle)
         {
-            BackColor = backcolour.HasValue ? backcolour.Value : DefaultControlBackColor;
+            BackColor = backcolour.HasValue ? backcolour.Value : DefaultToolTipBackColor;
+            foreColor = DefaultToolTipForeColor;
             SetNI(padding: new Padding(3));
             VisibleNI = false;
             timer.Tick += TimeOut;

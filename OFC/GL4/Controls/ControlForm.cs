@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Controls
         public bool FormShown { get; set; } = false;        // only applies to top level forms
         public bool TabChangesFocus { get; set; } = true;   // tab works
         public bool ShowClose { get; set; } = true;         // show close symbol
-        public bool Resizeable { get; set; } = true;         // resize works
+        public bool Resizeable { get; set; } = true;        // resize works
         public bool Moveable { get; set; } = true;          // move window works
 
         public Action<GLForm> Shown;
@@ -51,7 +51,11 @@ namespace GLOFC.GL4.Controls
         public DialogResult DialogResult { get { return dialogResult; } set { SetDialogResult(value); }  }
         public Action<GLForm, DialogResult> DialogCallback { get; set; } // if a form sets a dialog result, this callback gets called
 
-        public Size AutoSizeClientMargin { get; set; } = new Size(10, 10);         // extra space left/bot to add if autosizing
+        // Form can AutoSize to client content. 
+        public Size AutoSizeClientMargin { get; set; } = new Size(10, 10);         // extra space left/bottom to add if autosizing
+        public bool AutoSizeToTitle { get; set; } = false;                         // if set, title is accounted for in autosize
+
+        public bool SetMinimumSizeOnAutoSize { get; set; } = false;                // if true, on Auto size, set the MinimumSize value. Set before turning off AutoSize
 
         public GLForm(string name, string title, Rectangle location) : base(name, location)
         {
@@ -60,7 +64,7 @@ namespace GLOFC.GL4.Controls
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
             SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins,TitleBarHeight ,FormMargins,FormMargins), borderwidth: FormBorderWidth);
-            BorderColorNI = DefaultBorderColor;
+            BorderColorNI = DefaultFormBorderColor;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
 
@@ -128,13 +132,30 @@ namespace GLOFC.GL4.Controls
             Margin = new Margin(Margin.Left, TitleBarHeight, Margin.Right, Margin.Bottom);
         }
 
+        // Form autosizer, taking into consideration all objects without autoplacement
+        // and optionally the title text size
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                Rectangle area = ChildArea();   // get the clients area and autosize to it
-                SetNI(clientsize: new Size(area.Left+area.Width + AutoSizeClientMargin.Width,area.Top + area.Height + AutoSizeClientMargin.Height));
+                Rectangle area = ChildArea(x=>(x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area (ignore autoplaced items and autosize to it)
+
+                if (AutoSizeToTitle)        // if required, take into considering the title text
+                {
+                    using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                    {
+                        var titlearea = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                        area.Width = Math.Max(area.Width, (int)titlearea.Width + (ShowClose ? TitleBarHeight : 0) - ClientLeftMargin);
+                    }
+                }
+
+                Size s = new Size(area.Left + area.Width + AutoSizeClientMargin.Width, area.Top + area.Height + AutoSizeClientMargin.Height);
+                //System.Diagnostics.Debug.WriteLine($"Form {Name} Clients {area} -> {s}");
+                SetNI(clientsize: s);
+
+                if (SetMinimumSizeOnAutoSize)
+                    MinimumSize = Size;
             }
         }
 
@@ -150,7 +171,7 @@ namespace GLOFC.GL4.Controls
                 {
                     using (Brush textb = new SolidBrush(c))
                     {
-                        Rectangle titlearea = new Rectangle(0,0, Width, TitleBarHeight);
+                        Rectangle titlearea = new Rectangle(0,0, Width-(ShowClose?TitleBarHeight:0), TitleBarHeight);
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
                 }

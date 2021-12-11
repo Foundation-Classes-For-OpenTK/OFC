@@ -43,9 +43,12 @@ namespace GLOFC.GL4.Controls
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                SizeF size = new Size(0, 0);
+                SizeF size = SizeF.Empty;
                 if (Text.HasChars())
-                    size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
+                {
+                    using( var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                        size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                }
 
                 Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,
                                  (int)(size.Height + 0.999) + Margin.TotalHeight + Padding.TotalHeight + BorderWidth + 4);

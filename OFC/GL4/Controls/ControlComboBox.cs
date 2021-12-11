@@ -36,12 +36,13 @@ namespace GLOFC.GL4.Controls
 
         public int DropDownHeightMaximum { get { return dropdownbox.DropDownHeightMaximum; } set { dropdownbox.DropDownHeightMaximum = value; } }
 
-        public Color MouseOverBackColor { get { return dropdownbox.MouseOverBackColor; } set { dropdownbox.MouseOverBackColor = value; } }
+        // ForeColor for text
+        public Color MouseOverColor { get { return dropdownbox.MouseOverColor; } set { dropdownbox.MouseOverColor = value; } }
         public Color DropDownBackgroundColor { get { return dropdownbox.BackColor; } set { dropdownbox.BackColor = value; } }
         public Color ItemSeperatorColor { get { return dropdownbox.ItemSeperatorColor; } set { dropdownbox.ItemSeperatorColor = value; } }
 
-        public Color ComboBoxBackColor { get { return comboboxBackColor; } set { comboboxBackColor = value; Invalidate(); } }
-        public float BackColorScaling { get { return backColorScaling; } set { backColorScaling = value; Invalidate(); } }
+        public Color FaceColor { get { return comboboxFaceColor; } set { comboboxFaceColor = value; Invalidate(); } }
+        public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
 
         public bool InDropDown { get { return dropdownbox.Visible; } }
 
@@ -62,9 +63,6 @@ namespace GLOFC.GL4.Controls
         public float ThumbColorScaling { get { return dropdownbox.ThumbColorScaling; } set { dropdownbox.ThumbColorScaling = value; } }
         public float ThumbDrawAngle { get { return dropdownbox.ThumbDrawAngle; } set { dropdownbox.ThumbDrawAngle = value; } }
 
-        private Color comboboxBackColor = DefaultButtonBackColor;
-        private float backColorScaling = 0.5F;
-        
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)
         {
             Items = itms;
@@ -74,6 +72,10 @@ namespace GLOFC.GL4.Controls
             dropdownbox.Visible = false;
             dropdownbox.SelectedIndexChanged += dropdownchanged;
             dropdownbox.OtherKeyPressed += dropdownotherkey;
+            BorderColorNI = DefaultComboBoxBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultComboBoxBackColor;
+            foreColor = DefaultComboBoxForeColor;
+            SetNI(padding: new Padding(1), borderwidth: 1);
         }
 
         public GLComboBox(string name, Rectangle location) : this(name, location, new List<string>())
@@ -118,9 +120,9 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             bool enabled = Enabled && Items.Count > 0;
-            Color bc = enabled && Hover ? MouseOverBackColor : comboboxBackColor;
+            Color bc = enabled && Hover ? MouseOverColor : comboboxFaceColor;
 
-            using (var b = new LinearGradientBrush(new Rectangle(0, -1, ClientWidth, ClientHeight + 1), bc, bc.Multiply(BackColorScaling), 90))
+            using (var b = new LinearGradientBrush(new Rectangle(0, -1, ClientWidth, ClientHeight + 1), bc, bc.Multiply(FaceColorScaling), 90))
                 gr.FillRectangle(b, ClientRectangle);       // linear grad brushes do not respect smoothing mode, btw
 
             int arrowwidth = Font.ScalePixels(20);
@@ -130,7 +132,7 @@ namespace GLOFC.GL4.Controls
 
             if ( Focused )
             {
-                using (Pen p1 = new Pen(MouseOverBackColor) { DashStyle = DashStyle.Dash })
+                using (Pen p1 = new Pen(MouseOverColor) { DashStyle = DashStyle.Dash })
                 {
                     Rectangle fr = textbox;
                     fr.Inflate(-1, -1);
@@ -243,14 +245,11 @@ namespace GLOFC.GL4.Controls
             if (activatable)
             {
                 dropdownbox.SuspendLayout();
-                var p = FindScreenCoords(new Point(ClientLeftMargin, Height));
-                dropdownbox.Bounds = new Rectangle(p.X, p.Y + 1, Width - ClientLeftMargin - ClientRightMargin, Height);
+                var p = FindScreenCoords(new Point(0, Height));
+                dropdownbox.Bounds = new Rectangle(p.X, p.Y, Width - ClientLeftMargin - ClientRightMargin, Height);
                 dropdownbox.ScaleWindow = FindScaler();
                 dropdownbox.Name = Name + "-Dropdown";
                 dropdownbox.TopMost = true;
-                dropdownbox.BackColor = ComboBoxBackColor;
-                dropdownbox.BackColorGradientAlt = ComboBoxBackColor.Multiply(BackColorScaling);
-                dropdownbox.BackColorGradientDir = 90;
                 dropdownbox.AutoSize = true;
                 dropdownbox.Font = Font;
                 dropdownbox.Visible = true;
@@ -296,6 +295,8 @@ namespace GLOFC.GL4.Controls
 
 
         private GLListBox dropdownbox = new GLListBox();
+        private Color comboboxFaceColor = DefaultComboBoxFaceColor;
+        private float faceColorScaling = 1.0F;
 
     }
 }

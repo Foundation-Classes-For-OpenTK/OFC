@@ -44,6 +44,7 @@ namespace GLOFC.GL4.Controls
 
         public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : base(name, location)
         {
+            BackColorGradientAltNI = BackColorNI = DefaultMenuBackColor;
             FlowDirection = direction;
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
@@ -289,12 +290,12 @@ namespace GLOFC.GL4.Controls
                     if (ForeColor != Color.Empty)
                         mi.ForeColor = ForeColor;
 
-                    mi.ButtonBackColor = BackColor;
+                    mi.ButtonFaceColour = BackColor;
 
                     if (MouseOverBackColor != Color.Empty)
                     {
-                        mi.MouseOverBackColor = MouseOverBackColor;
-                        mi.BackColorScaling = 1;
+                        mi.MouseOverColor = MouseOverBackColor;
+                        mi.FaceColorScaling = 1;
                     }
 
                     mi.Click += MenuItemClicked;
@@ -523,8 +524,8 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
-        private Color foreColor { get; set; } = DefaultControlForeColor;
+        private Color mouseOverBackColor { get; set; } = DefaultMenuMouseOverColor;
+        private Color foreColor { get; set; } = DefaultMenuForeColor;
         private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
 
         private int selected = -1;              // open which is highlighted/open
