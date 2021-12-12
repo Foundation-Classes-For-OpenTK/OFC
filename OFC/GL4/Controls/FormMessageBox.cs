@@ -44,7 +44,6 @@ namespace GLOFC.GL4.Controls
                 fnt = new Font("Ms Sans Serif", 12);
 
             GLFormConfigurable cf = new GLFormConfigurable(logicalname);
-            cf.SuspendLayout();
             cf.TopMost = true;
             cf.Font = fnt;
             if (backcolor != null)
@@ -53,7 +52,6 @@ namespace GLOFC.GL4.Controls
                 cf.ForeColor = forecolor.Value;
 
             GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(0,0,100,100), text);
-            tb.SuspendLayout();
             tb.Font = fnt;
             tb.BackColor = Color.Transparent;
             tb.ForeColor = cf.ForeColor;
@@ -80,7 +78,6 @@ namespace GLOFC.GL4.Controls
 
             tb.Bounds = new Rectangle(textmargin, textoffsettop, estsize.Item1.Width, estsize.Item1.Height);
             tb.EnableHorizontalScrollBar = estsize.Item2;
-            tb.ResumeLayout();
 
             int butright = tb.Bounds.Right - butwidth;
             int butline = tb.Bounds.Bottom + butspacingundertext;
@@ -139,7 +136,6 @@ namespace GLOFC.GL4.Controls
 
          //  cf.SizeComplete += (cf) => { System.Diagnostics.Debug.WriteLine($"Size complete tb {tb.Size}"); tb.SetNI(size:new Size(cf.Width - 20, tb.Height)); };
 
-            cf.ResumeLayout();
             attachto.AddToDesktop(cf);      // this autosizes the form
 
             cf.AutoSize = false;            // now we turn autosize off, and allow it to move

@@ -52,10 +52,8 @@ namespace GLOFC.GL4.Controls
             ButRight.Name = "CalRight";
             ButRight.GiveFocusToParent= true;
 
-            this.SuspendLayout();
             Add(ButLeft);
             Add(ButRight);
-            this.ResumeLayout();
 
             datetimecursor = datetimevalue = DateTime.Now;
         }

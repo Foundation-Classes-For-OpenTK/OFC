@@ -178,35 +178,6 @@ namespace GLOFC.GL4.Controls
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
 
-        // Invalidate this and therefore its children
-        public virtual void Invalidate()
-        {
-            //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
-            NeedRedraw = true;
-
-            if (BackColor == Color.Transparent)   // if we are transparent, we need the parent also to redraw to force it to redraw its background.
-            {
-                //System.Diagnostics.Debug.WriteLine("Invalidate " + Name + " is transparent, parent needs it too");
-                Parent?.Invalidate();
-            }
-
-            FindDisplay()?.ReRender(); // and we need to tell the display to redraw
-        }
-
-        // Invalidate and relayout us
-        public void InvalidateLayout()
-        {
-            //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout");
-            Invalidate();
-            PerformLayout();
-        }
-
-        // Invalidate and layout the parent, and therefore us (since it the parent invalidates, all children get redrawn)
-        public virtual void ParentInvalidateLayout()
-        {
-            parent?.InvalidateLayout();
-        }
-
         // is ctrl us, or one of our children?  may want to override to associate other controls as us
         public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
         {
@@ -283,8 +254,35 @@ namespace GLOFC.GL4.Controls
             return left == int.MaxValue ? Rectangle.Empty : new Rectangle(left, top, right - left, bottom - top);
         }
 
-        // perform layout on all child containers inside us. Does not call Layout on ourselves unless layoutonus = true. This is not a normal thing
-        public void PerformLayout()             
+        // Invalidate us - our children will also repaint
+        public virtual void Invalidate()
+        {
+            //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
+            NeedRedraw = true;
+
+            if (BackColor == Color.Transparent)   // if we are transparent, we need the parent also to redraw to force it to redraw its background.
+            {
+                //System.Diagnostics.Debug.WriteLine("Invalidate " + Name + " is transparent, parent needs it too");
+                Parent?.Invalidate();
+            }
+
+            FindDisplay()?.ReRender(); // and we need to tell the display to redraw
+        }
+
+        // Invalidate and relayout us
+        public void InvalidateLayout()
+        {
+            InvalidateLayout(this);
+        }
+
+        // Invalidate and layout the parent, and therefore us (since it the parent invalidates, all children get redrawn)
+        public void ParentInvalidateLayout()
+        {
+            parent?.InvalidateLayout(this);
+        }
+
+        // perform layout on all children, consisting first of sizing, then of laying out with their sizes
+        public void PerformLayout()
         {
             if (suspendLayoutCount > 0)
             {
@@ -293,17 +291,12 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                PerformRecursiveSize(Parent?.ClientSize ?? ClientSize);         // we recusively size
-                //if (layoutonus && Parent != null)     // experimental, it sort of worked with CheckParentInvalidation but can't guarantee it
-                //{
-                //    Rectangle area = Parent.ClientRectangle;
-                //    Layout(ref area);
-                //}
+                PerformRecursiveSize();         // we recusively size
                 PerformRecursiveLayout();       // and we layout, recursively
             }
         }
 
-        // Call to halt layout
+        // Call to halt layout. On creation, layout is suspended on the new control.  On Add, layout count is reset to zero and layout can occur
         public void SuspendLayout()
         {
             suspendLayoutCount++;
@@ -320,14 +313,10 @@ namespace GLOFC.GL4.Controls
                 if (needLayout)
                 {
                     //System.Diagnostics.Debug.WriteLine("Required layout " + Name);
-                    PerformLayout();
+                    PerformRecursiveSize();         // we recusively size
+                    PerformRecursiveLayout();       // and we layout, recursively                    
                 }
             }
-        }
-
-        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly
-        {
-            PerformRecursiveLayout();
         }
 
         // attach control to desktop
@@ -348,6 +337,7 @@ namespace GLOFC.GL4.Controls
         {
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
             child.parent = this;
+            child.suspendLayoutCount = 0;           // we unsuspend - controls are created suspended
 
             child.ClearFlagsDown();       // in case of reuse, clear all temp flags as child is added
 
@@ -374,7 +364,7 @@ namespace GLOFC.GL4.Controls
             Themer?.Invoke(child);      // added to control, theme it
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
-            InvalidateLayout();        // we are invalidated and layout
+            InvalidateLayout(child);        // we are invalidated and layout due to this child
         }
 
         // add a list of controls
@@ -393,8 +383,8 @@ namespace GLOFC.GL4.Controls
             {
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, true, true);
-                parent.InvalidateLayout();
-                child.NeedRedraw = true;        // next time, it will need to be drawn if reused
+                parent.InvalidateLayout(null);          // invalidate parent, and indicate null so it knows the child has been removed
+                child.NeedRedraw = true;                // next time, it will need to be drawn if reused
             }
         }
 
@@ -405,7 +395,7 @@ namespace GLOFC.GL4.Controls
             {
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, false, false);
-                parent.InvalidateLayout();
+                parent.InvalidateLayout(null);
                 child.NeedRedraw = true;        // next time, it will need to be drawn
             }
         }
@@ -442,7 +432,7 @@ namespace GLOFC.GL4.Controls
 
                     CheckZOrder();
 
-                    InvalidateLayout();
+                    InvalidateLayout(child);
                     return false;
                 }
             }
@@ -566,6 +556,7 @@ namespace GLOFC.GL4.Controls
 
         #region For Inheritors
 
+        // create the control. set autosize if width/height = 0 , controls are created suspended
         protected GLBaseControl(string name, Rectangle location)
         {
             this.Name = name;
@@ -579,6 +570,7 @@ namespace GLOFC.GL4.Controls
             lastlocation = Point.Empty;
             lastsize = Size.Empty;
             window = location;
+            suspendLayoutCount = 1;         // we create suspended
 
             CalcClientRectangle();
         }
@@ -667,7 +659,7 @@ namespace GLOFC.GL4.Controls
             CheckZOrder();
         }
 
-        public void MakeLevelBitmap(int width , int height)     // top level controls, bitmap for
+        public void MakeLevelBitmap(int width , int height)     // make a bitmap for this level of this size
         {
             levelbmp?.Dispose();
             levelbmp = null;
@@ -690,25 +682,42 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        #region Overridables
+        #region Internal sizing and layout
 
-        // first,perform recursive sizing. 
-        // pass in the parent size of client rectangle to each size to give them a hint what they can autosize into
-
-        protected void PerformRecursiveSize(Size parentclientrect)   
+        // called by above giving child reason (or null for remove) for invalidate layout
+        // overriden by display control to pick a better method to just relayout the relevant child
+        // normally we don't care about which child caused it
+        protected virtual void InvalidateLayout(GLBaseControl child)
         {
-            System.Diagnostics.Debug.WriteLine($"{Name} Perform Size {parentclientrect}");
-            SizeControl(parentclientrect);              // size ourselves against the parent
+            System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child.Name}");
+            Invalidate();
+            PerformLayout();
+        }
+
+        // called by displaycontrol on chosen child, perform size on ourselves, size on children, and layout
+        public void PerformLayoutAndSize()
+        {
+            SizeControl(Parent.Size);
+            PerformRecursiveSize();         // we recusively size
+            SizeControlPostChild(Parent.Size);
+            PerformRecursiveLayout();       // and we layout, recursively
+        }
+
+        // Perform a recursive size of all children inside the control
+        protected void PerformRecursiveSize()   
+        {
+            Size size = ClientSize;
+            if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
 
             foreach (var c in childrenz) // in Z order
             {
                 if (c.Visible)      // invisible children don't layout
                 {
-                    c.PerformRecursiveSize(ClientSize);
+                    c.SizeControl(size);
+                    c.PerformRecursiveSize();
+                    c.SizeControlPostChild(size);
                 }
             }
-
-            SizeControlPostChild(parentclientrect);     // if you care what size your children is, do it here
         }
 
         // override to auto size before children. 
@@ -731,7 +740,7 @@ namespace GLOFC.GL4.Controls
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
             Rectangle area = ClientRectangle;
-            //System.Diagnostics.Debug.WriteLine($"{Name} Laying out {area}");
+            if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Laying out children in {area}");
 
             foreach (var c in childrenz)     // in z order, top gets first go
             {
@@ -752,10 +761,14 @@ namespace GLOFC.GL4.Controls
             suspendLayoutCount = 0;   // we can't be suspended
             needLayout = false;     // we have layed out
         }
+        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
+        {
+            PerformRecursiveLayout();
+        }
 
         // standard layout function, layout yourself inside the area, return area left.
         // you can override this one to perform your own specific layout
-        // if so, you must call CalcClientRectangle and CheckBitMapAfterLayout
+        // if so, you must call CalcClientRectangle 
         public virtual void Layout(ref Rectangle parentarea)     
         {
             //System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea}");
@@ -876,23 +889,11 @@ namespace GLOFC.GL4.Controls
             }
 
             CalcClientRectangle();
-            CheckBitmapAfterLayout();
 
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
 
             parentarea = areaout;
           //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
-        }
-
-        // Override if required if you run a bitmap. Standard actions is to replace it if width/height is different.
-        protected virtual void CheckBitmapAfterLayout()
-        {
-            if (levelbmp != null && ( levelbmp.Width != Width || levelbmp.Height != Height ))
-            {
-                //System.Diagnostics.Debug.WriteLine($"{Name} Remake bitmap {Width} {Height}");
-                levelbmp.Dispose();
-                levelbmp = new Bitmap(Width, Height);       // occurs for controls directly under form
-            }
         }
 
         // gr = null at start, else gr used by parent
@@ -937,17 +938,17 @@ namespace GLOFC.GL4.Controls
              //   System.Diagnostics.Debug.WriteLine($"{Name} does not need draw");
             }
 
-            // now do the children
+            // now do the children, painting in clientgr
             {
                 Rectangle ccliparea = cliparea;     
                 Rectangle cbounds = bounds;
                 Graphics clientgr = backgr;
-                Margin cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
+                Margin cmargin;
                 Rectangle clientarea;
 
                 if (parentgr != null && levelbmp != null)      // if we have a sub bitmap, which is the bitmap for the client region only
                 {
-                    // restate area in terms of bitmap, this is the bounds and the clip area
+                    // restate area in terms of client rectangle bitmap, this is the bounds and the clip area
                     clientarea = ccliparea = cbounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      
                     cmargin = new Margin(0);        // no margins around the bitmap - because its the client bitmap we are dealing with
 
@@ -958,6 +959,7 @@ namespace GLOFC.GL4.Controls
                 else
                 {
                     clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
+                    cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
                 }
 
                 // client area, in terms of last bitmap
@@ -998,7 +1000,7 @@ namespace GLOFC.GL4.Controls
                     clientgr.Dispose();
             }
 
-            if ( forceredraw)       // will be set if NeedRedrawn or forceredrawn
+            if (forceredraw)       // will be set if NeedRedrawn or forceredrawn.  Draw in the backgr, which is the current bitmap
             {
                 backgr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
                     
@@ -1250,17 +1252,9 @@ namespace GLOFC.GL4.Controls
                 if (resized)
                     OnResize();
 
-                Parent?.CheckParentInvalidation(moved, resized, this);      // call to invalidate
+                NeedRedraw = true;
+                Parent?.InvalidateLayout(this);
             }
-        }
-
-        // In the parent, see if we want to invalidate due to a change in the child. Normally we do. displaycontrol overrides this
-        protected virtual void CheckParentInvalidation(bool moved, bool resized, GLBaseControl child)
-        {
-            child.NeedRedraw = true;      // we need a redraw
-                                    // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
-            Invalidate();   // parent is invalidated as well, and the whole form needs reendering
-            PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
         }
 
         // client rectangle calc - call if you change the window bounds, margin, padding

@@ -82,10 +82,6 @@ namespace GLOFC.GL4.Controls
                 gr.DrawImage(LevelBitmap, 0,0, new Rectangle(0, scrollpos, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
         }
 
-        protected override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed
-        {
-        }
-
         private void SetScrollPos(int value)
         {
             if (LevelBitmap != null)

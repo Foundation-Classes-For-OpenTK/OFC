@@ -153,7 +153,7 @@ namespace GLOFC.GL4.Controls
 
         protected override void OnFontChanged()
         {
-            PerformLayout();
+            InvalidateLayout();
         }
 
         protected override void SizeControl(Size parentsize)

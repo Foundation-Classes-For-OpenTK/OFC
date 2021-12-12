@@ -181,10 +181,8 @@ namespace TestOpenTk
             displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
-            displaycontrol.SuspendLayout();
 
             GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 850));
-            pform.SuspendLayout();
             // pform.BackColor = Color.FromArgb(200, Color.Red);
             //pform.BackColorGradientDir = 90;
             //pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
@@ -201,7 +199,6 @@ namespace TestOpenTk
             if (true)
             {
                 GLTableLayoutPanel ptable = new GLTableLayoutPanel("tablelayout", new Rectangle(5, 200, 190, 190));
-                ptable.SuspendLayout();
                 ptable.Margin = new Margin(2);
                 ptable.Padding = new GLOFC.GL4.Controls.Padding(2);
                 ptable.BorderWidth = 1;
@@ -220,13 +217,11 @@ namespace TestOpenTk
                 GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), Properties.Resources.Logo8bpp);
                 pti4.Column = 1; pti4.Row = 1; pti4.Dock = DockingType.Center;
                 ptable.Add(pti4);
-                ptable.ResumeLayout();
             }
 
             if (true)
             {
                 GLFlowLayoutPanel pflow1 = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190, 190));
-                pflow1.SuspendLayout();
                 pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
                 pflow1.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 0);
                 pform.Add(pflow1);
@@ -238,7 +233,6 @@ namespace TestOpenTk
                 pflow1.Add(pti3);
                 GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), Properties.Resources.Logo8bpp);
                 pflow1.Add(pti4);
-                pflow1.ResumeLayout();
             }
 
             if (true)
@@ -325,7 +319,6 @@ namespace TestOpenTk
                 GLFlowLayoutPanel pflow2;
                 pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col3, 10, 300, 300));
                 pflow2.AutoSize = true;
-                pflow2.SuspendLayout();
                 pflow2.Margin = new Margin(2);
                 pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
                 pflow2.BorderWidth = 1;
@@ -350,12 +343,6 @@ namespace TestOpenTk
                 GLToolTip tip = new GLToolTip("ToolTip");
                 displaycontrol.Add(tip);
             }
-
-            pform.ResumeLayout();
-
-
-            displaycontrol.ResumeLayout();
-
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.ZoomDistance = 5000F;

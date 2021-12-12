@@ -157,13 +157,11 @@ namespace TestOpenTk
                 displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
                 displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
                 displaycontrol.Name = "displaycontrol";
-                displaycontrol.SuspendLayout();
 
                 if (testform1)
                 {
                     GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
                   //  pform.BackColor = Color.FromArgb(200, Color.Red);
-                    pform.SuspendLayout();
                     //pform.BackColorGradientDir = 90;
                     //pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
                    // pform.ScaleWindow = new SizeF(1.25f, 1.25f);
@@ -218,7 +216,6 @@ namespace TestOpenTk
                         pform.Add(menubar);
                     }
 
-                    pform.ResumeLayout();
                 }
 
                 if ( true)
@@ -248,9 +245,6 @@ namespace TestOpenTk
                         }
                     };
                 }
-
-
-                displaycontrol.ResumeLayout();
             }
 
             gl3dcontroller = new Controller3D();

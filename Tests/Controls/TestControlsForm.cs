@@ -157,14 +157,12 @@ namespace TestOpenTk
             displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
-            displaycontrol.SuspendLayout();
 
             GLForm pform;
 
             if (true)
             {
                 pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
-                pform.SuspendLayout();
                 //pform.BackColor = Color.FromArgb(200, Color.Red);
                 //pform.Opacity = 0.7f;
                 // pform.BackColorGradientDir = 90;
@@ -176,7 +174,6 @@ namespace TestOpenTk
                 //   pform.Animators.Add(new AnimateScale(100, 1000, true, new SizeF(1, 1),removeafterend:true));
                 //  pform.Animators.Add(new AnimateTranslate(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 1000, false, new Point(100, 100), removeafterend: true));
                 //  pform.Animators.Add(new AnimateOpacity(glwfc.ElapsedTimems + 100, glwfc.ElapsedTimems + 2000, false, 1.0f,0.0f, removeafterend: true));
-                displaycontrol.Add(pform);
 
                 int taborder = 0;
 
@@ -185,8 +182,9 @@ namespace TestOpenTk
                     GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
                     pform.Add(lab1);
 
-                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1");
+                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1 long text");
                     b1.Margin = new Margin(2);
+                    b1.AutoSize = true;
                     b1.TabOrder = taborder++;
                     b1.Padding = new GLOFC.GL4.Controls.Padding(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
@@ -287,7 +285,6 @@ namespace TestOpenTk
                     dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
                     dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
                     //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
-                    dtp.SuspendLayout();
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = true;
                     dtp.ShowCalendar = true;
@@ -295,7 +292,6 @@ namespace TestOpenTk
                     dtp.AutoSize = true;
                     //dtp.Culture = CultureInfo.GetCultureInfo("es");
                     dtp.TabOrder = taborder++;
-                    dtp.ResumeLayout();
                     pform.Add(dtp);
                 }
 
@@ -399,7 +395,8 @@ namespace TestOpenTk
                     pform.Add(gla);
                 }
 
-                pform.ResumeLayout();
+                displaycontrol.Add(pform);
+
             }
 
             if (true)
@@ -407,7 +404,6 @@ namespace TestOpenTk
                 GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 400));
                 pform2.BackColor = Color.FromArgb(200, Color.Red);
                 pform2.Font = new Font("Ms sans serif", 10);
-                pform2.SuspendLayout();
                 pform2.BackColorGradientDir = 90;
                 pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
                 displaycontrol.Add(pform2);
@@ -416,12 +412,11 @@ namespace TestOpenTk
                 pform2.Add(b1);
             }
 
+            if (true)
             {
                 GLToolTip tip = new GLToolTip("ToolTip");
                 displaycontrol.Add(tip);
             }
-
-            displaycontrol.ResumeLayout();
 
             displaycontrol.GlobalMouseDown += (ctrl, ex) =>
             {
@@ -465,6 +460,17 @@ namespace TestOpenTk
             systemtimer.Start();
         }
 
+        private void FormDialog()
+        {
+            GLForm pform2 = new GLForm("Form2", "Popupform", new Rectangle(500, 100, 200, 200));
+            pform2.BackColor = Color.FromArgb(200, Color.Green);
+            pform2.Font = new Font("Ms sans serif", 10);
+            pform2.BackColorGradientDir = 90;
+            pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
+            displaycontrol.Add(pform2);
+        }
+
+
         private void ConfDialog()
         {
             GLFormConfigurable cform = new GLFormConfigurable("test");
@@ -473,7 +479,6 @@ namespace TestOpenTk
             cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
             cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
             cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { Anchor = AnchorType.Right | AnchorType.Bottom });
-            // c1.Size = new Size(400, 400);
             cform.InitCentered("Config Form Test");
             cform.Trigger += (cb, en, ctrlname, args) =>
             {
@@ -485,28 +490,11 @@ namespace TestOpenTk
 
         private void ConfDialog2()
         {
-            ////cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
-            ////cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            ////cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
-            ////cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
-
             GLMultiLineTextBox tb = new GLMultiLineTextBox("MLT", new Rectangle(10, 10, 1000, 1000), "this is some text\r\nAnd some more");
             var sizer = tb.CalculateTextArea(new Size(50, 24), new Size(400, 400));
             tb.Size = sizer.Item1;
             tb.EnableHorizontalScrollBar = sizer.Item2;
             tb.CursorToEnd();
-
-            
-
-            //cform.SetMinimumSize = true;
-            //cform.Init(new Point(200, 200), "Config Form Test Long Title");
-            //cform.Trigger += (cb, en, ctrlname, args) =>
-            //{
-            //    if (ctrlname == "OK")
-            //        cform.Close();
-            //};
-            //displaycontrol.Add(cform);
-            //cform.Resizeable = true;        
 
             GLFormConfigurable cform = new GLFormConfigurable("ConfDialog2");
             cform.Add(new GLFormConfigurable.Entry("info", tb) );
@@ -542,7 +530,6 @@ namespace TestOpenTk
 
         private void MsgDialog2()
         {
-
             string t = "";
             for (int i = 0; i < 30; i++)
                 t += "Line " + i + " is here" + " and lets make it very long for an example" +  Environment.NewLine;

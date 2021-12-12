@@ -59,8 +59,6 @@ namespace GLOFC.GL4.Controls
 
         public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
         {
-            SuspendLayout();
-
             foreColor = DefaultDTPForeColor;
             BackColorNI = DefaultDTPBackColor;
 
@@ -92,8 +90,6 @@ namespace GLOFC.GL4.Controls
 
             Focusable = true;
             InvalidateOnFocusChange = true;
-
-            ResumeLayout();
         }
 
         public GLDateTimePicker() : this("DTP?", DefaultWindowRectangle, DateTime.Now)

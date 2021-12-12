@@ -322,7 +322,12 @@ namespace TestOpenTk
         {
             var but = s as GLButton;
             if (but != null)
-                but.ButtonFaceColour = Color.FromArgb(255, 128,128,128);
+            {
+                but.ButtonFaceColour = Color.FromArgb(255, 128, 128, 128);
+                but.ForeColor = Color.Orange;
+                but.BackColor = Color.FromArgb(255, 128, 128, 128);
+                but.BorderColor = Color.FromArgb(255, 128, 128, 128);
+            }
 
             var cb = s as GLCheckBox;
             if (cb != null)
