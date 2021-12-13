@@ -31,12 +31,12 @@ namespace GLOFC.GL4.Controls
         public Image ImageUnchecked { get { return imageUnchecked; } set { imageUnchecked = value; Invalidate(); } }        // apperance normal/button only.  
         public Image ImageIndeterminate { get { return imageIndeterminate; } set { imageIndeterminate = value; Invalidate(); } }
 
-        public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null)
+        public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null, float disabledscaling = 0.5f)
         {
             //System.Diagnostics.Debug.WriteLine("Apply drawn bitmap scaling to " + Name);
             drawnImageAttributesUnchecked?.Dispose();
             drawnImageAttributesDisabled?.Dispose();
-            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out drawnImageAttributesDisabled, DisabledScaling, remap, colormatrix);
+            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out drawnImageAttributesDisabled, disabledscaling, remap, colormatrix);
             Invalidate();
         }
 
@@ -71,7 +71,8 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             bool hasimages = Image != null;
-            float disscaling = Enabled ? 1.0f : DisabledScaling;
+            float backdisscaling = Enabled ? 1.0f : BackDisabledScaling;
+            float foredisscaling = Enabled ? 1.0f : ForeDisabledScaling;
 
             if (Appearance == CheckBoxAppearance.Button)
             {
@@ -142,7 +143,7 @@ namespace GLOFC.GL4.Controls
 
                 if (!hasimages)
                 {
-                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(disscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
+                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(backdisscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
                     using (Brush inner = new SolidBrush(back))
                         gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
 
@@ -154,7 +155,7 @@ namespace GLOFC.GL4.Controls
                     Rectangle checkarea = tickarea;
                     checkarea.Width++; checkarea.Height++;          // convert back to area
 
-                    DrawTick(checkarea, Color.FromArgb(200, CheckColor.Multiply(disscaling)), CheckState, gr);
+                    DrawTick(checkarea, Color.FromArgb(200, CheckColor.Multiply(foredisscaling)), CheckState, gr);
                 }
                 else
                 {
@@ -199,7 +200,7 @@ namespace GLOFC.GL4.Controls
 
                     tickarea.Inflate(-1, -1);
 
-                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(disscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
+                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(backdisscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
                     //System.Diagnostics.Debug.WriteLine($"{Name} back {back}");
                     using (Brush second = new SolidBrush(back))
                         gr.FillEllipse(second, tickarea);
@@ -208,7 +209,7 @@ namespace GLOFC.GL4.Controls
 
                     if (Checked)
                     {
-                        using (Brush second = new SolidBrush(CheckColor.Multiply(disscaling)))
+                        using (Brush second = new SolidBrush(CheckColor.Multiply(foredisscaling)))
                             gr.FillEllipse(second, tickarea);
                     }
                 }
@@ -248,7 +249,7 @@ namespace GLOFC.GL4.Controls
             }
             if (this.Text.HasChars())
             {
-                using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                 {
                     if (FontToUse == null || FontToUse.FontFamily != Font.FontFamily || FontToUse.Style != Font.Style || FontToUse.SizeInPoints != Font.SizeInPoints)
                         FontToUse = g.GetFontToFitRectangle(this.Text, Font, box, fmt);

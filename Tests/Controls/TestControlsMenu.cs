@@ -161,10 +161,6 @@ namespace TestOpenTk
                 if (testform1)
                 {
                     GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
-                  //  pform.BackColor = Color.FromArgb(200, Color.Red);
-                    //pform.BackColorGradientDir = 90;
-                    //pform.BackColorGradientAlt = Color.FromArgb(200, Color.Yellow);
-                   // pform.ScaleWindow = new SizeF(1.25f, 1.25f);
                     displaycontrol.Add(pform);
 
                     if (true)
@@ -218,10 +214,13 @@ namespace TestOpenTk
 
                 }
 
-                if ( true)
+                if (true)
                 {
-                    GLContextMenu cm = new GLContextMenu("CM1");
+                    GLContextMenu ctx1, ctx2;
+
+                    ctx1 = new GLContextMenu("CM1");
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
+
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
                     GLMenuItem cm3 = new GLMenuItem("CM1C", "Menu-3");
@@ -233,15 +232,30 @@ namespace TestOpenTk
                     l1a3.CheckOnClick = true;
                     cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
 
-                    cm.Add(cm1);
-                    cm.Add(cm2);
-                    cm.Add(cm3);
+                    ctx1.Add(cm1);
+                    ctx1.Add(cm2);
+                    ctx1.Add(cm3);
+
+                    Color tc = Color.Orange;
+                    ctx2 = new GLContextMenu("CM1", new GLMenuItem[] {
+                        new GLMenuItem("CM1A","MenuR1") { CheckOnClick = true, ForeColor = tc},
+                        new GLMenuItem("CM1B","MenuR2") { CheckOnClick = true, Enabled = false, ForeColor = tc},
+                        new GLMenuItem("CM1C","MenuR3") { CheckOnClick = true},
+                        new GLMenuItem("CM1C","MenuR4") { CheckOnClick = true },
+                        new GLMenuItem("CM1C","MenuR5") { },
+                        });
+
+                    ctx2.Font = new Font("Euro caps", 18f);
 
                     displaycontrol.MouseClick += (s, ev) =>
                     {
-                        if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
+                        if (ev.Button == GLMouseEventArgs.MouseButtons.Left)
                         {
-                            cm.Show(displaycontrol,ev.ScreenCoord);
+                            ctx1.Show(displaycontrol, ev.ScreenCoord);
+                        }
+                        else  if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
+                        {
+                            ctx2.Show(displaycontrol, ev.ScreenCoord);
                         }
                     };
                 }

@@ -60,7 +60,7 @@ namespace GLOFC.GL4.Controls
         {
             if (ClientWidth < 1 || ClientHeight<1)
                 return;
-            PaintButtonFace(ClientRectangle, gr, PaintButtonBackColor());
+            PaintButtonFace(ClientRectangle, gr, PaintButtonFaceColor());
             PaintButtonTextImageFocus(ClientRectangle, gr,true);
         }
 

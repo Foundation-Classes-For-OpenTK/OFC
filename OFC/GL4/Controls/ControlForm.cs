@@ -163,7 +163,7 @@ namespace GLOFC.GL4.Controls
         {
             base.DrawBorder(gr, bc, bw);    // draw basic border
 
-            Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling);
+            Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling);
 
             if (Text.HasChars())
             {
@@ -337,10 +337,10 @@ namespace GLOFC.GL4.Controls
         {
             base.OnKeyDown(e);
             //System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
-            if (!e.Handled && TabChangesFocus && lastchildfocus != null && e.KeyCode == System.Windows.Forms.Keys.Tab)
+            if (!e.Handled && TabChangesFocus && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
                 bool forward = e.Shift == false;
-                GLBaseControl next = FindNextTabChild(lastchildfocus.TabOrder,forward);
+                GLBaseControl next = FindNextTabChild(lastchildfocus?.TabOrder??-1,forward);
                 if (next == null)
                     next = FindNextTabChild(forward ?-1 : int.MaxValue,forward);
                 if (next != null)

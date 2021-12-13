@@ -64,7 +64,7 @@ namespace GLOFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         gr.DrawString(this.Text, this.Font, textb, ClientRectangle, fmt);
                     }

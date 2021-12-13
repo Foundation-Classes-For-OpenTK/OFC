@@ -131,7 +131,7 @@ namespace GLOFC.GL4.Controls
                 focuspos = datetimecursor.Year - startdecade + 1;
             }
 
-            using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+            using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleCenter))
                 {

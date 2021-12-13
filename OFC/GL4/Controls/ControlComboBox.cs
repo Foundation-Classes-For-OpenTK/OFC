@@ -146,7 +146,7 @@ namespace GLOFC.GL4.Controls
                 {
                     fmt.Alignment = StringAlignment.Near;
                     fmt.LineAlignment = StringAlignment.Center;
-                    using (Brush textb = new SolidBrush(enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    using (Brush textb = new SolidBrush(enabled ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         gr.DrawString(Text, Font, textb, textbox, fmt);
                     }

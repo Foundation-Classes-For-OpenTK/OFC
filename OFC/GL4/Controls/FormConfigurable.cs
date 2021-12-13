@@ -38,7 +38,7 @@ namespace GLOFC.GL4.Controls
 
         // You give an array of Entries describing the controls
         // either added programatically by Add(entry) 
-        // Directly Supported Types (string name/base type)
+        // Directly Supported Types 
         //      "button" ButtonExt, "textbox" TextBoxBorder, "checkbox" CheckBoxCustom, 
         //      "label" Label, "datetime" CustomDateTimePicker, 
         //      "numberboxdouble" NumberBoxDouble, "numberboxlong" NumberBoxLong, 
@@ -46,6 +46,7 @@ namespace GLOFC.GL4.Controls
         // Or any type if you set controltype=null and set control field directly.
         // Set controlname, text,pos,size, tooltip
         // for specific type, set the other fields.
+        // Tab order is in order added, unless the entry specifically overrides it.  If it does, next autotab follows on from this value.
 
         // if the item has AnchorType == DialogButtonLine, they are auto arranged in add order right to left along a line below all other items
 
@@ -107,16 +108,22 @@ namespace GLOFC.GL4.Controls
             Moveable = Resizeable = false;
             AutoSize = true;
             AutoSizeToTitle = true;
+            tabnumber = 0;
         }
 
         public void Add(Entry e)               // add an entry..
         {
+            if (e.TabOrder == -1)
+                e.TabOrder = tabnumber++;
+            else
+                tabnumber = e.TabOrder + 1;
+
             entries.Add(e);
         }
 
         public void Add(string name, GLBaseControl ctrl, string tt = null, Object tag = null)   // add a previously made ctrl
         {
-            entries.Add(new Entry(name,ctrl,tt,tag));
+            Add(new Entry(name, ctrl, tt, tag) { TabOrder = tabnumber++ });
         }
 
         public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.None)
@@ -599,6 +606,7 @@ namespace GLOFC.GL4.Controls
         private Object callertag;
         private bool centred;
         private Point location;
+        private int tabnumber;
     }
 }
 

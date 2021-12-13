@@ -849,7 +849,7 @@ namespace GLOFC.GL4.Controls
             //using (Pen p = new Pen(this.ForeColor))   {  gr.DrawLine(p, new Point(0, 0), new Point(100,100));   }
 
 
-            using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+            using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
             {
                 int lineno = 0;
                 int cpos = 0;

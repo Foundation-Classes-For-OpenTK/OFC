@@ -27,22 +27,10 @@ namespace GLOFC.GL4.Controls
         {
         }
 
-        public float DisabledScaling
-        {
-            get { return disabledScaling; }
-            set
-            {
-                if (float.IsNaN(value) || float.IsInfinity(value))
-                    return;
-                else if (disabledScaling != value)
-                {
-                    disabledScaling = value;
-                    Invalidate();
-                }
-            }
-        }
+        public float BackDisabledScaling { get { return backDisabledScaling; } set { if (backDisabledScaling != value) { backDisabledScaling = value; Invalidate(); } } }
+        public float ForeDisabledScaling { get { return foreDisabledScaling; } set { if (foreDisabledScaling != value) { foreDisabledScaling = value; Invalidate(); } } }
 
-        public void SetDrawnBitmapRemapTable(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null)
+        public void SetDrawnBitmapRemapTable(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null, float disabledscaling = 0.5f)
         {
             if (remap == null)
                 throw new ArgumentNullException(nameof(remap));
@@ -50,14 +38,15 @@ namespace GLOFC.GL4.Controls
             drawnImageAttributesEnabled?.Dispose();
             drawnImageAttributesDisabled?.Dispose();
 
-            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesEnabled, out drawnImageAttributesDisabled, disabledScaling, remap, colormatrix);
+            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesEnabled, out drawnImageAttributesDisabled, disabledscaling, remap, colormatrix);
             Invalidate();
         }
 
         private Image image;
-        private bool imagestretch { get; set; } = false;
-        private System.Drawing.ContentAlignment imagealign { get; set; } = ContentAlignment.MiddleCenter;
-        private float disabledScaling = 0.75F;
+        private bool imagestretch = false;
+        private System.Drawing.ContentAlignment imagealign = ContentAlignment.MiddleCenter;
+        private float backDisabledScaling = 0.75F;
+        private float foreDisabledScaling = 0.50F;
 
         protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesEnabled = null;         // Image override (colour etc) for background when using Image while Enabled.
         protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesDisabled = null;        // Image override (colour etc) for background when using Image while !Enabled.

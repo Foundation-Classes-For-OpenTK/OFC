@@ -30,6 +30,7 @@ namespace GLOFC.GL4.Controls
         public Color TabMouseOverColor { get { return tabMouseOverColor; } set { tabMouseOverColor = value; Invalidate(); } }
         public Color TabControlBorderColor { get { return tabControlBorderColor; } set { tabControlBorderColor = value; Invalidate(); } }
         public float TabColorScaling { get { return tabColorScaling; } set { tabColorScaling = value; Invalidate(); } }
+        public float BackDisabledScaling { get { return backDisabledScaling; } set { if (backDisabledScaling != value) { backDisabledScaling = value; Invalidate(); } } }
 
         public GLTabControl(string name, Rectangle location) : base(name, location)
         {
@@ -49,8 +50,6 @@ namespace GLOFC.GL4.Controls
             other.Visible = false;
             base.Add(other,atback);
         }
-
-        Rectangle[] tabrectangles;
 
         const int botmargin = 4;
         const int sidemargin = 8;
@@ -144,13 +143,13 @@ namespace GLOFC.GL4.Controls
             if (TabStyle == null)
                 throw new ArgumentNullException("Custom style not attached");
 
-            Color tabc1 = (Enabled) ? (mouseover ? TabMouseOverColor : (selected ? TabSelectedColor : TabNotSelectedColor)) : TabNotSelectedColor.Multiply(DisabledScaling);
+            Color tabc1 = (Enabled) ? (mouseover ? TabMouseOverColor : (selected ? TabSelectedColor : TabNotSelectedColor)) : TabNotSelectedColor.Multiply(BackDisabledScaling);
             Color tabc2 = tabc1.Multiply(TabColorScaling);
             Color taboutline = TabControlBorderColor;
 
             TabStyle.DrawTab(gr, area, selected, tabc1, tabc2, taboutline, TabStyleCustom.TabAlignment.Top);
 
-            Color tabtextc = (Enabled) ? ((selected) ? ForeColor : TextNotSelectedColor) : TextNotSelectedColor.Multiply(DisabledScaling);
+            Color tabtextc = (Enabled) ? ((selected) ? ForeColor : TextNotSelectedColor) : TextNotSelectedColor.Multiply(ForeDisabledScaling);
             TabStyle.DrawText(gr, area, selected, tabtextc, text, Font, img);
         }
 
@@ -212,6 +211,7 @@ namespace GLOFC.GL4.Controls
 
         private int seltab = -1;
         private int mouseover = -1;
+        private Rectangle[] tabrectangles;
         private TabStyleCustom tabstyle = new TabStyleSquare();    // change for the shape of tabs.
         private Color tabSelectedColor = DefaultTabControlSelectedBackColor;
         private Color tabNotSelectedColor = DefaultTabControlNotSelectedBackColor;
@@ -219,6 +219,8 @@ namespace GLOFC.GL4.Controls
         private Color tabMouseOverColor = DefaultTabControlMouseOverColor;
         private Color tabControlBorderColor = DefaultTabControlBorderColor;
         private float tabColorScaling = 0.5f;
+        private float backDisabledScaling = 0.75F;
+
     }
 
     /////////////////////////////////////////////////////////

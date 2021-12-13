@@ -97,7 +97,7 @@ namespace GLOFC.GL4.Controls
 
                 if (this.Text.HasChars())
                 { 
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         Rectangle titlearea = new Rectangle(GBXoffset, 0, twidth, GroupBoxHeight );
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);

@@ -521,9 +521,9 @@ namespace TestOpenTk
             tb.CursorToEnd();
 
             GLFormConfigurable cform = new GLFormConfigurable("ConfDialog2");
-            cform.Add(new GLFormConfigurable.Entry("info", tb) );
             cform.AddOK("OK");
             cform.AddCancel("Cancel");
+            cform.Add(new GLFormConfigurable.Entry("info", tb));
             cform.InstallStandardTriggers();
             cform.Init(new Point(200, 200), "Config Form Test Long Title and even longer one");
             cform.SetMinimumSizeOnAutoSize = true;

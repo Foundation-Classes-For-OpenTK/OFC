@@ -71,8 +71,8 @@ namespace GLOFC.GL4.Controls
             sarealower.Height++;
 
             Color pcup, pcdown, pencolorup, pencolordown;
-            pcup = pcdown = Enabled ? BackColor : BackColor.Multiply(DisabledScaling);
-            pencolordown = pencolorup = Enabled ? ForeColor : ForeColor.Multiply(DisabledScaling);
+            pcup = pcdown = Enabled ? BackColor : BackColor.Multiply(BackDisabledScaling);
+            pencolordown = pencolorup = Enabled ? ForeColor : ForeColor.Multiply(ForeDisabledScaling);
             // System.Diagnostics.Debug.WriteLine("Colours " + pcup + " " + pencolordown);
 
             //System.Diagnostics.Debug.WriteLine("Ami running" + amitimer.Running);

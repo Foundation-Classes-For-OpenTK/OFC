@@ -63,12 +63,12 @@ namespace GLOFC.GL4.Controls
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
-        protected Color PaintButtonBackColor(bool lockhighlight = false, bool disablehoverhighlight = false)
+        protected Color PaintButtonFaceColor(bool lockhighlight = false, bool disablehoverhighlight = false)
         {
             Color colBack;
 
             if (Enabled == false)
-                colBack = ButtonFaceColour.Multiply(DisabledScaling); 
+                colBack = ButtonFaceColour.Multiply(BackDisabledScaling); 
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
                 colBack = MouseDownColor;
             else if (lockhighlight || (Hover && !disablehoverhighlight))
@@ -111,7 +111,8 @@ namespace GLOFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         gr.DrawString(this.Text, this.Font, textb, buttonarea, fmt);
                     }
@@ -120,7 +121,7 @@ namespace GLOFC.GL4.Controls
 
             if ( buttonsymbol != SymbolType.None)
             {
-                using (var b = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                using (var b = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                 {
                     int vcentre = (buttonarea.Top + buttonarea.Bottom) / 2;
                     int hcentre = (buttonarea.Left + buttonarea.Right) / 2;

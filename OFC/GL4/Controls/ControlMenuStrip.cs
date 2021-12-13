@@ -33,10 +33,9 @@ namespace GLOFC.GL4.Controls
         public Action<GLMenuItem, GLMenuStrip> SubmenuClosing = null;       // from GLMenuItem the GLMenuStrip submenu is closing
 
         // Inherited FlowInZOrder, FlowDirection, FlowPadding, BackColor
-
-        public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text.  Set to Color.Empty for no override
-        public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }    // Set Color.Empty for no override
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
+
+        public int IconAreaWidth { get { return Font.ScalePixels(24); } }
 
         public int SubMenuBorderWidth { get; set; } = 0;
 
@@ -136,9 +135,10 @@ namespace GLOFC.GL4.Controls
                     System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
 
                     submenu.Font = Font;
-                    submenu.ForeColor = this.ForeColor;
                     submenu.BackColor = this.BackColor;
-                    submenu.MouseOverBackColor = this.MouseOverBackColor;
+                    submenu.BackColorGradientAlt = this.BackColorGradientAlt;
+                    submenu.BackColorGradientDir = this.BackColorGradientDir;
+                    submenu.IconStripBackColor = this.IconStripBackColor;
                     submenu.FlowDirection = ControlFlowDirection.Down;
                     submenu.AutoSize = true;
                     submenu.AutoOpenDelay = AutoOpenDelay;
@@ -281,39 +281,25 @@ namespace GLOFC.GL4.Controls
 
             if (parent is GLMenuStrip)      // note we get called when the GLMenuStrip is added to the display, we don't want that call
             {
-                child.BackColor = BackColor;
                 child.SuspendLayout();
-
-                int iconareawidth = Font.ScalePixels(24);
 
                 var mi = child as GLMenuItem;
                 if (mi != null)                     // MenuItems get coloured and hooked
                 {
-                    if (ForeColor != Color.Empty)
-                        mi.ForeColor = ForeColor;
-
-                    mi.ButtonFaceColour = BackColor;
-
-                    if (MouseOverBackColor != Color.Empty)
-                    {
-                        mi.MouseOverColor = MouseOverBackColor;
-                        mi.FaceColorScaling = 1;
-                    }
-
                     mi.Click += MenuItemClicked;
                     mi.MouseEnter += MenuItemEnter;
                     mi.MouseLeave += MenuItemLeave;
 
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
-                        mi.IconTickAreaWidth = iconareawidth;
+                        mi.IconAreaEnable = true;
                     }
                 }
                 else
                 {
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
-                        child.FlowOffsetPosition = new Point(iconareawidth, 0);
+                        child.FlowOffsetPosition = new Point(IconAreaWidth, 0);
                     }
 
                     child.KeyDown += NonMIKeyDown;
@@ -381,8 +367,7 @@ namespace GLOFC.GL4.Controls
             {
                 using (Brush br = new SolidBrush(IconStripBackColor))
                 {
-                    int iconareawidth = Font.ScalePixels(24);
-                    gr.FillRectangle(br, new Rectangle(area.Left, area.Top, iconareawidth, area.Height));
+                    gr.FillRectangle(br, new Rectangle(area.Left, area.Top, IconAreaWidth, area.Height));
                 }
             }
         }
@@ -526,8 +511,6 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        private Color mouseOverBackColor { get; set; } = DefaultMenuMouseOverColor;
-        private Color foreColor { get; set; } = DefaultMenuForeColor;
         private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
 
         private int selected = -1;              // open which is highlighted/open

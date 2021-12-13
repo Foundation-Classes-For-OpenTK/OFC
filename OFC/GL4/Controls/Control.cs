@@ -138,8 +138,10 @@ namespace GLOFC.GL4.Controls
         // Order control
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
-        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
-        public bool TopLevelControlUpdate { get; set; } = false;
+        // Global themer enable - applied at Add. Do we apply it to this control?
+        public bool EnableThemer { get; set; } = true;
+
+        // children control list
 
         public virtual IList<GLBaseControl> ControlsIZ { get { return childreniz.AsReadOnly(); } }      // read only, in inv zorder, so 0 = last layout first drawn
         public virtual IList<GLBaseControl> ControlsZ { get { return childrenz.AsReadOnly(); } }        // read only, in zorder, so 0 = first layout last painted
@@ -361,7 +363,9 @@ namespace GLOFC.GL4.Controls
 
             CheckZOrder();      // verify its okay 
 
-            Themer?.Invoke(child);      // global themer
+            if ( EnableThemer)
+                Themer?.Invoke(child);      // global themer
+
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout(child);        // we are invalidated and layout due to this child
@@ -1326,6 +1330,7 @@ namespace GLOFC.GL4.Controls
         }
 
         protected bool NeedRedraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
+        public bool TopLevelControlUpdate { get; set; } = false;        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
         private Font font = null;
