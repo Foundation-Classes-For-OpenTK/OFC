@@ -36,13 +36,17 @@ namespace GLOFC.GL4.Controls
 
         public int DropDownHeightMaximum { get { return dropdownbox.DropDownHeightMaximum; } set { dropdownbox.DropDownHeightMaximum = value; } }
 
-        // ForeColor for text
-        public Color MouseOverColor { get { return dropdownbox.MouseOverColor; } set { dropdownbox.MouseOverColor = value; } }
-        public Color DropDownBackgroundColor { get { return dropdownbox.BackColor; } set { dropdownbox.BackColor = value; } }
-        public Color ItemSeperatorColor { get { return dropdownbox.ItemSeperatorColor; } set { dropdownbox.ItemSeperatorColor = value; } }
-
+        // ForeColor for text, BackColor for background
         public Color FaceColor { get { return comboboxFaceColor; } set { comboboxFaceColor = value; Invalidate(); } }
         public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
+        
+        public Color MouseOverColor { get { return dropdownbox.MouseOverColor; } set { dropdownbox.MouseOverColor = value; } }
+
+        // dropdown colour
+        public Color DropDownBackgroundColor { get { return dropdownbox.BackColor; } set { dropdownbox.BackColor = value; } }
+        public Color DropDownForeColor { get { return dropdownbox.ForeColor; } set { dropdownbox.ForeColor = value; } }
+        public Color DropDownItemSeperatorColor { get { return dropdownbox.ItemSeperatorColor; } set { dropdownbox.ItemSeperatorColor = value; } }
+        public Color DropDownSelectedItemBackColor { get { return dropdownbox.SelectedItemBackColor; } set { dropdownbox.SelectedItemBackColor = value; Invalidate(); } }
 
         public bool InDropDown { get { return dropdownbox.Visible; } }
 

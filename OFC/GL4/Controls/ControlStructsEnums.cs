@@ -48,11 +48,14 @@ namespace GLOFC.GL4.Controls
 
     public enum DockingType
     {
-        None, Fill, 
+        // these do not compound
+        None, 
+        Fill, 
         Center,             // in centre of the window with the Width/Height given
         Width,              // at its ypos/Height, full width
         Height,             // at its xpos/Width, full height
-        Left, LeftCenter, LeftTop, LeftBottom,              // order vital to layout test, keep
+        // Compound types, order vital to layout test, keep. 
+        Left, LeftCenter, LeftTop, LeftBottom,              
         Right, RightCenter, RightTop, RightBottom,
         Top, TopCenter, TopLeft, TopRight,
         Bottom, BottomCentre, BottomLeft, BottomRight,

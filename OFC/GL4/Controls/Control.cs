@@ -911,7 +911,7 @@ namespace GLOFC.GL4.Controls
         {
             Graphics backgr = parentgr;
 
-            if (parentgr == null)     // top level window
+            if (parentgr == null)     // top level window, under display control, if this is true
             {
                 cliparea = bounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
 
@@ -964,11 +964,10 @@ namespace GLOFC.GL4.Controls
                 }
                 else
                 {
+                    // no new bitmap, so we work out the client area of this window (in bitmap co-ords)
                     clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
                     cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
                 }
-
-                // client area, in terms of last bitmap
 
                 foreach (var c in childreniz)       // in inverse Z order, last is top Z
                 {
@@ -985,16 +984,16 @@ namespace GLOFC.GL4.Controls
                         // and the client rectangle
 
                         int cleft = Math.Max(childbounds.Left, ccliparea.Left);             // first clip to child bounds, or clip left
-                        cleft = Math.Max(cleft, cbounds.Left + cmargin.Left);      // then clip to client left
+                        cleft = Math.Max(cleft, cbounds.Left + cmargin.Left);               // then clip to client left
 
-                        int ctop = Math.Max(childbounds.Top, ccliparea.Top);             // clipped to child top or ccliparea top
+                        int ctop = Math.Max(childbounds.Top, ccliparea.Top);                // clipped to child top or ccliparea top
                         ctop = Math.Max(ctop, cbounds.Top + cmargin.Top);
 
-                        int cright = Math.Min(childbounds.Left + c.Width, ccliparea.Right);  // clipped to child left+width or the ccliparea right
-                        cright = Math.Min(cright, cbounds.Right - cmargin.Right);     // additionally clipped to our cbounds right less its client margin
+                        int cright = Math.Min(childbounds.Left + c.Width, ccliparea.Right); // clipped to child left+width or the ccliparea right
+                        cright = Math.Min(cright, cbounds.Right - cmargin.Right);           // additionally clipped to our cbounds right less its client margin
 
-                        int cbot = Math.Min(childbounds.Top + c.Height, ccliparea.Bottom);   // clipped to child bottom or ccliparea bottom
-                        cbot = Math.Min(cbot, cbounds.Bottom - cmargin.Bottom);       // additionally clipped to cbounds bottom less its client margin
+                        int cbot = Math.Min(childbounds.Top + c.Height, ccliparea.Bottom);  // clipped to child bottom or ccliparea bottom
+                        cbot = Math.Min(cbot, cbounds.Bottom - cmargin.Bottom);             // additionally clipped to cbounds bottom less its client margin
 
                         Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
 
@@ -1270,11 +1269,12 @@ namespace GLOFC.GL4.Controls
             ClientRectangle = new Rectangle(0, 0, Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2, Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2);
         }
 
+        // set enabled, and all children too
         private void SetEnabled(bool v)
         {
             enabled = v;
             foreach (var c in childrenz)
-                SetEnabled(v);
+                c.SetEnabled(v);
         }
 
         private void SetFont(Font f)

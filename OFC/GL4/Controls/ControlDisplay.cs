@@ -16,6 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
@@ -43,9 +44,6 @@ namespace GLOFC.GL4.Controls
         public Point MouseWindowPosition {  get { return glwin.MouseWindowPosition; } }
 
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
-
-        public bool PerformFullLayout { get; set; } = false;                    // if set, a full layout is done, allowing docking to work between children. 
-                                                                                // With off, it does not dock properly but does not cause massive invalidations
 
         public void EnsureCurrentContext()
         {
@@ -198,7 +196,7 @@ namespace GLOFC.GL4.Controls
 
         // override this, so that we see all invalidations layouts to us and what child required it.
         // then we just layout and size the child only, so the rest of them, unaffected by the way displaycontrol handles textures, do not get invalidated
-        // PerformFullLayout means you get full layout with docking but at the expense of laying out everything each time - prob not needed
+        // unless we see there is compound docking on, in which case we need to use a full PerformLayout
         // may be called with null child, meaning its a remove/detach
         // it may be called due to a property in displaycontrol changing (Font),
         // and we check the vertex/positions/sizes to make sure everything is okay
@@ -208,7 +206,9 @@ namespace GLOFC.GL4.Controls
 
             glwin.Invalidate();
 
-            if (dueto == this || PerformFullLayout)   // if change due to display control property, or asking for a full layout, do it
+            int docked = ControlsZ.Where(x => x.Dock >= DockingType.Left).Count();      // how many have a compound docking type
+
+            if (dueto == this || docked>0)   // if change due to display control property, or we have a docking sitation
             {
                 PerformLayout();    // full layout on all children
             }
@@ -249,7 +249,7 @@ namespace GLOFC.GL4.Controls
             base.Add(child, atback);
         }
 
-        // override remove control since we need to know if to remove texture
+        // override remove control since we need to know if to remove texture, and refresh the texture list
         protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {
             bool ourchild = ControlsZ.Contains(child);      // record before removecontrol updates controlz list
