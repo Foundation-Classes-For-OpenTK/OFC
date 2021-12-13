@@ -576,7 +576,7 @@ namespace GLOFC.GL4.Controls
                 {
                     buttonright -= control.Width;
                     var pos = new Point(buttonright, buttonline);
-                    System.Diagnostics.Debug.WriteLine($"{control.Name} {control.Size} to {pos}");
+                    //System.Diagnostics.Debug.WriteLine($"{control.Name} {control.Size} to {pos}");
                     control.SetNI(location: pos);
                     buttonright -= butspacing;
                 }

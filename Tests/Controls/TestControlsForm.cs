@@ -405,6 +405,20 @@ namespace TestOpenTk
                     pform.Add(gla);
                 }
 
+                if ( true )
+                {
+                    displaycontrol.PerformFullLayout = true;
+
+                    GLButton b1 = new GLButton("BD1", new Rectangle(5, 10, 80, 30), "Bottom 1");
+                    b1.TabOrder = taborder++;
+                    b1.Dock = DockingType.Bottom;
+                    displaycontrol.Add(b1);
+                    GLButton b2 = new GLButton("BD2", new Rectangle(5, 10, 80, 30), "Bottom 2");
+                    b2.TabOrder = taborder++;
+                    b2.Dock = DockingType.Bottom;
+                    displaycontrol.Add(b2);
+                }
+
                 displaycontrol.Add(pform);
 
             }

@@ -44,6 +44,9 @@ namespace GLOFC.GL4.Controls
 
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
+        public bool PerformFullLayout { get; set; } = false;                    // if set, a full layout is done, allowing docking to work between children. 
+                                                                                // With off, it does not dock properly but does not cause massive invalidations
+
         public void EnsureCurrentContext()
         {
             glwin.EnsureCurrentContext();
@@ -186,7 +189,6 @@ namespace GLOFC.GL4.Controls
 
         #region Overrides
 
-
         // override base control invalidate, and call it, and also pass the invalidate to the gl window control
         public override void Invalidate()           
         {
@@ -196,6 +198,7 @@ namespace GLOFC.GL4.Controls
 
         // override this, so that we see all invalidations layouts to us and what child required it.
         // then we just layout and size the child only, so the rest of them, unaffected by the way displaycontrol handles textures, do not get invalidated
+        // PerformFullLayout means you get full layout with docking but at the expense of laying out everything each time - prob not needed
         // may be called with null child, meaning its a remove/detach
         // it may be called due to a property in displaycontrol changing (Font),
         // and we check the vertex/positions/sizes to make sure everything is okay
@@ -205,7 +208,7 @@ namespace GLOFC.GL4.Controls
 
             glwin.Invalidate();
 
-            if (dueto == this)    // if change due to display control property
+            if (dueto == this || PerformFullLayout)   // if change due to display control property, or asking for a full layout, do it
             {
                 PerformLayout();    // full layout on all children
             }
@@ -213,9 +216,9 @@ namespace GLOFC.GL4.Controls
             {
                 if (dueto != null)  // if not a remove, layout and size on child only
                     dueto.PerformLayoutAndSize();
-
-                UpdateVertexPositionsTextures();        // need to at least update vertexes, maybe textures 
             }
+
+            UpdateVertexPositionsTextures();        // need to at least update vertexes, maybe textures 
         }
 
         // if we change the z order, we need to update vertex list, keyed to z order
@@ -232,6 +235,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // On control add, to display, we need to do more work to set textures up and note the bitmap size
+        // textures will be updated on invalidatelayout
         public override void Add(GLBaseControl child, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(child is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
@@ -365,7 +369,7 @@ namespace GLOFC.GL4.Controls
             RequestRender = true;
         }
 
-        // these are not allowed at display control level and can cause problems so assert
+        // these are not allowed at display control level so assert
         public new void SuspendLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
         public new void ResumeLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
         public override void Layout(ref Rectangle parentarea) { System.Diagnostics.Debug.Assert(false, "Should not happen - bug if it does"); }
