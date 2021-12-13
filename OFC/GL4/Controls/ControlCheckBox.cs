@@ -200,7 +200,7 @@ namespace GLOFC.GL4.Controls
                     tickarea.Inflate(-1, -1);
 
                     Color back = !Enabled ? CheckBoxInnerColor.Multiply(disscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
-                    System.Diagnostics.Debug.WriteLine($"{Name} back {back}");
+                    //System.Diagnostics.Debug.WriteLine($"{Name} back {back}");
                     using (Brush second = new SolidBrush(back))
                         gr.FillEllipse(second, tickarea);
 
@@ -252,7 +252,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (FontToUse == null || FontToUse.FontFamily != Font.FontFamily || FontToUse.Style != Font.Style || FontToUse.SizeInPoints != Font.SizeInPoints)
                         FontToUse = g.GetFontToFitRectangle(this.Text, Font, box, fmt);
-                    System.Diagnostics.Debug.WriteLine($"Checkbox {Name} Font {Font.ToString()}");
+                    //System.Diagnostics.Debug.WriteLine($"Checkbox {Name} Font {Font.ToString()}");
                     g.DrawString(this.Text, FontToUse, textb, box, fmt);
                 }
             }

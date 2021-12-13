@@ -114,6 +114,11 @@ namespace GLOFC.GL4.Controls
             entries.Add(e);
         }
 
+        public void Add(string name, GLBaseControl ctrl, string tt = null, Object tag = null)   // add a previously made ctrl
+        {
+            entries.Add(new Entry(name,ctrl,tt,tag));
+        }
+
         public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.None)
         {
             if (sz == null)

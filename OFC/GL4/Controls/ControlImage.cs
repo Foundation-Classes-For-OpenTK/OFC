@@ -57,7 +57,7 @@ namespace GLOFC.GL4.Controls
         private Image image;
         private bool imagestretch { get; set; } = false;
         private System.Drawing.ContentAlignment imagealign { get; set; } = ContentAlignment.MiddleCenter;
-        private float disabledScaling = 0.5F;
+        private float disabledScaling = 0.75F;
 
         protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesEnabled = null;         // Image override (colour etc) for background when using Image while Enabled.
         protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesDisabled = null;        // Image override (colour etc) for background when using Image while !Enabled.

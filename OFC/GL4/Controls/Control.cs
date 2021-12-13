@@ -47,7 +47,7 @@ namespace GLOFC.GL4.Controls
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } }
         public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
-        // padding/margin and border control
+        // padding/margin and border control (Do not apply to display control)
         public Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
@@ -67,11 +67,12 @@ namespace GLOFC.GL4.Controls
         public Point ClientLocation { get { return new Point(ClientLeftMargin, ClientTopMargin); } }
         public Rectangle ClientRectangle { get; private set; }
 
-        // docking control
+        // docking control 
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; ParentInvalidateLayout(); } } }
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; ParentInvalidateLayout(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
         public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; ParentInvalidateLayout(); } } }
+        
         // Autosize
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; ParentInvalidateLayout(); } } }
 
@@ -140,10 +141,9 @@ namespace GLOFC.GL4.Controls
         // Top level windows only, indicate need to recalculate due to Opacity or Scale change
         public bool TopLevelControlUpdate { get; set; } = false;
 
-        // control lists
-        public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
-        public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }        // read only, in zorder, so 0 = first layout last painted
-        public GLBaseControl this[string s] { get { return ControlsZ.Find((x)=>x.Name == s); } }    // null if not
+        public virtual IList<GLBaseControl> ControlsIZ { get { return childreniz.AsReadOnly(); } }      // read only, in inv zorder, so 0 = last layout first drawn
+        public virtual IList<GLBaseControl> ControlsZ { get { return childrenz.AsReadOnly(); } }        // read only, in zorder, so 0 = first layout last painted
+        public GLBaseControl this[string s] { get { return childrenz.Find((x)=>x.Name == s); } }    // null if not
 
         // events
 
@@ -183,7 +183,7 @@ namespace GLOFC.GL4.Controls
         {
             if (ctrl == this)
                 return true;
-            foreach( var c in ControlsZ)
+            foreach( var c in childrenz)
             {
                 if (c.IsThisOrChildOf(ctrl))
                     return true;
@@ -196,7 +196,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Focused)
                 return true;
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
             {
                 if (c.IsThisOrChildrenFocused())
                     return true;
@@ -210,7 +210,7 @@ namespace GLOFC.GL4.Controls
             GLBaseControl found = null;
             int mindist = int.MaxValue;
 
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
             {
                 if (c.Focusable && c.Visible && c.Enabled )
                 {
@@ -361,7 +361,7 @@ namespace GLOFC.GL4.Controls
 
             CheckZOrder();      // verify its okay 
 
-            Themer?.Invoke(child);      // added to control, theme it
+            Themer?.Invoke(child);      // global themer
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout(child);        // we are invalidated and layout due to this child
@@ -445,13 +445,13 @@ namespace GLOFC.GL4.Controls
         {
             if (recurse)
             {
-                foreach (var c in ControlsZ)
+                foreach (var c in childrenz)
                 {
                     c.ApplyToControlOfName(wildcardname, act, recurse);
                 }
             }
 
-            List<GLBaseControl> list = ControlsZ.Where(x => x.Name.WildCardMatch(wildcardname)).ToList();
+            List<GLBaseControl> list = childrenz.Where(x => x.Name.WildCardMatch(wildcardname)).ToList();
             foreach (var c in list)
                 act(c);
         }
@@ -671,7 +671,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible)
             {
-                var controlslist = new List<GLBaseControl>(ControlsIZ); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
+                var controlslist = new List<GLBaseControl>(childreniz); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
                 foreach (var c in controlslist)
                     c.Animate(ts);
                 var animators = new List<IControlAnimation>(Animators); // animators may remove themselves from the animation list, so we need to take a copy
@@ -689,35 +689,38 @@ namespace GLOFC.GL4.Controls
         // normally we don't care about which child caused it
         protected virtual void InvalidateLayout(GLBaseControl child)
         {
-            System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child.Name}");
+            //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
             Invalidate();
             PerformLayout();
         }
 
-        // called by displaycontrol on chosen child, perform size on ourselves, size on children, and layout
+        // called by displaycontrol on chosen child
         public void PerformLayoutAndSize()
         {
-            SizeControl(Parent.Size);
             PerformRecursiveSize();         // we recusively size
-            SizeControlPostChild(Parent.Size);
-            PerformRecursiveLayout();       // and we layout, recursively
+            var area = Parent.ClientRectangle;  // we layout ourselves
+            Layout(ref area);
+            PerformRecursiveLayout();       // and we layout children, recursively
         }
 
-        // Perform a recursive size of all children inside the control
+        // Perform a recursive size, on us because we need to know about children sizes, and all children inside the control
         protected void PerformRecursiveSize()   
         {
-            Size size = ClientSize;
-            if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
+            if (Parent != null)         // may be running at displaycontrol, if not, size against parent
+                SizeControl(Parent.ClientSize);     
+
+            //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
 
             foreach (var c in childrenz) // in Z order
             {
                 if (c.Visible)      // invisible children don't layout
                 {
-                    c.SizeControl(size);
                     c.PerformRecursiveSize();
-                    c.SizeControlPostChild(size);
                 }
             }
+
+            if (Parent != null)
+                SizeControlPostChild(Parent.ClientSize);    // And we give ourselves a change to post size to children size
         }
 
         // override to auto size before children. 
@@ -740,7 +743,7 @@ namespace GLOFC.GL4.Controls
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
             Rectangle area = ClientRectangle;
-            if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Laying out children in {area}");
+            //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Laying out children in {area}");
 
             foreach (var c in childrenz)     // in z order, top gets first go
             {
@@ -750,8 +753,6 @@ namespace GLOFC.GL4.Controls
                     c.PerformRecursiveLayout();
                 }
             }
-
-            //if (suspendLayoutSet)  System.Diagnostics.Debug.WriteLine("Removing suspend on " + Name);
 
             ClearLayoutFlags();
         }
@@ -769,9 +770,10 @@ namespace GLOFC.GL4.Controls
         // standard layout function, layout yourself inside the area, return area left.
         // you can override this one to perform your own specific layout
         // if so, you must call CalcClientRectangle 
-        public virtual void Layout(ref Rectangle parentarea)     
+        public virtual void Layout(ref Rectangle parentarea)
         {
-            //System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea}");
+          //  System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea} {docktype} {Anchor}");
+
             int dockedwidth = DockPercent > 0 ? ((int)(parentarea.Width * DockPercent)) : (window.Width);
             int dockedheight = DockPercent > 0 ? ((int)(parentarea.Height * DockPercent)) : (window.Height);
             int wl = Width;
@@ -1166,7 +1168,7 @@ namespace GLOFC.GL4.Controls
         protected  virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
         {
             GlobalFocusChanged?.Invoke(from, to);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalFocusChanged(from, to);
         }
@@ -1175,7 +1177,7 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseClick?.Invoke(ctrl, e);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseClick(ctrl, e);
         }
@@ -1184,7 +1186,7 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseDown?.Invoke(ctrl, e);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseDown(ctrl, e);
         }
@@ -1221,7 +1223,7 @@ namespace GLOFC.GL4.Controls
 
         // Set Position, clipped to max/min size, causing an invalidation layout at parent level, only if changed
 
-        private void SetPos(int left, int top, int width, int height)
+        protected virtual void SetPos(int left, int top, int width, int height)
         {
             width = Math.Max(width, minimumsize.Width);
             width = Math.Min(width, maximumsize.Width);
@@ -1253,6 +1255,7 @@ namespace GLOFC.GL4.Controls
                     OnResize();
 
                 NeedRedraw = true;
+
                 Parent?.InvalidateLayout(this);
             }
         }
@@ -1301,7 +1304,7 @@ namespace GLOFC.GL4.Controls
             Hover = false;
             focused = false;
             MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
                 c.ClearFlagsDown();
         }
 
@@ -1315,9 +1318,9 @@ namespace GLOFC.GL4.Controls
         {
             string prefix = new string(' ',64).Substring(0, l);
             System.Diagnostics.Debug.WriteLine("{0}{1} {2}", prefix, Name, Parent == prev ? "OK" : "Not linked");
-            if (ControlsZ.Count > 0)
+            if (childrenz.Count > 0)
             {
-                foreach (var c in ControlsZ)
+                foreach (var c in childrenz)
                     c.DumpTrees(l + 2, this);
             }
         }
@@ -1335,7 +1338,7 @@ namespace GLOFC.GL4.Controls
         protected Size minimumsize = new Size(1, 1);
         protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
         private bool needLayout { get; set; } = false;        // need a layout after suspend layout was called
-        private int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
+        protected int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
         private bool enabled { get; set; } = true;
         private bool visible { get; set; } = true;
         private DockingType docktype { get; set; } = DockingType.None;

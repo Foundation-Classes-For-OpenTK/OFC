@@ -157,6 +157,7 @@ namespace TestOpenTk
             displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
+            displaycontrol.Font = new Font("Times", 8);
 
             GLForm pform;
 
@@ -182,7 +183,7 @@ namespace TestOpenTk
                     GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
                     pform.Add(lab1);
 
-                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Button 1 long text");
+                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Configuration Dialog");
                     b1.Margin = new Margin(2);
                     b1.AutoSize = true;
                     b1.TabOrder = taborder++;
@@ -191,37 +192,46 @@ namespace TestOpenTk
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
                     pform.Add(b1);
 
-                    GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Button 2");
+                    GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Msg1");
                     b2.Image = Properties.Resources.ImportSphere;
                     b2.TabOrder = taborder++;
                     b2.ImageAlign = ContentAlignment.MiddleLeft;
                     b2.TextAlign = ContentAlignment.MiddleRight;
-                    b2.Click += (c, ev) => { MsgDialog(); };
+                    b2.Click += (c, ev) => { MsgDialog1(); };
                     b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
                     pform.Add(b2);
 
-                    GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Button 3");
+                    GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Font");
                     b3.Margin = new Margin(2);
                     b3.TabOrder = taborder++;
                     b3.Padding = new GLOFC.GL4.Controls.Padding(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
-                    b3.Click += (c, ev) => { MsgDialog2(); };
-                    b3.Enabled = false;
+                    b3.Click += (c, ev) => {
+                        displaycontrol.Font = new Font("Times", 12);
+                    };
+                    //                    b3.Enabled = false;
                     pform.Add(b3);
 
-                    GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Button 4");
+                    GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
                     b4.TabOrder = taborder++;
                     b4.Padding = new GLOFC.GL4.Controls.Padding(2);
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
                     pform.Add(b4);
 
-                    GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Button 5");
+                    GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Conf2");
                     b5.TabOrder = taborder++;
                     b5.Padding = new GLOFC.GL4.Controls.Padding(2);
-                    b5.ToolTipText = "Button 4 tip\r\nLine 2 of it";
+                    b5.ToolTipText = "Button 5 tip\r\nLine 2 of it";
                     b5.Click += (c, ev) => { ConfDialog2(); };
                     pform.Add(b5);
+
+                    GLButton b6 = new GLButton("B3", new Rectangle(200, 50, 80, 30), "Disabled");
+                    b6.TabOrder = taborder++;
+                    b6.ToolTipText = "Button 6 tip\r\nLine 2 of it";
+                    b6.Enabled = false;
+                    pform.Add(b6);
+
                 }
 
                 if (true)
@@ -519,7 +529,7 @@ namespace TestOpenTk
             displaycontrol.Add(f);
         }
 
-        private void MsgDialog()
+        private void MsgDialog1()
         {
             string t = "";
             for (int i = 0; i < 100; i++)
