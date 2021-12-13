@@ -49,5 +49,30 @@ namespace GLOFC
             return r;
         }
 
+        static public Matrix4 CreateMatrix(Vector3 worldpos, Vector3 size, Vector3 rotationradians)
+        {
+            Matrix4 mat = Matrix4.Identity;
+            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
+            if (rotationradians.LengthSquared > 0)
+            {
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
+            }
+            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            return mat;
+        }
+
+        // presumes axis is on X plane, positive tips away, and rotation on Y plane, postive values rotate anticlockwise
+        static public Matrix4 CreateMatrixPlanetRot(Vector3 worldpos, Vector3 size, float axis, float rotation) 
+        {
+            Matrix4 mat = Matrix4.Identity;
+            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
+            mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(-rotation));
+            mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(axis));
+            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            return mat;
+        }
+
     }
 }

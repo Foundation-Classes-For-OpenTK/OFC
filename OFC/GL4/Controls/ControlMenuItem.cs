@@ -22,7 +22,9 @@ namespace GLOFC.GL4.Controls
     {
         public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
+            // don't need to set back colour etc, the menu strip does this on an OnControlAdd
             SetNI(borderwidth: 0);
+            FaceColorScaling = 1;       // disable this to give a flat look
             Text = text;
             ShowFocusBox = false;
             ImageStretch = true;        // to make sure that menu items are normally sized by text not by image
@@ -30,8 +32,7 @@ namespace GLOFC.GL4.Controls
             Focusable = false;
         }
 
-        public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
-        public int IconTickAreaWidth { get; set; } = 0;            // zero for off
+        public bool IconAreaEnable { get; set; } = false;
 
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
 
@@ -45,7 +46,8 @@ namespace GLOFC.GL4.Controls
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                ButtonAutoSize(new Size(IconTickAreaWidth, 0));
+                GLMenuStrip p = Parent as GLMenuStrip;
+                ButtonAutoSize(p != null ? new Size(p.IconAreaWidth, 0) : Size.Empty);
             }
         }
 
@@ -53,43 +55,47 @@ namespace GLOFC.GL4.Controls
         {
             Rectangle butarea = ClientRectangle;
 
-            Color back = PaintButtonBackColor(Highlighted, DisableHoverHighlight);
+            GLMenuStrip p = Parent as GLMenuStrip;
+            bool ica = IconAreaEnable && p != null;
 
-            if (IconTickAreaWidth > 0)
+            if (ica)
             {
-                butarea.Width -= IconTickAreaWidth;
-                butarea.X += IconTickAreaWidth;
-                if (back == BackColor)
-                {
-                    using (Brush br = new SolidBrush(IconStripBackColor))
-                    {
-                        gr.FillRectangle(br, new Rectangle(0, 0, IconTickAreaWidth, ClientHeight));
-                    }
+                butarea.Width -= p.IconAreaWidth;
+                butarea.X += p.IconAreaWidth;
+            }
 
-                    base.PaintButtonBack(butarea, gr, back);
-                }
-                else
-                    base.PaintButtonBack(ClientRectangle, gr, back);
+            if (Enabled && (Highlighted || (Hover && !DisableHoverHighlight)))
+            {
+                base.PaintButtonFace(ClientRectangle, gr, MouseOverColor);
             }
             else
             {
-                base.PaintButtonBack(ClientRectangle, gr, back);
+                if (ica)
+                {
+                    using (Brush br = new SolidBrush(p.IconStripBackColor))
+                    {
+                        gr.FillRectangle(br, new Rectangle(0, 0, p.IconAreaWidth, ClientHeight));
+                    }
+                }
+
+                base.PaintButtonFace(butarea, gr, Enabled ? ButtonFaceColour : ButtonFaceColour.Multiply(BackDisabledScaling));
             }
 
             //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
 
-            base.PaintButton(butarea, gr, false);       // don't paint the image
+            base.PaintButtonTextImageFocus(butarea, gr, false);       // don't paint the image
 
-            if (IconTickAreaWidth > 0)
+            if (ica)
             {
-                int reduce = (int)(IconTickAreaWidth * TickBoxReductionRatio);
-                Rectangle tickarea = new Rectangle((IconTickAreaWidth - reduce) / 2, (ClientHeight - reduce) / 2, reduce, reduce);
-                float discaling = Enabled ? 1.0f : DisabledScaling;
+                int reduce = (int)(p.IconAreaWidth * TickBoxReductionRatio);
+                Rectangle tickarea = new Rectangle((p.IconAreaWidth - reduce) / 2, (ClientHeight - reduce) / 2, reduce, reduce);
 
                 if (CheckState != CheckState.Unchecked)
                 {
+                    float discaling = Enabled ? 1.0f : BackDisabledScaling;
+
                     Color checkboxbordercolour = CheckBoxBorderColor.Multiply(discaling); //(Enabled && Hover) ? MouseOverBackColor : 
-                    Color backcolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
+                    Color backcolour = (Enabled && Hover) ? MouseOverColor : ButtonFaceColour.Multiply(discaling);
 
                     using (Brush inner = new System.Drawing.Drawing2D.LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
                         gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
@@ -106,14 +112,12 @@ namespace GLOFC.GL4.Controls
                 }
                 else
                 {
-                    base.DrawTick(tickarea, Color.FromArgb(200, CheckColor.Multiply(discaling)), CheckState, gr);
+                    base.DrawTick(tickarea, Color.FromArgb(200, CheckColor.Multiply(Enabled ? 1.0F : ForeDisabledScaling)), CheckState, gr);
                 }
 
             }
         }
 
-        private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
-        private Color iconStripBackColor { get; set; } = DefaultMenuIconStripBackColor;
         private bool highlighted { get; set; } = false;
         private bool disablehoverhighlighted { get; set; } = false;
     }

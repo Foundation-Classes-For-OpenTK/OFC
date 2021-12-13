@@ -21,6 +21,9 @@ namespace GLOFC.GL4.Controls
     {
         public GLFlowLayoutPanel(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultFlowLayoutBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultFlowLayoutBackColor;
+
         }
 
         public GLFlowLayoutPanel(string name, DockingType type, float dockpercent) : base(name, DefaultWindowRectangle)
@@ -99,6 +102,8 @@ namespace GLOFC.GL4.Controls
                 c.CallPerformRecursiveLayout();
               //  System.Diagnostics.Debug.WriteLine(".... " + c.Size);
             });
+
+            ClearLayoutFlags();
         }
 
         // flow in size and perform action if required

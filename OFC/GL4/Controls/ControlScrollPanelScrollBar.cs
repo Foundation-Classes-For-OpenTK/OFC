@@ -38,13 +38,16 @@ namespace GLOFC.GL4.Controls
         public float ThumbDrawAngle { get { return scrollbar.ThumbDrawAngle; } set { scrollbar.ThumbDrawAngle = value;  } }
 
         public new string Name { get { return base.Name; } set { base.Name = value; scrollbar.Name = base.Name + "-SB"; scrollpanel.Name = base.Name + "-SP"; } }
-        public override List<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
-        public override List<GLBaseControl> ControlsIZ { get { return scrollpanel.ControlsIZ; } }      // read only
+        public override IList<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
+        public override IList<GLBaseControl> ControlsIZ { get { return scrollpanel.ControlsIZ; } }      // read only
 
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
         public GLVerticalScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {
+            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+
             scrollpanel = new GLVerticalScrollPanel();
             scrollpanel.Dock = DockingType.Fill;
             scrollpanel.BackColor = BackColor;

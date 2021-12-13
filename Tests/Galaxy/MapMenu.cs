@@ -320,19 +320,40 @@ namespace TestOpenTk
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it
         {
+            var but = s as GLButton;
+            if (but != null)
+            {
+                but.ButtonFaceColour = Color.FromArgb(255, 128, 128, 128);
+                but.ForeColor = Color.Orange;
+                but.BackColor = Color.FromArgb(255, 128, 128, 128);
+                but.BorderColor = Color.FromArgb(255, 128, 128, 128);
+            }
+
             var cb = s as GLCheckBox;
             if (cb != null)
             {
-                float[][] colorMatrixElements = {
-                           new float[] {0.5f,  0,  0,  0, 0},        // red scaling factor of 0.5
-                           new float[] {0,  0.5f,  0,  0, 0},        // green scaling factor of 1
-                           new float[] {0,  0,  0.5f,  0, 0},        // blue scaling factor of 1
-                           new float[] {0,  0,  0,  1, 0},        // alpha scaling factor of 1
-                           new float[] {0.0f, 0.0f, 0.0f, 0, 1}};    // three translations of 
-
-                var colormap1 = new System.Drawing.Imaging.ColorMap();
-                cb.SetDrawnBitmapUnchecked(new System.Drawing.Imaging.ColorMap[] { colormap1 }, colorMatrixElements);
+                cb.ButtonFaceColour = Color.FromArgb(255, 128, 128, 128);
             }
+
+            var dt = s as GLDateTimePicker;
+            if ( dt != null )
+            {
+                dt.BackColor = Color.FromArgb(255, 128, 128, 128);
+                dt.ForeColor = Color.Orange;
+                dt.Calendar.ButLeft.ForeColor = dt.Calendar.ButRight.ForeColor = Color.Orange;
+                dt.SelectedColor = Color.FromArgb(255, 160, 160, 160);
+            }
+            //{
+            //    float[][] colorMatrixElements = {
+            //               new float[] {0.5f,  0,  0,  0, 0},        // red scaling factor of 0.5
+            //               new float[] {0,  0.5f,  0,  0, 0},        // green scaling factor of 1
+            //               new float[] {0,  0,  0.5f,  0, 0},        // blue scaling factor of 1
+            //               new float[] {0,  0,  0,  1, 0},        // alpha scaling factor of 1
+            //               new float[] {0.0f, 0.0f, 0.0f, 0, 1}};    // three translations of 
+
+            //    var colormap1 = new System.Drawing.Imaging.ColorMap();
+            //    cb.SetDrawnBitmapUnchecked(new System.Drawing.Imaging.ColorMap[] { colormap1 }, colorMatrixElements);
+            //}
         }
 
 

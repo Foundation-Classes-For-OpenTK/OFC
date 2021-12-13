@@ -31,18 +31,18 @@ namespace GLOFC.GL4.Controls
         public Image ImageUnchecked { get { return imageUnchecked; } set { imageUnchecked = value; Invalidate(); } }        // apperance normal/button only.  
         public Image ImageIndeterminate { get { return imageIndeterminate; } set { imageIndeterminate = value; Invalidate(); } }
 
-        public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null)
+        public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null, float disabledscaling = 0.5f)
         {
             //System.Diagnostics.Debug.WriteLine("Apply drawn bitmap scaling to " + Name);
             drawnImageAttributesUnchecked?.Dispose();
             drawnImageAttributesDisabled?.Dispose();
-            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out drawnImageAttributesDisabled, DisabledScaling, remap, colormatrix);
+            ControlHelpersStaticFunc.ComputeDrawnPanel(out drawnImageAttributesUnchecked, out drawnImageAttributesDisabled, disabledscaling, remap, colormatrix);
             Invalidate();
         }
 
         public GLCheckBox(string name, Rectangle location, string text) : base(name, location)
         {
-            BackColorNI = Color.Transparent;
+            BackColorGradientAltNI = BackColorNI = Color.Transparent;
             TextNI = text;
             CheckOnClick = true;
             Focusable = true;
@@ -71,6 +71,8 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             bool hasimages = Image != null;
+            float backdisscaling = Enabled ? 1.0f : BackDisabledScaling;
+            float foredisscaling = Enabled ? 1.0f : ForeDisabledScaling;
 
             if (Appearance == CheckBoxAppearance.Button)
             {
@@ -81,12 +83,12 @@ namespace GLOFC.GL4.Controls
 
                     if (Hover)
                     {
-                        using (var b = new LinearGradientBrush(marea, MouseOverBackColor, MouseOverBackColor.Multiply(BackColorScaling), 90))
+                        using (var b = new LinearGradientBrush(marea, MouseOverColor, MouseOverColor.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
                     }
                     else if (CheckState == CheckState.Checked)
                     {
-                        using (var b = new LinearGradientBrush(marea, ButtonBackColor, ButtonBackColor.Multiply(BackColorScaling), 90))
+                        using (var b = new LinearGradientBrush(marea, ButtonFaceColour, ButtonFaceColour.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
                     }
                 }
@@ -124,7 +126,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (Focused)
                     {
-                        using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                        using (Pen p1 = new Pen(CheckBoxBorderColor) { DashStyle = DashStyle.Dash })
                         {
                             gr.DrawRectangle(p1, tickarea);
                         }
@@ -133,60 +135,31 @@ namespace GLOFC.GL4.Controls
                     tickarea.Inflate(-1, -1);
                 }
 
-                float discaling = Enabled ? 1.0f : DisabledScaling;
-
-                Color backcolour = (Enabled && Hover) ? MouseOverBackColor : ButtonBackColor.Multiply(discaling);
-
-                if (!hasimages)      // draw the over box of the checkbox if no images
-                {
-                    using (Pen outer = new Pen(backcolour))
-                        gr.DrawRectangle(outer, tickarea);
-                }
-
-                tickarea.Inflate(-1, -1);
-
-                Rectangle checkarea = tickarea;
-                checkarea.Width++; checkarea.Height++;          // convert back to area
-
-                //                System.Diagnostics.Debug.WriteLine("Owner draw " + Name + checkarea + rect);
-
-                if (hasimages)
-                {
-                    if (Enabled && Hover)                // if mouse over, draw a nice box around it
-                    {
-                        using (Brush mover = new SolidBrush(MouseOverBackColor))
-                        {
-                            gr.FillRectangle(mover, checkarea);
-                        }
-                    }
-                }
-                else
-                {                                   // in no image, we draw a set of boxes
-                    using (Pen second = new Pen(CheckBoxBorderColor.Multiply(discaling), 1F))
-                        gr.DrawRectangle(second, tickarea);
-
-                    tickarea.Inflate(-1, -1);
-
-                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
-                        gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
-
-                    using (Pen third = new Pen(backcolour.Multiply(discaling), 1F))
-                        gr.DrawRectangle(third, tickarea);
-                }
-
                 if (Text.HasChars())
                 {
                     using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center, FormatFlags = StringFormatFlags.FitBlackBox })
                         DrawText(textarea, gr, fmt);
                 }
 
-                if (hasimages)
+                if (!hasimages)
                 {
-                    DrawImage(checkarea, gr);
+                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(backdisscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
+                    using (Brush inner = new SolidBrush(back))
+                        gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
+
+                    using (Pen outer = new Pen(CheckBoxBorderColor))
+                        gr.DrawRectangle(outer, tickarea);
+
+                    tickarea.Inflate(-1, -1);
+
+                    Rectangle checkarea = tickarea;
+                    checkarea.Width++; checkarea.Height++;          // convert back to area
+
+                    DrawTick(checkarea, Color.FromArgb(200, CheckColor.Multiply(foredisscaling)), CheckState, gr);
                 }
                 else
                 {
-                    DrawTick(checkarea, Color.FromArgb(200, CheckColor.Multiply(discaling)), CheckState, gr);
+                    DrawImage(tickarea, gr);
                 }
             }
             else
@@ -205,7 +178,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (Focused)
                     {
-                        using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                        using (Pen p1 = new Pen(MouseDownColor) { DashStyle = DashStyle.Dash })
                         {
                             gr.DrawRectangle(p1, tickarea);
                         }
@@ -214,48 +187,35 @@ namespace GLOFC.GL4.Controls
                     tickarea.Inflate(-1, -1);
                 }
 
-                Color basecolor = Hover ? MouseOverBackColor : ButtonBackColor;
-
-                using (Brush outer = new SolidBrush(basecolor))
-                    gr.FillEllipse(outer, tickarea);
-
-                tickarea.Inflate(-1, -1);
-
-                if (Enabled)
-                {
-                    using (Brush second = new SolidBrush(CheckBoxInnerColor))
-                        gr.FillEllipse(second, tickarea);
-
-                    tickarea.Inflate(-1, -1);
-
-                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor, basecolor, 225))
-                        gr.FillEllipse(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
-                }
-                else
-                {
-                    using (Brush disabled = new SolidBrush(CheckBoxInnerColor))
-                    {
-                        gr.FillEllipse(disabled, tickarea);
-                    }
-                }
-
-                tickarea.Inflate(-1, -1);
-
-                if (Checked)
-                {
-                    Color c1 = Color.FromArgb(255, CheckColor);
-
-                    using (Brush inner = new LinearGradientBrush(tickarea, CheckBoxInnerColor, c1, 45))
-                        gr.FillEllipse(inner, tickarea);      // fill slightly over size to make sure all pixels are painted
-
-                    using (Pen ring = new Pen(CheckColor))
-                        gr.DrawEllipse(ring, tickarea);
-                }
-
                 if (Text.HasChars())
                 {
                     using (StringFormat fmt = new StringFormat() { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
                         DrawText(textarea, gr, fmt);
+                }
+
+                if (!hasimages)
+                {
+                    using (Brush outer = new SolidBrush(CheckBoxBorderColor))
+                        gr.FillEllipse(outer, tickarea);
+
+                    tickarea.Inflate(-1, -1);
+
+                    Color back = !Enabled ? CheckBoxInnerColor.Multiply(backdisscaling) : (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left) ? MouseDownColor : Hover ? MouseOverColor : CheckBoxInnerColor;
+                    //System.Diagnostics.Debug.WriteLine($"{Name} back {back}");
+                    using (Brush second = new SolidBrush(back))
+                        gr.FillEllipse(second, tickarea);
+
+                    tickarea.Inflate(-2, -2);
+
+                    if (Checked)
+                    {
+                        using (Brush second = new SolidBrush(CheckColor.Multiply(foredisscaling)))
+                            gr.FillEllipse(second, tickarea);
+                    }
+                }
+                else
+                {
+                    DrawImage(tickarea, gr);
                 }
             }
         }
@@ -280,7 +240,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Focused && ShowFocusBox)
             {
-                using (Pen p1 = new Pen(MouseDownBackColor) { DashStyle = DashStyle.Dash })
+                using (Pen p1 = new Pen(DefaultCheckBoxBorderColor) { DashStyle = DashStyle.Dash })
                 {
                     Rectangle fr = box;
                     fr.Inflate(-1, -1);
@@ -289,11 +249,11 @@ namespace GLOFC.GL4.Controls
             }
             if (this.Text.HasChars())
             {
-                using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                 {
                     if (FontToUse == null || FontToUse.FontFamily != Font.FontFamily || FontToUse.Style != Font.Style || FontToUse.SizeInPoints != Font.SizeInPoints)
                         FontToUse = g.GetFontToFitRectangle(this.Text, Font, box, fmt);
-
+                    //System.Diagnostics.Debug.WriteLine($"Checkbox {Name} Font {Font.ToString()}");
                     g.DrawString(this.Text, FontToUse, textb, box, fmt);
                 }
             }

@@ -22,6 +22,8 @@ namespace GLOFC.GL4.Controls
     {
         public GLTableLayoutPanel(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultTableLayoutBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
         }
 
         public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
@@ -98,19 +100,23 @@ namespace GLOFC.GL4.Controls
 
                             foreach (GLBaseControl c in clist)
                             {
-                              //  System.Diagnostics.Debug.WriteLine("Table layout " + c.Name + " " + cellarea);
+                                //  System.Diagnostics.Debug.WriteLine("Table layout " + c.Name + " " + cellarea);
 
                                 if (c.Dock != DockingType.None)        // if docking,
+                                {
                                     c.Layout(ref cellarea);     // allow docking to work in the cell area, it uses the area to set position
+                                }
                                 else
                                 {
-                                 //   System.Diagnostics.Debug.WriteLine("Top Left layout " + c.Name + " " + cellarea);
-                                    c.SetNI(location:cellarea.Location, size:cellarea.Size, clipsizetobounds:true);
+                                    //   System.Diagnostics.Debug.WriteLine("Top Left layout " + c.Name + " " + cellarea);
+                                    c.SetNI(location: cellarea.Location, size: cellarea.Size, clipsizetobounds: true);
                                 }
 
                                 c.CallPerformRecursiveLayout();
                             }
                         }
+
+                        ClearLayoutFlags();
                     }
                     else
                         okay = false;

@@ -28,7 +28,9 @@ namespace GLOFC.GL4.Controls
         public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
         {
             SetNI(padding: new Padding(GBPadding), margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
-            BorderColorNI = DefaultBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultGroupBoxBackColor;
+            BorderColorNI = DefaultGroupBoxBorderColor;
+            foreColor = DefaultGroupBoxForeColor;
             text = title;
         }
 
@@ -95,7 +97,7 @@ namespace GLOFC.GL4.Controls
 
                 if (this.Text.HasChars())
                 { 
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         Rectangle titlearea = new Rectangle(GBXoffset, 0, twidth, GroupBoxHeight );
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);

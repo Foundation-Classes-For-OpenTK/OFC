@@ -22,7 +22,7 @@ using System.Windows.Forms;
 
 namespace GLOFC.Controller
 {
-    public class PositionCamerad       // holds lookat and eyepositions and camera
+    public class PositionCamerad        // holds lookat and eyepositions and camera
     {
         #region Positions
 
@@ -31,16 +31,14 @@ namespace GLOFC.Controller
 
         public double EyeDistance { get { return (lookat - EyePosition).Length; } }
 
-        public void Translate(Vector3d pos)
+        public void Translate(Vector3d pos, bool killslew = true)
         {
-            KillSlew();
-            lookat += pos;
-            eyeposition += pos;
+            if ( killslew) KillSlew();  lookat += pos;  eyeposition += pos;
         }
 
-        public void MoveLookAt(Vector3d value)
+        public void MoveLookAt(Vector3d value, bool killslew = true)
         {
-            KillSlew(); Vector3d eyeoffset = eyeposition - lookat; lookat = value; eyeposition = lookat + eyeoffset;
+            if ( killslew) KillSlew(); var eyeoffset = eyeposition - lookat; lookat = value; eyeposition = lookat + eyeoffset;
         }
 
         //public Vector3d LookAt { get { return lookat; } set {  } }
@@ -211,12 +209,13 @@ namespace GLOFC.Controller
 
                 if (timetozoom < 0)       // auto estimate on log distance between them
                 {
-                    timetozoom = (double)(Math.Abs(Math.Log10(zoomSlewTarget / ZoomFactor)) * 1.5);
+                    var log = Math.Log10(zoomSlewTarget / ZoomFactor);
+                    timetozoom = (double)(Math.Abs(log) * 0.75);
                 }
 
                 zoomSlewTime = timetozoom;
                 zoomSlewProgress = 0;
-                //System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
+                System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
             }
         }
 
@@ -296,7 +295,7 @@ namespace GLOFC.Controller
                 //System.Diagnostics.Debug.WriteLine($"Kill target pos slew at {targetposSlewProgress}");
                 targetposSlewProgress = 1.0f;
             }
-            zoomSlewTarget = 0;
+            zoomSlewProgress = 1.0f;
             cameraDirSlewProgress = 1.0f;
         }
 
@@ -340,12 +339,12 @@ namespace GLOFC.Controller
                 if (newprogress >= 1.0f)
                 {
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
-                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
+                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
                 }
                 else
                 {
                     double newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    // System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {newprogress:N2} targ {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 
@@ -547,22 +546,26 @@ namespace GLOFC.Controller
 
             double newzoom = 0;
 
+            double dist = ZoomMax - ZoomMin;
+            double div = 2048;
+            double pow = 3;
+
             if (kbd.HasBeenPressed(Keys.D1, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMax;
             if (kbd.HasBeenPressed(Keys.D2, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 100;                                                      // Factor 3 scale
+                newzoom = ZoomMin + dist * (Math.Pow(7, pow) / div);
             if (kbd.HasBeenPressed(Keys.D3, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 33;
+                newzoom = ZoomMin + dist * (Math.Pow(6, pow) / div);
             if (kbd.HasBeenPressed(Keys.D4, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 11F;
+                newzoom = ZoomMin + dist * (Math.Pow(5, pow) / div);
             if (kbd.HasBeenPressed(Keys.D5, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 3.7F;
+                newzoom = ZoomMin + dist * (Math.Pow(4, pow) / div);
             if (kbd.HasBeenPressed(Keys.D6, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 1.23F;
+                newzoom = ZoomMin + dist * (Math.Pow(3, pow) / div);
             if (kbd.HasBeenPressed(Keys.D7, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 0.4F;
+                newzoom = ZoomMin + dist * (Math.Pow(2, pow) / div);
             if (kbd.HasBeenPressed(Keys.D8, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 0.133F;
+                newzoom = ZoomMin + dist * (Math.Pow(1, pow) / div);
             if (kbd.HasBeenPressed(Keys.D9, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMin;
 

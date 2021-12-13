@@ -1,4 +1,5 @@
 ﻿using GLOFC;
+using GLOFC.GL4;
 using Newtonsoft.Json.Linq;
 using OpenTK;
 using System;
@@ -10,80 +11,65 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
-    public class OrbitalBodyInformation
+    public class BodyInfo
     {
-        public string Name { get; set; }                // for naming
-        public string FullName { get; set; }                // for naming
-        public string NodeType { get; set; }                // for naming
-        public string StarClass { get; set; }                // for naming
-        public string PlanetClass { get; set; }                // for naming
-        public Vector3d CalculatedPosition { get; set; }    // used during calculation
-        public int CentralBodyIndex { get; set; }            // central body reference
-        public double Mass { get; set; } = 1;        // in KG.  Not needed for orbital parameters
-        public double OrbitalPeriod { get; set; }
-        public double AxialTiltDeg { get; set; }
-        public double RadiusKm { get; set; }          // in km
+        public KeplerOrbitElements kepler;
+        public GLRenderDataWorldPositionColor orbitpos;
+        public GLRenderDataWorldPositionColor bodypos;
+        public StarScan.ScanNode scannode;
+        public StarScan.ScanNode parent;
+        public int index;
+        public int parentindex;
 
-        public static KeplerOrbitElements Read(JObject json)
+        static public void CreateInfoTree(StarScan.ScanNode sn, StarScan.ScanNode parent, int p, double prevmasskg, List<BodyInfo> oilist)
         {
-            string time = json["Epoch"].Str();
-            DateTime epoch = DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
-     
-            KeplerOrbitElements k = new KeplerOrbitElements(true,
-                    json["SemiMajorAxis"].Double(0),        // km
-                    json["Eccentricity"].Double(0),
-                    json["Inclination"].Double(0),
-                    json["AscendingNode"].Double(0),
-                    json["Periapis"].Double(0),
-                    json["MeanAnomaly"].Double(0),
-                    epoch.ToJulianDate()
+            KeplerOrbitElements kepler = null;
+
+            if (sn.scandata != null && sn.scandata.nSemiMajorAxis.HasValue)
+            {
+                kepler = new KeplerOrbitElements(true,
+                    sn.scandata.nSemiMajorAxis.Value,
+                    sn.scandata.nEccentricity != null ? sn.scandata.nEccentricity.Value : 0,                    // protect against missing data
+                    sn.scandata.nOrbitalInclination != null ? sn.scandata.nOrbitalInclination.Value : 0,
+                    sn.scandata.nAscendingNode != null ? sn.scandata.nAscendingNode.Value : 0,
+                    sn.scandata.nPeriapsis != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.nMeanAnomaly != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.EventTimeUTC.ToJulianDate()
                 );
-            
-            OrbitalBodyInformation ai = new OrbitalBodyInformation()
-            {
-                Name = json["Name"].Str(),
-                FullName = json["FullName"].Str(),
-                NodeType = json["NodeType"].Str(),
-                StarClass = json["StarClass"].StrNull(),
-                PlanetClass = json["PlanetClass"].StrNull(),
-                Mass = json["Mass"].Double(0),
-                OrbitalPeriod = json["OrbitalPeriod"].Double(0),
-                AxialTiltDeg = json["AxialTilt"].Double(0),
-                RadiusKm = json["Radius"].Double(0),
-            };
-            k.Tag = ai;
-            return k;
-        }
-
-        // jo is the EDD standard body orbital parameter output
-        // recurses in to create additional bodies if Bodies is present
-        public static void AddToBodyList(JObject jo, List<KeplerOrbitElements> bodylist, double prevmass, int index)
-        {
-            var kepler = Read(jo);
-            OrbitalBodyInformation ai = kepler.Tag as OrbitalBodyInformation;
-            if (prevmass == 0 && kepler.SemiMajorAxis > 0)
-            {
-                kepler.CentralMass = kepler.CalculateMass(ai.OrbitalPeriod);
             }
             else
-                kepler.CentralMass = prevmass;
-
-            ai.CentralBodyIndex = index;
-
-            index = bodylist.Count;
-            bodylist.Add(kepler);
-
-            if (jo.ContainsKey("Bodies"))
             {
-                JArray ja = jo["Bodies"] as JArray;
-                foreach (var o in ja)
+                System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info");
+            }
+
+            BodyInfo oi = new BodyInfo();
+            oi.kepler = kepler;
+            oi.scannode = sn;
+            oi.index = oilist.Count;
+            oi.parentindex = p;
+            oi.orbitpos = new GLRenderDataWorldPositionColor();
+            oi.bodypos = new GLRenderDataWorldPositionColor();
+            oilist.Add(oi);
+
+            if (kepler != null)
+            {
+                if (prevmasskg == 0 && kepler.SemiMajorAxis > 0)
                 {
-                    AddToBodyList(o as JObject, bodylist, ai.Mass, index);
+                    kepler.CentralMass = kepler.CalculateMass(sn.scandata.nOrbitalPeriod.Value);
+                }
+                else
+                    kepler.CentralMass = prevmasskg;
+            }
+
+
+            if (sn.Children != null)
+            {
+                foreach (var kvp in sn.Children)
+                {
+                    CreateInfoTree(kvp.Value, sn, oi.index, sn.scandata?.nMassKG != null ? sn.scandata.nMassKG.Value : 0, oilist);
                 }
             }
         }
-
-
     }
 
 }

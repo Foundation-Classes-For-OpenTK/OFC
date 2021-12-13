@@ -31,15 +31,14 @@ namespace GLOFC.Controller
 
         public float EyeDistance { get { return (lookat - EyePosition).Length; } }
 
-        public void Translate(Vector3 pos)
+        public void Translate(Vector3 pos, bool killslew = true)
         {
-            KillSlew();
-            lookat += pos;
-            eyeposition += pos;
+            if (killslew) KillSlew(); lookat += pos; eyeposition += pos;
         }
-        public void MoveLookAt(Vector3 value)
+
+        public void MoveLookAt(Vector3 value, bool killslew = true)
         {
-            KillSlew(); Vector3 eyeoffset = eyeposition - lookat; lookat = value; eyeposition = lookat + eyeoffset;
+            if (killslew) KillSlew(); var eyeoffset = eyeposition - lookat; lookat = value; eyeposition = lookat + eyeoffset;
         }
 
         // time <0 estimate, 0 instant >0 time
@@ -207,7 +206,8 @@ namespace GLOFC.Controller
 
                 if (timetozoom < 0)       // auto estimate on log distance between them
                 {
-                    timetozoom = (float)(Math.Abs(Math.Log10(zoomSlewTarget / ZoomFactor)) * 1.5);
+                    var log = Math.Log10(zoomSlewTarget / ZoomFactor);
+                    timetozoom = (float)(Math.Abs(log) * 0.75);
                 }
 
                 zoomSlewTime = timetozoom;
@@ -292,7 +292,7 @@ namespace GLOFC.Controller
                 //System.Diagnostics.Debug.WriteLine($"Kill target pos slew at {targetposSlewProgress}");
                 targetposSlewProgress = 1.0f;
             }
-            zoomSlewTarget = 0;
+            zoomSlewProgress = 1.0f;
             cameraDirSlewProgress = 1.0f;
         }
 
@@ -543,24 +543,29 @@ namespace GLOFC.Controller
 
             float newzoom = 0;
 
+            float dist = ZoomMax - ZoomMin;
+            float div = 2048;
+            float pow = 3;
+
             if (kbd.HasBeenPressed(Keys.D1, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMax;
             if (kbd.HasBeenPressed(Keys.D2, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 100;                                                      // Factor 3 scale
+                newzoom = ZoomMin + dist * (float)(Math.Pow(7, pow) / div);
             if (kbd.HasBeenPressed(Keys.D3, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 33;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(6, pow) / div);
             if (kbd.HasBeenPressed(Keys.D4, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 11F;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(5, pow) / div);
             if (kbd.HasBeenPressed(Keys.D5, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 3.7F;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(4, pow) / div);
             if (kbd.HasBeenPressed(Keys.D6, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 1.23F;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(3, pow) / div);
             if (kbd.HasBeenPressed(Keys.D7, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 0.4F;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(2, pow) / div);
             if (kbd.HasBeenPressed(Keys.D8, KeyboardMonitor.ShiftState.Ctrl))
-                newzoom = 0.133F;
+                newzoom = ZoomMin + dist * (float)(Math.Pow(1, pow) / div);
             if (kbd.HasBeenPressed(Keys.D9, KeyboardMonitor.ShiftState.Ctrl))
                 newzoom = ZoomMin;
+
 
             if (newzoom != 0)
             {

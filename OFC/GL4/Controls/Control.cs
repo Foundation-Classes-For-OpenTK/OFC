@@ -30,7 +30,7 @@ namespace GLOFC.GL4.Controls
         // bounds of the window - include all margin/padding/borders/
         // co-ords are in offsets from 0,0 being the parent top left corner. See also Set()
 
-        public Rectangle Bounds { get { return window; } set { SetPos(value.Left, value.Top, value.Width, value.Height); } }
+        public Rectangle Bounds { get { return window; } set { SetPos(value.Left, value.Top, value.Width, value.Height); } } 
         public int Left { get { return window.Left; } set { SetPos(value, window.Top, window.Width, window.Height); } }
         public int Right { get { return window.Right; } set { SetPos(window.Left, window.Top, value - window.Left, window.Height); } }
         public int Top { get { return window.Top; } set { SetPos(window.Left, value, window.Width, window.Height); } }
@@ -40,11 +40,14 @@ namespace GLOFC.GL4.Controls
         public Point Location { get { return new Point(window.Left, window.Top); } set { SetPos(value.X, value.Y, window.Width, window.Height); } }
         public Size Size { get { return new Size(window.Width, window.Height); } set { SetPos(window.Left, window.Top, value.Width, value.Height); } }
 
+        public Size MinimumSize { get { return minimumsize; } set { if (value != minimumsize) { minimumsize = value; SetPos(window.Left, window.Top, window.Width, window.Height); } } }
+        public Size MaximumSize { get { return maximumsize; } set { if (value != maximumsize) { maximumsize = value; SetPos(window.Left, window.Top, window.Width, window.Height); } } }
+
         // only for top level windows at the moment, we can throw them on the screen scaled..  <1 smaller, >1 bigger
         public SizeF? ScaleWindow { get { return altscale; } set { altscale = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } }
         public Size ScaledSize { get { if (altscale != null) return new Size((int)(Width * ScaleWindow.Value.Width), (int)(Height * ScaleWindow.Value.Height)); else return Size; } }
 
-        // padding/margin and border control
+        // padding/margin and border control (Do not apply to display control)
         public Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
         public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
@@ -64,16 +67,18 @@ namespace GLOFC.GL4.Controls
         public Point ClientLocation { get { return new Point(ClientLeftMargin, ClientTopMargin); } }
         public Rectangle ClientRectangle { get; private set; }
 
-        // docking control
-        public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; InvalidateLayoutParent(); } } }
-        public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; InvalidateLayoutParent(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
+        // docking control 
+        public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; ParentInvalidateLayout(); } } }
+        public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; ParentInvalidateLayout(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
+        public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; ParentInvalidateLayout(); } } }
+        
         // Autosize
-        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; InvalidateLayoutParent(); } } }
+        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; ParentInvalidateLayout(); } } }
 
         // toggle controls
         public bool Enabled { get { return enabled; } set { if (enabled != value) { SetEnabled(value); Invalidate(); } } }
-        public bool Visible { get { return visible; } set { if (visible != value) { visible = value; InvalidateLayoutParent(); } } }
+        public bool Visible { get { return visible; } set { if (visible != value) { visible = value; ParentInvalidateLayout(); } } }
 
         // Top level windows only, control Opacity
         public float Opacity { get { return opacity; } set { if (value != Opacity) { opacity = value; TopLevelControlUpdate = true; FindDisplay()?.ReRender(); } } }
@@ -105,8 +110,8 @@ namespace GLOFC.GL4.Controls
         public string ToolTipText { get; set; } = null;
 
         // Table layout
-        public int Row { get { return row; } set { row = value; InvalidateLayoutParent(); } }       // for table layouts
-        public int Column { get { return column; } set { column = value; InvalidateLayoutParent(); } } // for table layouts
+        public int Row { get { return row; } set { row = value; ParentInvalidateLayout(); } }       // for table layouts
+        public int Column { get { return column; } set { column = value; ParentInvalidateLayout(); } } // for table layouts
 
         // Flow layout
         public Point FlowOffsetPosition { get; set; } = Point.Empty;        // optionally offset this control from its flow position by this value
@@ -133,13 +138,14 @@ namespace GLOFC.GL4.Controls
         // Order control
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
-        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
-        public bool TopLevelControlUpdate { get; set; } = false;
+        // Global themer enable - applied at Add. Do we apply it to this control?
+        public bool EnableThemer { get; set; } = true;
 
-        // control lists
-        public virtual List<GLBaseControl> ControlsIZ { get { return childreniz; } }      // read only, in inv zorder, so 0 = last layout first drawn
-        public virtual List<GLBaseControl> ControlsZ { get { return childrenz; } }        // read only, in zorder, so 0 = first layout last painted
-        public GLBaseControl this[string s] { get { return ControlsZ.Find((x)=>x.Name == s); } }    // null if not
+        // children control list
+
+        public virtual IList<GLBaseControl> ControlsIZ { get { return childreniz.AsReadOnly(); } }      // read only, in inv zorder, so 0 = last layout first drawn
+        public virtual IList<GLBaseControl> ControlsZ { get { return childrenz.AsReadOnly(); } }        // read only, in zorder, so 0 = first layout last painted
+        public GLBaseControl this[string s] { get { return childrenz.Find((x)=>x.Name == s); } }    // null if not
 
         // events
 
@@ -164,83 +170,22 @@ namespace GLOFC.GL4.Controls
         public Action<Object> Moved { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlAdd { get; set; } = null;
         public Action<GLBaseControl, GLBaseControl> ControlRemove { get; set; } = null;
-
+        // globals
         public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;        // sent to all controls on a focus change. Either may be null
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;       // sent to all controls on a click
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;       // sent to all controls on a click. GLBaseControl may be null
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       // only hook on GLControlDisplay.  Has all the GLMouseEventArgs fields filled out including control ones
 
-        // default color schemes and sizes
+        // global Thermer
 
         public static Action<GLBaseControl> Themer = null;                 // set this up, will be called when the control is added for you to theme the colours/options
-
-        static public Color DefaultFormBackColor = Color.FromArgb(255,255,255);
-        static public Color DefaultFormTextColor = Color.Black;
-        static public Color DefaultControlBackColor = Color.Gray;
-        static public Color DefaultControlForeColor = Color.White;
-        static public Color DefaultPanelBackColor = Color.FromArgb(140, 140, 140);
-        static public Color DefaultLabelForeColor = Color.Black;
-        static public Color DefaultBorderColor = Color.Gray;
-        static public Color DefaultButtonBorderBackColor = Color.FromArgb(80, 80, 80);
-        static public Color DefaultButtonBackColor = Color.Gray;
-        static public Color DefaultButtonBorderColor = Color.FromArgb(100, 100, 100);
-        static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
-        static public Color DefaultCheckBoxBorderColor = Color.White;
-        static public Color DefaultCheckBoxInnerColor = Color.Wheat;
-        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(160, 160, 160);
-        static public Color DefaultCheckColor = Color.DarkBlue;
-        static public Color DefaultErrorColor = Color.OrangeRed;
-        static public Color DefaultHighlightColor = Color.Red;
-
-        static public Color DefaultLineSeparColor = Color.Green;
-
-        // privates
-        private SizeF? altscale = null;
-        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
-        private float opacity = 1.0f;
-
-        // Invalidate this and therefore its children
-        public virtual void Invalidate()
-        {
-            //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
-            NeedRedraw = true;
-
-            if (BackColor == Color.Transparent)   // if we are transparent, we need the parent also to redraw to force it to redraw its background.
-            {
-                //System.Diagnostics.Debug.WriteLine("Invalidate " + Name + " is transparent, parent needs it too");
-                Parent?.Invalidate();
-            }
-
-            FindDisplay()?.ReRender();
-        }
-
-        // Invalidate and relayout
-        public void InvalidateLayout()
-        {
-            Invalidate();
-            PerformLayout();
-        }
-
-        // Invalidate and layout the parent, and therefore us
-        public void InvalidateLayoutParent()
-        {
-            //System.Diagnostics.Debug.WriteLine("Invalidate Layout Parent " + Name);
-            if (parent != null)
-            {
-                FindDisplay()?.ReRender();
-                //System.Diagnostics.Debug.WriteLine(".. Redraw and layout on " + Parent.Name);
-                parent.NeedRedraw = true;
-                parent.PerformLayout();
-            }
-        }
 
         // is ctrl us, or one of our children?  may want to override to associate other controls as us
         public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
         {
             if (ctrl == this)
                 return true;
-            foreach( var c in ControlsZ)
+            foreach( var c in childrenz)
             {
                 if (c.IsThisOrChildOf(ctrl))
                     return true;
@@ -253,7 +198,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Focused)
                 return true;
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
             {
                 if (c.IsThisOrChildrenFocused())
                     return true;
@@ -267,7 +212,7 @@ namespace GLOFC.GL4.Controls
             GLBaseControl found = null;
             int mindist = int.MaxValue;
 
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
             {
                 if (c.Focusable && c.Visible && c.Enabled )
                 {
@@ -288,42 +233,72 @@ namespace GLOFC.GL4.Controls
             return found;
         }
 
-        // Area needed for children controls
-        public Rectangle ChildArea()        
+        // Area needed for children controls. empty if none
+        public Rectangle ChildArea(Predicate<GLBaseControl> test = null)        
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
 
             foreach (var c in childrenz)
             {
-                if (c.Left < left)
-                    left = c.Left;
-                if (c.Right > right)
-                    right = c.Right;
-                if (c.Top < top)
-                    top = c.Top;
-                if (c.Bottom > bottom)
-                    bottom = c.Bottom;
+                if (test == null || test(c))
+                {
+                    if (c.Left < left)
+                        left = c.Left;
+                    if (c.Right > right)
+                        right = c.Right;
+                    if (c.Top < top)
+                        top = c.Top;
+                    if (c.Bottom > bottom)
+                        bottom = c.Bottom;
+                }
             }
 
-            return new Rectangle(left, top, right - left, bottom - top);
+            return left == int.MaxValue ? Rectangle.Empty : new Rectangle(left, top, right - left, bottom - top);
         }
 
-        // Perform layout on this and all children
-        public void PerformLayout()             // perform layout on all child containers inside us. Does not call Layout on ourselves
+        // Invalidate us - our children will also repaint
+        public virtual void Invalidate()
         {
-            if (suspendLayoutCount>0)
+            //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
+            NeedRedraw = true;
+
+            if (BackColor == Color.Transparent)   // if we are transparent, we need the parent also to redraw to force it to redraw its background.
+            {
+                //System.Diagnostics.Debug.WriteLine("Invalidate " + Name + " is transparent, parent needs it too");
+                Parent?.Invalidate();
+            }
+
+            FindDisplay()?.ReRender(); // and we need to tell the display to redraw
+        }
+
+        // Invalidate and relayout us
+        public void InvalidateLayout()
+        {
+            InvalidateLayout(this);
+        }
+
+        // Invalidate and layout the parent, and therefore us (since it the parent invalidates, all children get redrawn)
+        public void ParentInvalidateLayout()
+        {
+            parent?.InvalidateLayout(this);
+        }
+
+        // perform layout on all children, consisting first of sizing, then of laying out with their sizes
+        public void PerformLayout()
+        {
+            if (suspendLayoutCount > 0)
             {
                 needLayout = true;
                 //System.Diagnostics.Debug.WriteLine("Suspended layout on " + Name);
             }
             else
             {
-                PerformRecursiveSize(Parent?.ClientSize ?? ClientSize);         // we recusively size
+                PerformRecursiveSize();         // we recusively size
                 PerformRecursiveLayout();       // and we layout, recursively
             }
         }
 
-        // Call to halt layout
+        // Call to halt layout. On creation, layout is suspended on the new control.  On Add, layout count is reset to zero and layout can occur
         public void SuspendLayout()
         {
             suspendLayoutCount++;
@@ -340,14 +315,10 @@ namespace GLOFC.GL4.Controls
                 if (needLayout)
                 {
                     //System.Diagnostics.Debug.WriteLine("Required layout " + Name);
-                    PerformLayout();
+                    PerformRecursiveSize();         // we recusively size
+                    PerformRecursiveLayout();       // and we layout, recursively                    
                 }
             }
-        }
-
-        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly
-        {
-            PerformRecursiveLayout();
         }
 
         // attach control to desktop
@@ -368,6 +339,7 @@ namespace GLOFC.GL4.Controls
         {
             System.Diagnostics.Debug.Assert(!childrenz.Contains(child));        // no repeats
             child.parent = this;
+            child.suspendLayoutCount = 0;           // we unsuspend - controls are created suspended
 
             child.ClearFlagsDown();       // in case of reuse, clear all temp flags as child is added
 
@@ -391,10 +363,12 @@ namespace GLOFC.GL4.Controls
 
             CheckZOrder();      // verify its okay 
 
-            Themer?.Invoke(child);      // added to control, theme it
+            if ( EnableThemer)
+                Themer?.Invoke(child);      // global themer
+
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
-            InvalidateLayout();        // we are invalidated and layout
+            InvalidateLayout(child);        // we are invalidated and layout due to this child
         }
 
         // add a list of controls
@@ -413,7 +387,8 @@ namespace GLOFC.GL4.Controls
             {
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, true, true);
-                parent.InvalidateLayout();
+                parent.InvalidateLayout(null);          // invalidate parent, and indicate null so it knows the child has been removed
+                child.NeedRedraw = true;                // next time, it will need to be drawn if reused
             }
         }
 
@@ -424,7 +399,8 @@ namespace GLOFC.GL4.Controls
             {
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, false, false);
-                parent.InvalidateLayout();
+                parent.InvalidateLayout(null);
+                child.NeedRedraw = true;        // next time, it will need to be drawn
             }
         }
 
@@ -460,7 +436,7 @@ namespace GLOFC.GL4.Controls
 
                     CheckZOrder();
 
-                    InvalidateLayout();
+                    InvalidateLayout(child);
                     return false;
                 }
             }
@@ -473,13 +449,13 @@ namespace GLOFC.GL4.Controls
         {
             if (recurse)
             {
-                foreach (var c in ControlsZ)
+                foreach (var c in childrenz)
                 {
                     c.ApplyToControlOfName(wildcardname, act, recurse);
                 }
             }
 
-            List<GLBaseControl> list = ControlsZ.Where(x => x.Name.WildCardMatch(wildcardname)).ToList();
+            List<GLBaseControl> list = childrenz.Where(x => x.Name.WildCardMatch(wildcardname)).ToList();
             foreach (var c in list)
                 act(c);
         }
@@ -580,53 +556,11 @@ namespace GLOFC.GL4.Controls
             return scale;
         }
 
-        // Set multiple items at once.  Default is to invalidate it
-        public void Set(Point? location = null,
-                   Size? size = null,           // size in bounds or clientsize
-                   Size? clientsize = null,
-                   Margin? margin = null,
-                   Padding? padding = null,
-                   int? borderwidth = null,
-                   bool clipsizetobounds = false,
-                   bool invalidate = true)
-        {
-            Point oldloc = Location;
-            Size oldsize = Size;
-
-            if (clipsizetobounds)
-            {
-                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
-            }
-
-            if (margin != null)
-                this.margin = margin.Value;
-            if (padding != null)
-                this.padding = padding.Value;
-            if (borderwidth != null)
-                this.borderwidth = borderwidth.Value;
-            if (location.HasValue)
-                window.Location = location.Value;
-            if (size.HasValue)
-                window.Size = size.Value;
-            else if (clientsize.HasValue)
-                window.Size = new Size(clientsize.Value.Width + ClientWidthMargin, clientsize.Value.Height + ClientHeightMargin);
-
-            CalcClientRectangle();
-
-            if (window.Location != oldloc)
-                OnMoved();
-
-            if (oldsize != window.Size)
-                OnResize();
-
-            if (invalidate)
-                Parent?.InvalidateLayout();
-        }
-
         #endregion
 
         #region For Inheritors
 
+        // create the control. set autosize if width/height = 0 , controls are created suspended
         protected GLBaseControl(string name, Rectangle location)
         {
             this.Name = name;
@@ -637,23 +571,69 @@ namespace GLOFC.GL4.Controls
                 AutoSize = true;
             }
 
-            this.window = location;
+            lastlocation = Point.Empty;
+            lastsize = Size.Empty;
+            window = location;
+            suspendLayoutCount = 1;         // we create suspended
+
             CalcClientRectangle();
         }
 
         static protected readonly Rectangle DefaultWindowRectangle = new Rectangle(0, 0, 10, 10);
-        static protected readonly int MinimumResizeWidth = 10;
-        static protected readonly int MinimumResizeHeight = 10;
 
-        // these change without invalidation or layout - for constructors of inheritors or for Layout/SizeControl overrides
+        // all inheritors should use these NI functions
+        // in constructors of inheritors or for Layout/SizeControl overrides
+        // these change without invalidation or layout 
 
         protected Color BorderColorNI { set { bordercolor = value; } }
         protected Color BackColorNI { set { backcolor = value; } }
+        protected Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
         protected bool VisibleNI { set { visible = value; } }
         public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
         {
-            Set(location, size, clientsize, margin, padding, borderwidth, clipsizetobounds, false);
+            Point oldloc = Location;
+            Size oldsize = Size;
+
+            if (clipsizetobounds)
+            {
+                size = new Size(Math.Min(Width, size.Value.Width), Math.Min(Height, size.Value.Height));
+            }
+
+            Rectangle pw = window;      // remember previous window position in case it gets changed
+
+            if (margin != null)
+                this.margin = margin.Value;
+            if (padding != null)
+                this.padding = padding.Value;
+            if (borderwidth != null)
+                this.borderwidth = borderwidth.Value;
+            if (location.HasValue)
+                window.Location = location.Value;
+            if ( size.HasValue || clientsize.HasValue)
+            {
+                int width = size.HasValue ? size.Value.Width : clientsize.Value.Width + ClientWidthMargin;
+                int height = size.HasValue ? size.Value.Height : clientsize.Value.Height + ClientHeightMargin;
+                width = Math.Max(width, minimumsize.Width);
+                width = Math.Min(width, maximumsize.Width);
+                height = Math.Max(height, minimumsize.Height);
+                height = Math.Min(height, maximumsize.Height);
+                window.Size = new Size(width, height);
+            }
+
+            CalcClientRectangle();
+
+            if (window.Location != oldloc)      // if we moved, set previouswindow and call moved
+            {
+                lastlocation = pw.Location;
+                OnMoved();
+            }
+
+            if (oldsize != window.Size)         // if we sized, set previouswindow and call sized
+            {
+                lastsize = pw.Size;
+                OnResize();
+            }
         }
 
         protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
@@ -683,7 +663,7 @@ namespace GLOFC.GL4.Controls
             CheckZOrder();
         }
 
-        public void MakeLevelBitmap(int width , int height)     // top level controls, bitmap for
+        public void MakeLevelBitmap(int width , int height)     // make a bitmap for this level of this size
         {
             levelbmp?.Dispose();
             levelbmp = null;
@@ -695,7 +675,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible)
             {
-                var controlslist = new List<GLBaseControl>(ControlsIZ); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
+                var controlslist = new List<GLBaseControl>(childreniz); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
                 foreach (var c in controlslist)
                     c.Animate(ts);
                 var animators = new List<IControlAnimation>(Animators); // animators may remove themselves from the animation list, so we need to take a copy
@@ -706,47 +686,68 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        #region Overridables
+        #region Internal sizing and layout
 
-        // first,perform recursive sizing. 
-        // pass in the parent size of client rectangle to each size to give them a hint what they can autosize into
-
-        protected virtual void PerformRecursiveSize(Size parentclientrect)   
+        // called by above giving child reason (or null for remove) for invalidate layout
+        // overriden by display control to pick a better method to just relayout the relevant child
+        // normally we don't care about which child caused it
+        protected virtual void InvalidateLayout(GLBaseControl child)
         {
-            //System.Diagnostics.Debug.WriteLine("Size " + Name + " against " + parentclientrect);
-            SizeControl(parentclientrect);              // size ourselves against the parent
+            //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
+            Invalidate();
+            PerformLayout();
+        }
+
+        // called by displaycontrol on chosen child
+        public void PerformLayoutAndSize()
+        {
+            PerformRecursiveSize();         // we recusively size
+            var area = Parent.ClientRectangle;  // we layout ourselves
+            Layout(ref area);
+            PerformRecursiveLayout();       // and we layout children, recursively
+        }
+
+        // Perform a recursive size, on us because we need to know about children sizes, and all children inside the control
+        protected void PerformRecursiveSize()   
+        {
+            if (Parent != null)         // may be running at displaycontrol, if not, size against parent
+                SizeControl(Parent.ClientSize);     
+
+            //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
 
             foreach (var c in childrenz) // in Z order
             {
                 if (c.Visible)      // invisible children don't layout
                 {
-                    c.PerformRecursiveSize(ClientSize);
+                    c.PerformRecursiveSize();
                 }
             }
 
-            SizeControlPostChild(parentclientrect);     // if you care what size your children is, do it here
+            if (Parent != null)
+                SizeControlPostChild(Parent.ClientSize);    // And we give ourselves a change to post size to children size
         }
 
         // override to auto size before children. 
-        // Only use the NI functions to change size. 
+        // Only use the NI functions to change size. You can change position as well if you want to
         protected virtual void SizeControl(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Size " + Name + " area est is " + parentclientrect);
         }
 
         // override to auto size after the children sized themselves.
-        // Only use the NI functions to change size. 
+        // Only use the NI functions to change size. You can change position as well if you want to
         protected virtual void SizeControlPostChild(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Post Size " + Name + " area est is " + parentclientrect);
         }
 
-        // second, layout after sizing, layout children.  We are layedout by parent, and lay out our children inside our client rectangle
-
+        // performed after sizing, layout children on your control.
+        // pass our client rectangle to the children and let them layout to it
+        // if you override and do not call base, call ClearLayoutFlags after procedure to clear the layout
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
-            //System.Diagnostics.Debug.WriteLine("Laying out " + Name);
             Rectangle area = ClientRectangle;
+            //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Laying out children in {area}");
 
             foreach (var c in childrenz)     // in z order, top gets first go
             {
@@ -757,10 +758,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            //System.Diagnostics.Debug.WriteLine("Finished Laying out " + Name);
-
-            //if (suspendLayoutSet)  System.Diagnostics.Debug.WriteLine("Removing suspend on " + Name);
-
             ClearLayoutFlags();
         }
 
@@ -769,20 +766,57 @@ namespace GLOFC.GL4.Controls
             suspendLayoutCount = 0;   // we can't be suspended
             needLayout = false;     // we have layed out
         }
+        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
+        {
+            PerformRecursiveLayout();
+        }
 
         // standard layout function, layout yourself inside the area, return area left.
-        public virtual void Layout(ref Rectangle parentarea)     
+        // you can override this one to perform your own specific layout
+        // if so, you must call CalcClientRectangle 
+        public virtual void Layout(ref Rectangle parentarea)
         {
-            //System.Diagnostics.Debug.WriteLine("Control " + Name + " " + window + " " + Dock);
+          //  System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea} {docktype} {Anchor}");
+
             int dockedwidth = DockPercent > 0 ? ((int)(parentarea.Width * DockPercent)) : (window.Width);
             int dockedheight = DockPercent > 0 ? ((int)(parentarea.Height * DockPercent)) : (window.Height);
             int wl = Width;
             int hl = Height;
 
-            Rectangle oldwindow = window;
             Rectangle areaout = parentarea;
 
-            if (docktype == DockingType.Fill)
+            if (docktype == DockingType.None)
+            {
+                // this relies on the previouswindow property to be right, so not multiple resizes before layout. Hopefully this works
+
+                if (Parent != null && Anchor != AnchorType.None)
+                {
+                    int clientpreviouswidth = (Parent.lastsize.Width - Parent.ClientWidthMargin);
+                    int clientpreviousheight = (Parent.lastsize.Height - Parent.ClientHeightMargin);
+
+                    if ((Anchor & AnchorType.Right) != 0)
+                    {
+                        if (clientpreviouswidth > Right)        // wait till bigger than window size
+                        {
+                            int rightoffset = clientpreviouswidth - Right;
+                            int newright = parentarea.Right - rightoffset;
+                            window = new Rectangle(newright - Width, window.Top, Width, Height);
+                            //System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {rightoffset} -> {newright}");
+                        }
+                    }
+                    if ((Anchor & AnchorType.Bottom) != 0)
+                    {
+                        if (clientpreviousheight > Bottom)
+                        {
+                            int bottomoffset = clientpreviousheight - Bottom;
+                            int newbottom = parentarea.Bottom - bottomoffset;
+                            window = new Rectangle(window.Left, newbottom - Height, Width, Height);
+                            // System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {bottomoffset} -> {newbottom}");
+                        }
+                    }
+                }
+            }
+            else if (docktype == DockingType.Fill)
             {
                 window = parentarea;
                 areaout = new Rectangle(0, 0, 0, 0);
@@ -795,8 +829,13 @@ namespace GLOFC.GL4.Controls
                 Height = Math.Min(parentarea.Height, Height);
                 window = new Rectangle(xcentre - Width / 2, ycentre - Height / 2, Width, Height);       // centre in area, bounded by area, no change in area in
             }
-            else if (docktype == DockingType.None)
+            else if (docktype == DockingType.Width)
             {
+                window = new Rectangle(0, Top, parentarea.Width, Height);       // dock to full width, but with same Y/Height
+            }
+            else if (docktype == DockingType.Height)
+            {
+                window = new Rectangle(Left, 0, Width, parentarea.Height);       // dock to full width, but with same Y/Height
             }
             else if (docktype >= DockingType.Bottom)
             {
@@ -855,26 +894,12 @@ namespace GLOFC.GL4.Controls
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
             }
 
-            CalcClientRectangle(); // ensure client rectangle tracks window
+            CalcClientRectangle();
 
             //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
 
-            CheckBitmapAfterLayout();       // check bitmap, virtual as inheritors may need to override this, make sure bitmap is the same width/height as ours
-                                            // needs to be done in layout as ControlDisplay::PerformRecursiveLayout sets the textures up to match.
-
             parentarea = areaout;
-        }
-
-        // Override if required if you run a bitmap. Standard actions is to replace it if width/height is different.
-
-        protected virtual void CheckBitmapAfterLayout()
-        {
-            if (levelbmp != null && ( levelbmp.Width != Width || levelbmp.Height != Height ))
-            {
-                //System.Diagnostics.Debug.WriteLine("Remake bitmap for " + Name);
-                levelbmp.Dispose();
-                levelbmp = new Bitmap(Width, Height);       // occurs for controls directly under form
-            }
+          //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
         }
 
         // gr = null at start, else gr used by parent
@@ -884,20 +909,16 @@ namespace GLOFC.GL4.Controls
 
         public virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
         {
-            Rectangle parentarea = bounds;                      // remember the bounds passed
+            Graphics backgr = parentgr;
 
-            Graphics gr = parentgr;                             // we normally use the parent gr
-
-            if (levelbmp != null)                               // bitmap on this level, use it for itself and its children
+            if (parentgr == null)     // top level window, under display control, if this is true
             {
                 cliparea = bounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      // restate area in terms of bitmap, this is the bounds and the clip area
 
-                gr = Graphics.FromImage(levelbmp);              // get graphics for it
-                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
-                gr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                backgr = Graphics.FromImage(levelbmp);              // get graphics for it
+                backgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                backgr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
             }
-
-            System.Diagnostics.Debug.Assert(gr != null);        // must normally be set, as bitmaps are created for controls under display
 
             bool redrawn = false;
 
@@ -909,73 +930,103 @@ namespace GLOFC.GL4.Controls
                 NeedRedraw = false;             // we have been redrawn
                 redrawn = true;                 // and signal up we have been redrawn
 
-                gr.SetClip(cliparea);   // set graphics to the clip area so we can draw the background/border
-                gr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
+                backgr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
+                backgr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
-                //System.Diagnostics.Debug.WriteLine("..PaintBack {0} in ca {1} clip {2}", Name, bounds, cliparea);
-                DrawBack(new Rectangle(0,0,Width,Height), gr, BackColor, BackColorGradientAlt, BackColorGradientDir);
+                //System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
+                DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
-                DrawBorder(gr, BorderColor, BorderWidth);
-                gr.ResetTransform();
+                DrawBorder(backgr, BorderColor, BorderWidth);
+                backgr.ResetTransform();
             }
-
-            // client area, in terms of last bitmap
-            Rectangle clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
-
-            foreach( var c in childreniz)       // in inverse Z order, last is top Z
+            else
             {
-                if (c.Visible)
-                {
-                    Rectangle childbounds = new Rectangle(clientarea.Left + c.Left,     // not bounded by clip area, in bitmap coords
-                                                          clientarea.Top + c.Top,
-                                                          c.Width,
-                                                          c.Height);
-
-                    // clip area is progressively narrowed as we go down the children
-                    // its the minimum of the previous clip area
-                    // the child bounds
-                    // and the client rectangle
- 
-                    int cleft = Math.Max(childbounds.Left, cliparea.Left);          // clipped to child left or cliparea left
-                    cleft = Math.Max(cleft, bounds.Left + this.ClientLeftMargin);
-                    int ctop = Math.Max(childbounds.Top, cliparea.Top);             // clipped to child top or cliparea top
-                    ctop = Math.Max(ctop, bounds.Top + this.ClientTopMargin);
-                    int cright = Math.Min(childbounds.Left + c.Width, cliparea.Right);  // clipped to child left+width or the cliparea right
-                    cright = Math.Min(cright, bounds.Right - this.ClientRightMargin);     // additionally clipped to our bounds right less its client margin
-                    int cbot = Math.Min(childbounds.Top + c.Height, cliparea.Bottom);   // clipped to child bottom or cliparea bottom
-                    cbot = Math.Min(cbot, bounds.Bottom - this.ClientBottomMargin);       // additionally clipped to bounds bottom less its client margin
-
-                    Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
-
-                    redrawn |= c.Redraw(gr, childbounds, childcliparea, forceredraw);   // draw, into current gr
-                }
+             //   System.Diagnostics.Debug.WriteLine($"{Name} does not need draw");
             }
 
-            if ( forceredraw)       // will be set if NeedRedrawn or forceredrawn
+            // now do the children, painting in clientgr
             {
-                //System.Diagnostics.Debug.WriteLine("..Paint {0} in ca {1} clip {2}", Name, clientarea, cliparea);
-                gr.SetClip(cliparea);   // set graphics to the clip area
+                Rectangle ccliparea = cliparea;     
+                Rectangle cbounds = bounds;
+                Graphics clientgr = backgr;
+                Margin cmargin;
+                Rectangle clientarea;
 
-                gr.TranslateTransform(clientarea.X, clientarea.Y);   // move to client 0,0
-
-                Paint(gr);
-
-                gr.ResetTransform();
-
-                if (parentgr != null && levelbmp != null)  // have a parent gr, and we have our own level bmp, we may be a scrollable panel
+                if (parentgr != null && levelbmp != null)      // if we have a sub bitmap, which is the bitmap for the client region only
                 {
-                    parentgr.SetClip(parentarea);       // must set the clip area again to address the parent area      
-                    PaintIntoParent(parentarea, parentgr);      // give it a chance to draw our bitmap into the parent bitmap
+                    // restate area in terms of client rectangle bitmap, this is the bounds and the clip area
+                    clientarea = ccliparea = cbounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      
+                    cmargin = new Margin(0);        // no margins around the bitmap - because its the client bitmap we are dealing with
+
+                    clientgr = Graphics.FromImage(levelbmp);              // get graphics for it
+                    clientgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+                    clientgr.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
                 }
+                else
+                {
+                    // no new bitmap, so we work out the client area of this window (in bitmap co-ords)
+                    clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
+                    cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
+                }
+
+                foreach (var c in childreniz)       // in inverse Z order, last is top Z
+                {
+                    if (c.Visible)
+                    {
+                        Rectangle childbounds = new Rectangle(clientarea.Left + c.Left,     // not bounded by clip area, in bitmap coords
+                                                              clientarea.Top + c.Top,
+                                                              c.Width,
+                                                              c.Height);
+
+                        // clip area is progressively narrowed as we go down the children
+                        // its the minimum of the previous clip area
+                        // the child bounds
+                        // and the client rectangle
+
+                        int cleft = Math.Max(childbounds.Left, ccliparea.Left);             // first clip to child bounds, or clip left
+                        cleft = Math.Max(cleft, cbounds.Left + cmargin.Left);               // then clip to client left
+
+                        int ctop = Math.Max(childbounds.Top, ccliparea.Top);                // clipped to child top or ccliparea top
+                        ctop = Math.Max(ctop, cbounds.Top + cmargin.Top);
+
+                        int cright = Math.Min(childbounds.Left + c.Width, ccliparea.Right); // clipped to child left+width or the ccliparea right
+                        cright = Math.Min(cright, cbounds.Right - cmargin.Right);           // additionally clipped to our cbounds right less its client margin
+
+                        int cbot = Math.Min(childbounds.Top + c.Height, ccliparea.Bottom);  // clipped to child bottom or ccliparea bottom
+                        cbot = Math.Min(cbot, cbounds.Bottom - cmargin.Bottom);             // additionally clipped to cbounds bottom less its client margin
+
+                        Rectangle childcliparea = new Rectangle(cleft, ctop, cright - cleft, cbot - ctop);  // clip area to pass down in bitmap coords
+
+                        redrawn |= c.Redraw(clientgr, childbounds, childcliparea, forceredraw);   // draw, into current gr
+                    }
+                }
+
+                if (parentgr != null && levelbmp != null)      // if we have a sub bitmap
+                    clientgr.Dispose();
             }
 
-            if (levelbmp != null)        // bitmap on this level, we made a GR, dispose
-                gr.Dispose();
+            if (forceredraw)       // will be set if NeedRedrawn or forceredrawn.  Draw in the backgr, which is the current bitmap
+            {
+                backgr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
+                    
+                backgr.TranslateTransform(bounds.X + ClientLeftMargin, bounds.Y + ClientTopMargin);   // move to client 0,0
+
+                //using (Pen p = new Pen(new SolidBrush(Color.Red))) { gr.DrawLine(p, new Point(0, 0), new Point(1000, 95)); } //for showing where the clip is
+
+                Paint(backgr);
+                    
+                backgr.ResetTransform();
+            }
+
+            if (parentgr == null)
+            {
+                backgr.Dispose();
+            }
 
             return redrawn;
         }
 
-        // draw border area, override to draw something different
+        // draw border area, override to draw something different. Co-ords are at 0,0 and clip area set to whole window bounds
         protected virtual void DrawBorder(Graphics gr, Color bc, float bw)
         {
             if (bw > 0)
@@ -992,7 +1043,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // draw back area - override to paint something different
+        // draw back area - override to paint something different. Co-ords are at 0,0 and clip area set to whole window bounds
         protected virtual void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
         {
             if ( levelbmp != null)                  // if we own a bitmap, reset back to transparent, erasing anything that we drew before
@@ -1018,14 +1069,11 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void Paint(Graphics gr)                   // normal override
+        // called with the clip set to your ClientRectangle or less. See Multilinetextbox code if you need to further reduce the clip area
+        // Co-ords are 0,0 - top left client rectangle. May be smaller than client rectange if clipped by parent
+        protected virtual void Paint(Graphics gr)              
         {
             //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
-        }
-
-        protected virtual void PaintIntoParent(Rectangle parentarea, Graphics parentgr) // only called if you've defined a bitmap yourself, 
-        {                                                                        // gives you a chance to paint to the parent bitmap
-           // System.Diagnostics.Debug.WriteLine("Paint Into parent {0} to {1}", Name, parentarea);
         }
 
         #endregion
@@ -1123,7 +1171,7 @@ namespace GLOFC.GL4.Controls
         protected  virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
         {
             GlobalFocusChanged?.Invoke(from, to);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalFocusChanged(from, to);
         }
@@ -1132,7 +1180,7 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseClick?.Invoke(ctrl, e);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseClick(ctrl, e);
         }
@@ -1141,7 +1189,7 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseDown?.Invoke(ctrl, e);
-            List<GLBaseControl> list = new List<GLBaseControl>(ControlsZ); // copy of, in case the caller closes something
+            List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
             foreach (var c in list)
                 c.OnGlobalMouseDown(ctrl, e);
         }
@@ -1176,10 +1224,14 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        // Set Position, causing an invalidation layout at parent level
+        // Set Position, clipped to max/min size, causing an invalidation layout at parent level, only if changed
 
-        private void SetPos(int left, int top, int width, int height)
+        protected virtual void SetPos(int left, int top, int width, int height)
         {
+            width = Math.Max(width, minimumsize.Width);
+            width = Math.Min(width, maximumsize.Width);
+            height = Math.Max(height, minimumsize.Height);
+            height = Math.Min(height, maximumsize.Height);
             Rectangle w = new Rectangle(left, top, width, height);
 
             if (w != window)        // if changed
@@ -1187,8 +1239,15 @@ namespace GLOFC.GL4.Controls
                 bool resized = w.Size != window.Size;
                 bool moved = w.Location != window.Location;
 
-                window = w;
+                if (resized)
+                    lastsize = Size;
 
+                if (moved)
+                    lastlocation = Location;
+
+                window = w;
+                //System.Diagnostics.Debug.WriteLine($"SetPos {Name} {window} prev {previouswindow}");
+                
                 if (resized)
                     CalcClientRectangle();
 
@@ -1198,34 +1257,24 @@ namespace GLOFC.GL4.Controls
                 if (resized)
                     OnResize();
 
-                if (resized || (Parent?.InvalidateDueToLocationChange(this) ?? true) == true)   // if resized, or we invalidate due to location change
-                {
-                    NeedRedraw = true;      // we need a redraw
-                                            // System.Diagnostics.Debug.WriteLine("setpos need redraw on " + Name);
-                    parent?.Invalidate();   // parent is invalidated as well, and the whole form needs reendering
-                    parent?.PerformLayout();     // go up one and perform layout on all its children, since we are part of it.
-                }
+                NeedRedraw = true;
+
+                Parent?.InvalidateLayout(this);
             }
         }
 
-        // normally a location changed (left,top) means a invalidate of parent and re-layout. But for top level windows under GLDisplayControl
-        // we don't need to lay them out as they are top level GL objects and we just need to move the texture co-ords
-        // this bit does that - allows the top level parent to not have to invalidate if it returns false. Default is true, must invalidate
-        protected virtual bool InvalidateDueToLocationChange(GLBaseControl child)
-        {
-            return true;
-        }
-
-        private void CalcClientRectangle()       // client rectangle calc
+        // client rectangle calc - call if you change the window bounds, margin, padding
+        private void CalcClientRectangle()      
         {
             ClientRectangle = new Rectangle(0, 0, Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2, Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2);
         }
 
+        // set enabled, and all children too
         private void SetEnabled(bool v)
         {
             enabled = v;
             foreach (var c in childrenz)
-                SetEnabled(v);
+                c.SetEnabled(v);
         }
 
         private void SetFont(Font f)
@@ -1259,7 +1308,7 @@ namespace GLOFC.GL4.Controls
             Hover = false;
             focused = false;
             MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
-            foreach (var c in ControlsZ)
+            foreach (var c in childrenz)
                 c.ClearFlagsDown();
         }
 
@@ -1271,28 +1320,38 @@ namespace GLOFC.GL4.Controls
 
         public void DumpTrees(int l, GLBaseControl prev)
         {
-            string prefix = "                           ".Substring(0, l);
+            string prefix = new string(' ',64).Substring(0, l);
             System.Diagnostics.Debug.WriteLine("{0}{1} {2}", prefix, Name, Parent == prev ? "OK" : "Not linked");
-            if (ControlsZ.Count > 0)
+            if (childrenz.Count > 0)
             {
-                foreach (var c in ControlsZ)
+                foreach (var c in childrenz)
                     c.DumpTrees(l + 2, this);
             }
         }
 
         protected bool NeedRedraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
+        public bool TopLevelControlUpdate { get; set; } = false;        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
         private Font font = null;
+
+        private Point lastlocation;    // setpos/setNI changes these if changed sizes
+        private Size lastsize;       
+
         private Rectangle window;       // total area owned, in parent co-ords
+
+        protected Size minimumsize = new Size(1, 1);
+        protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
         private bool needLayout { get; set; } = false;        // need a layout after suspend layout was called
-        private int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
+        protected int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
         private bool enabled { get; set; } = true;
         private bool visible { get; set; } = true;
         private DockingType docktype { get; set; } = DockingType.None;
         private float dockpercent { get; set; } = 0;
-        private Color backcolor { get; set; } = DefaultControlBackColor;
-        private Color backcolorgradientalt { get; set; } = DefaultControlBackColor;
+        private AnchorType anchortype = AnchorType.None;
+
+        private Color backcolor { get; set; } = Color.Red;
+        private Color backcolorgradientalt { get; set; } = Color.Red;
         private int backcolorgradientdir { get; set; } = int.MinValue;           // in degrees
         private Color bordercolor { get; set; } = Color.Transparent;         // Margin - border - padding is common to all controls. Area left is control area to draw in
         private int borderwidth { get; set; } = 0;
@@ -1308,10 +1367,106 @@ namespace GLOFC.GL4.Controls
         private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
         private bool topMost { get; set; } = false;              // if set, always force to top
 
+        private SizeF? altscale = null;
+        private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
+        private float opacity = 1.0f;
+
         private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
 
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();
+
+        #endregion
+
+        #region Colours
+
+        // default color schemes and sizes
+
+        static public Color DefaultButtonBackColor = SystemColors.Control;
+        static public Color DefaultButtonFaceColor = SystemColors.Control;
+        static public Color DefaultButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultButtonForeColor = SystemColors.ControlText;      // text
+        static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultListBoxBackColor = SystemColors.Window;
+        static public Color DefaultListBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultListBoxForeColor = SystemColors.WindowText;
+        static public Color DefaultListBoxLineSeparColor = Color.Green;
+        static public Color DefaultListBoxMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultListBoxSelectedItemColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultComboBoxBackColor = SystemColors.Window;
+        static public Color DefaultComboBoxFaceColor = SystemColors.Window;
+        static public Color DefaultComboBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultComboBoxForeColor = SystemColors.ControlText;      // text
+
+        static public Color DefaultScrollbarSliderColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;
+        static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;
+        static public Color DefaultScrollbarArrowButtonBorderColor = SystemColors.ControlText;
+        static public Color DefaultScrollbarMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarMouseDownColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultScrollbarThumbColor = SystemColors.Control;
+        static public Color DefaultScrollbarThumbBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultGroupBoxBackColor = SystemColors.Control;
+        static public Color DefaultGroupBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultGroupBoxForeColor = SystemColors.ControlText;
+
+        static public Color DefaultFormBackColor = SystemColors.Control;
+        static public Color DefaultFormBorderColor = SystemColors.ControlText;
+        static public Color DefaultFormTextColor = SystemColors.ControlText;
+
+        static public Color DefaultPanelBackColor = SystemColors.Control;
+        static public Color DefaultPanelBorderColor = SystemColors.ControlText;
+        static public Color DefaultTableLayoutBackColor = SystemColors.Control;
+        static public Color DefaultTableLayoutBorderColor = SystemColors.ControlText;
+        static public Color DefaultFlowLayoutBackColor = SystemColors.Control;
+        static public Color DefaultFlowLayoutBorderColor = SystemColors.ControlText;
+
+        static public Color DefaultVerticalScrollPanelBorderColor = SystemColors.ControlText;
+        static public Color DefaultVerticalScrollPanelBackColor = SystemColors.Control;
+
+        static public Color DefaultDTPForeColor = SystemColors.WindowText;
+        static public Color DefaultDTPBackColor = SystemColors.Window;
+        static public Color DefaultDTPSelectedColor = Color.FromArgb(220,220,220);
+
+        static public Color DefaultCalendarForeColor = SystemColors.WindowText;
+        static public Color DefaultCalendarBackColor = SystemColors.Window;
+
+        static public Color DefaultCheckBackColor = SystemColors.Control;
+        static public Color DefaultCheckForeColor = SystemColors.ControlText;       // text
+        static public Color DefaultCheckColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxBorderColor = SystemColors.ControlText;
+        static public Color DefaultCheckBoxInnerColor = SystemColors.Window;
+        static public Color DefaultCheckMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultCheckMouseDownColor = Color.FromArgb(230, 230, 230);
+
+        static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
+        static public Color DefaultTextBoxHighlightColor = Color.Red;
+        static public Color DefaultTextBoxBackColor = SystemColors.Window;
+        static public Color DefaultTextBoxForeColor = SystemColors.WindowText;
+
+        static public Color DefaultTabControlForeColor = SystemColors.ControlText;      // of selected text
+        static public Color DefaultTabControlBackColor = SystemColors.Control;
+        static public Color DefaultTabControlBorderColor = SystemColors.ControlText;
+        static public Color DefaultTabControlSelectedBackColor = SystemColors.Control;
+        static public Color DefaultTabControlNotSelectedBackColor = SystemColors.Control;
+        static public Color DefaultTabControlNotSelectedForeColor = SystemColors.ControlText;
+        static public Color DefaultTabControlMouseOverColor = Color.FromArgb(200, 200, 200);
+
+        static public Color DefaultMenuBackColor = SystemColors.Control;
+        static public Color DefaultMenuBorderColor = SystemColors.ControlText;
+        static public Color DefaultMenuForeColor = SystemColors.ControlText;
+        static public Color DefaultMenuMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMenuIconStripBackColor = Color.FromArgb(220, 220, 220);
+
+        static public Color DefaultToolTipBackColor = SystemColors.Info;       // text
+        static public Color DefaultToolTipForeColor = SystemColors.InfoText;       // text
+
+        static public Color DefaultLabelForeColor = SystemColors.WindowText;
+        static public Color DefaultLabelBorderColor = SystemColors.ControlText;
 
         #endregion
 

@@ -28,7 +28,7 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
-        public CultureInfo Culture { get { return culture; } set { culture = value; InvalidateLayoutParent(); } }
+        public CultureInfo Culture { get { return culture; } set { culture = value; ParentInvalidateLayout(); } }
 
         public enum DateTimePickerFormat
         {
@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Controls
         public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }     // format control, primary
 
         // returns current format, or sets a custom format
-        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  InvalidateLayoutParent(); } }
+        public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  ParentInvalidateLayout(); } }
 
         public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
         public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
@@ -59,7 +59,8 @@ namespace GLOFC.GL4.Controls
 
         public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
         {
-            SuspendLayout();
+            foreColor = DefaultDTPForeColor;
+            BackColorNI = DefaultDTPBackColor;
 
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
@@ -89,8 +90,6 @@ namespace GLOFC.GL4.Controls
 
             Focusable = true;
             InvalidateOnFocusChange = true;
-
-            ResumeLayout();
         }
 
         public GLDateTimePicker() : this("DTP?", DefaultWindowRectangle, DateTime.Now)
@@ -107,7 +106,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
-            InvalidateLayoutParent();
+            ParentInvalidateLayout();
         }
 
         #region Layout paint
@@ -622,7 +621,7 @@ namespace GLOFC.GL4.Controls
         private int selectedpart = 0;                            // always select first part as default.  -1 means checkbox
 
         private string keybuffer;
-        private Color selectedColor = Color.Green;
+        private Color selectedColor = DefaultDTPSelectedColor;
 
 
         #endregion

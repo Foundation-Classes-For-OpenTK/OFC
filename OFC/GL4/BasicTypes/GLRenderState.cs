@@ -255,7 +255,7 @@ namespace GLOFC.GL4
             {
                 Discard = newstate.Discard;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.RasterizerDiscard, Discard);
-                System.Diagnostics.Debug.WriteLine("RS Discard " + Discard);
+                //System.Diagnostics.Debug.WriteLine("RS Discard " + Discard);
             }
 
             // ---------------------------------- Below are default null

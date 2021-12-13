@@ -21,10 +21,10 @@ namespace GLOFC.GL4.Controls
     public abstract class GLButtonBase : GLImageBase
     {
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
-        public Color ButtonBackColor { get { return buttonBackColor; } set { buttonBackColor = value; Invalidate(); } }
-        public Color MouseOverBackColor { get { return mouseOverBackColor; } set { mouseOverBackColor = value; Invalidate(); } }
-        public Color MouseDownBackColor { get { return mouseDownBackColor; } set { mouseDownBackColor = value; Invalidate(); } }
-        public float BackColorScaling { get { return backColorScaling; } set { backColorScaling = value; Invalidate(); } }
+        public Color ButtonFaceColour { get { return buttonFaceColor; } set { buttonFaceColor = value; Invalidate(); } }    // of button
+        public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        public Color MouseDownColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
+        public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
 
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
 
@@ -34,12 +34,12 @@ namespace GLOFC.GL4.Controls
             InvalidateOnMouseDownUp = true;
         }
 
-        private Color buttonBackColor { get; set; } = DefaultButtonBackColor;
-        private Color mouseOverBackColor { get; set; } = DefaultMouseOverButtonColor;
-        private Color mouseDownBackColor { get; set; } = DefaultMouseDownButtonColor;
-        private Color foreColor { get; set; } = DefaultControlForeColor;
-        private float backColorScaling = 0.5F;
-        private bool showfocusbox = true;
+        protected Color buttonFaceColor { get; set; } = DefaultButtonFaceColor;
+        protected Color mouseOverColor { get; set; } = DefaultMouseOverButtonColor;
+        protected Color mouseDownColor { get; set; } = DefaultMouseDownButtonColor;
+        protected Color foreColor { get; set; } = DefaultButtonForeColor;
+        protected float faceColorScaling = 0.5F;
+        protected bool showfocusbox = true;
 
     }
 
@@ -47,6 +47,10 @@ namespace GLOFC.GL4.Controls
     {
         public string Text { get { return text; } set { text = value; Invalidate(); } }
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
+        public enum SymbolType { None, LeftTriangle, RightTriangle };
+        public SymbolType Symbol { get { return buttonsymbol; } set { buttonsymbol = value; Invalidate(); } }
+        public float SymbolSize { get { return buttonsymbolsize; } set { buttonsymbolsize = value;Invalidate(); } }
+
 
         public GLButtonTextBase(string name, Rectangle window) : base(name, window)
         {
@@ -54,38 +58,43 @@ namespace GLOFC.GL4.Controls
 
         protected string TextNI { set { text = value; } }
 
+        private SymbolType buttonsymbol = SymbolType.None;
+        private float buttonsymbolsize = 0.75f;
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
-        protected Color PaintButtonBackColor(bool lockhighlight = false, bool disablehoverhighlight = false)
+        protected Color PaintButtonFaceColor(bool lockhighlight = false, bool disablehoverhighlight = false)
         {
-            Color colBack = Color.Empty;
+            Color colBack;
 
             if (Enabled == false)
-                colBack = ButtonBackColor;// Previously ButtonBackColor.Multiply(DisabledScaling); but its too strong
+                colBack = ButtonFaceColour.Multiply(BackDisabledScaling); 
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
-                colBack = MouseDownBackColor;
+                colBack = MouseDownColor;
             else if (lockhighlight || (Hover && !disablehoverhighlight))
-                colBack = MouseOverBackColor;
+                colBack = MouseOverColor;
             else
-                colBack = ButtonBackColor;
+                colBack = ButtonFaceColour;
 
             return colBack;
         }
 
-        protected void PaintButtonBack(Rectangle backarea, Graphics gr, Color colBack)
+        protected void PaintButtonFace(Rectangle backarea, Graphics gr, Color facecolour)
         {
-            using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1), colBack, colBack.Multiply(BackColorScaling), 90))
+            using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1),
+                            facecolour, facecolour.Multiply(FaceColorScaling), 90))
+            {
                 gr.FillRectangle(b, backarea);       // linear grad brushes do not respect smoothing mode, btw
+            }
         }
 
-        protected void PaintButton(Rectangle buttonarea, Graphics gr, bool paintimage)
+        protected void PaintButtonTextImageFocus(Rectangle buttonarea, Graphics gr, bool paintimage)
         {
             if (ShowFocusBox)
             {
                 if (Focused)
                 {
-                    using (var p = new Pen(MouseDownBackColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
+                    using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     {
                         gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));
                     }
@@ -102,27 +111,49 @@ namespace GLOFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+                    //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         gr.DrawString(this.Text, this.Font, textb, buttonarea, fmt);
                     }
+                }
+            }
+
+            if ( buttonsymbol != SymbolType.None)
+            {
+                using (var b = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
+                {
+                    int vcentre = (buttonarea.Top + buttonarea.Bottom) / 2;
+                    int hcentre = (buttonarea.Left + buttonarea.Right) / 2;
+                    int hright = hcentre + (int)(buttonarea.Width * buttonsymbolsize / 2);
+                    int hleft = hcentre - (int)(buttonarea.Width * buttonsymbolsize / 2);
+                    int htop = vcentre + (int)(buttonarea.Height * buttonsymbolsize / 2);
+                    int hbottom = vcentre - (int)(buttonarea.Height * buttonsymbolsize / 2);
+
+                    if ( buttonsymbol == SymbolType.LeftTriangle )
+                        gr.FillPolygon(b, new Point[] { new Point(hleft, vcentre), new Point(hright, htop), new Point(hright, hbottom) });
+                    else if ( buttonsymbol == SymbolType.RightTriangle)
+                        gr.FillPolygon(b, new Point[] { new Point(hright, vcentre), new Point(hleft, htop), new Point(hleft, hbottom) });
                 }
             }
         }
 
         protected void ButtonAutoSize(Size extra )     // call if autosize as button
         {
-            SizeF size = new Size(0, 0);
+            SizeF size = SizeF.Empty;
             if (Text.HasChars())
-                size = BitMapHelpers.MeasureStringInBitmap(Text, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign));
+            {
+                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                    size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+            }
 
             if (Image != null && ImageStretch == false)     // if we are not stretching the image, we take into account image size
                 size = new SizeF(size.Width + Image.Width, Math.Max(Image.Height, (int)(size.Height + 0.999)));
 
-            Size s = new Size((int)(size.Width + 0.999 + extra.Width) + ClientWidthMargin + 4,
-                             (int)(size.Height + 0.999 + extra.Height) + ClientHeightMargin + 4);
+            Size s = new Size((int)(size.Width + 0.999 + extra.Width) + 4,
+                             (int)(size.Height + 0.999 + extra.Height) + 4);
 
-            SetNI(size: s);
+            SetNI(clientsize: s);
         }
 
     }

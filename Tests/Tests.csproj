@@ -78,7 +78,9 @@
     </Compile>
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Orrery\KeplerOrbitElements.cs" />
+    <Compile Include="Orrery\StarNodes.cs" />
     <Compile Include="Orrery\OrbitalBodyInformation.cs" />
+    <Compile Include="Orrery\Orrery.cs" />
     <Compile Include="Orrery\TestOrreryImport.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -24,6 +24,8 @@ namespace GLOFC.GL4.Controls
     {
         public GLVerticalScrollPanel(string name, Rectangle location) : base(name, location)
         {
+            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
         }
 
         public GLVerticalScrollPanel() : this("VSP?", DefaultWindowRectangle)
@@ -47,7 +49,7 @@ namespace GLOFC.GL4.Controls
             if (ControlsZ.Count > 0)
             {
                 Rectangle r = ChildArea();
-                int childheight = r.Bottom;
+                int childheight = r.Bottom + r.Top;
 
                 needbitmap = childheight > Height;
 
@@ -55,39 +57,29 @@ namespace GLOFC.GL4.Controls
                 {
                     if (LevelBitmap == null )
                     {
-                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
-                        MakeLevelBitmap(Width, childheight);
+                       // System.Diagnostics.Debug.WriteLine("Make SP bitmap " + ClientWidth + "," + childheight);
+                        MakeLevelBitmap(ClientWidth, childheight);
                     }
-                    else if ( childheight != LevelBitmap.Height || LevelBitmap.Width != Width) // if height is different, or width is different
+                    else if ( childheight != LevelBitmap.Height || LevelBitmap.Width != ClientWidth) // if height is different, or width is different
                     {
-                        MakeLevelBitmap(Width, childheight);
-                        //System.Diagnostics.Debug.WriteLine("Make SP bitmap " + Width + "," + childheight);
+                        //   System.Diagnostics.Debug.WriteLine("Change SP bitmap " + ClientWidth + "," + childheight);
+                        MakeLevelBitmap(ClientWidth, childheight);
                     }
                 }
             }
 
             if ( !needbitmap && LevelBitmap != null)
             {
-                MakeLevelBitmap(0,0);
+                MakeLevelBitmap(0,0);       // dispose of bitmap
             }
         }
 
-        // override back draw to draw the whole scrolable area 
-        protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
-        {
-            base.DrawBack(new Rectangle(0, 0, LevelBitmap.Width, LevelBitmap.Height), gr, bc, bcgradientalt, bcgradientdir);
-        }
+        // called to paint, with gr set to image to paint into
 
-        // called because we have a bitmap.  We need to draw this bitmap, which we drawn our children into, into the parent bitmap
-        protected override void PaintIntoParent(Rectangle parentarea, Graphics parentgr)
+        protected override void Paint(Graphics gr)
         {
-          //  System.Diagnostics.Debug.WriteLine("Scroll panel {0} parea {1} Bitmap Size {2}", Name, parentarea, LevelBitmap.Size);
-
-            parentgr.DrawImage(LevelBitmap, parentarea.Left, parentarea.Top, new Rectangle(0, scrollpos, Width, Height), GraphicsUnit.Pixel);
-        }
-
-        protected override void CheckBitmapAfterLayout()       // do nothing, we do not resize bitmap just because our client size has changed
-        {
+            if ( LevelBitmap != null )
+                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(0, scrollpos, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
         }
 
         private void SetScrollPos(int value)

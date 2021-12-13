@@ -26,9 +26,9 @@ namespace GLOFC.GL4.Controls
 
         public GLButton(string name, Rectangle location) : base(name, location)
         {
-            SetNI(padding: new Padding(2), borderwidth: 1);
+            SetNI(padding: new Padding(1), borderwidth: 1);
             BorderColorNI = DefaultButtonBorderColor;
-            BackColorNI = DefaultButtonBorderBackColor;
+            BackColorGradientAltNI = BackColorNI = DefaultButtonBackColor;
             Focusable = true;
             InvalidateOnFocusChange = true;
         }
@@ -60,8 +60,8 @@ namespace GLOFC.GL4.Controls
         {
             if (ClientWidth < 1 || ClientHeight<1)
                 return;
-            PaintButtonBack(ClientRectangle, gr, PaintButtonBackColor());
-            PaintButton(ClientRectangle, gr,true);
+            PaintButtonFace(ClientRectangle, gr, PaintButtonFaceColor());
+            PaintButtonTextImageFocus(ClientRectangle, gr,true);
         }
 
         protected override void OnMouseClick(GLMouseEventArgs e)

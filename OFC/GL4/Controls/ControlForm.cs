@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Controls
         public bool FormShown { get; set; } = false;        // only applies to top level forms
         public bool TabChangesFocus { get; set; } = true;   // tab works
         public bool ShowClose { get; set; } = true;         // show close symbol
-        public bool Resizeable { get; set; } = true;         // resize works
+        public bool Resizeable { get; set; } = true;        // resize works
         public bool Moveable { get; set; } = true;          // move window works
 
         public Action<GLForm> Shown;
@@ -51,13 +51,20 @@ namespace GLOFC.GL4.Controls
         public DialogResult DialogResult { get { return dialogResult; } set { SetDialogResult(value); }  }
         public Action<GLForm, DialogResult> DialogCallback { get; set; } // if a form sets a dialog result, this callback gets called
 
+        // Form can AutoSize to client content. 
+        public Size AutoSizeClientMargin { get; set; } = new Size(10, 10);         // extra space left/bottom to add if autosizing
+        public bool AutoSizeToTitle { get; set; } = false;                         // if set, title is accounted for in autosize
+
+        public bool SetMinimumSizeOnAutoSize { get; set; } = false;                // if true, on Auto size, set the MinimumSize value. Set before turning off AutoSize
+
         public GLForm(string name, string title, Rectangle location) : base(name, location)
         {
+            minimumsize = new Size(32, 32);
             text = title;
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
-            SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins), borderwidth: FormBorderWidth);
-            BorderColorNI = DefaultBorderColor;
+            SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins,TitleBarHeight ,FormMargins,FormMargins), borderwidth: FormBorderWidth);
+            BorderColorNI = DefaultFormBorderColor;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
 
@@ -66,8 +73,7 @@ namespace GLOFC.GL4.Controls
         }
 
         public int TitleBarHeight { get { return (Font?.ScalePixels(20) ?? 20) + FormMargins * 2; } }
-        static public int TitleBarHeightFromFont(Font fnt) { return (fnt?.ScalePixels(20) ?? 20) + FormMargins * 2; }
-
+        
         public void Close()
         {
             GLHandledArgs e = new GLHandledArgs();
@@ -120,21 +126,44 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
-        protected override void PerformRecursiveLayout()
+        protected override void OnFontChanged()
         {
-            Margin m = text.HasChars() ? new Margin(Margin.Left, TitleBarHeight + FormMargins * 2, Margin.Right, Margin.Bottom) : 
-                            new Margin(Margin.Left, FormMargins, Margin.Right, Margin.Bottom);
+            base.OnFontChanged();
+            Margin = new Margin(Margin.Left, TitleBarHeight, Margin.Right, Margin.Bottom);
+        }
 
-            SetNI(margin: m);
+        // Form autosizer, taking into consideration all objects without autoplacement
+        // and optionally the title text size
+        protected override void SizeControl(Size parentsize)
+        {
+            base.SizeControl(parentsize);
+            if (AutoSize)
+            {
+                Rectangle area = ChildArea(x=>(x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area (ignore autoplaced items and autosize to it)
 
-            base.PerformRecursiveLayout();
+                if (AutoSizeToTitle)        // if required, take into considering the title text
+                {
+                    using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                    {
+                        var titlearea = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                        area.Width = Math.Max(area.Width, (int)titlearea.Width + (ShowClose ? TitleBarHeight : 0) - ClientLeftMargin);
+                    }
+                }
+
+                Size s = new Size(area.Left + area.Width + AutoSizeClientMargin.Width, area.Top + area.Height + AutoSizeClientMargin.Height);
+                //System.Diagnostics.Debug.WriteLine($"Form {Name} Clients {area} -> {s}");
+                SetNI(clientsize: s);
+
+                if (SetMinimumSizeOnAutoSize)
+                    MinimumSize = Size;
+            }
         }
 
         protected override void DrawBorder(Graphics gr, Color bc, float bw)     
         {
             base.DrawBorder(gr, bc, bw);    // draw basic border
 
-            Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling);
+            Color c = (Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling);
 
             if (Text.HasChars())
             {
@@ -142,7 +171,7 @@ namespace GLOFC.GL4.Controls
                 {
                     using (Brush textb = new SolidBrush(c))
                     {
-                        Rectangle titlearea = new Rectangle(0,0, Width, TitleBarHeight);
+                        Rectangle titlearea = new Rectangle(0,0, Width-(ShowClose?TitleBarHeight:0), TitleBarHeight);
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
                 }
@@ -152,7 +181,7 @@ namespace GLOFC.GL4.Controls
             if ( ShowClose )
             {
                 Rectangle closearea = new Rectangle(Width- TitleBarHeight, 0, TitleBarHeight, TitleBarHeight);
-                closearea.Inflate(new Size(-5,-5));
+                closearea.Inflate(new Size(-6,-6));
 
                 using (Pen p = new Pen(c))
                 {
@@ -195,16 +224,12 @@ namespace GLOFC.GL4.Controls
                         if (captured == GLMouseEventArgs.AreaType.Right)
                         {
                             int right = originalwindow.Right + capturedelta.X;
-                            int width = right - originalwindow.Left;
-                            if (width > MinimumResizeWidth)
-                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, originalwindow.Height);
+                            Width = right - originalwindow.Left;
                         }
                         else if (captured == GLMouseEventArgs.AreaType.Bottom)
                         {
                             int bottom = originalwindow.Bottom + capturedelta.Y;
-                            int height = bottom - originalwindow.Top;
-                            if (height > MinimumResizeHeight)
-                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, originalwindow.Width, height);
+                            Height = bottom - originalwindow.Top;
                         }
                         else if (captured == GLMouseEventArgs.AreaType.NWSE)
                         {
@@ -212,15 +237,13 @@ namespace GLOFC.GL4.Controls
                             int bottom = originalwindow.Bottom + capturedelta.Y;
                             int width = right - originalwindow.Left;
                             int height = bottom - originalwindow.Top;
-                            if (height > MinimumResizeHeight && width >= MinimumResizeWidth)
-                                Bounds = new Rectangle(originalwindow.Left, originalwindow.Top, width, height);
+                            Size = new Size(width, height);
                         }
                         else if (captured == GLMouseEventArgs.AreaType.Left && Moveable)
                         {
                             int left = originalwindow.Left + capturedelta.X;
                             int width = originalwindow.Right - left;
-                            if (width > MinimumResizeWidth)
-                                Bounds = new Rectangle(left, originalwindow.Top, width, originalwindow.Height);
+                            Bounds = new Rectangle(left, originalwindow.Top, width, originalwindow.Height);
                         }
                     }
 
@@ -235,7 +258,7 @@ namespace GLOFC.GL4.Controls
                                 Location = new Point(originalwindow.Left + capturedelta.X, originalwindow.Top + capturedelta.Y);
                             }
 
-                            System.Diagnostics.Debug.WriteLine("Drag to {0}", Location);
+                         //   System.Diagnostics.Debug.WriteLine("Drag to {0}", Location);
                         }
                     }
                 }
@@ -304,7 +327,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (OverClose(e))
                 {
-                    System.Diagnostics.Debug.WriteLine("Click Close!");
+                   // System.Diagnostics.Debug.WriteLine("Click Close!");
                     Close();
                 }
             }
@@ -314,10 +337,10 @@ namespace GLOFC.GL4.Controls
         {
             base.OnKeyDown(e);
             //System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
-            if (!e.Handled && TabChangesFocus && lastchildfocus != null && e.KeyCode == System.Windows.Forms.Keys.Tab)
+            if (!e.Handled && TabChangesFocus && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
                 bool forward = e.Shift == false;
-                GLBaseControl next = FindNextTabChild(lastchildfocus.TabOrder,forward);
+                GLBaseControl next = FindNextTabChild(lastchildfocus?.TabOrder??-1,forward);
                 if (next == null)
                     next = FindNextTabChild(forward ?-1 : int.MaxValue,forward);
                 if (next != null)

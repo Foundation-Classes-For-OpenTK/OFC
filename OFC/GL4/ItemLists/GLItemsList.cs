@@ -265,9 +265,16 @@ namespace GLOFC.GL4
             items[EnsureName(name)] = s;
             return s;
         }
-        public GLTexture2D NewTexture2D(string name, params Object[] cnst)
+        public GLTexture2D NewTexture2D(string name)
         {
-            var s = (GLTexture2D)Activator.CreateInstance(typeof(GLTexture2D), cnst, null);
+            var s = new GLTexture2D();
+            items[EnsureName(name)] = s;
+            return s;
+        }
+        public GLTexture2D NewTexture2D(string name, Bitmap bmp, SizedInternalFormat internalformat, int bitmipmaplevel = 1,
+                            int genmipmaplevel = 1, bool ownbitmaps = false, ContentAlignment alignment = ContentAlignment.TopLeft)
+        {
+            var s = new GLTexture2D(bmp, internalformat, bitmipmaplevel, genmipmaplevel, ownbitmaps, alignment);
             items[EnsureName(name)] = s;
             return s;
         }

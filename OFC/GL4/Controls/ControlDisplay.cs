@@ -16,6 +16,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
@@ -59,7 +60,7 @@ namespace GLOFC.GL4.Controls
         {
             glwin = win;
             MatrixCalc = mc;
-
+            
             this.items = items;
 
             vertexes = items.NewBuffer();
@@ -80,10 +81,13 @@ namespace GLOFC.GL4.Controls
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);             // note this limits top level controls number to 255/5.
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLShaderPipeline( new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLBindlessFragmentShaderTextureOffsetArray(arbbufferid,true, discardiftransparent:true));
+            shader = new GLShaderPipeline( new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderBindlessTexture(arbbufferid,true, discardiftransparent:true));
             items.Add(shader);
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();
+            size = new Dictionary<GLBaseControl, Size>();
+            visible = new Dictionary<GLBaseControl, bool>();
+
             texturebinds = items.NewBindlessTextureHandleBlock(arbbufferid);
 
             glwin.MouseMove += Gc_MouseMove;
@@ -99,6 +103,8 @@ namespace GLOFC.GL4.Controls
             glwin.KeyPress += Gc_KeyPress;
             glwin.Resize += Gc_Resize;
             glwin.Paint += Gc_Paint;
+
+            suspendLayoutCount = 0;     
         }
 
         public void SetCursor(GLCursorType t)
@@ -106,38 +112,7 @@ namespace GLOFC.GL4.Controls
             glwin.SetCursor(t);
         }
 
-        // On control add, to display, we need to do more work to set textures up
-
-        public override void Add(GLBaseControl other, bool atback = false)           
-        {
-            System.Diagnostics.Debug.Assert(other is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
-            textures[other] = items.NewTexture2D(null);                // we make a texture per top level control to render with
-            other.MakeLevelBitmap(Math.Max(1,other.Width),Math.Max(1,other.Height));    // ensure we make a bitmap
-            base.Add(other,atback);
-        }
-
-        // on a recursive layout, we need to adjust the texture positions of the sub controls
-        protected override void PerformRecursiveLayout()
-        {
-            base.PerformRecursiveLayout();
-            UpdateVertexTexturePositions(true);
-        }
-
-        // if we change the z order, we need to update vertex list, keyed to z order
-        // and the textures, since the bindless IDs are written in z order        
-        public override bool BringToFront(GLBaseControl other)  
-        {                                                       
-            if (!base.BringToFront(other))                  // if not already at front
-            {
-                UpdateVertexTexturePositions(true);         // we changed z order, update
-                return false;
-            }
-            else
-                return true;
-        }
-
         // call this during your Paint to render.
-
         public void Render(GLRenderState currentstate, ulong ts)
         {
             //System.Diagnostics.Debug.WriteLine("Render");
@@ -171,7 +146,7 @@ namespace GLOFC.GL4.Controls
                 }
 
                 if (altscalechanged)
-                    UpdateVertexTexturePositions(false);        // we need to update..
+                    UpdateVertexPositionsTextures();        // we need to update..
 
                 GLScissors.SetToScreenCoords(0, MatrixCalc);
                 shader.Start(MatrixCalc);
@@ -210,49 +185,100 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        #region Implementation
+        #region Overrides
 
-        // override remove control since we need to know if to remove texture
-
-        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
-        {
-            base.RemoveControl(child, dispose, removechildren); // remove
-
-            if (ControlsZ.Contains(child))      // if its our child
-            {
-                items.Dispose(textures[child]);  // and delete textures and remove from item list
-                textures.Remove(child);
-            }
-        }
-
-        // override base control invalidate, and call it, and also pass the invalidate to the gl window control we have
-
+        // override base control invalidate, and call it, and also pass the invalidate to the gl window control
         public override void Invalidate()           
         {
             base.Invalidate();
             glwin.Invalidate();
         }
 
-        // overriding this indicates all we have to do if child location changes is update the vertex positions, and that we have dealt with it
-
-        protected override bool InvalidateDueToLocationChange(GLBaseControl child)
+        // override this, so that we see all invalidations layouts to us and what child required it.
+        // then we just layout and size the child only, so the rest of them, unaffected by the way displaycontrol handles textures, do not get invalidated
+        // unless we see there is compound docking on, in which case we need to use a full PerformLayout
+        // may be called with null child, meaning its a remove/detach
+        // it may be called due to a property in displaycontrol changing (Font),
+        // and we check the vertex/positions/sizes to make sure everything is okay
+        protected override void InvalidateLayout(GLBaseControl dueto)
         {
-            //System.Diagnostics.Debug.WriteLine("Control display location change");
-            UpdateVertexTexturePositions(false);
-            return false;       // we don't need to invalidate due to just a location change, we can handle that without it
+            //System.Diagnostics.Debug.WriteLine($"Display control invalidate layout due to {dueto?.Name} {suspendLayoutCount}");
+
+            glwin.Invalidate();
+
+            int docked = ControlsZ.Where(x => x.Dock >= DockingType.Left).Count();      // how many have a compound docking type
+
+            if (dueto == this || docked>0)   // if change due to display control property, or we have a docking sitation
+            {
+                PerformLayout();    // full layout on all children
+            }
+            else
+            {
+                if (dueto != null)  // if not a remove, layout and size on child only
+                    dueto.PerformLayoutAndSize();
+            }
+
+            UpdateVertexPositionsTextures();        // need to at least update vertexes, maybe textures 
+        }
+
+        // if we change the z order, we need to update vertex list, keyed to z order
+        // and the textures, since the bindless IDs are written in z order        
+        public override bool BringToFront(GLBaseControl other)
+        {
+            if (!base.BringToFront(other))                  // if not already at front
+            {
+                UpdateVertexPositionsTextures(true);        // we changed z order, update, and force the texture rewrite since order has changed
+                return false;
+            }
+            else
+                return true;
+        }
+
+        // On control add, to display, we need to do more work to set textures up and note the bitmap size
+        // textures will be updated on invalidatelayout
+        public override void Add(GLBaseControl child, bool atback = false)
+        {
+            System.Diagnostics.Debug.Assert(child is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
+
+            textures[child] = items.NewTexture2D(null);                // we make a texture per top level control to render with
+            size[child] = child.Size;
+            visible[child] = child.Visible;
+
+            child.MakeLevelBitmap(Math.Max(1, child.Width), Math.Max(1, child.Height));    // ensure we make a bitmap
+
+            base.Add(child, atback);
+        }
+
+        // override remove control since we need to know if to remove texture, and refresh the texture list
+        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
+        {
+            bool ourchild = ControlsZ.Contains(child);      // record before removecontrol updates controlz list
+
+            base.RemoveControl(child, dispose, removechildren); // remove
+
+            if (ourchild)      // if its our child
+            {
+                items.Dispose(textures[child]);  // and delete textures and remove from item list
+                textures.Remove(child);
+                visible.Remove(child);
+                size.Remove(child);
+                UpdateVertexPositionsTextures(true);        // make sure the list is right, controls list has changed
+            }
         }
 
         // override this to provide translation between form co-ords and viewport/screen coords
-
         protected override void SetViewScreenCoord(ref GLMouseEventArgs e)
         {
             e.ViewportLocation = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
             e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
         }
 
-        // update vertexes, maybe update textures
-
-        private void UpdateVertexTexturePositions(bool updatetextures)        
+        // update vertexes
+        // make a bitmap if the current child size is different to the stored rectangle size 
+        // create or update the texture if the texture was never made, or its not the right size
+        // write the bindless texture list if we updated the texture OR we are forced to
+        // update the vertex buffer with positions
+        private void UpdateVertexPositionsTextures(bool forceupdatetextures = false)        
         {
             if (ControlsZ.Count > 0)            // may end up with nothing to draw, in which case, don't update anything
             {
@@ -260,21 +286,27 @@ namespace GLOFC.GL4.Controls
                 vertexes.StartWrite(0, vertexes.Length);
 
                 float z = startz;      // we place it in clip space at a z near
-                int visible = 0;
+                int controlsvisible = 0;
 
                 List<IGLTexture> tlist = new List<IGLTexture>();
+                bool changedtlist = forceupdatetextures;
 
                 foreach (var c in ControlsIZ)       // we paint in IZ order, and we set the Z (bigger is more in the back) from a notional X to 0 so the depth test works
                 {
+                    if ( c.Visible != visible[c])   // if visible list has changed, then we must rewrite the texture binds list as we don't write vertexes for invisibles
+                    {
+                        visible[c] = c.Visible;
+                        changedtlist = true;
+                    }
+
                     if (c.Visible)  // must be visible to be added to vlist
                     {
-                      //  System.Diagnostics.Debug.WriteLine($"Update texture {c.Name} with {c.Opacity}");
+                        //System.Diagnostics.Debug.WriteLine($"Update texture {c.Name} with {c.Opacity}");
                         float[] a;
                         float w = c.Opacity;
 
                         if (c.ScaleWindow == null)
                         {
-                         
                             a = new float[] {   c.Left, c.Top, z, w,
                                                         c.Left, c.Bottom , z, w,
                                                         c.Right, c.Top, z, w,
@@ -294,18 +326,24 @@ namespace GLOFC.GL4.Controls
 
                         vertexes.Write(a);
                         z -= deltaz;
-                        visible++;
+                        controlsvisible++;
 
-                        if (updatetextures)
+                        if (size[c] != c.Size)          // if level bitmap changed size, remake bitmap
                         {
-                            if (textures[c].Id < 0 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
-                            {
-                                textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
-                            }
-
-                          //  System.Diagnostics.Debug.WriteLine($"Update tlist for {c.Name} with {c.Opacity}");
-                            tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
+                            //System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} changed size {c.Size}");
+                            c.MakeLevelBitmap(c.Width, c.Height);
+                            size[c] = c.Size;
                         }
+
+                        if (textures[c].Id < 0 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
+                        {
+                            //System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} new texture of {c.Size} {c.LevelBitmap.Size}");
+                            textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
+                            changedtlist = true;
+                        }
+
+                            //  System.Diagnostics.Debug.WriteLine($"Update tlist for {c.Name} with {c.Opacity}");
+                        tlist.Add(textures[c]);     // need to have them in the same order as the client rectangles
                     }
                     else
                     {
@@ -316,14 +354,14 @@ namespace GLOFC.GL4.Controls
                 vertexes.StopReadWrite();
                 GLOFC.GLStatics.Check();
 
-                if (tlist.Count > 0)     // only if we had visible ones
+                if (changedtlist)     // update if anything has changed
                 {
-                   // System.Diagnostics.Debug.WriteLine($"texture binds write");
+                  //  System.Diagnostics.Debug.WriteLine($"Displaycontrol textures changed, write list");
                     texturebinds.WriteHandles(tlist.ToArray()); // write texture handles to the buffer..  written in iz order
                     GLMemoryBarrier.All();
                 }
 
-                ri.DrawCount = (visible>0) ? (visible * 5 - 1) : 0;    // 4 vertexes per rectangle, 1 restart
+                ri.DrawCount = (controlsvisible>0) ? (controlsvisible * 5 - 1) : 0;    // 4 vertexes per rectangle, 1 restart
             }
             else
                 ri.DrawCount = 0;           // and set count to zero.
@@ -331,8 +369,13 @@ namespace GLOFC.GL4.Controls
             RequestRender = true;
         }
 
+        // these are not allowed at display control level so assert
+        public new void SuspendLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        public new void ResumeLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        public override void Layout(ref Rectangle parentarea) { System.Diagnostics.Debug.Assert(false, "Should not happen - bug if it does"); }
+        protected override void SetPos(int left, int top, int width, int height) { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+
         // window is resizing
-       
         private void Gc_Resize(object sender)
         {
             //System.Diagnostics.Debug.WriteLine("Call from glwinform with Resize {0}", glwin.Size);
@@ -354,6 +397,8 @@ namespace GLOFC.GL4.Controls
         private GLBuffer vertexes;
         private GLVertexArray vertexarray;
         private Dictionary<GLBaseControl, GLTexture2D> textures;
+        private Dictionary<GLBaseControl, Size> size;
+        private Dictionary<GLBaseControl, bool> visible;
         private GLBindlessTextureHandleBlock texturebinds;
         private GLRenderableItem ri;
         private IGLProgramShader shader;

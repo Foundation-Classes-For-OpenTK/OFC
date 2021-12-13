@@ -70,23 +70,31 @@ void main(void)
     }
 
 
-    // Pipeline shader, Translation, Texture
+    // Pipeline shader, Translation, Texture, autoscale and with matrix controlling rotation, position
+    // image scaling with min/max per object
     // Requires:
     //      location 0 : position: vec4 vertex array of positions model coords
     //      location 1 : vec2 texture co-ordinates
-    //      location 4 : transform: mat4 array of transforms
+    //      location 4 : transform: mat4 array of transforms.  position and rotation only, unit size, with:
+    //                   [0][3] = image min size (autoscale>0)
+    //                   [1][3] = image max size (autoscale>0)
+    //                   [2][3] = image scaling (autoscale>0)
+    //                   [3][3] = image no
     //      uniform buffer 0 : GL MatrixCalc
     // Out:
     //      location 0 : vs_textureCoordinate
     //      location 1 : modelpos
     //      location 2 : instance count
+    //      location 4 : transform[3][3] image no value as int
     //      gl_Position
 
     public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation()
+        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation(float autoscale = 0, bool useeyedistance = true)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
+                                                                    "autoscale", autoscale,
+                                                                    "useeyedistance", useeyedistance });
         }
 
         private string Code()
@@ -96,6 +104,7 @@ void main(void)
 #version 450 core
 
 #include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.vec4.glsl
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec2 texco;
@@ -113,12 +122,47 @@ layout (location = 2) out VS_OUT
 {
     flat int vs_instanced;
 } vs_out;
+layout (location = 4) out VS_OUT2
+{
+    flat int m33;
+} vs_out2;
 
+const float autoscale = 0;
+const bool useeyedistance = true;
 
 void main(void)
 {
     modelpos = position.xyz;
-	gl_Position = mc.ProjectionModelMatrix * transform * position;        // order important
+    vec4 pos= vec4(position.xyz,1);
+
+    mat4 tx = transform;
+
+    if ( autoscale>0)
+    {
+        float scale;
+        if ( useeyedistance )
+        {
+            scale = mc.EyeDistance/autoscale;
+        }
+        else
+        {
+            vec4 worldpos = vec4(transform[3][0],transform[3][1],transform[3][2],0);
+            float d = distance(mc.EyePosition,worldpos);            // find distance between eye and world pos
+            scale = d/autoscale;
+        }
+
+        scale = clamp(scale*transform[2][3],tx[0][3],tx[1][3]);
+        tx[0][3]=0;
+        tx[1][3]=0;
+        tx[2][3]=0;
+
+        pos = Scale(pos,scale);
+    }
+
+    vs_out2.m33 = int(transform[3][3]);
+    tx[3][3]=1;
+
+	gl_Position = mc.ProjectionModelMatrix * tx * pos;        // order important
     vs_textureCoordinate = texco;
     vs_out.vs_instanced = gl_InstanceID;
 }

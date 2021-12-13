@@ -51,8 +51,8 @@ namespace GLOFC.GL4.Controls
         public float ArrowIncreaseDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
         public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
 
-        public Color MouseOverButtonColor { get { return mouseOverButtonColor; } set { mouseOverButtonColor = value; Invalidate(); } }
-        public Color MousePressedButtonColor { get { return mousePressedButtonColor; } set { mousePressedButtonColor = value; Invalidate(); } }
+        public Color MouseOverButtonColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        public Color MousePressedButtonColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
         public Color ThumbButtonColor { get { return thumbButtonColor; } set { thumbButtonColor = value; Invalidate(); } }
         public Color ThumbBorderColor { get { return thumbBorderColor; } set { thumbBorderColor = value; Invalidate(); } }
         public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
@@ -443,19 +443,18 @@ namespace GLOFC.GL4.Controls
         }
 
 
-        private Color arrowcolor { get; set; } = DefaultControlForeColor;
-        private Color slidercolor { get; set; } = DefaultButtonBackColor;
-
-        private Color arrowButtonColor { get; set; } = DefaultButtonBackColor;
-        private Color arrowBorderColor { get; set; } = DefaultButtonBackColor.Multiply(1.5f);
+        private Color slidercolor { get; set; } = DefaultScrollbarSliderColor;
+        private Color arrowcolor { get; set; } = DefaultScrollbarArrowColor;
+        private Color arrowButtonColor { get; set; } = DefaultScrollbarArrowButtonFaceColor;
+        private Color arrowBorderColor { get; set; } = DefaultScrollbarArrowButtonBorderColor;
         private float arrowUpDrawAngle { get; set; } = 90F;
         private float arrowDownDrawAngle { get; set; } = 270F;
         private float arrowColorScaling { get; set; } = 0.5F;
 
-        private Color mouseOverButtonColor { get; set; } = DefaultMouseOverButtonColor;
-        private Color mousePressedButtonColor { get; set; } = DefaultMouseDownButtonColor;
-        private Color thumbButtonColor { get; set; } = DefaultButtonBackColor;
-        private Color thumbBorderColor { get; set; } = DefaultButtonBackColor.Multiply(1.5f);
+        private Color mouseOverColor { get; set; } = DefaultScrollbarMouseOverColor;
+        private Color mouseDownColor { get; set; } = DefaultScrollbarMouseDownColor;
+        private Color thumbButtonColor { get; set; } = DefaultScrollbarThumbColor;
+        private Color thumbBorderColor { get; set; } = DefaultScrollbarThumbBorderColor;
         private float thumbColorScaling { get; set; } = 0.5F;
         private float thumbDrawAngle { get; set; } = 0F;
 

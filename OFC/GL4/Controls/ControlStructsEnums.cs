@@ -48,11 +48,28 @@ namespace GLOFC.GL4.Controls
 
     public enum DockingType
     {
-        None, Fill, Center,
-        Left, LeftCenter, LeftTop, LeftBottom,              // order vital to layout test, keep
+        // these do not compound
+        None, 
+        Fill, 
+        Center,             // in centre of the window with the Width/Height given
+        Width,              // at its ypos/Height, full width
+        Height,             // at its xpos/Width, full height
+        // Compound types, order vital to layout test, keep. 
+        Left, LeftCenter, LeftTop, LeftBottom,              
         Right, RightCenter, RightTop, RightBottom,
         Top, TopCenter, TopLeft, TopRight,
         Bottom, BottomCentre, BottomLeft, BottomRight,
+    };
+
+    [Flags]
+    public enum AnchorType
+    {
+        None = 0,
+        //Left = 1,     // not yet.
+        Right = 2,
+        //Top = 4,
+        Bottom = 8,
+        AutoPlacement = 16,  // indicates its autoplaced.. see ConfigurationForm
     };
 
 }

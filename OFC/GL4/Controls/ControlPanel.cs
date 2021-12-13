@@ -21,6 +21,7 @@ namespace GLOFC.GL4.Controls
         public GLPanel(string name, Rectangle location, Color? backcolour = null) : base(name, location)
         {
             BackColor = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
+            BorderColorNI = DefaultPanelBorderColor;
         }
 
         public GLPanel() : this("P?", DefaultWindowRectangle)

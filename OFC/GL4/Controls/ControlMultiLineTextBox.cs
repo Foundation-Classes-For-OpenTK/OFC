@@ -60,6 +60,8 @@ namespace GLOFC.GL4.Controls
             cursortimer.Tick += CursorTick;
             CalculateTextParameters();
             Finish(false, false, false);
+            foreColor = DefaultTextBoxForeColor;
+            BackColorGradientAltNI = BackColorNI = DefaultTextBoxBackColor;
 
             rightclickmenu = new GLContextMenu("MLTBRightClickMenu",
                         new GLMenuItem("MTLBEditCut", "Cut")
@@ -322,6 +324,13 @@ namespace GLOFC.GL4.Controls
             CalculateTextParameters();                      // will correct for out of range start/cursor pos
             Finish(invalidate: true, clearmarkers: false, restarttimer: true);
         }
+        public void CursorToEnd()
+        {
+            firstline = 0;
+            startpos = cursorpos = Text.Length;
+            CalculateTextParameters();                      // will correct for out of range start/cursor pos
+            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+        }
 
         public void SetSelection(int start, int end)        // set equal to cancel, else set start/end pos
         {
@@ -409,6 +418,40 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
+        #region Estimation
+
+        // this needs the font set up and TextBoundary
+        // estimate size needed.  Set min and max sizes
+        // return size available and horz scroll state
+        public Tuple<Size, bool> CalculateTextArea(Size min, Size max)
+        {
+            bool horzscroll = false;
+
+            SizeF area = BitMapHelpers.MeasureStringInBitmap(Text, Font);
+
+            int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + Font.Height/2));       // add a nerf based on font height
+            width += TextBoundary.TotalWidth;
+
+            if (width > max.Width)
+            {
+                width = max.Width;
+                horzscroll = true;
+            }
+
+            int height = Font.Height * NumberOfLines ;
+            height += TextBoundary.TotalHeight;
+
+            if (height > max.Height)
+            {
+                height = max.Height;
+                width += ScrollBarWidth;
+            }
+
+            return new Tuple<Size, bool>(new Size(width, height), horzscroll);
+        }
+
+        #endregion
+
         #region Text Changing and cursor movement helpers
 
         protected void CalculateTextParameters()        // recalc all the text parameters and arrays
@@ -448,7 +491,6 @@ namespace GLOFC.GL4.Controls
                         if (startpos >= cpos && startpos <= nextlf)
                         {
                             startlinecpos = cpos;
-                            startlineno = lineno;
                         }
 
                         int len = nextlf - cpos;
@@ -478,7 +520,6 @@ namespace GLOFC.GL4.Controls
                         if (startpos >= cpos && startpos < nextlf)
                         {
                             startlinecpos = cpos;
-                            startlineno = lineno;
                         }
 
                         int len = nextlf - cpos;
@@ -499,7 +540,6 @@ namespace GLOFC.GL4.Controls
                     if (startpos == cpos)
                     {
                         startlinecpos = cpos;
-                        startlineno = lineno;
                     }
 
                     linelengths.Add(0);
@@ -621,7 +661,6 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Cpos Line {0} cpos {1} cur {2} off {3} len {4} maxline {5} line '{6}'", cursorlineno, cursorlinecpos, cursorpos, cursorpos - cursorlinecpos, linelengths[cursorlineno], MaxLineLength, GetLineWithoutCRLF(cursorlinecpos,cursorlineno,displaystartx));
         }
 
-
         private void CalcMaxLineLengths()       // recalc this when its hard to do it 
         {
             MaxLineLength = 0;
@@ -639,7 +678,6 @@ namespace GLOFC.GL4.Controls
         private void ClearMarkers()
         {
             startlinecpos = cursorlinecpos;
-            startlineno = cursorlineno;
             startpos = cursorpos;
         }
 
@@ -797,10 +835,21 @@ namespace GLOFC.GL4.Controls
                 return;
 
             //System.Diagnostics.Debug.WriteLine($"Paint MLTB {startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
-            Rectangle usablearea = UsableAreaForText(ClientRectangle);
-            gr.SetClip(usablearea);     // so we don't paint outside of this
+            Rectangle usablearea = UsableAreaForText(ClientRectangle);      // area inside out client rectangle where text is
 
-            using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(DisabledScaling)))
+            var clipregion = gr.Clip.GetBounds(gr);     // get the region which was set up by our caller, this is where we have permission to paint (0,0 = client origin)
+            
+            // work out the area, which is useable top/left, with width limited by the usablewidth or the clip left
+            Rectangle areatoclip = new Rectangle(usablearea.Left, usablearea.Top, Math.Min((int)clipregion.Width - usablearea.Left, usablearea.Width), Math.Min((int)clipregion.Height - usablearea.Top, usablearea.Height));
+
+//            System.Diagnostics.Debug.WriteLine($"{Name} Clip reset to {usablearea} {ClientRectangle} current clip {clipregion} -> {areatoclip}");
+
+            gr.SetClip(areatoclip);     // so we don't paint outside of this
+
+            //using (Pen p = new Pen(this.ForeColor))   {  gr.DrawLine(p, new Point(0, 0), new Point(100,100));   }
+
+
+            using (Brush textb = new SolidBrush(Enabled ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
             {
                 int lineno = 0;
                 int cpos = 0;
@@ -1273,14 +1322,13 @@ namespace GLOFC.GL4.Controls
 
         private int cursorlineno;   // computed on text set, updated by all moves/inserts
         private int cursorlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
-        private int startlineno;   // computed on text set, updated by all moves/inserts
         private int startlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
 
         // Display
 
-        private Color highlightColor { get; set; } = DefaultHighlightColor;
+        private Color highlightColor { get; set; } = DefaultTextBoxHighlightColor;
         private Color lineColor { get; set; } = Color.Transparent;
-        private Color backerrorcolor { get; set; } = DefaultErrorColor;
+        private Color backerrorcolor { get; set; } = DefaultTextBoxErrorColor;
         private bool inerror = false;
 
         private int scrollbarwidth = 20;
