@@ -19,16 +19,14 @@ using System.Windows.Forms;
 
 namespace GLOFC.Controller
 {
-    // class brings together keyboard, mouse, posdir, zoom to provide a means to move thru the playfield and zoom.
-    // handles keyboard actions and mouse actions to provide a nice method of controlling the 3d playfield
-    // Attaches to a GLWindowControl and hooks its events to provide control
+    // base class for 3dControllers - handles mouse and keyboard
 
-    public abstract class Controller3DKeyMouseHandler
+    public abstract class Controller3DBase
     {
         public float MouseRotateAmountPerPixel { get; set; } = 0.15f;           // mouse speeds, degrees/pixel
-        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;     // per pixel movement at zoom 1 (zoom scaled)
+        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;       // per pixel movement at zoom 1 (zoom scaled)
         public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 10.0f;  // per pixel movement at zoom 1
-        public bool YHoldMovement { get; set; } = true;
+        public bool YHoldMovement { get; set; } = true;                         // set true to make y hold during key translations
 
         public Func<int, float, float> KeyboardTravelSpeed;                     // optional set to scale travel key commands given this time interval and camera distance
         public Func<int, float> KeyboardRotateSpeed;                            // optional set to scale camera key rotation commands given this time interval
@@ -111,7 +109,7 @@ namespace GLOFC.Controller
 
                 var tx = new Vector3(0, -dy * (1.0f / ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0);
 
-                System.Diagnostics.Trace.WriteLine($"Controller3d right click translate {e.WindowLocation} -> {mousepos} prev {mouseDownPos} dy {dy} Button {e.Button.ToString()} {tx}");
+                //System.Diagnostics.Trace.WriteLine($"Controller3d right click translate {e.WindowLocation} -> {mousepos} prev {mouseDownPos} dy {dy} Button {e.Button.ToString()} {tx}");
 
                 Translate(tx);
             }
@@ -170,11 +168,10 @@ namespace GLOFC.Controller
             keyboard.KeyUp(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
 
-        // Owner should call this at regular intervals.
         // handle keyboard, handle other keys if required
-        // Does not call any GL functions - only affects Matrixcalc
+        // Does not call any GL functions 
 
-        public int HandleKeyboardSlews(ulong curtime, bool focused, bool activated, Action<KeyboardMonitor> handleotherkeys = null)
+        protected int HandleKeyboardSlews(ulong curtime, bool focused, bool activated, Action<KeyboardMonitor> handleotherkeys = null)
         {
             int interval = lastkeyintervalcount.HasValue ? (int)(curtime - lastkeyintervalcount) : 1;
             lastkeyintervalcount = curtime;
@@ -207,7 +204,7 @@ namespace GLOFC.Controller
         // Numpad 8+2+4+6, TGQE with none or shift
         // Numpad 9+3 tilt camera
 
-        public bool CameraKeyboard(KeyboardMonitor kbd, float angle)
+        private bool CameraKeyboard(KeyboardMonitor kbd, float angle)
         {
             Vector3 cameraActionRotation = Vector3.Zero;
 
@@ -255,7 +252,7 @@ namespace GLOFC.Controller
         }
 
         // Keys MN, Ctrl1-9
-        public bool ZoomKeyboard(KeyboardMonitor kbd, float adjustment)
+        private bool ZoomKeyboard(KeyboardMonitor kbd, float adjustment)
         {
             bool changed = false;
 
@@ -307,7 +304,7 @@ namespace GLOFC.Controller
         }
 
         // Keys WASD RF Left/Right/Up/Down/PageUp/Down  with none or shift or ctrl
-        public bool PositionKeyboard(KeyboardMonitor kbd, bool inperspectivemode, float movedistance)
+        private bool PositionKeyboard(KeyboardMonitor kbd, bool inperspectivemode, float movedistance)
         {
             Vector3 positionMovement = Vector3.Zero;
 

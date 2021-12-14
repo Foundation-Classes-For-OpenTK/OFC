@@ -22,7 +22,7 @@ namespace GLOFC.Controller
     // handles keyboard actions and mouse actions to provide a nice method of controlling the 3d playfield
     // Attaches to a GLWindowControl and hooks its events to provide control
 
-    public class Controller3Dd : Controller3DKeyMouseHandler
+    public class Controller3Dd : Controller3DBase
     {
         public double ZoomDistance { get { return PosCamera.Zoom1Distance; } set { PosCamera.Zoom1Distance = value; } }
 
