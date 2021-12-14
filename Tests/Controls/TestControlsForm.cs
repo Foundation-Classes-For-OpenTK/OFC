@@ -209,7 +209,6 @@ namespace TestOpenTk
                     b3.Click += (c, ev) => {
                         displaycontrol.Font = new Font("Times", 12);
                     };
-                    //                    b3.Enabled = false;
                     pform.Add(b3);
 
                     GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
@@ -253,29 +252,24 @@ namespace TestOpenTk
                 }
 
                 if (true)
-                { 
+                {
 
-                    GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "CheckBox 1");
+                    GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "Normal");
                     chk1.Margin = new Margin(16, 0, 0, 0);
                     chk1.TabOrder = taborder++;
-                    chk1.ShowFocusBox = true;
-                    //chk1.Checked = true;
-                    //chk1.Enabled = false; 
                     pform.Add(chk1);
-                    GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "CheckBox 2");
+                    GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "Radio");
                     chk2.Appearance = CheckBoxAppearance.Radio;
                     chk2.TabOrder = taborder++;
                     chk2.Checked = true;
-                    chk2.ShowFocusBox = true;
                     pform.Add(chk2);
-                    GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "CheckBox 3");
+                    GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "Button");
                     chk3.Appearance = CheckBoxAppearance.Button;
                     chk3.TabOrder = taborder++;
-                    chk3.ShowFocusBox = true;
+                    chk3.BackColor = Color.FromArgb(200, 200, 200);
                     pform.Add(chk3);
                     GLCheckBox chk4 = new GLCheckBox("Checkbox4", new Rectangle(300, 150, 0, 0), "");
                     chk4.TabOrder = taborder++;
-                    chk4.ShowFocusBox = true;
                     pform.Add(chk4);
                     GLCheckBox chk5 = new GLCheckBox("Checkbox5", new Rectangle(350, 150, 0, 0), "R1");
                     chk5.Appearance = CheckBoxAppearance.Radio;
@@ -287,11 +281,31 @@ namespace TestOpenTk
                     chk6.GroupRadioButton = true;
                     chk6.TabOrder = taborder++;
                     pform.Add(chk6);
+                    GLCheckBox chk7 = new GLCheckBox("Checkbox7", new Rectangle(0, 175, 0, 0), "Disabled");
+                    chk7.TabOrder = taborder++;
+                    chk7.Enabled = false;
+                    pform.Add(chk7);
+                    GLCheckBox chk8 = new GLCheckBox("Checkbox8", new Rectangle(100, 175, 0, 0), "Disabled");
+                    chk8.Appearance = CheckBoxAppearance.Radio;
+                    chk8.TabOrder = taborder++;
+                    chk8.Enabled = false;
+                    pform.Add(chk8);
+                    GLCheckBox chk9 = new GLCheckBox("Checkbox9", new Rectangle(200, 175, 0, 0), "CDisabled");
+                    chk9.TabOrder = taborder++;
+                    chk9.Enabled = false;
+                    chk9.Checked = true;
+                    pform.Add(chk9);
+                    GLCheckBox chk10 = new GLCheckBox("Checkbox10", new Rectangle(300, 175, 0, 0), "CDisabled");
+                    chk10.Appearance = CheckBoxAppearance.Radio;
+                    chk10.TabOrder = taborder++;
+                    chk10.Enabled = false;
+                    chk10.Checked = true;
+                    pform.Add(chk10);
                 }
 
                 if (true)
                 {
-                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 200, 500, 30), DateTime.Now);
+                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 210, 500, 30), DateTime.Now);
                     dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
                     dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
                     //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
@@ -308,7 +322,7 @@ namespace TestOpenTk
                 if (true)
                 {
                     List<string> i1 = new List<string>() { "one two three four five six seven eight", "two", "three", "four", "five", "six", "seven is very long too to check", "eight", "nine", "ten", "eleven", "twelve" };
-                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 250, 200, 100), i1);
+                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 260, 260, 100), i1);
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     lb1.ShowFocusBox = true;

@@ -42,6 +42,7 @@ namespace GLOFC.GL4.Controls
 
         public GLCheckBox(string name, Rectangle location, string text) : base(name, location)
         {
+            BorderColorNI = Color.Transparent;
             BackColorGradientAltNI = BackColorNI = Color.Transparent;
             TextNI = text;
             CheckOnClick = true;

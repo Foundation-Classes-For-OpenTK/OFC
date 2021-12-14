@@ -29,6 +29,7 @@ namespace GLOFC.GL4.Controls
         public static bool operator !=(Padding l, Padding r) { return !(l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom); }
         public override bool Equals(Object other) { return other is Padding && this == (Padding)other; }
         public override int GetHashCode() { return base.GetHashCode(); }
+        public override string ToString() { return $"({Left} {Top} {Right} {Bottom})"; }
     };
 
     [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]
@@ -44,8 +45,9 @@ namespace GLOFC.GL4.Controls
         public static bool operator !=(Margin l, Margin r) { return !(l.Left == r.Left && l.Right == r.Right && l.Top == r.Top && l.Bottom == r.Bottom); }
         public override bool Equals(Object other) { return other is Margin && this == (Margin)other; }
         public override int GetHashCode() { return base.GetHashCode(); }
-    };
 
+        public override string ToString() { return $"({Left} {Top} {Right} {Bottom})"; }
+    }
     public enum DockingType
     {
         // these do not compound

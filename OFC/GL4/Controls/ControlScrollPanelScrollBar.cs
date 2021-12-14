@@ -17,79 +17,91 @@ using System.Drawing;
 
 namespace GLOFC.GL4.Controls
 {
-    public class GLVerticalScrollPanelScrollBar : GLBaseControl
+    public class GLScrollPanelScrollBar : GLBaseControl
     {
-        public new Color BackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value;  } }
+        public Color ScrollBackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
 
-        public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value;  } }       // of text
-        public Color SliderColor { get { return scrollbar.SliderColor; } set { scrollbar.SliderColor = value;  } }
+        public Color ArrowColor { get { return vertscrollbar.ArrowColor; } set { horzscrollbar.ArrowColor = vertscrollbar.ArrowColor = value;  } }       // of text
+        public Color SliderColor { get { return vertscrollbar.SliderColor; } set { horzscrollbar.SliderColor = vertscrollbar.SliderColor = value;  } }
 
-        public Color ArrowButtonColor { get { return scrollbar.ArrowButtonColor; } set { scrollbar.ArrowButtonColor = value; } }
-        public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value;  } }
-        public float ArrowUpDrawAngle { get { return scrollbar.ArrowDecreaseDrawAngle; } set { scrollbar.ArrowDecreaseDrawAngle = value;  } }
-        public float ArrowDownDrawAngle { get { return scrollbar.ArrowIncreaseDrawAngle; } set { scrollbar.ArrowIncreaseDrawAngle = value;  } }
-        public float ArrowColorScaling { get { return scrollbar.ArrowColorScaling; } set { scrollbar.ArrowColorScaling = value;  } }
+        public Color ArrowButtonColor { get { return vertscrollbar.ArrowButtonColor; } set { horzscrollbar.ArrowButtonColor = vertscrollbar.ArrowButtonColor = value; } }
+        public Color ArrowBorderColor { get { return vertscrollbar.ArrowBorderColor; } set { horzscrollbar.ArrowBorderColor = vertscrollbar.ArrowBorderColor = value;  } }
+        public float ArrowUpDrawAngle { get { return vertscrollbar.ArrowDecreaseDrawAngle; } set { horzscrollbar.ArrowDecreaseDrawAngle = vertscrollbar.ArrowDecreaseDrawAngle = value;  } }
+        public float ArrowDownDrawAngle { get { return vertscrollbar.ArrowIncreaseDrawAngle; } set { horzscrollbar.ArrowIncreaseDrawAngle = vertscrollbar.ArrowIncreaseDrawAngle = value;  } }
+        public float ArrowColorScaling { get { return vertscrollbar.ArrowColorScaling; } set { horzscrollbar.ArrowColorScaling = vertscrollbar.ArrowColorScaling = value;  } }
 
-        public Color MouseOverButtonColor { get { return scrollbar.MouseOverButtonColor; } set { scrollbar.MouseOverButtonColor = value;  } }
-        public Color MousePressedButtonColor { get { return scrollbar.MousePressedButtonColor; } set { scrollbar.MousePressedButtonColor = value;  } }
-        public Color ThumbButtonColor { get { return scrollbar.ThumbButtonColor; } set { scrollbar.ThumbButtonColor = value;  } }
-        public Color ThumbBorderColor { get { return scrollbar.ThumbBorderColor; } set { scrollbar.ThumbBorderColor = value;  } }
-        public float ThumbColorScaling { get { return scrollbar.ThumbColorScaling; } set { scrollbar.ThumbColorScaling = value;  } }
-        public float ThumbDrawAngle { get { return scrollbar.ThumbDrawAngle; } set { scrollbar.ThumbDrawAngle = value;  } }
+        public Color MouseOverButtonColor { get { return vertscrollbar.MouseOverButtonColor; } set { horzscrollbar.MouseOverButtonColor = vertscrollbar.MouseOverButtonColor = value;  } }
+        public Color MousePressedButtonColor { get { return vertscrollbar.MousePressedButtonColor; } set { horzscrollbar.MousePressedButtonColor = vertscrollbar.MousePressedButtonColor = value;  } }
+        public Color ThumbButtonColor { get { return vertscrollbar.ThumbButtonColor; } set { horzscrollbar.ThumbButtonColor = vertscrollbar.ThumbButtonColor = value;  } }
+        public Color ThumbBorderColor { get { return vertscrollbar.ThumbBorderColor; } set { horzscrollbar.ThumbBorderColor = vertscrollbar.ThumbBorderColor = value;  } }
+        public float ThumbColorScaling { get { return vertscrollbar.ThumbColorScaling; } set { horzscrollbar.ThumbColorScaling = vertscrollbar.ThumbColorScaling = value;  } }
+        public float ThumbDrawAngle { get { return vertscrollbar.ThumbDrawAngle; } set { horzscrollbar.ThumbDrawAngle = vertscrollbar.ThumbDrawAngle = value;  } }
 
-        public new string Name { get { return base.Name; } set { base.Name = value; scrollbar.Name = base.Name + "-SB"; scrollpanel.Name = base.Name + "-SP"; } }
         public override IList<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
         public override IList<GLBaseControl> ControlsIZ { get { return scrollpanel.ControlsIZ; } }      // read only
 
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
-        public GLVerticalScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
+        public bool EnableHorzScrolling { get { return horzscrollbar.Visible; } set { horzscrollbar.Visible = value; } }
+        public bool EnableVertScrolling { get { return vertscrollbar.Visible; } set { vertscrollbar.Visible = value; } }
+
+        public GLScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
 
-            scrollpanel = new GLVerticalScrollPanel();
+            scrollpanel = new GLScrollPanel(name+"_VSP");
             scrollpanel.Dock = DockingType.Fill;
             scrollpanel.BackColor = BackColor;
             base.Add(scrollpanel);  // base because we don't want to use the overrides
 
-            scrollbar = new GLScrollBar();
-            scrollbar.Dock = DockingType.Right;
-            scrollbar.Width = 20;
-            base.Add(scrollbar);     // last added always goes to top of z-order
+            vertscrollbar = new GLVerticalScrollBar(name + "_SVert");
+            vertscrollbar.Dock = DockingType.Right;
+            vertscrollbar.Width = ScrollBarWidth;
+            base.Add(vertscrollbar);     // last added always goes to top of z-order
+            vertscrollbar.Scroll += VScrolled;
 
-            scrollbar.Scroll += Scrolled;
+            horzscrollbar = new GLHorizontalScrollBar(name + "_SHorz");
+            horzscrollbar.Dock = DockingType.Bottom;
+            horzscrollbar.Height =ScrollBarWidth;
+            base.Add(horzscrollbar);     // last added always goes to top of z-order
+            horzscrollbar.Scroll += HScrolled;
         }
 
-        public GLVerticalScrollPanelScrollBar() : this("VSPSB?", DefaultWindowRectangle)
+        public GLScrollPanelScrollBar(string name = "SPSB?") : this(name, DefaultWindowRectangle)
         {
         }
 
         public override void Add(GLBaseControl other, bool atback = false)           // we need to override, since we want controls added to the scroll panel not us
         {
             scrollpanel.Add(other, atback);
+            InvalidateLayout();
         }
 
-        private GLScrollBar scrollbar;
-        private GLVerticalScrollPanel scrollpanel;
+        private GLVerticalScrollBar vertscrollbar;
+        private GLHorizontalScrollBar horzscrollbar;
+        private GLScrollPanel scrollpanel;
 
-        private void Scrolled(GLBaseControl c, ScrollEventArgs e)
+        private void VScrolled(GLBaseControl c, ScrollEventArgs e)
         {
-            scrollpanel.ScrollPos = scrollbar.Value;
+            scrollpanel.VertScrollPos = vertscrollbar.Value;
+        }
+        private void HScrolled(GLBaseControl c, ScrollEventArgs e)
+        {
+            scrollpanel.HorzScrollPos = horzscrollbar.Value;
         }
 
         protected override void PerformRecursiveLayout()
         {
-            if (scrollbar != null)
-                scrollbar.Width = ScrollBarWidth;
+            vertscrollbar.Width = ScrollBarWidth;
+            horzscrollbar.Height = ScrollBarWidth;
+            horzscrollbar.DockingMargin = new Margin(0,0,vertscrollbar.Visible ? ScrollBarWidth : 0,0);
 
             base.PerformRecursiveLayout();   // the docking sorts out the positioning of the controls
 
-            if ( scrollbar != null && scrollpanel != null)
-            {
-                scrollbar.Maximum = scrollpanel.ScrollRange + scrollbar.LargeChange;
-                //System.Diagnostics.Debug.WriteLine("Scroll panel range " + scrollbar.Maximum);
-            }
+            vertscrollbar.Maximum = scrollpanel.VertScrollRange + vertscrollbar.LargeChange;
+            horzscrollbar.Maximum = scrollpanel.HorzScrollRange + horzscrollbar.LargeChange;
+         //   System.Diagnostics.Debug.WriteLine($"Scroll panel range {horzscrollbar.Maximum} {vertscrollbar.Maximum}");
         }
     }
 }

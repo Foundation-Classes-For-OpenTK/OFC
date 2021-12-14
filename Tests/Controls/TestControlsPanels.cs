@@ -237,7 +237,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLVerticalScrollPanel sp1 = new GLVerticalScrollPanel("VSP1", new Rectangle(5, 600, 200, 200));
+                GLScrollPanel sp1 = new GLScrollPanel("VSP1", new Rectangle(5, 600, 200, 200));
                 sp1.BorderWidth = 1;
                 sp1.BackColor = Color.Yellow;
                // sp1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
@@ -246,20 +246,50 @@ namespace TestOpenTk
                 sp1.Add(sp1i1);
                 GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
                 sp1.Add(sp1i2);
-                sp1.ScrollPos = 50;
+                GLImage sp1i3 = new GLImage("SP1I23", new Rectangle(100, 100, 200, 200), Properties.Resources.dotted2);
+                sp1.Add(sp1i3);
+                sp1.VertScrollPos = 0;
+                sp1.HorzScrollPos = 0;
+
+                GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(220, 600, 20, 100), 0, 200);
+                sb1.Scroll += (c, s1e) => sp1.VertScrollPos = s1e.NewValue;
+                pform.Add(sb1);
+
+                GLScrollBar sb2 = new GLScrollBar("SB2", new Rectangle(260, 600, 100, 20), 0, 200);
+                sb2.HorizontalScroll = true;
+                sb2.Scroll += (c, s1e) => sp1.HorzScrollPos = s1e.NewValue;
+                pform.Add(sb2);
             }
 
             int col2 = 200;
             if (true)
             {
-                GLVerticalScrollPanelScrollBar spb1 = new GLVerticalScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
-                spb1.BackColor = Color.Yellow;
+                GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
+                spb1.ScrollBackColor = Color.Yellow;
                 spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
                 GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i2);
+                spb1.EnableHorzScrolling = false;
+            }
+
+            int col3 = 400;
+
+            if (true)
+            {
+                GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan2", new Rectangle(col3, 5, 190, 190));
+                spb1.ScrollBackColor = Color.Blue;
+                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                pform.Add(spb1);
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                spb1.Add(spb1i1);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                spb1.Add(spb1i2);
+                GLImage spb1i3 = new GLImage("SPB1I3", new Rectangle(150, 50, 100, 100), Properties.Resources.dotted2);
+                spb1.Add(spb1i3);
+
             }
 
             if (true)
@@ -300,24 +330,11 @@ namespace TestOpenTk
                 tc.SelectedTab = 0;
             }
 
-            if (true)
-            {
-                GLPanel psb = new GLPanel("panelsb", new Rectangle(col2+20, 600, 150, 190));
-                pform.Add(psb);
 
-                GLScrollBar sb1 = new GLScrollBar("SB1", new Rectangle(0, 0, 20, 100), 0, 100);
-                psb.Add(sb1);
-
-                GLScrollBar sb2 = new GLScrollBar("SB2", new Rectangle(40, 10, 100, 20), 0, 100);
-                sb2.HorizontalScroll = true;
-                psb.Add(sb2);
-            }
-
-            int col3 = 400;
             if (true)
             {
                 GLFlowLayoutPanel pflow2;
-                pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col3, 10, 300, 300));
+                pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col3, 200, 300, 300));
                 pflow2.AutoSize = true;
                 pflow2.Margin = new Margin(2);
                 pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
@@ -362,7 +379,7 @@ namespace TestOpenTk
 
                 displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
                 {
-                    System.Diagnostics.Debug.WriteLine(ts + " Render");
+                    //System.Diagnostics.Debug.WriteLine(ts + " Render");
                     displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
                 };
 

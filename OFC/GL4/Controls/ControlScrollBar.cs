@@ -58,15 +58,16 @@ namespace GLOFC.GL4.Controls
         public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
         public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
 
-
-        public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name,pos)
+        public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos)
         {
             thumbvalue = minimum = min;
             maximum = max;
+            BorderColorNI = DefaultScrollbarBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultScrollbarBackColor;
         }
 
-        public GLScrollBar() : this("SB?",DefaultWindowRectangle,0,100)
-        { 
+        public GLScrollBar(string name = "SB?") : this(name, DefaultWindowRectangle, 0, 100)
+        {
         }
 
         protected override void Paint(Graphics gr)
@@ -74,7 +75,7 @@ namespace GLOFC.GL4.Controls
             using (Brush br = new SolidBrush(this.SliderColor))
                 gr.FillRectangle(br, new Rectangle(sliderarea.Left, sliderarea.Top, sliderarea.Width, sliderarea.Height));
 
-            DrawButton(gr, new Rectangle(decreasebuttonarea.Left, decreasebuttonarea.Top,decreasebuttonarea.Width,decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
+            DrawButton(gr, new Rectangle(decreasebuttonarea.Left, decreasebuttonarea.Top, decreasebuttonarea.Width, decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
             DrawButton(gr, new Rectangle(increasebuttonarea.Left, increasebuttonarea.Top, increasebuttonarea.Width, increasebuttonarea.Height), MouseOver.MouseOverIncrease);
             DrawButton(gr, new Rectangle(thumbbuttonarea.Left, thumbbuttonarea.Top, thumbbuttonarea.Width, thumbbuttonarea.Height), MouseOver.MouseOverThumb);
         }
@@ -105,7 +106,7 @@ namespace GLOFC.GL4.Controls
             }
 
             using (Brush bbck = new System.Drawing.Drawing2D.LinearGradientBrush(rect, c1, c2, angle))
-                    g.FillRectangle(bbck, rect);
+                g.FillRectangle(bbck, rect);
 
             if (Enabled && thumbenable && !isthumb)
             {
@@ -119,7 +120,7 @@ namespace GLOFC.GL4.Controls
                     if (HorizontalScroll)
                     {
                         arrowpt1inc = new Point(rect.X + hoffset, rect.Y + voffset);
-                        arrowpt2inc = new Point(rect.Right-hoffset, rect.Y + rect.Height / 2);
+                        arrowpt2inc = new Point(rect.Right - hoffset, rect.Y + rect.Height / 2);
                         arrowpt3inc = new Point(rect.X + hoffset, rect.Bottom - voffset);
 
                         arrowpt1dec = new Point(arrowpt2inc.X, arrowpt1inc.Y);
@@ -254,12 +255,12 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
                 thumbmove = true;                           // and mouseover should be on as well
                 thumbmovecaptureoffset = HorizontalScroll ? (e.Location.X - thumbbuttonarea.X) : (e.Location.Y - thumbbuttonarea.Y);      // pixels down the thumb when captured..
-               // System.Diagnostics.Debug.WriteLine("Thumb captured at " + thumbmovecaptureoffset);
+                                                                                                                                          // System.Diagnostics.Debug.WriteLine("Thumb captured at " + thumbmovecaptureoffset);
             }
             else if (sliderarea.Contains(e.Location))      // slider, but not thumb..
             {
                 bool decdir = HorizontalScroll ? (e.Location.X < thumbbuttonarea.X) : (e.Location.Y < thumbbuttonarea.Y);
-                MoveThumb( decdir ? -largechange : largechange);
+                MoveThumb(decdir ? -largechange : largechange);
             }
         }
 
@@ -296,7 +297,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
-            if ( e.Delta<0)
+            if (e.Delta < 0)
                 MoveThumb(smallchange);
             else
                 MoveThumb(-smallchange);
@@ -364,7 +365,7 @@ namespace GLOFC.GL4.Controls
                 int thumboffsetpx = (int)((float)sliderrangepx * fposition);
                 thumboffsetpx = Math.Min(thumboffsetpx, sliderrangepx);     // LIMIT, because we can go over slider range if value=maximum
 
-                thumbbuttonarea = HorizontalScroll ? new Rectangle(sliderarea.X+thumboffsetpx, sliderarea.Y, thumbsize, sliderarea.Height) :
+                thumbbuttonarea = HorizontalScroll ? new Rectangle(sliderarea.X + thumboffsetpx, sliderarea.Y, thumbsize, sliderarea.Height) :
                                 new Rectangle(sliderarea.X, sliderarea.Y + thumboffsetpx, sliderarea.Width, thumbsize);
 
                 thumbenable = true;
@@ -386,7 +387,7 @@ namespace GLOFC.GL4.Controls
             {
                 thumbvalue += vchange;
                 thumbvalue = Math.Max(thumbvalue, minimum);
-                OnScroll(new ScrollEventArgs( oldvalue, Value));
+                OnScroll(new ScrollEventArgs(oldvalue, Value));
                 CalculateThumb();
                 Invalidate();
             }
@@ -394,7 +395,7 @@ namespace GLOFC.GL4.Controls
             {
                 thumbvalue += vchange;
                 thumbvalue = Math.Min(thumbvalue, UserMaximum);
-                OnScroll(new ScrollEventArgs( oldvalue, Value));
+                OnScroll(new ScrollEventArgs(oldvalue, Value));
                 CalculateThumb();
                 Invalidate();
             }
@@ -475,6 +476,33 @@ namespace GLOFC.GL4.Controls
         private MouseOver mouseover = MouseOver.MouseOverNone;
         private MouseOver mousepressed = MouseOver.MouseOverNone;
         private int thumbmovecaptureoffset = 0;     // px down the thumb when captured..
+    }
+
+    public class GLHorizontalScrollBar : GLScrollBar
+    {
+        public GLHorizontalScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos, min, max)
+        {
+            HorizontalScroll = true;
+        }
+
+        public GLHorizontalScrollBar(string name = "SBH?") : base(name)
+        {
+            HorizontalScroll = true;
+        }
+
+    }
+    public class GLVerticalScrollBar : GLScrollBar
+    {
+        public GLVerticalScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos, min, max)
+        {
+            HorizontalScroll = false;
+        }
+
+        public GLVerticalScrollBar(string name = "SBV?") : base(name)
+        {
+            HorizontalScroll = false;
+        }
 
     }
 }
+

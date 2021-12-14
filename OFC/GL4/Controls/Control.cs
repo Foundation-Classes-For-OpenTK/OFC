@@ -69,6 +69,9 @@ namespace GLOFC.GL4.Controls
 
         // docking control 
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; ParentInvalidateLayout(); } } }
+        // applies to all Left,Right,Bottom,Top dockings
+        public Margin DockingMargin { get { return dockingmargin; } set { if (dockingmargin != value) { dockingmargin = value; InvalidateLayout(); } } }
+        // applies to all Left,Right,Bottom,Top dockings, if >0 , sets the percentage of the parent area to set width/height to (so for Bottom/Top, the height, for Left/Right, the Width)
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; ParentInvalidateLayout(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 
         public AnchorType Anchor { get { return anchortype; } set { if (value != anchortype) { anchortype = value; ParentInvalidateLayout(); } } }
@@ -778,8 +781,8 @@ namespace GLOFC.GL4.Controls
         {
           //  System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea} {docktype} {Anchor}");
 
-            int dockedwidth = DockPercent > 0 ? ((int)(parentarea.Width * DockPercent)) : (window.Width);
-            int dockedheight = DockPercent > 0 ? ((int)(parentarea.Height * DockPercent)) : (window.Height);
+            int dockedwidth = DockPercent > 0 ? ((int)(parentarea.Width * DockPercent)) : (window.Width);       // for Left/Right
+            int dockedheight = DockPercent > 0 ? ((int)(parentarea.Height * DockPercent)) : (window.Height);    // For Top/Bottom
             int wl = Width;
             int hl = Height;
 
@@ -842,7 +845,7 @@ namespace GLOFC.GL4.Controls
                 if (docktype == DockingType.Bottom)     // only if we just the whole of the bottom do we modify areaout
                 {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockedheight - dockingmargin.Bottom, parentarea.Width - dockingmargin.TotalWidth, dockedheight);
-                    areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalWidth);
+                    areaout = new Rectangle(parentarea.Left, parentarea.Top, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalHeight);
                 }
                 else if (docktype == DockingType.BottomCentre)
                     window = new Rectangle(parentarea.Left + parentarea.Width / 2 - wl / 2, parentarea.Bottom - dockedheight - dockingmargin.Bottom, wl, dockedheight);
@@ -856,7 +859,8 @@ namespace GLOFC.GL4.Controls
                 if (docktype == DockingType.Top)
                 {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, parentarea.Width - dockingmargin.TotalWidth, dockedheight);
-                    areaout = new Rectangle(parentarea.Left, parentarea.Top + dockedheight + dockingmargin.TotalHeight, parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalHeight);
+                    areaout = new Rectangle(parentarea.Left, parentarea.Top + dockedheight + dockingmargin.TotalHeight, 
+                                                            parentarea.Width, parentarea.Height - dockedheight - dockingmargin.TotalHeight);
                 }
                 else if (docktype == DockingType.TopCenter)
                     window = new Rectangle(parentarea.Left + parentarea.Width / 2 - wl / 2, parentarea.Top + dockingmargin.Top, wl, dockedheight);
@@ -884,7 +888,8 @@ namespace GLOFC.GL4.Controls
                 if (docktype == DockingType.Left)
                 {
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + dockingmargin.Top, dockedwidth, parentarea.Height - dockingmargin.TotalHeight);
-                    areaout = new Rectangle(parentarea.Left + dockedwidth + dockingmargin.TotalWidth, parentarea.Top, parentarea.Width - dockedwidth - dockingmargin.TotalWidth, parentarea.Height);
+                    areaout = new Rectangle(parentarea.Left + dockedwidth + dockingmargin.TotalWidth, 
+                                            parentarea.Top, parentarea.Width - dockedwidth - dockingmargin.TotalWidth, parentarea.Height);
                 }
                 else if (docktype == DockingType.LeftCenter)
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Top + parentarea.Height / 2 - hl / 2, dockedwidth, hl);
@@ -896,7 +901,7 @@ namespace GLOFC.GL4.Controls
 
             CalcClientRectangle();
 
-            //System.Diagnostics.Debug.WriteLine("{0} dock {1} win {2} Area in {3} Area out {4}", Name, Dock, window, parentarea, areaout);
+          //  System.Diagnostics.Debug.WriteLine($"{Name} dock {Dock} dm {DockingMargin} win {window} Area in {parentarea} Area out {areaout}");
 
             parentarea = areaout;
           //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
@@ -1339,39 +1344,44 @@ namespace GLOFC.GL4.Controls
         private Size lastsize;       
 
         private Rectangle window;       // total area owned, in parent co-ords
-
+        private Padding padding;
+        private Margin margin;
         protected Size minimumsize = new Size(1, 1);
         protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
-        private bool needLayout { get; set; } = false;        // need a layout after suspend layout was called
-        protected int suspendLayoutCount { get; set; } = 0;        // suspend layout is on
-        private bool enabled { get; set; } = true;
-        private bool visible { get; set; } = true;
-        private DockingType docktype { get; set; } = DockingType.None;
-        private float dockpercent { get; set; } = 0;
+
+        private bool needLayout  = false;        // need a layout after suspend layout was called
+        protected int suspendLayoutCount = 0;        // suspend layout is on
+
+        private bool enabled = true;
+        private bool visible  = true;
+
+        private DockingType docktype = DockingType.None;
+        private float dockpercent  = 0;
+        private Margin dockingmargin;
         private AnchorType anchortype = AnchorType.None;
 
-        private Color backcolor { get; set; } = Color.Red;
-        private Color backcolorgradientalt { get; set; } = Color.Red;
-        private int backcolorgradientdir { get; set; } = int.MinValue;           // in degrees
-        private Color bordercolor { get; set; } = Color.Transparent;         // Margin - border - padding is common to all controls. Area left is control area to draw in
-        private int borderwidth { get; set; } = 0;
-        private GL4.Controls.Padding padding { get; set; }
-        private GL4.Controls.Margin margin { get; set; }
-        private GL4.Controls.Margin dockingmargin { get; set; }
-        private bool autosize { get; set; }
-        private int column { get; set; } = 0;     // for table layouts
-        private int row { get; set; } = 0;        // for table layouts
-        private bool focused { get; set; } = false;
-        private bool focusable { get; set; } = false;       // if true, clicking on it gets focus.  If not true, clincking on it set focus to null, unless next is set
-        private bool rejectfocus { get; set; } = false;     // if true, clicking on it does nothing to focus.
-        private bool givefocustoparent { get; set; } = false;     // if true, clicking on it tries to focus parent
-        private bool topMost { get; set; } = false;              // if set, always force to top
+        private bool autosize;
+
+        private int column = 0;     // for table layouts
+        private int row = 0;        // for table layouts
+
+        private Color backcolor  = Color.Red;
+        private Color backcolorgradientalt  = Color.Red;
+        private int backcolorgradientdir  = int.MinValue;           // in degrees
+        private Color bordercolor  = Color.Transparent;         // Margin - border - padding is common to all controls. Area left is control area to draw in
+        private int borderwidth  = 0;
+
+        private bool focused  = false;
+        private bool focusable  = false;       // if true, clicking on it gets focus.  If not true, clincking on it set focus to null, unless next is set
+        private bool rejectfocus  = false;     // if true, clicking on it does nothing to focus.
+        private bool givefocustoparent  = false;     // if true, clicking on it tries to focus parent
+        private bool topMost  = false;              // if set, always force to top
 
         private SizeF? altscale = null;
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
         private float opacity = 1.0f;
 
-        private GLBaseControl parent { get; set; } = null;       // its parent, or null if not connected or GLDisplayControl
+        private GLBaseControl parent  = null;       // its parent, or null if not connected or GLDisplayControl
 
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();
@@ -1401,6 +1411,8 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultComboBoxBorderColor = SystemColors.ControlText;
         static public Color DefaultComboBoxForeColor = SystemColors.ControlText;      // text
 
+        static public Color DefaultScrollbarBackColor = SystemColors.Control;
+        static public Color DefaultScrollbarBorderColor = SystemColors.ControlText;
         static public Color DefaultScrollbarSliderColor = Color.FromArgb(200, 200, 200);
         static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;
         static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;

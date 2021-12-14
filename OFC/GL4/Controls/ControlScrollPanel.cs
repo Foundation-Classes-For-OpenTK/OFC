@@ -20,21 +20,22 @@ namespace GLOFC.GL4.Controls
     // Scroll panel
     // must not be a child of GLForm as it needs a bitmap to paint into
 
-    public class GLVerticalScrollPanel : GLPanel
+    public class GLScrollPanel : GLPanel
     {
-        public GLVerticalScrollPanel(string name, Rectangle location) : base(name, location)
+        public GLScrollPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
         }
 
-        public GLVerticalScrollPanel() : this("VSP?", DefaultWindowRectangle)
+        public GLScrollPanel(string name = "SP?") : this(name, DefaultWindowRectangle)
         {
         }
 
-        public int ScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
-        public int ScrollPos { get { return scrollpos; } set { SetScrollPos(value); } }
-        private int scrollpos = 0;
+        public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
+        public int VertScrollPos { get { return vertscrollpos; } set { SetScrollPos(horzscrollpos,value); } }
+        public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }
+        public int HorzScrollPos { get { return horzscrollpos; } set { SetScrollPos(value,vertscrollpos); } }
 
         // Width/Height is size of the control without scrolling
         // we layout the children within that area.
@@ -49,21 +50,18 @@ namespace GLOFC.GL4.Controls
             if (ControlsZ.Count > 0)
             {
                 Rectangle r = ChildArea();
+
+                int childwidth = r.Left + r.Right;
                 int childheight = r.Bottom + r.Top;
 
-                needbitmap = childheight > Height;
+                needbitmap = childheight > Height || childwidth > Width;
 
                 if (needbitmap)
                 {
-                    if (LevelBitmap == null )
+                    if ( LevelBitmap == null || childwidth != LevelBitmap.Width || childheight != LevelBitmap.Height) // if height is different, or width is different
                     {
-                       // System.Diagnostics.Debug.WriteLine("Make SP bitmap " + ClientWidth + "," + childheight);
-                        MakeLevelBitmap(ClientWidth, childheight);
-                    }
-                    else if ( childheight != LevelBitmap.Height || LevelBitmap.Width != ClientWidth) // if height is different, or width is different
-                    {
-                        //   System.Diagnostics.Debug.WriteLine("Change SP bitmap " + ClientWidth + "," + childheight);
-                        MakeLevelBitmap(ClientWidth, childheight);
+                       // System.Diagnostics.Debug.WriteLine($"Make SP bitmap {childwidth} {childheight}");
+                        MakeLevelBitmap(childwidth, childheight);
                     }
                 }
             }
@@ -79,21 +77,25 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             if ( LevelBitmap != null )
-                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(0, scrollpos, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
+                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(horzscrollpos, vertscrollpos, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
         }
 
-        private void SetScrollPos(int value)
+        private void SetScrollPos(int hpos, int vpos)
         {
             if (LevelBitmap != null)
             {
-                int maxsp = LevelBitmap.Height - Height;
-                scrollpos = Math.Max(0, Math.Min(value, maxsp));
-                //System.Diagnostics.Debug.WriteLine("ScrollPanel scrolled to " + scrollpos + " maxsp " + maxsp);
+                int maxhsp = LevelBitmap.Width - Width;
+                horzscrollpos = Math.Max(0, Math.Min(hpos, maxhsp));
+                int maxvsp = LevelBitmap.Height - Height;
+                vertscrollpos = Math.Max(0, Math.Min(vpos, maxvsp));
+             //   System.Diagnostics.Debug.WriteLine($"ScrollPanel scrolled to {horzscrollpos} {vertscrollpos} range {maxhsp} {maxvsp}");
                 Invalidate();
             }
         }
 
 
+        private int vertscrollpos = 0;
+        private int horzscrollpos = 0;
     }
 }
 

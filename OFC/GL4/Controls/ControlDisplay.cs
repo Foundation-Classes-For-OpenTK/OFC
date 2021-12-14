@@ -238,7 +238,7 @@ namespace GLOFC.GL4.Controls
         // textures will be updated on invalidatelayout
         public override void Add(GLBaseControl child, bool atback = false)
         {
-            System.Diagnostics.Debug.Assert(child is GLVerticalScrollPanel == false, "GLVerticalScrollPanel must not be a child of GLForm");
+            System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
 
             textures[child] = items.NewTexture2D(null);                // we make a texture per top level control to render with
             size[child] = child.Size;
