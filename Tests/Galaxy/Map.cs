@@ -855,8 +855,8 @@ namespace TestOpenTk
 
         private void MouseClickOnMap(Object s, GLMouseEventArgs e)
         {
-            int distmovedsq = gl3dcontroller.MouseMovedSq(e.WindowLocation);
-            if (distmovedsq > 4)
+            int distmovedsq = gl3dcontroller.MouseMovedSq(e);
+            if (distmovedsq >= 4)
             {
                 System.Diagnostics.Debug.WriteLine($"Moved mouse {distmovedsq}, reject click");
                 return;

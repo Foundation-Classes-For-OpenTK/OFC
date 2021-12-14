@@ -44,7 +44,6 @@ namespace GLOFC.Controller
 
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
         public PositionCamerad PosCamera { get; private set; } = new PositionCamerad();
-        public Point MouseDownPos { get; private set; }
 
         // Start with externs MC/PC
         public void Start(GLMatrixCalc mc, PositionCamerad pc, GLWindowControl win, Vector3d lookat, Vector3d cameradirdegrees, float zoomn)
@@ -213,39 +212,56 @@ namespace GLOFC.Controller
 
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
-            mouseDeltaPos = MouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
-            //System.Diagnostics.Debug.WriteLine($"Mouse down {MouseDownPos}");
+            mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+            //System.Diagnostics.Debug.WriteLine($"Mouse down {e.WindowLocation} -> {mouseDownPos}");
         }
 
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine($"Mouse Up");
-            mouseDeltaPos = MouseDownPos = new Point(int.MinValue, int.MinValue);
+            // System.Diagnostics.Debug.WriteLine($"Mouse Up");
+            mouseDeltaPos = mouseDownPos = new Point(int.MinValue, int.MinValue);
         }
 
         public bool IsMouseDown()
         {
-            return MouseDownPos.X != int.MinValue;
+            return mouseDownPos.X != int.MinValue;
         }
 
-        public int MouseMovedSq(Point curmouse)     // square of mouse moved, -1 if was not down
+        public int MouseMovedSq(GLMouseEventArgs e)     // square of mouse moved, -1 if was not down
         {
-            if (MouseDownPos.X != int.MinValue)
+            if (mouseDownPos.X != int.MinValue)
             {
-                return (curmouse.X - MouseDownPos.X) * (curmouse.X - MouseDownPos.X) + (curmouse.Y - MouseDownPos.Y) * (curmouse.Y - MouseDownPos.Y);
+                var curpos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
+                return (curpos.X - mouseDownPos.X) * (curpos.X - mouseDownPos.X) + (curpos.Y - mouseDownPos.Y) * (curpos.Y - mouseDownPos.Y);
             }
             else
                 return -1;
         }
-
         public void MouseMove(object sender, GLMouseEventArgs e)
         {
+            if (mouseDownPos.X == int.MinValue)
+                return;
+
+            if (mouseDeltaPos.X == int.MinValue)
+            {
+                var delta = MouseMovedSq(e);
+
+                System.Diagnostics.Debug.WriteLine($"Mouse Move delta {delta}");
+
+                if (delta >= 4)
+                {
+                    mouseDeltaPos = mouseDownPos;
+                }
+                else
+                    return;     // not enough movement
+            }
+
             var mousepos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
 
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
                 //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
-                if (MatrixCalc.InPerspectiveMode && MouseDownPos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
+                if (MatrixCalc.InPerspectiveMode && mouseDownPos.X != int.MinValue) // on resize double click resize, we get a stray mousemove with left, so we need to make sure we actually had a down event
                 {
                     int dx = mousepos.X - mouseDeltaPos.X;
                     int dy = mousepos.Y - mouseDeltaPos.Y;
@@ -261,45 +277,39 @@ namespace GLOFC.Controller
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
                 //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
-                if (MouseDownPos.X != int.MinValue)
-                {
-                    KillSlew();
+                KillSlew();
 
-                    int dy = mousepos.Y - mouseDeltaPos.Y;
+                int dy = mousepos.Y - mouseDeltaPos.Y;
 
-                    //System.Diagnostics.Trace.WriteLine($"{mousepos}  dy {dy} Button {e.Button.ToString()}");
+                //System.Diagnostics.Trace.WriteLine($"{mousepos}  dy {dy} Button {e.Button.ToString()}");
 
-                    mouseDeltaPos = mousepos;
+                mouseDeltaPos = mousepos;
 
-                    PosCamera.Translate(new Vector3d(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
-                }
+                PosCamera.Translate(new Vector3d(0, -dy * (1.0f / PosCamera.ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0));
             }
             else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
             {
                 //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
-                if (MouseDownPos.X != int.MinValue)
+                KillSlew();
+
+                int dx = mousepos.X - mouseDeltaPos.X;
+                int dy = mousepos.Y - mouseDeltaPos.Y;
+
+                mouseDeltaPos = mousepos;
+
+                Vector3d translation = new Vector3d(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
+
+                if (MatrixCalc.InPerspectiveMode)
                 {
-                    KillSlew();
+                    //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
 
-                    int dx = mousepos.X - mouseDeltaPos.X;
-                    int dy = mousepos.Y - mouseDeltaPos.Y;
+                    Matrix4d transform = Matrix4d.CreateRotationZ((float)(-PosCamera.CameraDirection.Y * Math.PI / 180.0f));
+                    translation = Vector3d.Transform(translation, transform);
 
-                    mouseDeltaPos = mousepos;
-
-                    Vector3d translation = new Vector3d(dx * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, -dy * (1.0f / PosCamera.ZoomFactor) * MouseTranslateAmountAtZoom1PerPixel, 0.0f);
-
-                    if (MatrixCalc.InPerspectiveMode)
-                    {
-                        //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
-
-                        Matrix4d transform = Matrix4d.CreateRotationZ((float)(-PosCamera.CameraDirection.Y * Math.PI / 180.0f));
-                        translation = Vector3d.Transform(translation, transform);
-
-                        PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
-                    }
-                    else
-                        PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
+                    PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
                 }
+                else
+                    PosCamera.Translate(new Vector3d(translation.X, 0, translation.Y));
             }
 
         }
@@ -357,8 +367,8 @@ namespace GLOFC.Controller
         private KeyboardMonitor keyboard = new KeyboardMonitor();        // needed to be held because it remembers key downs
         private ulong? lastkeyintervalcount = null;
 
-        private Point mouseDeltaPos = new Point(int.MinValue, int.MinValue);        // when using the mouse move, last delta pos
-
+        private Point mouseDeltaPos = new Point(int.MinValue, int.MinValue);  // when using the mouse move, last delta pos
+        private Point mouseDownPos = new Point(int.MinValue, int.MinValue);        
         #endregion
     }
 }

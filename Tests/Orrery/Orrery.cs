@@ -514,7 +514,7 @@ namespace TestOpenTk
 
         private void MouseClickOnMap(Object s, GLMouseEventArgs e)
         {
-            int distmovedsq = gl3dcontroller.MouseMovedSq(e.WindowLocation);        //3dcontroller is monitoring mouse movements
+            int distmovedsq = gl3dcontroller.MouseMovedSq(e);        //3dcontroller is monitoring mouse movements
             if (distmovedsq < 4)
             {
                 var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
