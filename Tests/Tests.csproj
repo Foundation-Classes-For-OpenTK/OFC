@@ -76,6 +76,7 @@
     <Compile Include="FrameBuffer\TestRenderBuffer.designer.cs">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Galaxy\Bookmarks.cs" />
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Orrery\KeplerOrbitElements.cs" />
     <Compile Include="Orrery\StarNodes.cs" />

@@ -46,6 +46,7 @@ out vec4 color;
 void main(void)
 {
     color = texture(textureObject, vs_textureCoordinate);       // vs_texture coords normalised 0 to 1.0f
+//color = vec4(1,vs_textureCoordinate.x,vs_textureCoordinate.y,1); // test to show tex co-ords come thru
 }
 ";
         }

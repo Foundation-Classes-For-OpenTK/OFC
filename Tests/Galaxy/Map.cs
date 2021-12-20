@@ -65,15 +65,18 @@ namespace TestOpenTk
         private GalaxyStarDots stardots;
         private GalaxyStars galaxystars = null;
 
+        private Bookmarks bookmarks;
+
         private GLContextMenu rightclickmenu;
 
         private GLBuffer debugbuffer;
 
         // global buffer blocks used
         private const int volumenticuniformblock = 2;
-        private const int findstarblock = 3;
-        private const int findgeomapblock = 4;
-        private const int findgalaxystars = 5;
+        private const int findblock = 3;
+        //private const int findgeomapblock = 4;
+        //private const int findgalaxystars = 5;
+        //private const int findbookmarks = 6;
 
         private System.Diagnostics.Stopwatch hptimer = new System.Diagnostics.Stopwatch();
 
@@ -152,7 +155,8 @@ namespace TestOpenTk
                 rObjects.Add(new GLOperationClearDepthBuffer());
             }
 
-            int ctrlo = 1023+1024;
+            int ctrlo = 2048 | 32 | 64;
+            ctrlo = -1;
 
             if ((ctrlo & 1) != 0) // galaxy
             {
@@ -336,6 +340,8 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
+            GLStorageBlock findresults = items.NewStorageBlock(findblock);
+
             float sunsize = .5f;
             if ((ctrlo & 128) != 0)
             {
@@ -363,19 +369,19 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, sunsize, sunsize, findstarblock, true);
+                travelpath.Create(items, rObjects, pos, sunsize, sunsize, findresults, true);
                 travelpath.SetSystem(0);
             }
 
             if ((ctrlo & 256) != 0)
             {
                 galmapobjects = new GalMapObjects();
-                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findgeomapblock,true);
+                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findresults,true);
             }
 
             if ((ctrlo & 512) != 0)
             {
-              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findgalaxystars);
+              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findresults);
             }
 
             if ((ctrlo & 1024) != 0)
@@ -417,6 +423,12 @@ namespace TestOpenTk
 
             }
 
+            if ((ctrlo & 2048) != 0)
+            {
+                bookmarks = new Bookmarks();
+                var syslist = new List<SystemClass> { new SystemClass("bk1", 1000, 0, 0), new SystemClass("bk1", 1000, 0, 2000), };
+                bookmarks.Create(items, rObjects, syslist, 10, findresults, false);
+            }
             // Matrix calc holding transform info
 
             matrixcalc = new GLMatrixCalc();
@@ -519,7 +531,7 @@ namespace TestOpenTk
                 debugbuffer.AllocateBytes(32000, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
             }
 
-            if (true)          // enable for debug
+            if (false)          // enable for debug
             {
                 items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
                 GLRenderState rc = GLRenderState.Tri(cullface: false);
@@ -798,6 +810,11 @@ namespace TestOpenTk
             {
                 sys.X = sys.Y = sys.Z = 100000;
                 return sys;
+            }
+            var bk = bookmarks?.Find(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float bz);
+            if ( bk != null )
+            {
+                return bk;
             }
             return null;
         }

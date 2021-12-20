@@ -23,7 +23,7 @@ namespace TestOpenTk
         private const int SectorSize = 100;
         private const int MaxRequestedSectors = 10;
 
-        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, int findbufferbinding)
+        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, GLStorageBlock findbufferresults)
         {
             sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
                 autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
@@ -51,7 +51,7 @@ namespace TestOpenTk
 
             items.Add(slset);
 
-            var geofind = new GLPLGeoShaderFindTriangles(findbufferbinding, 16);
+            var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);
             findshader = items.NewShaderPipeline(null, sunvertex, null, null, geofind , null, null, null);
         }
 

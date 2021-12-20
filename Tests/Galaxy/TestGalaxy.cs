@@ -58,7 +58,7 @@ namespace TestOpenTk
 
             map = new Map();
             map.Start(glwfc, edsmmapping, eliteRegions);
-            map.LoadState(mapdefaults);
+            //map.LoadState(mapdefaults);
 
             systemtimer.Start();
         }

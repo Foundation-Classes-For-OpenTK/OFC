@@ -216,7 +216,7 @@ namespace GLOFC.GL4
         }
 
         // in 0,1 set up.  Second vector can be instance divided. Drawcount set to vectors length
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector,
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var vb = items.NewBuffer();
@@ -230,7 +230,7 @@ namespace GLOFC.GL4
 
             vb.Bind(va, 1, vb.Positions[1], 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
-            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
+            return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up.  Second vector can be instance divided. 
@@ -244,6 +244,51 @@ namespace GLOFC.GL4
             buf2.Bind(va, 1, buf2.Positions[0], 16, seconddivisor);
             va.Attribute(1, 1, 4, VertexAttribType.Float);
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
+        }
+
+        // in 0,1,2 set up.  Second and third vector can be instance divided. Drawcount set to vectors length
+        public static GLRenderableItem CreateVector4Vector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt,
+                                        Vector4[] vectors, Vector4[] secondvector, Vector2[] thirdvector,
+                                        IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0, int thirddivisor = 0)
+        {
+            var vb = items.NewBuffer();
+            vb.AllocateBytes(GLBuffer.Vec4size * vectors.Length + GLBuffer.Vec4size * secondvector.Length + GLBuffer.Vec2size * thirdvector.Length);   
+            vb.Fill(vectors);
+            vb.Fill(secondvector);
+            vb.Fill(thirdvector);
+
+            var va = items.NewArray();
+            vb.Bind(va, 0, vb.Positions[0], 16);
+            va.Attribute(0, 0, 4, VertexAttribType.Float);
+
+            vb.Bind(va, 1, vb.Positions[1], 16, seconddivisor);
+            va.Attribute(1, 1, 4, VertexAttribType.Float);
+
+            vb.Bind(va, 2, vb.Positions[2], 8, thirddivisor);
+            va.Attribute(2, 2, 2, VertexAttribType.Float);
+
+            return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
+        }
+        public static GLRenderableItem CreateVector4Vector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt,
+                                        Vector4[] vectors, GLBuffer secondvector, int secondoffset, Vector2[] thirdvector,
+                                        IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0, int thirddivisor = 0)
+        {
+            var vb = items.NewBuffer();
+            vb.AllocateBytes(GLBuffer.Vec4size * vectors.Length + GLBuffer.Vec2size * thirdvector.Length);    // vec2 aligned vec4
+            vb.Fill(vectors);
+            vb.Fill(thirdvector);
+
+            var va = items.NewArray();
+            vb.Bind(va, 0, vb.Positions[0], 16);
+            va.Attribute(0, 0, 4, VertexAttribType.Float);
+
+            secondvector.Bind(va, 1, secondoffset, 16, seconddivisor);
+            va.Attribute(1, 1, 4, VertexAttribType.Float);
+
+            vb.Bind(va, 2, vb.Positions[1], 8, thirddivisor);
+            va.Attribute(2, 2, 2, VertexAttribType.Float);
+
+            return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
         }
 
         // in 0,1 set up. Two seperate buffers.  Second vector can be instance divided

@@ -53,7 +53,7 @@ namespace TestOpenTk
             return s;
         }
 
-        public void CreateObjects(GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, int bufferfindbinding, bool depthtest)
+        public void CreateObjects(GLItemsList items, GLRenderProgramSortedList rObjects, GalacticMapping galmap, GLStorageBlock findbufferresults, bool depthtest)
         {
             this.galmap = galmap;
 
@@ -67,7 +67,7 @@ namespace TestOpenTk
             // now build the shaders
 
             const int texbindingpoint = 1;
-            var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false,       // a look at vertex shader
+            var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation,        // a look at vertex shader
                                                         autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
             var tcs = new GLPLTesselationControl(40f);
             tes = new GLPLTesselationEvaluateSinewave(1f, 2f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
@@ -104,7 +104,7 @@ namespace TestOpenTk
 
             // add a find shader to look them up
 
-            var geofind = new GLPLGeoShaderFindTriangles(bufferfindbinding, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
+            var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);
             findshader = items.NewShaderPipeline(null, vert, tcs, tes, geofind, null, null, null);
 
 

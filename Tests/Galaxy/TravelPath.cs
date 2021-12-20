@@ -12,14 +12,19 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
-    class SystemClass
+    public class SystemClass
     {
         public double X, Y, Z;
         public string Name;
         public bool HasCoordinate { get { return !double.IsNaN(X); } }
+        public SystemClass() { }
+        public SystemClass(string name, float x, float y, float z)
+        {
+            Name = name;X = x;Y = y;Z = z;
+        }
     }
 
-    class HistoryEntry
+    public class HistoryEntry
     {
         public HistoryEntry(DateTime utc, string n, double x, double y, double z, Color pos) { EventTimeUTC = utc; System = new SystemClass() { Name = n, X = x, Y = y, Z = z }; JumpColor = pos; }
         public SystemClass System;
@@ -45,7 +50,8 @@ namespace TestOpenTk
 
         // tested to 50K+ stars, tested updating a single one
 
-        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, int bufferfindbinding, bool depthtest)
+        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, 
+                            GLStorageBlock bufferfindresults, bool depthtest)
         {
             this.sunsize = sunsize;
             this.tapesize = tapesize;
@@ -53,12 +59,12 @@ namespace TestOpenTk
 
             unfilteredlist = incomingsys;
 
-            IntCreatePath(items, rObjects, bufferfindbinding);
+            IntCreatePath(items, rObjects, bufferfindresults);
         }
 
         public void Refresh()
         {
-            IntCreatePath(null, null, -1);  // refilters
+            IntCreatePath(null, null, null);  // refilters
         }
 
         public void AddSystem(HistoryEntry he)
@@ -68,7 +74,7 @@ namespace TestOpenTk
         }
 
 
-        private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, int bufferfindbinding)
+        private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, GLStorageBlock bufferfindresults)
         {
             HistoryEntry lastone = lastpos != -1 && lastpos < currentfilteredlist.Count ? currentfilteredlist[lastpos] : null;  // see if lastpos is there, and store it
 
@@ -144,7 +150,8 @@ namespace TestOpenTk
 
                 // find compute
 
-                findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+                var geofind = new GLPLGeoShaderFindTriangles(bufferfindresults, 16);
+                findshader = items.NewShaderPipeline(null, sunvertex, null, null, geofind, null, null, null);
                 rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, GLRenderState.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
 
                 // Sun names, handled by textrenderer

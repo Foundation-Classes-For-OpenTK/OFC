@@ -17,24 +17,32 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // Vertex look at with autoscale, optional common transform (uniform 22 mat4)
-    //      location 0 : position: vec4 vertex array of positions model coords, w is ignored
-    //      location 1 : worldpositions - passed thru to world pos
+    // Vertex look at with autoscale, optional uniform common transform, optional generate world pos
+    // output is either model scaled + worldpos, for use by a tes shader
+    // or projectionmodelmatrix * (model+worldpos) for use directly by a frag shader
+    //
+    // Input
+    //      location 0 : model position: vec4 vertex array of positions model coords, w is ignored. Scaled/autorotated. Optionally used to compute gl_Position
+    //      location 1 : worldpositions - passed thru to world pos, optionally used to compute gl_Position.
+    //      location 2 : texcoords - passed thru, optional
     //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+    //      uniform 22 (configurable): objecttransform: mat4 transform of model before world applied (for rotation/scaling)
     // Out:
-    //      gl_Position
+    //      gl_Position: either model position passed thru scaled/rotated, or if generateworldpos = true then projmodelmatrix * (modelpos+worldpos)
     //      location 1 : worldpos copied
     //      location 2 : instance id
 
     public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, bool commontransform = false,
+        // set commontransform uniform non zero to use
+        public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, int commontransformuniform = 0, bool texcoords = false, bool generateworldpos = false,
                                                     float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
-                                                                    "usetransform", commontransform, "autoscale", autoscale,
-                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
+                                                                    "usetexcoords", texcoords, "generateworldpos", generateworldpos,
+                                                                    "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance,
+                                                                    "transformuniform", commontransformuniform});
         }
 
         string vert =
@@ -46,11 +54,16 @@ namespace GLOFC.GL4
 #include Shaders.Functions.mat4.glsl
 #include Shaders.Functions.vec4.glsl
 
+const int transformuniform = 22;
+
 layout (location = 0) in vec4 modelposition;
 layout (location = 1) in vec4 worldposition;
-layout (location = 22) uniform  mat4 transform;
+layout (location = 2) in vec2 texco;
 
-layout( location = 1) out vec4 worldposinstance;
+layout (location = transformuniform) uniform  mat4 transform;
+
+layout (location = 0) out vec2 vs_textureCoordinate;
+layout (location = 1) out vec4 worldposinstance;
 layout (location = 2) out int instance;
 
 out gl_PerVertex {
@@ -62,6 +75,8 @@ out gl_PerVertex {
 const bool rotateelevation = false;
 const bool rotate = false;
 const bool usetransform = false;
+const bool usetexcoords = false;
+const bool generateworldpos = false;
 const float autoscale = 0;
 const float autoscalemax = 0;
 const float autoscalemin = 0;
@@ -98,12 +113,23 @@ void main(void)
         }
     }
 
-    if ( usetransform )
+    if ( transformuniform>0 )
     {
         pos = transform * pos;      // use transform to adjust
     }
 
-    gl_Position = pos;
+    if ( usetexcoords )
+        vs_textureCoordinate = texco;
+
+    if ( generateworldpos )
+    {
+        pos += vec4(worldposition.xyz,0);
+	    gl_Position = mc.ProjectionModelMatrix * pos;      
+    }
+    else
+    {
+        gl_Position = pos;
+    }
     
     worldposinstance = worldposition;
     instance = gl_InstanceID;
