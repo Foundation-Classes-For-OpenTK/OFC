@@ -26,7 +26,7 @@ namespace GLOFC.GL4.Controls
         public ulong FadeOutTime { get; set; } = 250;
         public StringFormat StringFormat { get; set; } = null;
         public Point AutoPlacementOffset { get; set; } = new Point(10, 0);
-
+        public new bool AutoSize { get { return false; } set { throw new System.NotImplementedException(); } }
         public float ShownOpacity { get; set; } = 1.0f;
 
         public GLToolTip(string name, Color? backcolour = null) : base(name, DefaultWindowRectangle)

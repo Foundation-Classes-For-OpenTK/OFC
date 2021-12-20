@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -44,6 +45,8 @@ namespace GLOFC.GL4.Controls
 
         public bool EnableHorzScrolling { get { return horzscrollbar.Visible; } set { horzscrollbar.Visible = value; } }
         public bool EnableVertScrolling { get { return vertscrollbar.Visible; } set { vertscrollbar.Visible = value; } }
+
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         public GLScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {

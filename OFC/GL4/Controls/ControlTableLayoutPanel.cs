@@ -42,10 +42,7 @@ namespace GLOFC.GL4.Controls
         public List<Style> Rows { get { return rows; } set { rows = value; InvalidateLayout(); } }
         public List<Style> Columns { get { return columns; } set { columns = value; InvalidateLayout(); } }
         public GL4.Controls.Padding CellPadding { get { return cellPadding; } set { cellPadding = value; InvalidateLayout(); } }
-
-        private List<Style> rows { get; set; } = null;
-        private List<Style> columns { get; set; } = null;
-        private GL4.Controls.Padding cellPadding { get; set; } = new Padding(1);
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         // Sizing has been recursively done for all children
         // now we are laying out from top down
@@ -165,6 +162,10 @@ namespace GLOFC.GL4.Controls
 
             return xpos;
         }
+
+        private List<Style> rows  = null;
+        private List<Style> columns  = null;
+        private GL4.Controls.Padding cellPadding = new Padding(1);
     }
 }
 

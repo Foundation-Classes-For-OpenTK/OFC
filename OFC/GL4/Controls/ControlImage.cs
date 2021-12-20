@@ -82,6 +82,16 @@ namespace GLOFC.GL4.Controls
         {
         }
 
+        protected override void SizeControl(Size parentsize)
+        {
+            base.SizeControl(parentsize);
+
+            if (AutoSize)
+            {
+                SetNI(clientsize: Image.Size);
+            }
+        }
+
         protected override void Paint(Graphics gr)
         {
             base.DrawImage(Image, ClientRectangle, gr, (Enabled) ? drawnImageAttributesEnabled : drawnImageAttributesDisabled);

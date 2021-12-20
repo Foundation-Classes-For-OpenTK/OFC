@@ -18,6 +18,8 @@ namespace TestOpenTk
         {
             map = g;
 
+            GLBaseControl.Themer = Theme;
+
             // names of MS* are on screen items hidden during main menu presentation
 
             GLImage menuimage = new GLImage("MSMainMenu", new Rectangle(10, 10, iconsize, iconsize), Properties.Resources.hamburgermenu);
@@ -57,7 +59,6 @@ namespace TestOpenTk
             status.BackColor = Color.FromArgb(50, 50, 50, 50);
             map.displaycontrol.Add(status);
 
-            GLBaseControl.Themer = Theme;
 
             // detect mouse press with menu open and close it
             map.displaycontrol.GlobalMouseDown += (ctrl, e) =>
@@ -320,29 +321,75 @@ namespace TestOpenTk
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it
         {
+            System.Diagnostics.Debug.Write($"Theme {s.GetType().Name}");
+
+            Color formback = Color.FromArgb(220, 60, 60, 70);
+            Color buttonface = Color.FromArgb(255, 128, 128, 128);
+            Color texc = Color.Orange;
+
             var but = s as GLButton;
             if (but != null)
             {
-                but.ButtonFaceColour = Color.FromArgb(255, 128, 128, 128);
-                but.ForeColor = Color.Orange;
-                but.BackColor = Color.FromArgb(255, 128, 128, 128);
-                but.BorderColor = Color.FromArgb(255, 128, 128, 128);
+                but.ButtonFaceColour = buttonface;
+                but.ForeColor = texc;
+                but.BackColor = buttonface;
+                but.BorderColor = buttonface;
             }
 
             var cb = s as GLCheckBox;
             if (cb != null)
             {
-                cb.ButtonFaceColour = Color.FromArgb(255, 128, 128, 128);
+                cb.ButtonFaceColour = buttonface;
+            }
+            var cmb = s as GLComboBox;
+            if (cmb != null)
+            {
+                cmb.BackColor = formback;
+                cmb.ForeColor = cmb.DropDownForeColor = texc;
+                cmb.FaceColor = cmb.DropDownBackgroundColor = buttonface;
+                cmb.BorderColor = formback;
             }
 
             var dt = s as GLDateTimePicker;
-            if ( dt != null )
+            if (dt != null)
             {
-                dt.BackColor = Color.FromArgb(255, 128, 128, 128);
-                dt.ForeColor = Color.Orange;
-                dt.Calendar.ButLeft.ForeColor = dt.Calendar.ButRight.ForeColor = Color.Orange;
+                dt.BackColor = buttonface;
+                dt.ForeColor = texc;
+                dt.Calendar.ButLeft.ForeColor = dt.Calendar.ButRight.ForeColor = texc;
                 dt.SelectedColor = Color.FromArgb(255, 160, 160, 160);
             }
+
+            var fr = s as GLForm;
+            if (fr != null)
+            {
+                fr.BackColor = formback;
+                fr.ForeColor = texc;
+            }
+
+            var tb = s as GLMultiLineTextBox;
+            if (tb != null)
+            {
+                tb.BackColor = formback;
+                tb.ForeColor = texc;
+            }
+
+            Color cmbck = Color.FromArgb(255, 128, 128, 128);
+
+            var ms = s as GLMenuStrip;
+            if (ms != null)
+            {
+                ms.BackColor = cmbck;
+                ms.IconStripBackColor = cmbck.Multiply(1.2f);
+            }
+            var mi = s as GLMenuItem;
+            if (mi != null)
+            {
+                mi.BackColor = cmbck;
+                mi.ButtonFaceColour = cmbck;
+                mi.ForeColor = texc;
+                mi.BackDisabledScaling = 1.0f;
+            }
+
             //{
             //    float[][] colorMatrixElements = {
             //               new float[] {0.5f,  0,  0,  0, 0},        // red scaling factor of 0.5

@@ -26,6 +26,7 @@ namespace GLOFC.GL4.Controls
         public float MouseSelectedColorScaling { get { return mouseSelectedColorScaling; } set { mouseSelectedColorScaling = value; Invalidate(); } }
         public int UpDownInitialDelay { get; set; } = 500;
         public int UpDownRepeatRate { get; set; } = 200;
+        public new bool AutoSize { get { return false; } set { throw new System.NotImplementedException(); } }
 
         public GLUpDownControl(string name, Rectangle location) : base(name, location)
         {

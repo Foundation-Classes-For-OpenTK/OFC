@@ -40,6 +40,17 @@ namespace GLOFC.GL4.Controls
             DockPercent = dockpercentage;
             SetNI(size: sizep);
         }
+
+        protected override void SizeControlPostChild(Size parentsize)
+        {
+            base.SizeControlPostChild(parentsize);
+
+            if (AutoSize)       
+            {
+                var area = ChildArea();     // all children, find area and set it to it.
+                SetNI(clientsize: new Size(area.Left + area.Right, area.Top + area.Bottom));
+            }
+        }
     }
 }
 

@@ -19,19 +19,18 @@ using GLOFC.Controller;
 using GLOFC.GL4;
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
 
 namespace TestOpenTk
 {
-    public partial class TestControlsPanels: Form
+    public partial class TestControlsPanels: System.Windows.Forms.Form
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
-        private Timer systemtimer = new Timer();
+        private System.Windows.Forms.Timer systemtimer = new System.Windows.Forms.Timer();
 
         public TestControlsPanels()
         {
@@ -294,7 +293,12 @@ namespace TestOpenTk
 
             if (true)
             {
+                //GLGroupBox p3 = new GLGroupBox("GB1", "Group Box Very Long Title", new Rectangle(col2,200,190,190));
                 GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", new Rectangle(col2,200,190,190));
+                p3.TextAlign = ContentAlignment.MiddleRight;
+                p3.AutoSize = true;
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                p3.Add(spb1i1);
                 pform.Add(p3);
             }
 
@@ -333,14 +337,17 @@ namespace TestOpenTk
 
             if (true)
             {
+                GLPanel pouter = new GLPanel("outerflow", new Rectangle(col3, 200, 1300, 30));      // make it very wide, so the child has all the width it wants to flow into
+                pouter.SetMarginBorderWidth(new Margin(5), 1, Color.Blue, new Padding(5));
+                pouter.AutoSize = true;
+
                 GLFlowLayoutPanel pflow2;
-                pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(col3, 200, 300, 300));
+                pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(0,0,10,10));
                 pflow2.AutoSize = true;
                 pflow2.Margin = new Margin(2);
                 pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
                 pflow2.BorderWidth = 1;
                 pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
-                pform.Add(pflow2);
 
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
                 pflow2.Add(pti1);
@@ -354,6 +361,9 @@ namespace TestOpenTk
                     GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
                     pflow2.Add(pti4);
                 }
+
+                pouter.Add(pflow2);
+                pform.Add(pouter);  
             }
 
             {

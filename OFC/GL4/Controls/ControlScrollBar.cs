@@ -58,6 +58,8 @@ namespace GLOFC.GL4.Controls
         public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
         public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
 
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
+
         public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos)
         {
             thumbvalue = minimum = min;

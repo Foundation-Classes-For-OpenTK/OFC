@@ -53,6 +53,8 @@ namespace GLOFC.GL4.Controls
 
         public Font RightClickMenuFont { get; set; } = null;        // if null, use Font for control
 
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
+
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
         {
             Focusable = true;

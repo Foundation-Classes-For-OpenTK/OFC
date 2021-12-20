@@ -90,13 +90,15 @@ namespace GLOFC.Controller
                 {
                     int dx = mousepos.X - mouseDeltaPos.X;
                     int dy = mousepos.Y - mouseDeltaPos.Y;
-                    // System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mouseStartRotate} {mousepos} {e.WindowLocation} {dx} {dy}");
+                    var vec = new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel));
+
+                  //  System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mousepos} {e.WindowLocation} {dx} {dy} {vec}");
 
                     KillSlew();    // all slews
 
                     mouseDeltaPos = mousepos;        // we reset both since the other button may be clicked later
 
-                    RotateCamera(new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel)), 0, true);
+                    RotateCamera(vec, 0, true);
                 }
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)

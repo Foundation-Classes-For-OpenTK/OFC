@@ -296,7 +296,25 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                PerformRecursiveSize();         // we recusively size
+                Size us = Size;
+
+                if (Parent != null)
+                    SizeControl(Parent.ClientSize);    // size us
+
+                PerformRecursiveSize();         // size all children
+
+                if (Parent != null)             // and size us post children
+                {
+                    SizeControlPostChild(Parent.ClientSize);    // And we give ourselves a change to post size to children size
+
+                    if (us != Size)           // if we changed size.. we need to go and let the parent have a full go, since it needs to be layed out
+                    {
+                        Parent.Invalidate();
+                        Parent.PerformLayout();
+                        return;
+                    }
+                }
+
                 PerformRecursiveLayout();       // and we layout, recursively
             }
         }
@@ -317,9 +335,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (needLayout)
                 {
-                    //System.Diagnostics.Debug.WriteLine("Required layout " + Name);
-                    PerformRecursiveSize();         // we recusively size
-                    PerformRecursiveLayout();       // and we layout, recursively                    
+                    PerformLayout();
                 }
             }
         }
@@ -704,30 +720,40 @@ namespace GLOFC.GL4.Controls
         // called by displaycontrol on chosen child
         public void PerformLayoutAndSize()
         {
-            PerformRecursiveSize();         // we recusively size
-            var area = Parent.ClientRectangle;  // we layout ourselves
-            Layout(ref area);
-            PerformRecursiveLayout();       // and we layout children, recursively
+            Size us = Size;
+
+            SizeControl(Parent.ClientSize);    // size us (we obv have a parent, display control)
+
+            PerformRecursiveSize();         // size all children
+
+            SizeControlPostChild(Parent.ClientSize);    // And we give ourselves a chance to post size to children size
+
+            if (us != Size)     // if we changed size, need to do a full layout on parent so all the docking will work
+            {
+                Parent.PerformLayout();
+            }
+            else
+            {
+                var area = Parent.ClientRectangle;  // else we can just layout ourselves
+                Layout(ref area);
+                PerformRecursiveLayout();       // and we layout children, recursively
+            }
         }
 
-        // Perform a recursive size, on us because we need to know about children sizes, and all children inside the control
+        // Perform a recursive size, on our children
         protected void PerformRecursiveSize()   
         {
-            if (Parent != null)         // may be running at displaycontrol, if not, size against parent
-                SizeControl(Parent.ClientSize);     
-
             //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
 
             foreach (var c in childrenz) // in Z order
             {
                 if (c.Visible)      // invisible children don't layout
                 {
+                    c.SizeControl(Size);
                     c.PerformRecursiveSize();
+                    c.SizeControlPostChild(Size);
                 }
             }
-
-            if (Parent != null)
-                SizeControlPostChild(Parent.ClientSize);    // And we give ourselves a change to post size to children size
         }
 
         // override to auto size before children. 

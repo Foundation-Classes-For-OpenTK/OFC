@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -27,7 +28,7 @@ namespace GLOFC.GL4.Controls
 
         public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
         {
-            SetNI(padding: new Padding(GBPadding), margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
+            SetNI(padding: new Padding(GBPadding), margin: new Margin(GBMargins, GroupBoxTextHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
             BackColorGradientAltNI = BackColorNI = DefaultGroupBoxBackColor;
             BorderColorNI = DefaultGroupBoxBorderColor;
             foreColor = DefaultGroupBoxForeColor;
@@ -50,14 +51,29 @@ namespace GLOFC.GL4.Controls
         {
         }
 
-        public int GroupBoxHeight { get { return (Font?.ScalePixels(20) ?? 20) + GBMargins * 2; } }
+        public int GroupBoxTextHeight { get { return (Font?.ScalePixels(20) ?? 20) + GBMargins * 2; } }
 
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
-            SetNI(margin: new Margin(GBMargins, GroupBoxHeight, GBMargins, GBMargins));
+            SetNI(margin: new Margin(GBMargins, GroupBoxTextHeight, GBMargins, GBMargins));
         }
 
+        protected override void SizeControlPostChild(Size parentsize)
+        {
+            base.SizeControlPostChild(parentsize);
+
+            if (AutoSize)
+            {
+                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
+                {
+                    var texts = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                    int textminwidth = (int)texts.Width + GBXoffset;
+                    var area = ChildArea();     // all children, find area and set it to it.
+                    SetNI(clientsize: new Size(Math.Max(area.Left + area.Right, textminwidth), area.Top + area.Bottom));
+                }
+            }
+        }
         protected override void TextValueChanged()      // called by upper class to say i've changed the text.
         {
             Invalidate();
@@ -74,15 +90,18 @@ namespace GLOFC.GL4.Controls
 
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
             {
+                // work out the area of the text box, given the text width, and the textalign
                 var size = this.Text.HasChars() ? gr.MeasureString(this.Text, this.Font, 10000, fmt) : new SizeF(0, 0);
                 int twidth = (int)(size.Width + 0.99f);
+                bool alignright = TextAlign == ContentAlignment.MiddleRight || TextAlign == ContentAlignment.TopRight || TextAlign == ContentAlignment.BottomRight;
+                Rectangle titlearea = new Rectangle(alignright ? rectarea.Right - twidth - GBXoffset : GBXoffset, 0, twidth, GroupBoxTextHeight);
 
                 using (var p = new Pen(bc, bw))
                 {
                     if (this.Text.HasChars())
                     {
-                        gr.DrawLine(p, rectarea.Left + GBXoffset - GBXpad, rectarea.Top, rectarea.Left, rectarea.Top);
-                        gr.DrawLine(p, rectarea.Right, rectarea.Top, rectarea.Left + GBXoffset  + twidth + GBXpad, rectarea.Top);
+                        gr.DrawLine(p, titlearea.Left - GBXpad, rectarea.Top, rectarea.Left, rectarea.Top); // draw around text
+                        gr.DrawLine(p, rectarea.Right, rectarea.Top, titlearea.Right + GBXpad, rectarea.Top);
                     }
                     else
                     {
@@ -99,11 +118,9 @@ namespace GLOFC.GL4.Controls
                 { 
                     using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
-                        Rectangle titlearea = new Rectangle(GBXoffset, 0, twidth, GroupBoxHeight );
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }
-
-                 }
+                }
             }
         }
     }

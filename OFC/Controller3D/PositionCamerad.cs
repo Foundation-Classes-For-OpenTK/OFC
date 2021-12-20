@@ -100,28 +100,33 @@ namespace GLOFC.Controller
 
         public double CameraRotation { get { return camerarot; } set { KillSlew(); camerarot = value; } }       // rotation around Z
 
-        public void RotateCamera(Vector2d addazel, double addzrot, bool changelookat)
+        public bool RotateCamera(Vector2d addazel, double addzrot, bool changelookat)
         {
             KillSlew();
             //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 1000} Rotate camera {addazel} z {addzrot} look {lookat} eye {eyeposition} camera dir {cameradir}");
 
             System.Diagnostics.Debug.Assert(!double.IsNaN(addazel.X) && !double.IsNaN(addazel.Y));
-            Vector2d cameraDir = CameraDirection;
+            Vector2d newdir = CameraDirection;
 
-            cameraDir.X = cameraDir.X.AddBoundedAngle(addazel.X);
-            cameraDir.Y = cameraDir.Y.AddBoundedAngle(addazel.Y);
+            newdir.X = newdir.X.AddBoundedAngle(addazel.X);
+            newdir.Y = newdir.Y.AddBoundedAngle(addazel.Y);
 
-            if (cameraDir.X < 0 && cameraDir.X > -90)                   // Limit camera pitch
-                cameraDir.X = 0;
-            if (cameraDir.X > 180 || cameraDir.X <= -90)
-                cameraDir.X = 180;
+            if (newdir.X < 0 && newdir.X > -90)                   // Limit camera pitch
+                newdir.X = 0;
+            if (newdir.X > 180 || newdir.X <= -90)
+                newdir.X = 180;
+
+            if (newdir.X == 0 || newdir.X == 180)                // we can't rotate camera at these positions, reject
+                return false;
 
             camerarot = camerarot.AddBoundedAngle(addzrot);
 
             if (changelookat)
-                SetLookatPositionFromEye(cameraDir, EyeDistance);
+                SetLookatPositionFromEye(newdir, EyeDistance);
             else
-                SetEyePositionFromLookat(cameraDir, EyeDistance);
+                SetEyePositionFromLookat(newdir, EyeDistance);
+
+            return true;
             // System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2} Zoom Fact {3} Eye dist {4}", Environment.TickCount % 10000, lookat, eyeposition, ZoomFactor, EyeDistance);
         }
 

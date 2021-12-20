@@ -32,6 +32,8 @@ namespace GLOFC.GL4.Controls
         {
         }
 
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
+
         public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
         public int VertScrollPos { get { return vertscrollpos; } set { SetScrollPos(horzscrollpos,value); } }
         public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }

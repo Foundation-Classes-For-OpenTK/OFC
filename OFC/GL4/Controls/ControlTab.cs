@@ -31,6 +31,7 @@ namespace GLOFC.GL4.Controls
         public Color TabControlBorderColor { get { return tabControlBorderColor; } set { tabControlBorderColor = value; Invalidate(); } }
         public float TabColorScaling { get { return tabColorScaling; } set { tabColorScaling = value; Invalidate(); } }
         public float BackDisabledScaling { get { return backDisabledScaling; } set { if (backDisabledScaling != value) { backDisabledScaling = value; Invalidate(); } } }
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         public GLTabControl(string name, Rectangle location) : base(name, location)
         {

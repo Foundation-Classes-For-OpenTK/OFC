@@ -344,7 +344,7 @@ namespace TestOpenTk
                     l += "trail ";
                     // l = "";
 
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 300), l);
+                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 200), l);
                     mtb.Font = new Font("Ms Sans Serif", 16);
                     mtb.LineColor = Color.Green;
                     mtb.EnableVerticalScrollBar = true;
@@ -364,7 +364,6 @@ namespace TestOpenTk
                     mtb2.SetSelection(16 * 2 + 2, 16 * 3 + 4);
                     mtb2.TabOrder = taborder++;
                     mtb2.RightClickMenuFont = new Font("Arial", 14f);
-                    mtb2.AutoSize = true;
                     pform.Add(mtb2);
                 }
 
@@ -378,7 +377,7 @@ namespace TestOpenTk
 
                 if (true)
                 {
-                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 550, 26, 46));
+                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 600, 26, 46));
                     upc1.TabOrder = taborder++;
                     pform.Add(upc1);
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
