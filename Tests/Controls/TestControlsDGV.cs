@@ -19,26 +19,24 @@ using GLOFC.Controller;
 using GLOFC.GL4;
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
 
 namespace TestOpenTk
 {
-    public partial class TestControlsMenu : Form
+    public partial class TestControlsDGV: System.Windows.Forms.Form
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
 
-        private Timer systemtimer = new Timer();
+        private System.Windows.Forms.Timer systemtimer = new System.Windows.Forms.Timer();
 
-        public TestControlsMenu()
+        public TestControlsDGV()
         {
             InitializeComponent();
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -70,7 +68,7 @@ namespace TestOpenTk
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
-  
+      
             Vector4[] displaylines = new Vector4[]
             {
                 new Vector4(left,-vsize,front,1),   new Vector4(left,+vsize,front,1),
@@ -93,7 +91,8 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-                rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
+                rObjects.Add(items.Shader("LINEYELLOW"),
+                GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
             float h = 0;
@@ -121,117 +120,45 @@ namespace TestOpenTk
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 500000f;
 
+            mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
+
+            displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
+            displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
+            displaycontrol.Name = "displaycontrol";
+
+            GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 850));
+
+
+            displaycontrol.Add(pform);
+
             if (true)
             {
-                bool testform1 = true;
+                GLDataGridView dgv = new GLDataGridView("DGV-1", new Rectangle(10, 10, 600, 500));
 
-                mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
+                var col0 = dgv.CreateColumn();
+                var col1 = dgv.CreateColumn();
+                col0.Width = 200;
+                col0.Text = "Col0";
+                col1.Width = 250;
+                col1.Text = "Col1";
+                dgv.AddColumn(col0);
+                dgv.AddColumn(col1);
 
-                displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
-                displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-                displaycontrol.Name = "displaycontrol";
-
-                if (testform1)
+                for (int i = 0; i < 2; i++)
                 {
-                    GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
-                    displaycontrol.Add(pform);
-
-                    if (true)
-                    {
-                        GLMenuStrip menubar = new GLMenuStrip("Menubar", new Rectangle(0, 0, 500, 24));
-                        menubar.AutoOpenDelay = 1000;
-                        menubar.Font = new Font("Euro Caps", 12);
-                        menubar.Dock = DockingType.Top;
-                        menubar.SubMenuBorderWidth = 1;
-
-                        GLMenuItem l1 = new GLMenuItem("MI-0A", "MenuA");
-                        menubar.Add(l1);
-
-                        GLMenuItem l1a = new GLMenuItem("A-1", "MenuA-1");
-                        GLMenuItem l1b = new GLMenuItem("A-2", "MenuA-2");
-                        l1b.CheckOnClick = true;
-                        l1b.Checked = true;
-                        GLMenuItem l1c = new GLMenuItem("A-3", "MenuA-3") { Image = Properties.Resources.GoToHomeSystem };
-                        l1c.CheckOnClick = true;
-                        l1.SubMenuItems = new List<GLBaseControl>() { l1a, l1b, l1c };
-
-                        GLMenuItem l1a1 = new GLMenuItem("A-1-1", "MenuA-1-1");
-                        GLMenuItem l1a2 = new GLMenuItem("A-1-2", "MenuA-1-2");
-
-                        GLMenuItem l1a21 = new GLMenuItem("A-1-2-1", "MenuA-1-2-1");
-                        GLMenuItem l1a22 = new GLMenuItem("A-1-2-2", "MenuA-1-2-2");
-                        l1a2.SubMenuItems = new List<GLBaseControl>() { l1a21, l1a22 };
-
-                        GLCheckBox l1a3 = new GLCheckBox("A-1-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
-                        l1a3.CheckOnClick = true;
-                        l1a3.CheckChanged += (bc) => { menubar.CloseMenus(); };     // need to associate check changed with closing menus - optional
-
-                        GLComboBox l1a4 = new GLComboBox("A-1-4", new Rectangle(0, 0, 0, 0), new List<string>() { "one", "two", "three" });
-                        l1a4.SelectedIndexChanged += (c) => { menubar.CloseMenus(); };
-                        l1a4.DisableChangeKeys = true;
-                        l1a.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3, l1a4 };
-
-                        GLMenuItem l2 = new GLMenuItem("MI-0B", "MenuB");
-                        menubar.Add(l2);
-
-                        GLMenuItem l2a = new GLMenuItem("B-1", "MenuB-1");
-                        l2a.Click += (s) => { System.Diagnostics.Debug.WriteLine("Clicked Menu " + s.Name); };
-                        GLMenuItem l2b = new GLMenuItem("B-2", "MenuB-2");
-                        l2.SubMenuItems = new List<GLBaseControl>() { l2a, l2b };
-
-                        GLMenuItem l3 = new GLMenuItem("MI-0C", "MenuC");
-                        menubar.Add(l3);
-
-                        pform.Add(menubar);
-                    }
-
+                    var row = dgv.CreateRow();
+                    row.AddCell(new GLDataGridViewCellText($"R{i}C0"));
+                    row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
+                    dgv.AddRow(row);
                 }
 
-                if (true)
-                {
-                    GLContextMenu ctx1, ctx2;
+                dgv.ColumnFillMode = GLDataGridView.ColFillMode.Exact;
+                pform.Add(dgv);
+            }
 
-                    ctx1 = new GLContextMenu("CM1");
-                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
-
-                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
-                    cm2.CheckOnClick = true;
-                    GLMenuItem cm3 = new GLMenuItem("CM1C", "Menu-3");
-
-                    GLMenuItem l1a1 = new GLMenuItem("CM1C-1", "Menu-1-1");
-                    l1a1.CheckOnClick = true;
-                    GLMenuItem l1a2 = new GLMenuItem("CM1C-2", "MenuA-1-2");
-                    GLCheckBox l1a3 = new GLCheckBox("CM1C-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
-                    l1a3.CheckOnClick = true;
-                    cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
-
-                    ctx1.Add(cm1);
-                    ctx1.Add(cm2);
-                    ctx1.Add(cm3);
-
-                    Color tc = Color.Orange;
-                    ctx2 = new GLContextMenu("CM1", new GLMenuItem[] {
-                        new GLMenuItem("CM1A","MenuR1") { CheckOnClick = true, ForeColor = tc},
-                        new GLMenuItem("CM1B","MenuR2") { CheckOnClick = true, Enabled = false, ForeColor = tc},
-                        new GLMenuItem("CM1C","MenuR3") { CheckOnClick = true},
-                        new GLMenuItem("CM1C","MenuR4") { CheckOnClick = true },
-                        new GLMenuItem("CM1C","MenuR5") { },
-                        });
-
-                    ctx2.Font = new Font("Euro caps", 18f);
-
-                    displaycontrol.MouseClick += (s, ev) =>
-                    {
-                        if (ev.Button == GLMouseEventArgs.MouseButtons.Left)
-                        {
-                            ctx1.Show(displaycontrol, ev.ScreenCoord);
-                        }
-                        else  if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
-                        {
-                            ctx2.Show(displaycontrol, ev.ScreenCoord);
-                        }
-                    };
-                }
+            {
+                GLToolTip tip = new GLToolTip("ToolTip");
+                displaycontrol.Add(tip);
             }
 
             gl3dcontroller = new Controller3D();
@@ -251,7 +178,8 @@ namespace TestOpenTk
                 gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
                 displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {                                 
+                {
+                    //System.Diagnostics.Debug.WriteLine(ts + " Render");
                     displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
                 };
 
@@ -264,9 +192,8 @@ namespace TestOpenTk
             systemtimer.Start();
         }
 
-
         private void Controller3dDraw(Controller3D mc, ulong unused)
-        { 
+        {
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
@@ -277,19 +204,12 @@ namespace TestOpenTk
         private void SystemTick(object sender, EventArgs e)
         {
             GLOFC.Timers.Timer.ProcessTimers();
+            displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
-            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, Otherkeys);
+            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true);
         }
 
-        private void Otherkeys(KeyboardMonitor h)
-        {
-            if ( h.HasBeenPressed(Keys.F1, KeyboardMonitor.ShiftState.None))
-            {
-                displaycontrol.DumpTrees(0,null);
-            }
-
-        }
     }
 }
 

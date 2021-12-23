@@ -65,33 +65,6 @@ namespace TestOpenTk
             }
         }
 
-        class MatrixCalcSpecial : GLMatrixCalc
-        {
-            public MatrixCalcSpecial()
-            {
-                ScreenCoordMax = new Size(2000, 1000);
-                //ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
-                //ScreenCoordClipSpaceSize = new SizeF(1f, 1f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.5f, 0.5f);
-            }
-
-            public override void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
-            {
-                if (!(sender is Controller3D))         // ignore from 3dcontroller as it also sends it, but it will be reporting the size of the display window
-                {
-                    System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
-                    ScreenSize = newsize;
-                    ScreenCoordMax = newsize;
-                    int margin = 0;
-                    ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
-                    SetViewPort();
-                }
-            }
-
-
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -148,7 +121,7 @@ namespace TestOpenTk
 
             }
 
-            MatrixCalcSpecial mc = new MatrixCalcSpecial();
+            GLMatrixCalc mc = new GLMatrixCalc();
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 500000f;
 

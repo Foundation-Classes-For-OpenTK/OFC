@@ -83,6 +83,12 @@
     <Compile Include="GL4\Controls\ControlStructsEnums.cs" />
     <Compile Include="GL4\Controls\ControlTextBoxAutoComplete.cs" />
     <Compile Include="GL4\Controls\ControlToolTip.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewContentPanel.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewRow.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCell.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewColumn.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCellStyle.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridView.cs" />
     <Compile Include="GL4\Controls\FormMessageBox.cs" />
     <Compile Include="GL4\Controls\FormConfigurable.cs" />
     <Compile Include="GL4\Controls\ControlBaseButton.cs" />
