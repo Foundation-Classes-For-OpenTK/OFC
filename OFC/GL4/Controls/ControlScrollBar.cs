@@ -26,7 +26,7 @@ namespace GLOFC.GL4.Controls
 
     public class GLScrollBar : GLBaseControl
     {
-        public Action<GLBaseControl, ScrollEventArgs> Scroll { get; set; } = null;
+        public Action<GLScrollBar, ScrollEventArgs> Scroll { get; set; } = null;
 
         public int Value { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange); } }
         public int ValueLimited { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange, true); } }

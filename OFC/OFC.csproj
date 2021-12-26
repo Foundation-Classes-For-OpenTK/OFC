@@ -83,6 +83,7 @@
     <Compile Include="GL4\Controls\ControlStructsEnums.cs" />
     <Compile Include="GL4\Controls\ControlTextBoxAutoComplete.cs" />
     <Compile Include="GL4\Controls\ControlToolTip.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewHeaderPanel.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridViewContentPanel.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridViewRow.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridViewCell.cs" />

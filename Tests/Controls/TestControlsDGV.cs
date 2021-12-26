@@ -144,9 +144,10 @@ namespace TestOpenTk
                 dgv.AddColumn(col0);
                 dgv.AddColumn(col1);
 
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     var row = dgv.CreateRow();
+                   // row.AutoSize = true;
                     row.AddCell(new GLDataGridViewCellText($"R{i}C0"));
                     row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
                     dgv.AddRow(row);

@@ -326,6 +326,7 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Suspend layout on " + Name);
         }
 
+        public bool LayoutSuspended { get { return suspendLayoutCount > 0; } }
         // call to resume layout
         public void ResumeLayout()
         {
@@ -927,7 +928,7 @@ namespace GLOFC.GL4.Controls
 
             CalcClientRectangle();
 
-          //  System.Diagnostics.Debug.WriteLine($"{Name} dock {Dock} dm {DockingMargin} win {window} Area in {parentarea} Area out {areaout}");
+         //   System.Diagnostics.Debug.WriteLine($"{Name} dock {Dock} dm {DockingMargin} win {window} Area in {parentarea} Area out {areaout}");
 
             parentarea = areaout;
           //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");

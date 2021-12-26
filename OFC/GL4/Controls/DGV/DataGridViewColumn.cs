@@ -10,14 +10,14 @@ namespace GLOFC.GL4.Controls
 
     public class GLDataGridViewColumn
     {
-        public GLDataGridView Parent { get; set; }
-        public Action<GLDataGridViewColumn> Changed { get; set; }
         public int Index { get { return colno; } }
-        public int Width { get { return width; } set { if (value != width) { width = value; Changed(this); } } }
-        public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed(this); } } }
+        public GLDataGridView Parent { get; set; }
+        public Action<GLDataGridViewColumn,bool> Changed { get; set; }
+        public string Text { get { return text; } set { text = value; Changed?.Invoke(this,false); } }
+        public int Width { get { return width; } set { if (value != width) { width = value; Changed?.Invoke(this,true); } } }
+        public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this,true); } } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
         public Rectangle HeaderBounds { get; set; }
-        public string Text { get { return text; } set { text = value; Changed(this); } }
 
         public void AddTo(List<GLDataGridViewColumn> cols)
         {
