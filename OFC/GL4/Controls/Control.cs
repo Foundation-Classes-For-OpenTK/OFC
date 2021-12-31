@@ -144,6 +144,10 @@ namespace GLOFC.GL4.Controls
         // Global themer enable - applied at Add. Do we apply it to this control?
         public bool EnableThemer { get; set; } = true;
 
+        // Cursor shape
+        public GLCursorType Cursor { get { return cursor; } set { cursor = value; FindDisplay()?.Gc_CursorTo(this,value); } }
+
+
         // children control list
 
         public virtual IList<GLBaseControl> ControlsIZ { get { return childreniz.AsReadOnly(); } }      // read only, in inv zorder, so 0 = last layout first drawn
@@ -813,6 +817,8 @@ namespace GLOFC.GL4.Controls
             int wl = Width;
             int hl = Height;
 
+            Rectangle current = window;
+
             Rectangle areaout = parentarea;
 
             if (docktype == DockingType.None)
@@ -841,6 +847,7 @@ namespace GLOFC.GL4.Controls
                             int bottomoffset = clientpreviousheight - Bottom;
                             int newbottom = parentarea.Bottom - bottomoffset;
                             window = new Rectangle(window.Left, newbottom - Height, Width, Height);
+                            OnMoved();
                             // System.Diagnostics.Debug.WriteLine($"Anchor {Name} {clientpreviouswidth} {bottomoffset} -> {newbottom}");
                         }
                     }
@@ -926,12 +933,28 @@ namespace GLOFC.GL4.Controls
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
             }
 
+            window.Size = new Size(Math.Max(0,window.Width),Math.Max(0,window.Height));
+
             CalcClientRectangle();
 
          //   System.Diagnostics.Debug.WriteLine($"{Name} dock {Dock} dm {DockingMargin} win {window} Area in {parentarea} Area out {areaout}");
 
             parentarea = areaout;
-          //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
+
+            if ( current.Location != window.Location)
+            {
+                lastlocation = window.Location;
+                OnMoved();
+            }
+
+            if ( current.Size != window.Size)
+            {
+               // System.Diagnostics.Debug.WriteLine($"Layout resize {Name}");
+
+                lastsize = window.Size;
+                OnResize();
+            }
+            //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
         }
 
         // gr = null at start, else gr used by parent
@@ -1233,6 +1256,7 @@ namespace GLOFC.GL4.Controls
 
         protected  virtual void OnResize()
         {
+            //System.Diagnostics.Debug.WriteLine($"On Resize {Name}");
             Resize?.Invoke(this);
         }
 
@@ -1298,7 +1322,8 @@ namespace GLOFC.GL4.Controls
         // client rectangle calc - call if you change the window bounds, margin, padding
         private void CalcClientRectangle()      
         {
-            ClientRectangle = new Rectangle(0, 0, Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2, Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2);
+            ClientRectangle = new Rectangle(0, 0, Math.Max(0,Width - Margin.TotalWidth - Padding.TotalWidth - BorderWidth * 2), 
+                                                  Math.Max(0,Height - Margin.TotalHeight - Padding.TotalHeight - BorderWidth * 2));
         }
 
         // set enabled, and all children too
@@ -1407,6 +1432,8 @@ namespace GLOFC.GL4.Controls
         private SizeF? altscale = null;
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
         private float opacity = 1.0f;
+
+        private GLCursorType cursor = GLCursorType.Normal;
 
         private GLBaseControl parent  = null;       // its parent, or null if not connected or GLDisplayControl
 

@@ -1,31 +1,37 @@
-﻿using System;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GLOFC.GL4.Controls
 {
 
     public class GLDataGridViewContentPanel : GLPanel
     {
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
+        public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
+        public int HorzScroll { get { return gridoffset.X; } set { gridoffset = new Point(value, gridoffset.Y); Invalidate(); } }
+        public int DepthMult { get; set; } = 3;
+
         public GLDataGridViewContentPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = Color.Red;// DefaultVerticalScrollPanelBackColor;
         }
-
-        public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
-        public int DepthMult { get; set; } = 3;
-
-        private int firstdisplayindex = 0;
-        private Bitmap gridbitmap = null;
-        private Point gridoffset;       // scroll index, to be replaced
-        private int gridbitmapfirstline = -1;
-        private int gridbitmaplastcompleteline = -1;
-        private int gridbitmapdrawndepth = -1;
-        private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of row X
 
         public void Redraw()            // forced redraw, maybe because a new column has been added..
         {
@@ -34,9 +40,21 @@ namespace GLOFC.GL4.Controls
         }
         public void AddRow(int index)
         {
-            if (index < gridbitmaplastcompleteline + 1)     // if before, or within the grid, row headers will change
+            if (gridbitmaplastcompleteline == -1 ||         // not drawn anything
+                gridbitmapdrawndepth < Height ||            // or not drawn a whole screen
+                (index >= gridbitmapfirstline && index <= gridbitmaplastcompleteline + 1))     // or index inside grid
             {
-                System.Diagnostics.Debug.WriteLine($"Content Add row before {gridbitmaplastcompleteline + 1} redraw");
+                //System.Diagnostics.Debug.WriteLine($"Content Add row {index} {gridbitmapfirstline}..{gridbitmaplastcompleteline + 1} redraw");
+                Redraw();
+            }
+        }
+        public void InsertRow(int index)
+        {
+            if (gridbitmaplastcompleteline == -1 ||         // not drawn anything
+                gridbitmapdrawndepth < Height ||            // or not drawn a whole screen
+                index <= gridbitmaplastcompleteline + 1)     // or index before or up to end +1 of grid
+            {
+                System.Diagnostics.Debug.WriteLine($"Content Insert row {index} {gridbitmapfirstline}..{gridbitmaplastcompleteline + 1} redraw");
                 Redraw();
             }
         }
@@ -66,7 +84,7 @@ namespace GLOFC.GL4.Controls
         {
             GLDataGridView dgv = Parent as GLDataGridView;
 
-            firstdisplayindex = dgv.Rows.Count > 0 ? Math.Min(fdl,dgv.Rows.Count-1) : 0;     
+            firstdisplayindex = dgv.Rows.Count > 0 ? Math.Min(fdl, dgv.Rows.Count - 1) : 0;
 
             // if FDL is within the drawn range of the bitmap
 
@@ -82,9 +100,9 @@ namespace GLOFC.GL4.Controls
                 //                System.Diagnostics.Debug.WriteLine($"Move to {firstdisplayindex} lo {lineoffset} ys {ystart} {depthleft} >= {ClientHeight}");
 
                 // if enough bitmap left.. OR we drew complete the last line, nothing to redraw. Move to pos
-                if ( depthleft >= ClientHeight || gridbitmaplastcompleteline == dgv.Rows.Count-1) 
+                if (depthleft >= ClientHeight || gridbitmaplastcompleteline == dgv.Rows.Count - 1)
                 {
-                    gridoffset = new Point(0,ystart);      // move the image down to this position
+                    gridoffset = new Point(gridoffset.X, ystart);      // move the image down to this position
                     Invalidate();                           // invalidate only, no need to redraw
                     return;
                 }
@@ -99,10 +117,11 @@ namespace GLOFC.GL4.Controls
 
             int gridwidth = dgv.Columns.Count > 0 ? dgv.Columns.Last().HeaderBounds.Right + 1 : 1;      // width of grid
 
-            if ( gridbitmap == null || gridbitmap.Width != gridwidth)   // if bitmap not there, or different width needed
+            if (gridbitmap == null || gridbitmap.Width < gridwidth)   // if bitmap not there, or different width needed
             {
                 gridbitmap?.Dispose();
-                gridbitmap = new Bitmap(gridwidth, Height * DepthMult);
+                gridbitmap = new Bitmap(Math.Max(gridwidth,10), Math.Max(Height * DepthMult,10));
+                //System.Diagnostics.Debug.WriteLine($"Grid bitmap {gridbitmap.Width} {gridbitmap.Height}");
                 gridbitmaplastcompleteline = -1;
             }
 
@@ -119,21 +138,23 @@ namespace GLOFC.GL4.Controls
         {
             GLDataGridView dgv = Parent as GLDataGridView;
 
-            gridoffset = Point.Empty;
-            gridrowoffsets.Clear();
-
-            if (dgv.Columns.Count == 0)
-                return;
-
             int backup = 10;
 
-            while( true )
-            { 
-                gridbitmapfirstline = Math.Max(0, firstdisplayindex - backup);      // tbd how much to back up..
-
+            while (true)
+            {
                 using (Graphics gr = Graphics.FromImage(gridbitmap))
                 {
                     gr.Clear(Color.Transparent);
+
+                    gridrowoffsets.Clear();
+
+                    if (dgv.Columns.Count == 0 || dgv.Rows.Count == 0)
+                    {
+                        gridoffset = Point.Empty;
+                        return;
+                    }
+
+                    gridbitmapfirstline = Math.Max(0, firstdisplayindex - backup);      // tbd how much to back up..
 
                     using (Brush b = new SolidBrush(dgv.CellBorderColor))
                     {
@@ -144,6 +165,13 @@ namespace GLOFC.GL4.Controls
 
                             for (var rowno = gridbitmapfirstline; rowno < dgv.Rows.Count && vpos < gridbitmap.Height; rowno++)
                             {
+                                var row = dgv.Rows[rowno];
+
+                                if ( row.AutoSize && row.AutoSizeGeneration != dgv.AutoSizeGeneration)
+                                {
+                                    dgv.PerformAutoSize(row);
+                                }
+
                                 gridrowoffsets.Add(vpos);       // this row at this border line offset
 
                                 if (dgv.CellBorderWidth > 0)
@@ -153,8 +181,6 @@ namespace GLOFC.GL4.Controls
                                 }
 
                                 int hpos = dgv.CellBorderWidth;
-
-                                var row = dgv.Rows[rowno];
 
                                 if (dgv.RowHeaderEnable)
                                 {
@@ -177,16 +203,21 @@ namespace GLOFC.GL4.Controls
                                         Rectangle area = new Rectangle(hpos, vpos, col.Width, row.Height);
                                         cell.Paint(gr, area);
                                     }
+                                    else
+                                        break;
+
                                     hpos += col.Width + dgv.CellBorderWidth;
                                 }
 
                                 vpos += row.Height;
-                            //    System.Diagnostics.Debug.WriteLine($"Row {rowno} Start {gridrowoffsets.Last()}..{vpos} bitmap H {gridbitmap.Height}");
+                                //    System.Diagnostics.Debug.WriteLine($"Row {rowno} Start {gridrowoffsets.Last()}..{vpos} bitmap H {gridbitmap.Height}");
                                 if (vpos < gridbitmap.Height)
                                     gridbitmaplastcompleteline = rowno;
                             }
 
-                            gridbitmapdrawndepth = Math.Min(vpos + 1, gridbitmap.Height);  // maximum height (not line) we drew to is vpos or the end of the bitmap
+                            int endpos = Math.Min(vpos + 1, gridbitmap.Height);  // maximum height (not line) we drew to is vpos or the end of the bitmap
+                            gridrowoffsets.Add(endpos);       // add final row vpos for searching purposes
+                            gridbitmapdrawndepth = endpos;
 
                             if (dgv.CellBorderWidth > 0)
                             {
@@ -211,21 +242,36 @@ namespace GLOFC.GL4.Controls
                         }
                     }
 
-                    int ystart = gridrowoffsets[firstdisplayindex - gridbitmapfirstline];
-                    System.Diagnostics.Debug.WriteLine($"Drawn grid backed {backup} {gridbitmapfirstline}..{firstdisplayindex}..{gridbitmaplastcompleteline} {gridbitmapdrawndepth}");
-
-                    // if we backed up, and the backup is very large, we may not have enough bitmap to draw into to fill up the client area
-                    // this does not apply if we drew to the end
-                    // and stop it continuing forever just in case with backup>0
-                    if ( backup > 0 && gridbitmaplastcompleteline != dgv.Rows.Count - 1 &&        
-                         gridbitmapdrawndepth < ystart + Height )      // what we have drawn is less than ystart (y=0 on client) + client height
+                    if (firstdisplayindex > gridbitmaplastcompleteline)
                     {
-                        backup /= 2;
+                        if (backup > 0)
+                        {
+                            backup /= 2;
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"DGV **** Error in drawing {firstdisplayindex} {gridbitmapfirstline} {gridbitmaplastcompleteline}");
+                            return;
+                        }
                     }
                     else
                     {
-                        gridoffset = new Point(0, ystart);
-                        break;
+                        int ystart = gridrowoffsets[firstdisplayindex - gridbitmapfirstline];
+                        //System.Diagnostics.Debug.WriteLine($"Draw grid backed {backup} {gridbitmapfirstline}..{firstdisplayindex}..{gridbitmaplastcompleteline} {gridbitmapdrawndepth}");
+
+                        // if we backed up, and the backup is very large, we may not have enough bitmap to draw into to fill up the client area
+                        // this does not apply if we drew to the end
+                        // and stop it continuing forever just in case with backup>0
+                        if (backup > 0 && gridbitmaplastcompleteline != dgv.Rows.Count - 1 &&
+                             gridbitmapdrawndepth < ystart + Height)      // what we have drawn is less than ystart (y=0 on client) + client height
+                        {
+                            backup /= 2;
+                        }
+                        else
+                        {
+                            gridoffset = new Point(gridoffset.X, ystart);
+                            break;
+                        }
                     }
                 }
             }
@@ -239,10 +285,41 @@ namespace GLOFC.GL4.Controls
             if (gridbitmap != null && gridbitmap.Height < Height * 2)       // less than minumum overlap
             {
                 gridbitmap?.Dispose();
-                Redraw();
+                gridbitmap = null;
+            }
+
+            Redraw();
+        }
+
+        protected override void OnMouseClick(GLMouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+            if (gridbitmapfirstline >= 0)
+            {
+                int yoffset = gridoffset.Y + e.Location.Y;
+                int row = gridrowoffsets.FindLastIndex(a => a < yoffset);
+                if (row >= 0)
+                {
+                    GLDataGridView dgv = Parent as GLDataGridView;
+                    int xoffset = gridoffset.X + e.Location.X;
+                    int col = dgv.Columns.FindIndex(a => xoffset >= a.HeaderBounds.Left && xoffset < a.HeaderBounds.Right);
+                    if ( col >= 0 )
+                    {
+                        row += gridbitmapfirstline;
+                       // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
+                        MouseClickOnGrid(row, col, e);
+                    }
+                }
             }
         }
 
+        private int firstdisplayindex = 0;
+        private Bitmap gridbitmap = null;
+        private Point gridoffset;       // scroll index, to be replaced
+        private int gridbitmapfirstline = -1;
+        private int gridbitmaplastcompleteline = -1;
+        private int gridbitmapdrawndepth = -1;
+        private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
     }
 }
 

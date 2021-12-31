@@ -98,13 +98,15 @@ namespace GLOFC.GL4.Controls
 
                 c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ThumbButtonColor);
                 c2 = c1.Multiply(ThumbColorScaling);
-                angle = ThumbDrawAngle;
+                angle = HorizontalScroll ? ((ThumbDrawAngle+90)%360) : ThumbDrawAngle;
             }
             else
             {
                 c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ArrowButtonColor);
                 c2 = c1.Multiply(ArrowColorScaling);
                 angle = (but == MouseOver.MouseOverDecrease) ? ArrowDecreaseDrawAngle : ArrowIncreaseDrawAngle;
+                if ( HorizontalScroll)
+                    angle = (angle - 90) % 360;
             }
 
             using (Brush bbck = new System.Drawing.Drawing2D.LinearGradientBrush(rect, c1, c2, angle))

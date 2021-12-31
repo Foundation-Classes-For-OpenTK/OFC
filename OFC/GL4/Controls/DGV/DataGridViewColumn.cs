@@ -1,9 +1,20 @@
-﻿using System;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GLOFC.GL4.Controls
 {
@@ -14,19 +25,20 @@ namespace GLOFC.GL4.Controls
         public GLDataGridView Parent { get; set; }
         public Action<GLDataGridViewColumn,bool> Changed { get; set; }
         public string Text { get { return text; } set { text = value; Changed?.Invoke(this,false); } }
-        public int Width { get { return width; } set { if (value != width) { width = value; Changed?.Invoke(this,true); } } }
-        public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this,true); } } }
+        public int Width { get { return width; } set { if (value != width) { width = Math.Max(minwidth,value); Changed?.Invoke(this, true); } } }
+        public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this, true); } } }
+        public int MinimumWidth { get { return minwidth; } set { if (value != minwidth) { minwidth = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
         public Rectangle HeaderBounds { get; set; }
-
-        public void AddTo(List<GLDataGridViewColumn> cols)
+        public bool? SortGlyphAscending { get; set; } = null;                               // for displaying sort glyph
+        public void SetColNo(int i)
         {
-            colno = cols.Count;
-            cols.Add(this);
+            colno = i;
         }
-        public void Paint(Graphics gr)
+
+        public void Paint(Graphics gr, Rectangle area)
         {
-            Rectangle area = new Rectangle(HeaderBounds.Left + HeaderStyle.Padding.Left, HeaderBounds.Top + HeaderStyle.Padding.Top, HeaderBounds.Width - HeaderStyle.Padding.TotalWidth, HeaderBounds.Height - HeaderStyle.Padding.TotalHeight);
+            area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, HeaderBounds.Width - HeaderStyle.Padding.TotalWidth, HeaderBounds.Height - HeaderStyle.Padding.TotalHeight);
 
             if (HeaderStyle.BackColor != Color.Transparent)
             {
@@ -44,10 +56,30 @@ namespace GLOFC.GL4.Controls
                     gr.DrawString(text, HeaderStyle.Font, textb, area, fmt);
                 }
             }
+
+            if ( SortGlyphAscending != null )
+            {
+                using (Brush b = new SolidBrush(HeaderStyle.ForeColor))
+                {
+                    int margin = 2;
+                    int size = 10;
+                    int hleft = area.Right - size - margin;
+                    int hright = hleft + size;
+                    int hcentre = (hleft + hright) / 2;
+                    int htop = (area.Top+area.Bottom)/2 - size/2;
+                    int hbottom = htop + size;
+                    if ( SortGlyphAscending == true )
+                        gr.FillPolygon(b, new Point[] { new Point(hcentre, htop), new Point(hright, hbottom), new Point(hleft, hbottom) });
+                    else
+                        gr.FillPolygon(b, new Point[] { new Point(hcentre, hbottom), new Point(hleft, htop), new Point(hright, htop) });
+                }
+
+            }
         }
 
         private GLDataGridViewCellStyle headerstyle = new GLDataGridViewCellStyle();
         private int width;
+        private int minwidth = 10;
         private float fillwidth;
         private string text = string.Empty;
         private int colno;

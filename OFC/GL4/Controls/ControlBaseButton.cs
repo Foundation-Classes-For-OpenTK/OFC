@@ -25,7 +25,6 @@ namespace GLOFC.GL4.Controls
         public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
         public Color MouseDownColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
         public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
-
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
 
         public GLButtonBase(string name, Rectangle window) : base(name, window)

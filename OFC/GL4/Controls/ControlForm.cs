@@ -268,28 +268,23 @@ namespace GLOFC.GL4.Controls
 
                     if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizeable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizeable))
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.EW);
-                        cursorindicatingmovement = true;
+                        Cursor = GLCursorType.EW;
                     }
                     else if (Moveable && e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.Move);
-                        cursorindicatingmovement = true;
+                        Cursor = GLCursorType.Move;
                     }
                     else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.NS);
-                        cursorindicatingmovement = true;
+                        Cursor = GLCursorType.NS;
                     }
                     else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.NWSE);
-                        cursorindicatingmovement = true;
+                        Cursor = GLCursorType.NWSE;
                     }
-                    else if ( cursorindicatingmovement )        // not pointing anywhere, but we were, set back to normal
+                    else 
                     {
-                        FindDisplay()?.SetCursor(GLCursorType.Normal);
-                        cursorindicatingmovement = false;
+                        Cursor = GLCursorType.Normal;
                     }
                 }
             }
@@ -302,20 +297,8 @@ namespace GLOFC.GL4.Controls
 
             if (captured != GLMouseEventArgs.AreaType.Client)
             {
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
+                Cursor = GLCursorType.Normal;
                 captured = GLMouseEventArgs.AreaType.Client;
-                //??FindDisplay()?.SetCursor(GLCursorType.Normal);
-            }
-        }
-
-        protected override void OnMouseLeave(GLMouseEventArgs e)
-        {
-            base.OnMouseLeave(e);
-
-            if (cursorindicatingmovement)
-            {
-                FindDisplay()?.SetCursor(GLCursorType.Normal);
-                cursorindicatingmovement = false;
             }
         }
 
@@ -382,7 +365,6 @@ namespace GLOFC.GL4.Controls
         private GLMouseEventArgs.AreaType captured = GLMouseEventArgs.AreaType.Client;  // meaning none
         private Point capturelocation;
         private Rectangle originalwindow;
-        private bool cursorindicatingmovement = false;
         private DialogResult dialogResult = DialogResult.None;
         private GLBaseControl lastchildfocus = null;
 

@@ -42,7 +42,8 @@ namespace TestOpenTk
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
         GLItemsList items = new GLItemsList();
         GLControlDisplay displaycontrol;
-
+        GLDataGridView dgv;
+        GLForm pform;
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -126,34 +127,45 @@ namespace TestOpenTk
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Name = "displaycontrol";
 
-            GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 850));
+            pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(10, 10, 700, 800));
 
 
             displaycontrol.Add(pform);
 
             if (true)
             {
-                GLDataGridView dgv = new GLDataGridView("DGV-1", new Rectangle(10, 10, 600, 500));
-
+                dgv = new GLDataGridView("DGV-1", new Rectangle(10, 10, 600, 500));
+                dgv.Dock = DockingType.Fill;
+               // dgv.ColumnFillMode = GLDataGridView.ColFillMode.FillWidth;
                 var col0 = dgv.CreateColumn();
                 var col1 = dgv.CreateColumn();
-                col0.Width = 200;
+                var col2 = dgv.CreateColumn();
+                col0.Width = 20;
+                col0.MinimumWidth = 100;
                 col0.Text = "Col0";
                 col1.Width = 250;
                 col1.Text = "Col1";
+                col1.MinimumWidth = 25;
+                col2.Width = 250;
+                col2.Text = "Col2";
                 dgv.AddColumn(col0);
                 dgv.AddColumn(col1);
+                //dgv.AddColumn(col2);
 
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     var row = dgv.CreateRow();
-                   // row.AutoSize = true;
-                    row.AddCell(new GLDataGridViewCellText($"R{i}C0"));
+                    row.AutoSize = true;
+                    string prefix = char.ConvertFromUtf32(i + 65);
+                    //row.AddCell(new GLDataGridViewCellText($"{prefix} Text"));
+                    row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C0 long bit of text for it to wrap again and again and again"));
                     row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
                     dgv.AddRow(row);
                 }
 
-                dgv.ColumnFillMode = GLDataGridView.ColFillMode.Exact;
+                dgv.Rows[1].AutoSize = false;
+                dgv.Rows[1].Height = 40;
+
                 pform.Add(dgv);
             }
 
@@ -193,15 +205,6 @@ namespace TestOpenTk
             systemtimer.Start();
         }
 
-        private void Controller3dDraw(Controller3D mc, ulong unused)
-        {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
-
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
-        }
-
         private void SystemTick(object sender, EventArgs e)
         {
             GLOFC.Timers.Timer.ProcessTimers();
@@ -211,6 +214,76 @@ namespace TestOpenTk
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true);
         }
 
+        private void Controller3dDraw(Controller3D mc, ulong unused)
+        {
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
+        }
+
+        private void buttonAddRow_Click(object sender, EventArgs e)
+        {
+            var row = dgv.CreateRow();
+            // row.AutoSize = true;
+            int i = dgv.Rows.Count;
+            row.AddCell(new GLDataGridViewCellText($"R{i}C0"));
+            row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
+            dgv.AddRow(row);
+
+        }
+
+        private void buttonInsertRow1_Click(object sender, EventArgs e)
+        {
+            var row = dgv.CreateRow();
+            // row.AutoSize = true;
+            int i = dgv.Rows.Count;
+            row.AddCell(new GLDataGridViewCellText($"R{i}C0"));
+            row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
+            dgv.AddRow(row,1);
+        }
+
+        private void buttonRemoveRow1_Click(object sender, EventArgs e)
+        {
+            dgv.RemoveRow(1);
+
+        }
+
+        private void buttonRemoveCol0_Click(object sender, EventArgs e)
+        {
+            dgv.RemoveColumn(0);
+        }
+
+        private void buttonAddCol0_Click(object sender, EventArgs e)
+        {
+            var col0 = dgv.CreateColumn();
+            col0.Width = 200;
+            col0.Text = "Col0";
+            dgv.AddColumn(col0);
+
+        }
+
+        private void buttonAddCell_Click(object sender, EventArgs e)
+        {
+            for( int r = 1; r < 10; r++)
+            {
+                var row = dgv.Rows[r];
+                var cell = new GLDataGridViewCellText($"R{r}CX long bit of text for it to wrap again and again and again over and over again until it takes a long number of lines");
+                cell.Style.TextFormat = (r % 2 == 0) ? StringFormatFlags.NoWrap : 0;
+                row.AddCell(cell);
+            }
+        }
+
+        private void buttonSizeA_Click(object sender, EventArgs e)
+        {
+            pform.Size = new Size(800, 600);
+        }
+
+        private void buttonSizeB_Click(object sender, EventArgs e)
+        {
+            pform.Size = new Size(800, 700);
+        }
     }
 }
 

@@ -107,11 +107,6 @@ namespace GLOFC.GL4.Controls
             suspendLayoutCount = 0;     
         }
 
-        public void SetCursor(GLCursorType t)
-        {
-            glwin.SetCursor(t);
-        }
-
         // call this during your Paint to render.
         public void Render(GLRenderState currentstate, ulong ts)
         {
@@ -374,6 +369,19 @@ namespace GLOFC.GL4.Controls
         public new void ResumeLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
         public override void Layout(ref Rectangle parentarea) { System.Diagnostics.Debug.Assert(false, "Should not happen - bug if it does"); }
         protected override void SetPos(int left, int top, int width, int height) { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+
+        // use by these classes only, not by general code. General code does Cursor=N
+        public void SetCursor(GLCursorType t)
+        {
+            if (t != lastcursor)
+            {
+                glwin.SetCursor(t);
+                lastcursor = t;
+               // System.Diagnostics.Debug.WriteLine($"Cursor to {t}");
+            }
+        }
+
+        GLCursorType lastcursor = GLCursorType.Normal;
 
         // window is resizing
         private void Gc_Resize(object sender)

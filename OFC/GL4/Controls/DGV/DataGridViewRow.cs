@@ -1,33 +1,40 @@
-﻿using System;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GLOFC.GL4.Controls
 {
     public class GLDataGridViewRow
     {
-        public Action<GLDataGridViewRow,bool> Changed { get; set; }     // true if it affect height
+        public Action<GLDataGridViewRow,int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
         public GLDataGridView Parent { get; set; }
         public int Index { get { return rowno; } }
-        public int Height { get { return height; } set { if (value != height) { height = value; Changed?.Invoke(this,true); } } }
-        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value; if (autosize && cells.Count>0) PerformAutoSize(true); } }  }
+        public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
+        public int MinimumHeight { get { return minheight; } set { if (value != minheight) { minheight = value; autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
+        public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value;  } }  }
         public List<GLDataGridViewCell> Cells { get { return cells; } }
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
 
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
+        public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }
 
         public GLDataGridViewRow()
         {
-        }
-        public void AddTo(List<GLDataGridViewRow> rows)
-        {
-            rowno = rows.Count;
-            PerformAutoSize(false);
-            rows.Add(this);
         }
 
         public void AddCell(GLDataGridViewCell cell)
@@ -38,32 +45,26 @@ namespace GLOFC.GL4.Controls
             cell.Style.Index = index;
             cell.Index = index;
 
-            // if a cell style has changed, then we perform autosize, then tell DGV, with performautosize=false (don't ask for size)
-            cell.Style.Changed += (e1) => { if ( AutoSize) cell.PerformAutoSize(); Changed(this, PerformAutoSize(false)); };
-            // if a cell content has changed, then we perform autosize, then tell DGV, with performautosize=false (don't ask for size)
-            cell.Changed += (e1) => { if ( AutoSize) cell.PerformAutoSize(); Changed(this, PerformAutoSize(false)); };
+            // if a cell style has changed
+            cell.Style.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
+            // if a cell content has changed
+            cell.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
 
             cells.Add(cell);
-
-            if (AutoSize)
-            {
-                cell.PerformAutoSize();
-                Changed?.Invoke(this, PerformAutoSize(false));
-            }
-            else
-                Changed?.Invoke(this, false);
+            Changed?.Invoke(this, index);
         }
 
-
-        // if askforsize we ask all columns to set their wanted size
+        // from the wanted values work out height of row
         // true if we change height.  
-        public bool PerformAutoSize(bool askforsize)
+        public void SetAutoSizeHeight(uint gen, int h)
         {
-            if (AutoSize && cells.Count>0)
-            {
-                System.Diagnostics.Debug.WriteLine($"Row {rowno} Autosize {AutoSize} on all? {askforsize}");
-            }
-            return false;
+            autosizegeneration = gen;
+            height = Math.Max(minheight,h);
+        }
+
+        public void SetRowNo(int i)
+        {
+            rowno= i;
         }
 
         public void RemoveCellAt(int index)
@@ -71,14 +72,14 @@ namespace GLOFC.GL4.Controls
             if ( cells.Count>index)
             {
                 cells.RemoveAt(index);
-                Changed?.Invoke(this, true);
+                Changed?.Invoke(this, -1);
             }
         }
 
         public void Clear()
         {
             cells.Clear();
-            Changed?.Invoke(this,true);
+            Changed?.Invoke(this,-1);
         }
 
         public void Paint(Graphics gr, Rectangle area)
@@ -108,7 +109,9 @@ namespace GLOFC.GL4.Controls
         private GLDataGridViewCellStyle headerstyle = new GLDataGridViewCellStyle();
         private List<GLDataGridViewCell> cells = new List<GLDataGridViewCell>();
         private int height;
+        private int minheight = 10;
         private int rowno = -1;
         private bool autosize;
+        private uint autosizegeneration = 0;
     }
 }

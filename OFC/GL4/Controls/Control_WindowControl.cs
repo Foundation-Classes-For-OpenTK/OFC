@@ -108,6 +108,8 @@ namespace GLOFC.GL4.Controls
 
                 SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);
 
+                ((GLControlDisplay)this).SetCursor(currentmouseover.Cursor);
+
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseEnter(e);
             }
@@ -126,6 +128,8 @@ namespace GLOFC.GL4.Controls
                     currentmouseover.OnMouseLeave(mouseleaveev);
 
                 currentmouseover = null;
+
+                ((GLControlDisplay)this).SetCursor(GLCursorType.Normal);
             }
         }
 
@@ -174,12 +178,16 @@ namespace GLOFC.GL4.Controls
 
                     GlobalMouseMove?.Invoke(e);     // we move, with the new currentmouseover
 
+                    ((GLControlDisplay)this).SetCursor(currentmouseover.Cursor);
+
                     if (currentmouseover.Enabled)       // and send to control if enabled
                         currentmouseover.OnMouseEnter(e);
                 }
                 else
                 {
                     GlobalMouseMove?.Invoke(e);     // we move, with no mouse over
+
+                    ((GLControlDisplay)this).SetCursor(GLCursorType.Normal);
 
                     if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
                         this.OnMouseMove(e);
@@ -372,7 +380,6 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
         }
 
-
         // feed keys to focus is present and enabled, else the control display gets them
 
         protected void Gc_KeyUp(object sender, GLKeyEventArgs e)
@@ -418,5 +425,11 @@ namespace GLOFC.GL4.Controls
                 OnKeyPress(e);
         }
 
+        // we are in control display, and if control change the cursor is the current control mouse over, set it
+        protected void Gc_CursorTo(GLBaseControl c, GLCursorType ct)       
+        {
+            if (currentmouseover == c)                              
+                ((GLControlDisplay)this).SetCursor(ct);
+        }
     }
 }
