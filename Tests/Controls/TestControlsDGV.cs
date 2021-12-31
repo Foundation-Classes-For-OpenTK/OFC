@@ -284,6 +284,17 @@ namespace TestOpenTk
         {
             pform.Size = new Size(800, 700);
         }
+
+        private void buttonDisableTextCol0_Click(object sender, EventArgs e)
+        {
+            dgv.Columns[0].ShowText = !dgv.Columns[0].ShowText;
+        }
+
+        private void buttonDisableTextRow1_Click(object sender, EventArgs e)
+        {
+            dgv.Rows[1].ShowText = !dgv.Rows[1].ShowText;
+
+        }
     }
 }
 

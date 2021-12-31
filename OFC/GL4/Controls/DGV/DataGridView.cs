@@ -33,61 +33,73 @@ namespace GLOFC.GL4.Controls
             vertscroll.Scroll += (sb, se) => { contentpanel.FirstDisplayIndex = se.NewValue; };
             horzscroll = new GLHorizontalScrollBar(name + "_HSB", new Rectangle(0, 0, 10, sbwidth), 0, 100);
             horzscroll.Dock = DockingType.Bottom;
-            horzscroll.Scroll += (sb, se) => { headerpanel.HorzScroll= contentpanel.HorzScroll = se.NewValue; };
-            contentpanel = new GLDataGridViewContentPanel(name+"_CP",location);
+            horzscroll.Scroll += (sb, se) => { colheaderpanel.HorzScroll = contentpanel.HorzScroll = se.NewValue; };
+            rowheaderpanel = new GLDataGridViewRowHeaderPanel(name + "_RHP", location);
+            rowheaderpanel.Dock = DockingType.Left;
+            contentpanel = new GLDataGridViewContentPanel(name + "_CP", rowheaderpanel, location);
             contentpanel.Dock = DockingType.Fill;
-            headerpanel = new GLDataGridViewHeaderPanel(name + "_HP", location);
-            headerpanel.Dock = DockingType.Top;
+            colheaderpanel = new GLDataGridViewColumnHeaderPanel(name + "_CHP", location);
+            colheaderpanel.Dock = DockingType.Top;
+            topleftpanel = new GLDataGridViewTopLeftHeaderPanel(name + "_TLP", location);
+            topleftpanel.Dock = DockingType.LeftTop;
             Add(contentpanel);
-            Add(headerpanel);
+            Add(colheaderpanel);
+            Add(rowheaderpanel);
             Add(vertscroll);
             Add(horzscroll);
+            Add(topleftpanel);
 
-            colheaderstyle.Changed += (e1) => { headerpanel.Invalidate(); };
+            colheaderstyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
             rowheaderstyle.Changed += (e1) => { ContentInvalidateLayout(); };
             defaultcellstyle.Changed += (e1) => { ContentInvalidateLayout(); };
-            upperleftstyle.Changed += (e1) => { headerpanel.Invalidate(); };
+            upperleftstyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
 
             upperleftstyle.BackColor = Color.Gray;
-            colheaderstyle.BackColor = rowheaderstyle.BackColor  = Color.Orange;
+            colheaderstyle.BackColor = rowheaderstyle.BackColor = Color.Orange;
             defaultcellstyle.BackColor = Color.White;
             upperleftstyle.ForeColor = colheaderstyle.ForeColor = rowheaderstyle.ForeColor = defaultcellstyle.ForeColor = Color.Black;
             upperleftstyle.SelectedColor = colheaderstyle.SelectedColor = rowheaderstyle.SelectedColor = defaultcellstyle.SelectedColor = Color.Yellow;
             upperleftstyle.HighlightColor = colheaderstyle.HighlightColor = rowheaderstyle.HighlightColor = defaultcellstyle.HighlightColor = Color.Red;
             upperleftstyle.ContentAlignment = colheaderstyle.ContentAlignment = rowheaderstyle.ContentAlignment = defaultcellstyle.ContentAlignment = ContentAlignment.MiddleCenter;
             upperleftstyle.TextFormat = colheaderstyle.TextFormat = rowheaderstyle.TextFormat = defaultcellstyle.TextFormat = 0;
-            upperleftstyle.Font =colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
+            upperleftstyle.Font = colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
             upperleftstyle.Padding = colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new Padding(0);
 
-            headerpanel.MouseClickColumnHeader += (col, e) =>
+            colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
                 //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
-                if ( col >= 0)
+                if (col >= 0)
                     Sort(col, !SortAscending);
             };
 
+            rowheaderpanel.MouseClickRowHeader += (row, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"Click on row header {row}");
+                MouseClickOnGrid?.Invoke(row, -1, e);
+            };
             contentpanel.MouseClickOnGrid += (row, col, e) =>
             {
                 System.Diagnostics.Debug.WriteLine($"Click on {row} {col}");
                 MouseClickOnGrid?.Invoke(row, col, e);
             };
+
         }
         public int SortColumn { get; set; } = 1;
         public bool SortAscending { get; set; } = true;
         public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
 
-        public GLDataGridViewCellStyle UpperLeftStyle { get { return upperleftstyle; } set { upperleftstyle = value; headerpanel.Invalidate(); } }
+        public GLDataGridViewCellStyle UpperLeftStyle { get { return upperleftstyle; } set { upperleftstyle = value; colheaderpanel.Invalidate(); } }
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
 
         public enum ColFillMode { FillWidth, Width };
         public ColFillMode ColumnFillMode { get { return colfillmode; } set { if (value != colfillmode) { colfillmode = value; ContentInvalidateLayout(); } } }
-        public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; headerpanel.Invalidate(); } }
-        public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; headerpanel.Visible = value; InvalidateLayout(); } }
+        public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
+        public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
         public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
 
         public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
-        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; ContentInvalidateLayout(); } }
-        public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; ContentInvalidateLayout(); } }
+        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
+        public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
 
         public List<GLDataGridViewColumn> Columns { get { return columns; } }
         public List<GLDataGridViewRow> Rows { get { return rows; } }
@@ -95,8 +107,13 @@ namespace GLOFC.GL4.Controls
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
 
+        // pixel positions
+        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c; }
+        public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
+
         public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
         public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
+        public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
 
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
 
@@ -125,7 +142,7 @@ namespace GLOFC.GL4.Controls
         public void AddColumn(GLDataGridViewColumn col)
         {
             System.Diagnostics.Debug.Assert(col.Parent == this && col.HeaderStyle.Parent != null);      // ensure created by us
-            col.HeaderStyle.Changed += (e1) => { headerpanel.Invalidate(); };
+            col.HeaderStyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
             col.Changed += (e1, ci) => 
             {
                 if (!ignorecolumncommands)
@@ -136,7 +153,7 @@ namespace GLOFC.GL4.Controls
                         ContentInvalidateLayout();
                     }
                     else
-                        headerpanel.Invalidate();
+                        colheaderpanel.Invalidate();
                 }
             };
             col.SetColNo(columns.Count);
@@ -223,7 +240,7 @@ namespace GLOFC.GL4.Controls
             {
                 // only change this and columns to the right, as per winform DGV
 
-                int cellpixels = columns.Where(x => x.Index >= index).Sum(x => x.HeaderBounds.Width);       // pixels for columns to resize
+                int cellpixels = columns.Where(x => x.Index >= index).Sum(x => x.Width);       // pixels for columns to resize
                 float totalfill = columns.Where(x => x.Index >= index).Sum(x => x.FillWidth);               // fills for columns to resize
 
                 float newfillwidth = newwidth * totalfill / cellpixels;     // compute out fill width from newwidth pixels
@@ -251,10 +268,15 @@ namespace GLOFC.GL4.Controls
                 System.Diagnostics.Debug.WriteLine($"Sort col {colno} by ascending {sortascending}");
                 rows.Sort(delegate (GLDataGridViewRow l, GLDataGridViewRow r) 
                     {
-                        if (colno < l.Cells.Count && colno < r.Cells.Count)
-                            return l.Cells[colno].CompareTo(r.Cells[colno]) * (sortascending ? +1 : -1);
-                        else
-                            return -1;
+                        if (colno < l.Cells.Count)
+                        {
+                            if (colno < r.Cells.Count)
+                                return l.Cells[colno].CompareTo(r.Cells[colno]) * (sortascending ? +1 : -1);
+                            else
+                                return 1;
+                        }
+                        else 
+                            return (colno < r.Cells.Count) ? -1 : 0;
                     });
 
                 if (SortColumn >= 0)
@@ -275,8 +297,12 @@ namespace GLOFC.GL4.Controls
 
         protected override void PerformRecursiveLayout()     
         {
-            headerpanel.Height = columnheaderheight + cellborderwidth;        // set before children layout
-            headerpanel.BackColor = BackColor;
+            colheaderpanel.Height = columnheaderheight + cellborderwidth;        // set before children layout
+            rowheaderpanel.Width = rowheaderwidth + cellborderwidth;
+            rowheaderpanel.DockingMargin = new Margin(0, ColumnHeaderEnable ? colheaderpanel.Height : 0, 0, 0);
+            topleftpanel.Size = new Size(rowheaderwidth + cellborderwidth, columnheaderheight + cellborderwidth);
+            colheaderpanel.BackColor = BackColor;
+            rowheaderpanel.BackColor = BackColor;
             contentpanel.BackColor = BackColor;
 
             base.PerformRecursiveLayout();      // do layout on children.
@@ -344,14 +370,6 @@ namespace GLOFC.GL4.Controls
 
             ignorecolumncommands = false;
 
-            int vpos = cellborderwidth;
-            int hpos = rowheaderenable ? (cellborderwidth*2 + rowheaderwidth) : cellborderwidth;        
-            foreach (var c in columns)
-            {
-                c.HeaderBounds = new Rectangle(hpos, vpos, c.Width, columnheaderenable ? columnheaderheight : 0);
-                hpos += cellborderwidth + c.Width;
-            }
-
             UpdateScrollBar();
         }
 
@@ -384,10 +402,11 @@ namespace GLOFC.GL4.Controls
                 vertscroll.SetValueMaximumLargeChange(0, rows.Count - 1, Rows.Count);
             }
 
-            int columnwidth = columns.Count > 0 ? columns.Last().HeaderBounds.Right : 0;    // work out width of columns, allowing for none
+            int columnwidth = ColumnPixelWidth;
+
             if (columnwidth > contentpanel.Width)   // if > contentwidth, then scroll
             {
-                horzscroll.SetValueMaximumLargeChange(contentpanel.HorzScroll, columnwidth, contentpanel.Width);
+                horzscroll.SetValueMaximumLargeChange(contentpanel.HorzScroll, columnwidth-1, contentpanel.Width);
             }
             else
             {
@@ -478,7 +497,9 @@ namespace GLOFC.GL4.Controls
         private GLHorizontalScrollBar horzscroll;
         private GLVerticalScrollBar vertscroll;
         private GLDataGridViewContentPanel contentpanel;
-        private GLDataGridViewHeaderPanel headerpanel;
+        private GLDataGridViewColumnHeaderPanel colheaderpanel;
+        private GLDataGridViewRowHeaderPanel rowheaderpanel;
+        private GLDataGridViewTopLeftHeaderPanel topleftpanel;
     }
 
 }

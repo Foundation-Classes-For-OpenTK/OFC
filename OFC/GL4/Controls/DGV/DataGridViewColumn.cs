@@ -29,8 +29,11 @@ namespace GLOFC.GL4.Controls
         public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this, true); } } }
         public int MinimumWidth { get { return minwidth; } set { if (value != minwidth) { minwidth = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
-        public Rectangle HeaderBounds { get; set; }
         public bool? SortGlyphAscending { get; set; } = null;                               // for displaying sort glyph
+
+        public bool ShowGlyph { get { return showglyph; } set { showglyph = value; Changed?.Invoke(this, true); } }
+        public bool ShowText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
+
         public void SetColNo(int i)
         {
             colno = i;
@@ -38,7 +41,7 @@ namespace GLOFC.GL4.Controls
 
         public void Paint(Graphics gr, Rectangle area)
         {
-            area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, HeaderBounds.Width - HeaderStyle.Padding.TotalWidth, HeaderBounds.Height - HeaderStyle.Padding.TotalHeight);
+            area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, area.Width - HeaderStyle.Padding.TotalWidth, area.Height - HeaderStyle.Padding.TotalHeight);
 
             if (HeaderStyle.BackColor != Color.Transparent)
             {
@@ -48,16 +51,19 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
+            if (ShowText)
             {
-                //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
-                using (Brush textb = new SolidBrush(HeaderStyle.ForeColor))
+                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
                 {
-                    gr.DrawString(text, HeaderStyle.Font, textb, area, fmt);
+                    //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
+                    using (Brush textb = new SolidBrush(HeaderStyle.ForeColor))
+                    {
+                        gr.DrawString(text, HeaderStyle.Font, textb, area, fmt);
+                    }
                 }
             }
 
-            if ( SortGlyphAscending != null )
+            if ( ShowGlyph && SortGlyphAscending != null )
             {
                 using (Brush b = new SolidBrush(HeaderStyle.ForeColor))
                 {
@@ -83,6 +89,9 @@ namespace GLOFC.GL4.Controls
         private float fillwidth;
         private string text = string.Empty;
         private int colno;
+        private bool showtext = true;
+        private bool showglyph = true;
+
 
     }
 }

@@ -33,6 +33,9 @@ namespace GLOFC.GL4.Controls
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
         public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }
 
+        public bool ShowText { get { return showtext; } set { showtext = value; Changed?.Invoke(this,-1); } }
+
+
         public GLDataGridViewRow()
         {
         }
@@ -94,12 +97,15 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
+            if (ShowText)
             {
-                //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
-                using (Brush textb = new SolidBrush(HeaderStyle.ForeColor))
+                using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
                 {
-                    gr.DrawString(rowno.ToString(), HeaderStyle.Font, textb, area, fmt);
+                    //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
+                    using (Brush textb = new SolidBrush(HeaderStyle.ForeColor))
+                    {
+                        gr.DrawString(rowno.ToString(), HeaderStyle.Font, textb, area, fmt);
+                    }
                 }
             }
         }
@@ -113,5 +119,6 @@ namespace GLOFC.GL4.Controls
         private int rowno = -1;
         private bool autosize;
         private uint autosizegeneration = 0;
+        private bool showtext = true;
     }
 }

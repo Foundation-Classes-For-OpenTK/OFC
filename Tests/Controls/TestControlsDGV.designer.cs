@@ -37,6 +37,8 @@
             this.buttonAddCell = new System.Windows.Forms.Button();
             this.buttonSizeA = new System.Windows.Forms.Button();
             this.buttonSizeB = new System.Windows.Forms.Button();
+            this.buttonDisableTextCol0 = new System.Windows.Forms.Button();
+            this.buttonDisableTextRow1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -127,11 +129,33 @@
             this.buttonSizeB.UseVisualStyleBackColor = true;
             this.buttonSizeB.Click += new System.EventHandler(this.buttonSizeB_Click);
             // 
+            // buttonDisableTextCol0
+            // 
+            this.buttonDisableTextCol0.Location = new System.Drawing.Point(854, 330);
+            this.buttonDisableTextCol0.Name = "buttonDisableTextCol0";
+            this.buttonDisableTextCol0.Size = new System.Drawing.Size(99, 23);
+            this.buttonDisableTextCol0.TabIndex = 1;
+            this.buttonDisableTextCol0.Text = "DisableTextCol0";
+            this.buttonDisableTextCol0.UseVisualStyleBackColor = true;
+            this.buttonDisableTextCol0.Click += new System.EventHandler(this.buttonDisableTextCol0_Click);
+            // 
+            // buttonDisableTextRow1
+            // 
+            this.buttonDisableTextRow1.Location = new System.Drawing.Point(854, 359);
+            this.buttonDisableTextRow1.Name = "buttonDisableTextRow1";
+            this.buttonDisableTextRow1.Size = new System.Drawing.Size(99, 23);
+            this.buttonDisableTextRow1.TabIndex = 1;
+            this.buttonDisableTextRow1.Text = "DisableTextRow1";
+            this.buttonDisableTextRow1.UseVisualStyleBackColor = true;
+            this.buttonDisableTextRow1.Click += new System.EventHandler(this.buttonDisableTextRow1_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1555, 1005);
+            this.Controls.Add(this.buttonDisableTextRow1);
+            this.Controls.Add(this.buttonDisableTextCol0);
             this.Controls.Add(this.buttonSizeB);
             this.Controls.Add(this.buttonSizeA);
             this.Controls.Add(this.buttonAddCell);
@@ -158,6 +182,8 @@
         private System.Windows.Forms.Button buttonAddCell;
         private System.Windows.Forms.Button buttonSizeA;
         private System.Windows.Forms.Button buttonSizeB;
+        private System.Windows.Forms.Button buttonDisableTextCol0;
+        private System.Windows.Forms.Button buttonDisableTextRow1;
     }
 }
 

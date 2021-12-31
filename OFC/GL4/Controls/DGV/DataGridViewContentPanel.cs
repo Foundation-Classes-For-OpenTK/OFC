@@ -27,8 +27,9 @@ namespace GLOFC.GL4.Controls
         public int HorzScroll { get { return gridoffset.X; } set { gridoffset = new Point(value, gridoffset.Y); Invalidate(); } }
         public int DepthMult { get; set; } = 3;
 
-        public GLDataGridViewContentPanel(string name, Rectangle location) : base(name, location)
+        public GLDataGridViewContentPanel(string name, GLDataGridViewRowHeaderPanel rowheaderpanel, Rectangle location) : base(name, location)
         {
+            this.rowheaderpanel = rowheaderpanel;
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = Color.Red;// DefaultVerticalScrollPanelBackColor;
         }
@@ -115,7 +116,7 @@ namespace GLOFC.GL4.Controls
         {
             GLDataGridView dgv = Parent as GLDataGridView;
 
-            int gridwidth = dgv.Columns.Count > 0 ? dgv.Columns.Last().HeaderBounds.Right + 1 : 1;      // width of grid
+            int gridwidth = Math.Max(1,dgv.ColumnPixelWidth);      // width of grid
 
             if (gridbitmap == null || gridbitmap.Width < gridwidth)   // if bitmap not there, or different width needed
             {
@@ -131,6 +132,9 @@ namespace GLOFC.GL4.Controls
             // the drawn rectangle is whats left of the bitmap after gridoffset..
             Rectangle drawarea = new Rectangle(0, 0, gridbitmap.Width - gridoffset.X, gridbitmap.Height - gridoffset.Y);
             gr.DrawImage(gridbitmap, drawarea, gridoffset.X, gridoffset.Y, drawarea.Width, drawarea.Height, GraphicsUnit.Pixel);
+
+            if ( rowheaderpanel.Visible)
+                rowheaderpanel.Redraw(gridoffset.Y);
         }
 
 
@@ -151,6 +155,7 @@ namespace GLOFC.GL4.Controls
                     if (dgv.Columns.Count == 0 || dgv.Rows.Count == 0)
                     {
                         gridoffset = Point.Empty;
+                        rowheaderpanel.DrawEmpty();
                         return;
                     }
 
@@ -160,7 +165,7 @@ namespace GLOFC.GL4.Controls
                     {
                         using (Pen p = new Pen(b, dgv.CellBorderWidth))
                         {
-                            int gridwidth = dgv.Columns.Last().HeaderBounds.Right - 1;      // width of grid
+                            int gridwidth = dgv.ColumnPixelWidth- 1;      // width of grid
                             int vpos = 0;
 
                             for (var rowno = gridbitmapfirstline; rowno < dgv.Rows.Count && vpos < gridbitmap.Height; rowno++)
@@ -181,17 +186,6 @@ namespace GLOFC.GL4.Controls
                                 }
 
                                 int hpos = dgv.CellBorderWidth;
-
-                                if (dgv.RowHeaderEnable)
-                                {
-                                    Rectangle area = new Rectangle(hpos, vpos, dgv.RowHeaderWidth, row.Height);
-                                    if (dgv.UserPaintRowHeaders != null)
-                                        dgv.UserPaintRowHeaders(row, gr, area);
-                                    else
-                                        row.Paint(gr, area);
-
-                                    hpos += dgv.RowHeaderWidth + dgv.CellBorderWidth;
-                                }
 
                                 for (int i = 0; i < dgv.Columns.Count; i++)
                                 {
@@ -225,11 +219,6 @@ namespace GLOFC.GL4.Controls
 
                                 int hpos = 0;
 
-                                if (dgv.RowHeaderEnable)                    // horz lines, row one
-                                {
-                                    gr.DrawLine(p, hpos, 0, hpos, vpos);
-                                    hpos += dgv.RowHeaderWidth + dgv.CellBorderWidth;
-                                }
                                 for (int i = 0; i < dgv.Columns.Count; i++)
                                 {
                                     gr.DrawLine(p, hpos, 0, hpos, vpos);    // each column one
@@ -270,6 +259,10 @@ namespace GLOFC.GL4.Controls
                         else
                         {
                             gridoffset = new Point(gridoffset.X, ystart);
+
+                            if ( rowheaderpanel.Visible)
+                                rowheaderpanel.DrawHeaders(gridbitmapfirstline, gridbitmaplastcompleteline + 1, gridbitmapdrawndepth, ystart);
+
                             break;
                         }
                     }
@@ -294,7 +287,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if (gridbitmapfirstline >= 0)
+            if (gridrowoffsets.Count>0)
             {
                 int yoffset = gridoffset.Y + e.Location.Y;
                 int row = gridrowoffsets.FindLastIndex(a => a < yoffset);
@@ -302,12 +295,15 @@ namespace GLOFC.GL4.Controls
                 {
                     GLDataGridView dgv = Parent as GLDataGridView;
                     int xoffset = gridoffset.X + e.Location.X;
-                    int col = dgv.Columns.FindIndex(a => xoffset >= a.HeaderBounds.Left && xoffset < a.HeaderBounds.Right);
-                    if ( col >= 0 )
+                    for( int i = 0; i < dgv.Columns.Count; i++ )
                     {
-                        row += gridbitmapfirstline;
-                       // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
-                        MouseClickOnGrid(row, col, e);
+                        int left = dgv.ColumnPixelLeft(i);
+                        if ( xoffset>=left && xoffset< left+dgv.Columns[i].Width)
+                        {
+                            row += gridbitmapfirstline;
+                            // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
+                            MouseClickOnGrid(row, i, e);
+                        }
                     }
                 }
             }
@@ -320,6 +316,8 @@ namespace GLOFC.GL4.Controls
         private int gridbitmaplastcompleteline = -1;
         private int gridbitmapdrawndepth = -1;
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
+
+        private GLDataGridViewRowHeaderPanel rowheaderpanel;
     }
 }
 

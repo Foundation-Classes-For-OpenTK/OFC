@@ -19,93 +19,53 @@ using System.Linq;
 namespace GLOFC.GL4.Controls
 {
 
-    public class GLDataGridViewHeaderPanel : GLPanel
+    public class GLDataGridViewColumnHeaderPanel : GLPanel
     {
         public Action<int, GLMouseEventArgs> MouseClickColumnHeader;                // -1 for top left cell
 
         public int HorzScroll { get { return horzscroll; } set { horzscroll = value; Invalidate(); } }
 
-        public GLDataGridViewHeaderPanel(string name, Rectangle location) : base(name, location)
+        public GLDataGridViewColumnHeaderPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
         }
 
-        private void DrawColumnHeaders(Graphics gr)
-        {
-            GLDataGridView dgv = Parent as GLDataGridView;
-
-            if (!dgv.ColumnHeaderEnable)
-                return;
-
-            int vpos = 0;
-            if (dgv.CellBorderWidth > 0 && dgv.Columns.Count>0) 
-            {
-                using (Brush b = new SolidBrush(dgv.CellBorderColor))
-                {
-                    using (Pen p = new Pen(b, dgv.CellBorderWidth))
-                    {
-                        int colend = dgv.Columns.Last().HeaderBounds.Right;
-
-                        if (dgv.ColumnHeaderEnable)     // line horz across top
-                        {
-                            //System.Diagnostics.Debug.WriteLine($"Paint - {vpos} to {gridbounds.Right}");
-                            gr.DrawLine(p, 0, vpos, colend, vpos);
-                            vpos += dgv.ColumnHeaderHeight + dgv.CellBorderWidth;
-                        }
-
-                        int hpos = -horzscroll;
-
-                        if (dgv.RowHeaderEnable)      // horz part, row header
-                        {
-                            gr.DrawLine(p, hpos, 0, hpos, vpos);
-                            hpos += dgv.RowHeaderWidth;
-                            hpos += dgv.CellBorderWidth;
-                        }
-
-                        foreach (var c in dgv.Columns)  // horz part, col headers
-                        {
-                            //System.Diagnostics.Debug.WriteLine($"Paint | {hpos}");
-                            gr.DrawLine(p, hpos, 0, hpos, vpos);
-                            hpos += c.Width;
-                            hpos += dgv.CellBorderWidth;
-
-                            if (dgv.ColumnHeaderEnable)
-                            {
-                                if (dgv.RowHeaderEnable)
-                                {
-                                    var upperleftbounds = new Rectangle(dgv.CellBorderWidth-horzscroll, dgv.CellBorderWidth, dgv.RowHeaderWidth, dgv.ColumnHeaderHeight);
-
-                                    if (dgv.UpperLeftStyle.BackColor != Color.Transparent)
-                                    {
-                                        using (Brush b2 = new SolidBrush(dgv.UpperLeftStyle.BackColor))
-                                        {
-                                            gr.FillRectangle(b2, upperleftbounds);
-                                        }
-                                    }
-                                }
-
-                                Rectangle area = new Rectangle(c.HeaderBounds.Left - horzscroll, c.HeaderBounds.Top, c.HeaderBounds.Width, c.HeaderBounds.Height);
-                                if (dgv.UserPaintColumnHeaders != null)
-                                    dgv.UserPaintColumnHeaders(c, gr, area);
-                                else
-                                    c.Paint(gr, area);
-
-
-                            }
-                        }
-
-                        gr.DrawLine(p, hpos, 0, hpos, vpos);
-                        vpos++;
-                    }
-                }
-            }
-        }
-
         protected override void Paint(Graphics gr)
         {
             GLDataGridView dgv = Parent as GLDataGridView;
-            DrawColumnHeaders(gr);
+
+            if (!dgv.ColumnHeaderEnable || dgv.Columns.Count == 0)
+                return;
+
+            int vpos = 0;
+            using (Brush b = new SolidBrush(dgv.CellBorderColor))
+            {
+                using (Pen p = new Pen(b, dgv.CellBorderWidth))
+                {
+                    int colright = dgv.ColumnPixelWidth-1;
+
+                    gr.DrawLine(p, 0, vpos, colright, vpos);                  // draw across horz top
+                    vpos += dgv.ColumnHeaderHeight + dgv.CellBorderWidth;
+
+                    int hpos = -horzscroll;
+
+                    foreach (var c in dgv.Columns)  // horz part, col headers
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"Paint | {hpos}");
+                        gr.DrawLine(p, hpos, 0, hpos, vpos);            // draw verticle
+                        hpos += dgv.CellBorderWidth;
+
+                        Rectangle area = new Rectangle(hpos, dgv.CellBorderWidth, c.Width, dgv.ColumnHeaderHeight);
+                        c.Paint(gr, area);
+                        dgv.UserPaintColumnHeaders?.Invoke(c, gr, area);
+
+                        hpos += c.Width;
+                    }
+
+                    gr.DrawLine(p, hpos, 0, hpos, vpos);        // last verticle
+                }
+            }
         }
 
         public enum ClickOn { Divider, UpperLeft, Header }
@@ -121,11 +81,12 @@ namespace GLOFC.GL4.Controls
 
             if (dragging == 0)
             {
-                dgv.RowHeaderWidth = xoff;
+                dgv.RowHeaderWidth = xoff + initialrowheaderwidth;
             }
             else if (dragging > 0)
             {
-                dgv.SetColumnWidth(dragging-1,xoff - dgv.Columns[dragging - 1].HeaderBounds.Left);
+                int colx = xoff - dgv.ColumnPixelLeft(dragging - 1);
+                dgv.SetColumnWidth(dragging-1,colx);
             }
             else
             {
@@ -154,8 +115,10 @@ namespace GLOFC.GL4.Controls
             var over = Over(e.Location);
             if (over != null && over.Item1 == ClickOn.Divider)
             {
+                GLDataGridView dgv = Parent as GLDataGridView;
                 System.Diagnostics.Debug.WriteLine($"Drag start {over.Item2}");
                 dragging = over.Item2;
+                initialrowheaderwidth = dgv.RowHeaderWidth;
             }
         }
         protected override void OnMouseUp(GLMouseEventArgs e)
@@ -183,7 +146,7 @@ namespace GLOFC.GL4.Controls
             int xoff = p.X + HorzScroll;
             foreach (var c in dgv.Columns)  // horz part, col headers
             {
-                int hoff = xoff - c.HeaderBounds.Left;
+                int hoff = xoff - dgv.ColumnPixelLeft(c.Index);
 
                // System.Diagnostics.Debug.WriteLine($"loc {p} col {c.Index} {c.HeaderBounds} {hoff}");
                 if (hoff >= -4 && hoff <= 2)
@@ -195,7 +158,8 @@ namespace GLOFC.GL4.Controls
 
             foreach (var c in dgv.Columns)  // horz part, col headers
             {
-                if (xoff > c.HeaderBounds.Left && xoff < c.HeaderBounds.Right)
+                int left = dgv.ColumnPixelLeft(c.Index);
+                if (xoff > left && xoff < left+c.Width)
                 {
                    // System.Diagnostics.Debug.WriteLine($"Header mouse over {c.Index} {p}");
                     return new Tuple<ClickOn, int>(ClickOn.Header, c.Index);
@@ -211,6 +175,7 @@ namespace GLOFC.GL4.Controls
         }
 
         private int dragging = -1;
+        private int initialrowheaderwidth;
 
     }
 }
