@@ -68,7 +68,7 @@ namespace GLOFC.GL4.Controls
             colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
                 //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
-                if (col >= 0)
+                if (col >= 0 && AllowUserToSort)
                     Sort(col, !SortAscending);
             };
 
@@ -96,12 +96,14 @@ namespace GLOFC.GL4.Controls
         public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
         public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
         public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
-        public bool ColumnHeaderWidthAdjust { get; set; } = true;
-        public bool ColumnHeaderHeightAdjust { get; set; } = true;
+        public bool AllowUserToResizeColumns { get; set; } = true;
+        public bool AllowUserToResizeColumnHeight { get; set; } = true;
 
         public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
         public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
         public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
+        public bool AllowUserToResizeRows { get; set; } = true;
+        public bool AllowUserToSort { get; set; } = true;
 
         public List<GLDataGridViewColumn> Columns { get { return columns; } }
         public List<GLDataGridViewRow> Rows { get { return rows; } }

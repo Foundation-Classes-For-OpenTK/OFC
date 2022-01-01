@@ -22,7 +22,7 @@ namespace GLOFC.GL4.Controls
 
     public class GLDataGridViewContentPanel : GLPanel
     {
-        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row (-1 outside bounds), col = -1 for row header
         public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
         public int HorzScroll { get { return gridoffset.X; } set { gridoffset = new Point(value, gridoffset.Y); Invalidate(); } }
         public int DepthMult { get; set; } = 3;
@@ -287,26 +287,40 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if (gridrowoffsets.Count>0)
+            int row = GridRow(e.Location);
+            if (row>=0)
             {
-                int yoffset = gridoffset.Y + e.Location.Y;
-                int row = gridrowoffsets.FindLastIndex(a => a < yoffset);
-                if (row >= 0)
+                GLDataGridView dgv = Parent as GLDataGridView;
+                int xoffset = gridoffset.X + e.Location.X;
+                for( int i = 0; i < dgv.Columns.Count; i++ )
                 {
-                    GLDataGridView dgv = Parent as GLDataGridView;
-                    int xoffset = gridoffset.X + e.Location.X;
-                    for( int i = 0; i < dgv.Columns.Count; i++ )
+                    int left = dgv.ColumnPixelLeft(i);
+                    if ( xoffset>=left && xoffset< left+dgv.Columns[i].Width)
                     {
-                        int left = dgv.ColumnPixelLeft(i);
-                        if ( xoffset>=left && xoffset< left+dgv.Columns[i].Width)
-                        {
-                            row += gridbitmapfirstline;
-                            // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
-                            MouseClickOnGrid(row, i, e);
-                        }
+                        row += gridbitmapfirstline;
+                        // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
+                        MouseClickOnGrid(row, i, e);
+                        return;
                     }
                 }
             }
+
+            MouseClickOnGrid(-1, -1, e);
+        }
+
+        private int GridRow(Point p)
+        {
+            if (gridrowoffsets.Count > 0)
+            {
+                int y = gridoffset.Y + p.Y;
+                int gridrow = gridrowoffsets.FindLastIndex(a => a < y);
+                if (gridrow >= 0 && gridrow < gridrowoffsets.Count-1)       // last entry is end, ignore
+                {
+                    return gridrow;
+                }
+            }
+
+            return -1;
         }
 
         private int firstdisplayindex = 0;
@@ -318,6 +332,7 @@ namespace GLOFC.GL4.Controls
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
 
         private GLDataGridViewRowHeaderPanel rowheaderpanel;
+
     }
 }
 

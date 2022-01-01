@@ -68,7 +68,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public enum ClickOn { Divider, Header , Height }
+        private enum ClickOn { Divider, Header , Height }
 
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
@@ -114,12 +114,12 @@ namespace GLOFC.GL4.Controls
             GLDataGridView dgv = Parent as GLDataGridView;
             if (over != null)
             {
-                if (over.Item1 == ClickOn.Divider && dgv.ColumnHeaderWidthAdjust)
+                if (over.Item1 == ClickOn.Divider && dgv.AllowUserToResizeColumns)
                 {
                     dragging = over.Item2;
                     initialrowheaderwidth = dgv.RowHeaderWidth;
                 }
-                else if (over.Item1 == ClickOn.Height && dgv.ColumnHeaderHeightAdjust)
+                else if (over.Item1 == ClickOn.Height && dgv.AllowUserToResizeColumnHeight)
                 {
                     dragging = -2;
                 }
@@ -149,7 +149,7 @@ namespace GLOFC.GL4.Controls
             GLDataGridView dgv = Parent as GLDataGridView;
             int xoff = p.X + HorzScroll;
 
-            if (dgv.ColumnHeaderWidthAdjust)
+            if (dgv.AllowUserToResizeColumns)
             {
                 foreach (var c in dgv.Columns)  // horz part, col headers
                 {
@@ -173,7 +173,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            if (p.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust)
+            if (p.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight)
                 return new Tuple<ClickOn, int>(ClickOn.Height, -1);
 
             foreach (var c in dgv.Columns)  // horz part, col headers

@@ -126,24 +126,80 @@ namespace GLOFC.GL4.Controls
 
         public new Action<int, GLMouseEventArgs> MouseClick;
 
+        protected override void OnMouseMove(GLMouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            GLDataGridView dgv = Parent as GLDataGridView;
+
+            if (dragging >= 0)
+            {
+                int y = yoffset + e.Location.Y;
+                dgv.Rows[gridbitmapfirstline + dragging].Height = y - gridrowoffsets[dragging];
+            }
+            else if (dgv.AllowUserToResizeRows)
+            {
+                int row = GridRow(e.Location, true);
+                Cursor = (row >= 0 && dgv.Rows[row + gridbitmapfirstline].AutoSize == false) ? GLCursorType.NS : GLCursorType.Normal;
+            }
+            else
+                Cursor = GLCursorType.Normal;
+
+            return;
+        }
+
+        protected override void OnMouseDown(GLMouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+
+            GLDataGridView dgv = Parent as GLDataGridView;
+            if (dgv.AllowUserToResizeRows)
+            {
+                int row = GridRow(e.Location, true);
+                if (row >= 0)
+                    dragging = row;
+            }
+        }
+        protected override void OnMouseUp(GLMouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            dragging = -1;
+        }
+
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
+            int row = GridRow(e.Location);
+            if (row >= 0)
+            { 
+                MouseClickRowHeader(row + gridbitmapfirstline, e);
+            }
+        }
 
+        private int GridRow(Point p, bool endonly = false)
+        {
             if (gridrowoffsets.Count > 0)
             {
-                int offset = yoffset + e.Location.Y;
-                int row = gridrowoffsets.FindLastIndex(a => a < offset);
-                if (row >= 0)
+                int y = yoffset + p.Y;
+                int gridrow = gridrowoffsets.FindLastIndex(a => a < y);
+                if (gridrow >= 0 && gridrow < gridrowoffsets.Count - 1)       // last entry is end, ignore
                 {
-                    MouseClickRowHeader(row + gridbitmapfirstline, e);
+                    int off = gridrowoffsets[gridrow + 1] - y;
+                    if (endonly && off >= bottommargin)
+                        gridrow = -1;
+                    return gridrow;
                 }
             }
+
+            return -1;
         }
 
         private Bitmap gridbitmap = null;
         private int yoffset = 0;
         private int gridbitmapfirstline;
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
+
+        private int dragging = -1;
+        private const int bottommargin = 4;
     }
 }

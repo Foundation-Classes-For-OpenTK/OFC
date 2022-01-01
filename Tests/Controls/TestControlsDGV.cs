@@ -152,10 +152,10 @@ namespace TestOpenTk
                 dgv.AddColumn(col1);
                 //dgv.AddColumn(col2);
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     var row = dgv.CreateRow();
-                    row.AutoSize = true;
+                    if ( i < 2 || i > 5) row.AutoSize = true;
                     string prefix = char.ConvertFromUtf32(i + 65);
                     //row.AddCell(new GLDataGridViewCellText($"{prefix} Text"));
                     row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C0 long bit of text for it to wrap again and again and again"));
@@ -163,7 +163,6 @@ namespace TestOpenTk
                     dgv.AddRow(row);
                 }
 
-                dgv.Rows[1].AutoSize = false;
                 dgv.Rows[1].Height = 40;
 
                 pform.Add(dgv);
@@ -298,7 +297,7 @@ namespace TestOpenTk
 
         private void buttonToggleColumnWidthAdjust_Click(object sender, EventArgs e)
         {
-            dgv.ColumnHeaderWidthAdjust = !dgv.ColumnHeaderWidthAdjust;
+            dgv.AllowUserToResizeColumns = !dgv.AllowUserToResizeColumns;
         }
 
         private void buttonToggleFillMode_Click(object sender, EventArgs e)
@@ -308,7 +307,7 @@ namespace TestOpenTk
 
         private void buttonColumnHeightAdjust_Click(object sender, EventArgs e)
         {
-            dgv.ColumnHeaderHeightAdjust = !dgv.ColumnHeaderHeightAdjust;
+            dgv.AllowUserToResizeColumnHeight = !dgv.AllowUserToResizeColumnHeight;
 
         }
     }

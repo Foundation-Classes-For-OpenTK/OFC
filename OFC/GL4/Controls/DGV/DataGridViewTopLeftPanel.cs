@@ -65,8 +65,8 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                Cursor = (e.Location.X >= Width - leftmargin && dgv.ColumnHeaderWidthAdjust) ? GLCursorType.EW :
-                         (e.Location.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust) ? GLCursorType.NS :
+                Cursor = (e.Location.X >= Width - leftmargin && dgv.AllowUserToResizeColumns) ? GLCursorType.EW :
+                         (e.Location.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight) ? GLCursorType.NS :
                           GLCursorType.Normal;
             }
             return;
@@ -76,11 +76,11 @@ namespace GLOFC.GL4.Controls
         {
             base.OnMouseDown(e);
             GLDataGridView dgv = Parent as GLDataGridView;
-            if (e.Location.X >= Width + leftmargin && dgv.ColumnHeaderWidthAdjust)
+            if (e.Location.X >= Width + leftmargin && dgv.AllowUserToResizeColumns)
             {
                 dragging = 0;
             }
-            else if (e.Location.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust)
+            else if (e.Location.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight)
             {
                 dragging = 1;
             }
