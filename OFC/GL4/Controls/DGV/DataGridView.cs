@@ -96,6 +96,8 @@ namespace GLOFC.GL4.Controls
         public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
         public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
         public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
+        public bool ColumnHeaderWidthAdjust { get; set; } = true;
+        public bool ColumnHeaderHeightAdjust { get; set; } = true;
 
         public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
         public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
@@ -108,7 +110,8 @@ namespace GLOFC.GL4.Controls
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
 
         // pixel positions
-        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c; }
+        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c + cellborderwidth; }
+        public int ColumnPixelRight(int c) { return ColumnPixelLeft(c) + columns[c].Width; }
         public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
 
         public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
@@ -314,7 +317,7 @@ namespace GLOFC.GL4.Controls
             ignorecolumncommands = true;
             if (colfillmode == ColFillMode.FillWidth)
             {
-                int cellpixels = contentpanel.Width - pixelsforborder - (rowheaderenable ? rowheaderwidth : 0);
+                int cellpixels = contentpanel.Width - pixelsforborder;
                 float filltotalallcolumns = columns.Select(x => x.FillWidth).Sum();
 
                 bool[] minwidths = new bool[columns.Count];

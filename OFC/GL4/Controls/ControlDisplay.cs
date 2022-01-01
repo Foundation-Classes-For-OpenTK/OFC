@@ -377,11 +377,9 @@ namespace GLOFC.GL4.Controls
             {
                 glwin.SetCursor(t);
                 lastcursor = t;
-               // System.Diagnostics.Debug.WriteLine($"Cursor to {t}");
+                //System.Diagnostics.Debug.WriteLine($"Cursor to {t}");
             }
         }
-
-        GLCursorType lastcursor = GLCursorType.Normal;
 
         // window is resizing
         private void Gc_Resize(object sender)
@@ -411,6 +409,7 @@ namespace GLOFC.GL4.Controls
         private GLRenderableItem ri;
         private IGLProgramShader shader;
         private float startz, deltaz;
+        private GLCursorType lastcursor = GLCursorType.Normal;
 
         #endregion
 

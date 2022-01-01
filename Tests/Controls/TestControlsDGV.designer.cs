@@ -39,6 +39,9 @@
             this.buttonSizeB = new System.Windows.Forms.Button();
             this.buttonDisableTextCol0 = new System.Windows.Forms.Button();
             this.buttonDisableTextRow1 = new System.Windows.Forms.Button();
+            this.buttonToggleColumnWidthAdjust = new System.Windows.Forms.Button();
+            this.buttonToggleFillMode = new System.Windows.Forms.Button();
+            this.buttonColumnHeightAdjust = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -149,11 +152,44 @@
             this.buttonDisableTextRow1.UseVisualStyleBackColor = true;
             this.buttonDisableTextRow1.Click += new System.EventHandler(this.buttonDisableTextRow1_Click);
             // 
+            // buttonToggleColumnWidthAdjust
+            // 
+            this.buttonToggleColumnWidthAdjust.Location = new System.Drawing.Point(854, 399);
+            this.buttonToggleColumnWidthAdjust.Name = "buttonToggleColumnWidthAdjust";
+            this.buttonToggleColumnWidthAdjust.Size = new System.Drawing.Size(99, 23);
+            this.buttonToggleColumnWidthAdjust.TabIndex = 1;
+            this.buttonToggleColumnWidthAdjust.Text = "Column Width Adj";
+            this.buttonToggleColumnWidthAdjust.UseVisualStyleBackColor = true;
+            this.buttonToggleColumnWidthAdjust.Click += new System.EventHandler(this.buttonToggleColumnWidthAdjust_Click);
+            // 
+            // buttonToggleFillMode
+            // 
+            this.buttonToggleFillMode.Location = new System.Drawing.Point(854, 438);
+            this.buttonToggleFillMode.Name = "buttonToggleFillMode";
+            this.buttonToggleFillMode.Size = new System.Drawing.Size(99, 23);
+            this.buttonToggleFillMode.TabIndex = 1;
+            this.buttonToggleFillMode.Text = "Toggle Fill Mode";
+            this.buttonToggleFillMode.UseVisualStyleBackColor = true;
+            this.buttonToggleFillMode.Click += new System.EventHandler(this.buttonToggleFillMode_Click);
+            // 
+            // buttonColumnHeightAdjust
+            // 
+            this.buttonColumnHeightAdjust.Location = new System.Drawing.Point(959, 399);
+            this.buttonColumnHeightAdjust.Name = "buttonColumnHeightAdjust";
+            this.buttonColumnHeightAdjust.Size = new System.Drawing.Size(99, 23);
+            this.buttonColumnHeightAdjust.TabIndex = 1;
+            this.buttonColumnHeightAdjust.Text = "Column Height Adj";
+            this.buttonColumnHeightAdjust.UseVisualStyleBackColor = true;
+            this.buttonColumnHeightAdjust.Click += new System.EventHandler(this.buttonColumnHeightAdjust_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1555, 1005);
+            this.Controls.Add(this.buttonToggleFillMode);
+            this.Controls.Add(this.buttonColumnHeightAdjust);
+            this.Controls.Add(this.buttonToggleColumnWidthAdjust);
             this.Controls.Add(this.buttonDisableTextRow1);
             this.Controls.Add(this.buttonDisableTextCol0);
             this.Controls.Add(this.buttonSizeB);
@@ -184,6 +220,9 @@
         private System.Windows.Forms.Button buttonSizeB;
         private System.Windows.Forms.Button buttonDisableTextCol0;
         private System.Windows.Forms.Button buttonDisableTextRow1;
+        private System.Windows.Forms.Button buttonToggleColumnWidthAdjust;
+        private System.Windows.Forms.Button buttonToggleFillMode;
+        private System.Windows.Forms.Button buttonColumnHeightAdjust;
     }
 }
 

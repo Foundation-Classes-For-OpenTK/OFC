@@ -48,5 +48,53 @@ namespace GLOFC.GL4.Controls
                 dgv.UserPaintTopLeftHeader(gr, area);
             }
         }
+
+        protected override void OnMouseMove(GLMouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            GLDataGridView dgv = Parent as GLDataGridView;
+
+            if (dragging == 0)
+            {
+                dgv.RowHeaderWidth = e.Location.X;
+            }
+            else if (dragging == 1)
+            {
+                dgv.ColumnHeaderHeight = e.Location.Y;
+            }
+            else
+            {
+                Cursor = (e.Location.X >= Width - leftmargin && dgv.ColumnHeaderWidthAdjust) ? GLCursorType.EW :
+                         (e.Location.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust) ? GLCursorType.NS :
+                          GLCursorType.Normal;
+            }
+            return;
+        }
+
+        protected override void OnMouseDown(GLMouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+            GLDataGridView dgv = Parent as GLDataGridView;
+            if (e.Location.X >= Width + leftmargin && dgv.ColumnHeaderWidthAdjust)
+            {
+                dragging = 0;
+            }
+            else if (e.Location.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust)
+            {
+                dragging = 1;
+            }
+        }
+        protected override void OnMouseUp(GLMouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            dragging = -1;
+        }
+
+
+        private int dragging = -1;
+        private const int leftmargin = -4;
+        private const int bottommargin = 4;
+
     }
 }

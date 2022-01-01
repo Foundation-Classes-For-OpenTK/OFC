@@ -68,8 +68,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public enum ClickOn { Divider, UpperLeft, Header }
-        public new Action<ClickOn, GLMouseEventArgs> MouseClick;
+        public enum ClickOn { Divider, Header , Height }
 
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
@@ -83,6 +82,10 @@ namespace GLOFC.GL4.Controls
             {
                 dgv.RowHeaderWidth = xoff + initialrowheaderwidth;
             }
+            else if (dragging == -2)
+            {
+                dgv.ColumnHeaderHeight = e.Location.Y;
+            }
             else if (dragging > 0)
             {
                 int colx = xoff - dgv.ColumnPixelLeft(dragging - 1);
@@ -91,14 +94,9 @@ namespace GLOFC.GL4.Controls
             else
             {
                 var over = Over(e.Location);
-                if (over != null && over.Item1 == ClickOn.Divider)
-                {
-                    Cursor = GLCursorType.EW;
-                }
-                else
-                {
-                    Cursor = GLOFC.GLCursorType.Normal;
-                }
+                Cursor = (over != null && over.Item1 == ClickOn.Divider) ? GLCursorType.EW :
+                         (over != null && over.Item1 == ClickOn.Height) ? GLCursorType.NS :
+                          GLCursorType.Normal;
             }
             return;
         }
@@ -113,12 +111,18 @@ namespace GLOFC.GL4.Controls
         {
             base.OnMouseDown(e);
             var over = Over(e.Location);
-            if (over != null && over.Item1 == ClickOn.Divider)
+            GLDataGridView dgv = Parent as GLDataGridView;
+            if (over != null)
             {
-                GLDataGridView dgv = Parent as GLDataGridView;
-                System.Diagnostics.Debug.WriteLine($"Drag start {over.Item2}");
-                dragging = over.Item2;
-                initialrowheaderwidth = dgv.RowHeaderWidth;
+                if (over.Item1 == ClickOn.Divider && dgv.ColumnHeaderWidthAdjust)
+                {
+                    dragging = over.Item2;
+                    initialrowheaderwidth = dgv.RowHeaderWidth;
+                }
+                else if (over.Item1 == ClickOn.Height && dgv.ColumnHeaderHeightAdjust)
+                {
+                    dragging = -2;
+                }
             }
         }
         protected override void OnMouseUp(GLMouseEventArgs e)
@@ -144,17 +148,33 @@ namespace GLOFC.GL4.Controls
         {
             GLDataGridView dgv = Parent as GLDataGridView;
             int xoff = p.X + HorzScroll;
-            foreach (var c in dgv.Columns)  // horz part, col headers
-            {
-                int hoff = xoff - dgv.ColumnPixelLeft(c.Index);
 
-               // System.Diagnostics.Debug.WriteLine($"loc {p} col {c.Index} {c.HeaderBounds} {hoff}");
-                if (hoff >= -4 && hoff <= 2)
+            if (dgv.ColumnHeaderWidthAdjust)
+            {
+                foreach (var c in dgv.Columns)  // horz part, col headers
                 {
-                   // System.Diagnostics.Debug.WriteLine($"Header mouse over divider {c.Index} {p}");
-                    return new Tuple<ClickOn, int>(ClickOn.Divider, c.Index);
+                    int hoff = xoff - dgv.ColumnPixelLeft(c.Index);
+
+                    // System.Diagnostics.Debug.WriteLine($"loc {p} col {c.Index} {c.HeaderBounds} {hoff}");
+                    if (hoff >= leftmargin && hoff <= rightmargin)
+                    {
+                        // System.Diagnostics.Debug.WriteLine($"Header mouse over divider {c.Index} {p}");
+                        return new Tuple<ClickOn, int>(ClickOn.Divider, c.Index);
+                    }
+                }
+
+                if (dgv.Columns.Count > 0 && dgv.ColumnFillMode != GLDataGridView.ColFillMode.FillWidth)
+                {
+                    int hoff = xoff - dgv.ColumnPixelRight(dgv.Columns.Count - 1);
+                    if (hoff >= leftmargin && hoff <= rightmargin)
+                    {
+                        return new Tuple<ClickOn, int>(ClickOn.Divider, dgv.Columns.Count);
+                    }
                 }
             }
+
+            if (p.Y >= Height - bottommargin && dgv.ColumnHeaderHeightAdjust)
+                return new Tuple<ClickOn, int>(ClickOn.Height, -1);
 
             foreach (var c in dgv.Columns)  // horz part, col headers
             {
@@ -166,16 +186,14 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            if (dgv.RowHeaderEnable && dgv.Columns.Count > 0 && xoff < dgv.RowHeaderWidth)
-            {
-                //System.Diagnostics.Debug.WriteLine($"Header mouse over upper left {p}");
-                return new Tuple<ClickOn, int>(ClickOn.UpperLeft, -1);
-            }
             return null;
         }
 
         private int dragging = -1;
         private int initialrowheaderwidth;
+        private const int leftmargin = -4;
+        private const int rightmargin = 2;
+        private const int bottommargin = 4;
 
     }
 }

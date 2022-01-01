@@ -295,6 +295,22 @@ namespace TestOpenTk
             dgv.Rows[1].ShowText = !dgv.Rows[1].ShowText;
 
         }
+
+        private void buttonToggleColumnWidthAdjust_Click(object sender, EventArgs e)
+        {
+            dgv.ColumnHeaderWidthAdjust = !dgv.ColumnHeaderWidthAdjust;
+        }
+
+        private void buttonToggleFillMode_Click(object sender, EventArgs e)
+        {
+            dgv.ColumnFillMode = dgv.ColumnFillMode == GLDataGridView.ColFillMode.FillWidth ? GLDataGridView.ColFillMode.Width : GLDataGridView.ColFillMode.FillWidth;
+        }
+
+        private void buttonColumnHeightAdjust_Click(object sender, EventArgs e)
+        {
+            dgv.ColumnHeaderHeightAdjust = !dgv.ColumnHeaderHeightAdjust;
+
+        }
     }
 }
 

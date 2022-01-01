@@ -145,7 +145,7 @@ namespace GLOFC.GL4.Controls
         public bool EnableThemer { get; set; } = true;
 
         // Cursor shape
-        public GLCursorType Cursor { get { return cursor; } set { cursor = value; FindDisplay()?.Gc_CursorTo(this,value); } }
+        public GLCursorType Cursor { get { return cursor; } set { if (value != cursor) { cursor = value; FindDisplay()?.Gc_CursorTo(this, value); } } }
 
 
         // children control list
