@@ -25,8 +25,6 @@ namespace GLOFC.GL4.Controls
         public int Index { get; set; }
         public GLDataGridViewCellStyle Style { get { return style; } }
 
-        public GLDataGridViewRow Row { get { return row; } set { row = value; } }
-
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged(this); } } }
         public bool SelectedNI { get { return selected; } set { selected = value; } } 
 
@@ -41,8 +39,7 @@ namespace GLOFC.GL4.Controls
 
         private GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
         private bool selected;
-        private GLDataGridViewRow row;
-
+        
         protected void PaintBack(Graphics gr, Rectangle area)
         {
             if (Selected)

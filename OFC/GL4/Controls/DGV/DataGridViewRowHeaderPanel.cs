@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Timers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -28,6 +29,18 @@ namespace GLOFC.GL4.Controls
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+            autoscroll.Tick += (t, tick) =>
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+                if (lastselectionend < dgv.Rows.Count - 1)          // more selection down one and select
+                {
+                    lastselectionend++;
+                    dgv.Rows[lastselectionend].Selected = true;
+                }
+                //System.Diagnostics.Debug.WriteLine($"First line {dgv.FirstDisplayIndex} last complete {dgv.LastCompleteLine()}");
+                if ( dgv.LastCompleteLine() < dgv.Rows.Count-1)     // and scroll to the end, until all lines are on screen
+                    dgv.FirstDisplayIndex++;
+            };
         }
 
         public void Redraw(int yoffset)
@@ -132,29 +145,67 @@ namespace GLOFC.GL4.Controls
 
             GLDataGridView dgv = Parent as GLDataGridView;
 
-            if (dragging >= 0)
+            if (e.Location.Y <= ClientHeight)
+                autoscroll.Stop();
+
+            if (dragging >= 0)      // row height
             {
                 int y = yoffset + e.Location.Y;
                 dgv.Rows[gridbitmapfirstline + dragging].Height = y - gridrowoffsets[dragging];
             }
-            else if ( dragging == -2)
+            else if ( dragging == -2)   // header width
             {
                 dgv.RowHeaderWidth = e.Location.X;
             }
-            else
+            else if ( selectionstart != -1 )        // multi selection of line
             {
-                int row;
-                if (dgv.AllowUserToResizeRows && (row=GridRow(e.Location,true))>=0)
-                {
-                    Cursor = dgv.Rows[row + gridbitmapfirstline].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
+                if (!dgv.AllowUserToSelectMultipleRows)     // disable drag
                     return;
+
+                if ( e.Location.Y > ClientHeight)       // if past end, need to autoscroll
+                {
+                    //System.Diagnostics.Debug.WriteLine($"First line {dgv.FirstDisplayIndex} last complete {dgv.LastCompleteLine()}");
+                    autoscroll.Start(50, 200);
                 }
 
+                var g = GridRow(e.Location);
+
+                if ( g != null )
+                {
+                    int row = g.Item1 + gridbitmapfirstline;
+
+                    for (int i = lastselectionstart; i <= lastselectionend; i++)
+                        dgv.Rows[i].Selected = row < selectionstart ? i >= row && i <= selectionstart : i >= selectionstart && i <= row;
+
+                    if ( row < selectionstart )
+                    {
+                        lastselectionstart = row;
+                        lastselectionend = selectionstart;
+                    }
+                    else
+                    {
+                        lastselectionstart = selectionstart;
+                        lastselectionend = row;
+                    }
+
+                    //System.Diagnostics.Debug.WriteLine($"Selection {lastselectionstart}..{selectionstart}..{lastselectionend}");
+                }
+            }
+            else
+            {
                 if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
                 {
                     Cursor = GLCursorType.EW;
                     return;
                 }
+
+                Tuple<int, int> g;
+                if (dgv.AllowUserToResizeRows && (g= GridRow(e.Location)) != null && g.Item2 < bottommargin)
+                {
+                    Cursor = dgv.Rows[g.Item1 + gridbitmapfirstline].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
+                    return;
+                }
+
                 Cursor = GLCursorType.Normal;
             }
         }
@@ -164,40 +215,61 @@ namespace GLOFC.GL4.Controls
             base.OnMouseDown(e);
 
             GLDataGridView dgv = Parent as GLDataGridView;
-            if (dgv.AllowUserToResizeRows)
+
+            if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
             {
-                int row = GridRow(e.Location, true);
-                if (row >= 0)
-                    dragging = row;
-                else if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
-                    dragging = -2;
+                dragging = -2;
+                return;
+            }
+
+            var g = GridRow(e.Location);
+
+            if (g != null)
+            {
+                if (dgv.AllowUserToResizeRows && g.Item2 < bottommargin)
+                {
+                    dragging = g.Item1;
+                    return;
+                }
+                else if (dgv.AllowUserToSelectRows)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"Selection start on {g.Item1}");
+                    int row = g.Item1 + gridbitmapfirstline;
+
+                    bool itwason = dgv.Rows[row].Selected;
+
+                    dgv.ClearSelection();
+                    if (!itwason)
+                    {
+                        lastselectionstart = lastselectionend = selectionstart = row;
+                        dgv.Rows[selectionstart].Selected = true;
+                    }
+                }
             }
         }
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
-            dragging = -1;
+            autoscroll.Stop();
+            lastselectionend = selectionstart = lastselectionstart = dragging = -1;
         }
 
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            int row = GridRow(e.Location);
-            if (row >= 0)
+            if ( dragging == -1 && lastselectionend == -1 )
             {
-                GLDataGridView dgv = Parent as GLDataGridView;
+                var g = GridRow(e.Location);
+                System.Diagnostics.Debug.WriteLine($"Click valid  {g.Item1}");
 
-                if (dgv.AllowUserToSelectRows)
+                if (g != null )
                 {
-                    dgv.ClearSelection();
-                    dgv.Rows[gridbitmapfirstline + row].Selected = !dgv.Rows[gridbitmapfirstline + row].Selected;
+                    MouseClickRowHeader(g.Item1 + gridbitmapfirstline, e);
                 }
-
-                MouseClickRowHeader(row + gridbitmapfirstline, e);
             }
         }
 
-        private int GridRow(Point p, bool endonly = false)
+        private Tuple<int,int> GridRow(Point p)
         {
             if (gridrowoffsets.Count > 0)
             {
@@ -206,21 +278,24 @@ namespace GLOFC.GL4.Controls
                 if (gridrow >= 0 && gridrow < gridrowoffsets.Count - 1)       // last entry is end, ignore
                 {
                     int off = gridrowoffsets[gridrow + 1] - y;
-                    if (endonly && off >= bottommargin)
-                        gridrow = -1;
-                    return gridrow;
+                    return new Tuple<int, int>(gridrow, off);
                 }
             }
-            
-            return -1;
+
+            return null;
         }
+
+        Timer autoscroll = new Timer();
 
         private Bitmap gridbitmap = null;
         private int yoffset = 0;
         private int gridbitmapfirstline;
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
 
-        private int dragging = -1;
+        private int dragging = -1;              // grid nos
+        private int selectionstart = -1;        // real row numbers
+        private int lastselectionstart = -1;      // real row numbers
+        private int lastselectionend = -1;      // real row numbers
         private const int bottommargin = 4;
         private const int leftmargin = -4;
     }

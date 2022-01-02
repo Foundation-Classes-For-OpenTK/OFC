@@ -152,7 +152,7 @@ namespace TestOpenTk
                 dgv.AddColumn(col1);
                 dgv.AddColumn(col2);
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 40; i++)
                 {
                     var row = dgv.CreateRow();
                     if ( i < 2 || i > 5) row.AutoSize = true;
@@ -322,6 +322,41 @@ namespace TestOpenTk
         private void buttonToggleR1Sel_Click(object sender, EventArgs e)
         {
             dgv.Rows[1].Selected = !dgv.Rows[1].Selected;
+        }
+
+        private void buttonSelRows_Click(object sender, EventArgs e)
+        {
+            dgv.AllowUserToSelectRows = !dgv.AllowUserToSelectRows;
+            buttonSelRows.ForeColor = dgv.AllowUserToSelectRows ? Color.Green : Color.Red;
+        }
+
+        private void buttonDragRows_Click(object sender, EventArgs e)
+        {
+            dgv.AllowUserToSelectMultipleRows = !dgv.AllowUserToSelectMultipleRows;
+            buttonDragRows.ForeColor = dgv.AllowUserToSelectMultipleRows ? Color.Green : Color.Red;
+        }
+
+        private void buttonSelectCells_Click(object sender, EventArgs e)
+        {
+            dgv.AllowUserToSelectCells = !dgv.AllowUserToSelectCells;
+            buttonSelectCells.ForeColor = dgv.AllowUserToSelectCells ? Color.Green : Color.Red;
+        }
+
+        private void buttonToggleDragCells_Click(object sender, EventArgs e)
+        {
+            dgv.AllowUserToDragSelectCells = !dgv.AllowUserToDragSelectCells;
+            buttonToggleDragCells.ForeColor = dgv.AllowUserToDragSelectCells ? Color.Green : Color.Red;
+        }
+
+        private void buttonClearSel_Click(object sender, EventArgs e)
+        {
+            dgv.ClearSelection();
+        }
+
+        private void buttonSelCellSelRows_Click(object sender, EventArgs e)
+        {
+            dgv.SelectCellSelectsRow = !dgv.SelectCellSelectsRow;
+            buttonSelCellSelRows.ForeColor = dgv.SelectCellSelectsRow ?Color.Green : Color.Red;
         }
     }
 }

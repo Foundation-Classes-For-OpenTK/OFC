@@ -41,7 +41,13 @@ namespace GLOFC.GL4.Controls
         public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
         public bool AllowUserToResizeRows { get; set; } = true;
         public bool AllowUserToSelectRows { get; set; } = true;
+        public bool AllowUserToSelectMultipleRows { get; set; } = true;
         public bool AllowUserToSelectCells { get; set; } = true;
+        public bool AllowUserToDragSelectCells { get; set; } = true;
+        public bool SelectCellSelectsRow { get; set; } = false;
+
+        public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
+        public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
 
         public List<GLDataGridViewColumn> Columns { get { return columns; } }
         public List<GLDataGridViewRow> Rows { get { return rows; } }
@@ -53,6 +59,7 @@ namespace GLOFC.GL4.Controls
         public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c + cellborderwidth; }
         public int ColumnPixelRight(int c) { return ColumnPixelLeft(c) + columns[c].Width; }
         public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
+
 
         public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
         public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
@@ -202,12 +209,15 @@ namespace GLOFC.GL4.Controls
 
             row.SelectionChanged += (rw, cellno) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Selection row {rw.Index} {cellno}");
+                System.Diagnostics.Debug.WriteLine($"Selection changed on {rw.Index} {cellno}");
 
-                if (cellno == -1)
+                if (cellno == -1)       // if whole row select
                 {
-                    if (rw.Selected)
+                    if (rw.Selected) // turning on
                     {
+                        if (!AllowUserToSelectMultipleRows)     // if not allowed multirow, clear all
+                            ClearSelection();
+
                         if (!selectedcells.ContainsKey(rw.Index))
                             selectedcells[rw.Index] = new HashSet<int>();
 
@@ -215,7 +225,7 @@ namespace GLOFC.GL4.Controls
                             selectedcells[rw.Index].Add(c.Index);
                     }
                     else
-                    {
+                    {   // turning off
                         foreach (var c in rw.Cells)
                             selectedcells[rw.Index].Remove(c.Index);
 
@@ -223,7 +233,7 @@ namespace GLOFC.GL4.Controls
                             selectedcells.Remove(rw.Index);
                     }
                 }
-                else if (rows[rw.Index].Cells[cellno].Selected)
+                else if (rows[rw.Index].Cells[cellno].Selected)     // individual cell turning on
                 {
                     if (!selectedcells.ContainsKey(rw.Index))
                         selectedcells[rw.Index] = new HashSet<int>();
@@ -231,7 +241,7 @@ namespace GLOFC.GL4.Controls
                 }
                 else
                 {
-                    selectedcells[rw.Index].Remove(cellno);
+                    selectedcells[rw.Index].Remove(cellno);     // or turning off
 
                     if (selectedcells[rw.Index].Count == 0)
                         selectedcells.Remove(rw.Index);
@@ -347,9 +357,9 @@ namespace GLOFC.GL4.Controls
                 foreach (var cell in kvp.Value)
                 {
                     rows[kvp.Key].Cells[cell].SelectedNI = false;
-                    contentpanel.RowChanged(kvp.Key);     // inform CP
                 }
 
+                contentpanel.RowChanged(kvp.Key);     // inform CP
                 rows[kvp.Key].SelectedNI = false;
             }
 
@@ -493,7 +503,7 @@ namespace GLOFC.GL4.Controls
 
         // given a start point : +ve from here, -ve from end (-1 = first end row)
         // and the maximum bit map height to measure, run thru rows till end return lastcompleted row and total height
-        private Tuple<int, int> ComputeHeight(int start, int maxbitmapheight)
+        public Tuple<int, int> ComputeHeight(int start, int maxbitmapheight)
         {
             int dir = start >= 0 ? 1 : -1;
 

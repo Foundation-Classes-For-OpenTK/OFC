@@ -51,7 +51,6 @@ namespace GLOFC.GL4.Controls
             cell.Style.Parent = defaultcellstyle;
             cell.Style.Index = index;
             cell.Index = index;
-            cell.Row = this;
 
             // if a cell style has changed
             cell.Style.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
@@ -59,9 +58,27 @@ namespace GLOFC.GL4.Controls
             cell.Changed += (e1,aus) => { if (aus) autosizegeneration = 0; Changed?.Invoke(this, index); };
             cell.SelectionChanged += (e1) => 
             {
-                int celsel = cells.Where(x => x.Selected).Count();
-                selected = celsel == cells.Count;
-                SelectionChanged?.Invoke(this, e1.Index); 
+                if ( Selected )      // if row selected, and we are clicked (therefore turning off), then we turn off whole of row
+                {
+                    selected = false;
+                    foreach (var cell in Cells)
+                        cell.SelectedNI = false;
+                    SelectionChanged?.Invoke(this, -1);
+                }
+                else if (Parent.SelectCellSelectsRow)   // if in whole row select
+                {
+                    foreach (var cell in Cells)
+                        cell.SelectedNI = e1.Selected;
+
+                    selected = e1.Selected;
+                    SelectionChanged?.Invoke(this, -1);
+                }
+                else
+                {
+                    int celsel = cells.Where(x => x.Selected).Count();
+                    selected = celsel == cells.Count;
+                    SelectionChanged?.Invoke(this, e1.Index);
+                }
             };
 
             cells.Add(cell);

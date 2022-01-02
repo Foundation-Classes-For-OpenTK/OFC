@@ -23,9 +23,23 @@ namespace GLOFC.GL4.Controls
     public class GLDataGridViewContentPanel : GLPanel
     {
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row (-1 outside bounds), col = -1 for row header
-        public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
         public int HorzScroll { get { return gridoffset.X; } set { gridoffset = new Point(value, gridoffset.Y); Invalidate(); } }
         public int DepthMult { get; set; } = 3;
+        public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
+        public int LastCompleteLine()       // last line on screen completely
+        {
+            if (gridbitmapfirstline != -1)
+            {
+                int off = FirstDisplayIndex - gridbitmapfirstline;
+                int topvpos = gridrowoffsets[off];
+                while (off < gridrowoffsets.Count-1 && (gridrowoffsets[off+1]-topvpos) < ClientHeight)
+                    off++;
+
+                return gridbitmapfirstline + off - 1;
+            }
+            else
+                return -1;
+        }
 
         public GLDataGridViewContentPanel(string name, GLDataGridViewRowHeaderPanel rowheaderpanel, Rectangle location) : base(name, location)
         {
@@ -36,7 +50,7 @@ namespace GLOFC.GL4.Controls
 
         public void Redraw()            // forced redraw, maybe because a new column has been added..
         {
-            gridbitmaplastcompleteline = -1;
+            gridredraw = true;
             Invalidate();
         }
         public void AddRow(int index)
@@ -85,7 +99,7 @@ namespace GLOFC.GL4.Controls
         {
             GLDataGridView dgv = Parent as GLDataGridView;
 
-            firstdisplayindex = dgv.Rows.Count > 0 ? Math.Min(fdl, dgv.Rows.Count - 1) : 0;
+            firstdisplayindex = dgv.Rows.Count > 0 ? Math.Min(fdl, dgv.Rows.Count) : 0;
 
             // if FDL is within the drawn range of the bitmap
 
@@ -123,11 +137,14 @@ namespace GLOFC.GL4.Controls
                 gridbitmap?.Dispose();
                 gridbitmap = new Bitmap(Math.Max(gridwidth,10), Math.Max(Height * DepthMult,10));
                 //System.Diagnostics.Debug.WriteLine($"Grid bitmap {gridbitmap.Width} {gridbitmap.Height}");
-                gridbitmaplastcompleteline = -1;
+                gridredraw = true;
             }
 
-            if (gridbitmaplastcompleteline == -1)    // do we need to redisplay
+            if (gridredraw)    // do we need to redisplay
+            {
                 DrawTable();
+                gridredraw = false;
+            }
 
             // the drawn rectangle is whats left of the bitmap after gridoffset..
             Rectangle drawarea = new Rectangle(0, 0, gridbitmap.Width - gridoffset.X, gridbitmap.Height - gridoffset.Y);
@@ -227,7 +244,6 @@ namespace GLOFC.GL4.Controls
 
                                 gr.DrawLine(p, hpos, 0, hpos, vpos);        // final one
                             }
-
                         }
                     }
 
@@ -335,6 +351,7 @@ namespace GLOFC.GL4.Controls
         private int gridbitmapfirstline = -1;
         private int gridbitmaplastcompleteline = -1;
         private int gridbitmapdrawndepth = -1;
+        private bool gridredraw = true;
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
 
         private GLDataGridViewRowHeaderPanel rowheaderpanel;

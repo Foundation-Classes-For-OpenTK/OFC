@@ -44,6 +44,15 @@
             this.buttonColumnHeightAdjust = new System.Windows.Forms.Button();
             this.buttonSelR1C1 = new System.Windows.Forms.Button();
             this.buttonToggleR1Sel = new System.Windows.Forms.Button();
+            this.buttonSelRows = new System.Windows.Forms.Button();
+            this.buttonDragRows = new System.Windows.Forms.Button();
+            this.buttonSelectCells = new System.Windows.Forms.Button();
+            this.buttonToggleDragCells = new System.Windows.Forms.Button();
+            this.buttonClearSel = new System.Windows.Forms.Button();
+            this.buttonSelCellSelRows = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -204,12 +213,108 @@
             this.buttonToggleR1Sel.UseVisualStyleBackColor = true;
             this.buttonToggleR1Sel.Click += new System.EventHandler(this.buttonToggleR1Sel_Click);
             // 
+            // buttonSelRows
+            // 
+            this.buttonSelRows.Location = new System.Drawing.Point(854, 535);
+            this.buttonSelRows.Name = "buttonSelRows";
+            this.buttonSelRows.Size = new System.Drawing.Size(99, 23);
+            this.buttonSelRows.TabIndex = 1;
+            this.buttonSelRows.Text = "Toggle Sel Rows";
+            this.buttonSelRows.UseVisualStyleBackColor = true;
+            this.buttonSelRows.Click += new System.EventHandler(this.buttonSelRows_Click);
+            // 
+            // buttonDragRows
+            // 
+            this.buttonDragRows.Location = new System.Drawing.Point(854, 564);
+            this.buttonDragRows.Name = "buttonDragRows";
+            this.buttonDragRows.Size = new System.Drawing.Size(99, 23);
+            this.buttonDragRows.TabIndex = 1;
+            this.buttonDragRows.Text = "Tog MultiRows";
+            this.buttonDragRows.UseVisualStyleBackColor = true;
+            this.buttonDragRows.Click += new System.EventHandler(this.buttonDragRows_Click);
+            // 
+            // buttonSelectCells
+            // 
+            this.buttonSelectCells.Location = new System.Drawing.Point(854, 593);
+            this.buttonSelectCells.Name = "buttonSelectCells";
+            this.buttonSelectCells.Size = new System.Drawing.Size(99, 23);
+            this.buttonSelectCells.TabIndex = 1;
+            this.buttonSelectCells.Text = "Tog SelCells";
+            this.buttonSelectCells.UseVisualStyleBackColor = true;
+            this.buttonSelectCells.Click += new System.EventHandler(this.buttonSelectCells_Click);
+            // 
+            // buttonToggleDragCells
+            // 
+            this.buttonToggleDragCells.Location = new System.Drawing.Point(854, 622);
+            this.buttonToggleDragCells.Name = "buttonToggleDragCells";
+            this.buttonToggleDragCells.Size = new System.Drawing.Size(99, 23);
+            this.buttonToggleDragCells.TabIndex = 1;
+            this.buttonToggleDragCells.Text = "Tog DragCells";
+            this.buttonToggleDragCells.UseVisualStyleBackColor = true;
+            this.buttonToggleDragCells.Click += new System.EventHandler(this.buttonToggleDragCells_Click);
+            // 
+            // buttonClearSel
+            // 
+            this.buttonClearSel.Location = new System.Drawing.Point(959, 535);
+            this.buttonClearSel.Name = "buttonClearSel";
+            this.buttonClearSel.Size = new System.Drawing.Size(99, 23);
+            this.buttonClearSel.TabIndex = 1;
+            this.buttonClearSel.Text = "Clear Selection";
+            this.buttonClearSel.UseVisualStyleBackColor = true;
+            this.buttonClearSel.Click += new System.EventHandler(this.buttonClearSel_Click);
+            // 
+            // buttonSelCellSelRows
+            // 
+            this.buttonSelCellSelRows.Location = new System.Drawing.Point(854, 651);
+            this.buttonSelCellSelRows.Name = "buttonSelCellSelRows";
+            this.buttonSelCellSelRows.Size = new System.Drawing.Size(99, 23);
+            this.buttonSelCellSelRows.TabIndex = 1;
+            this.buttonSelCellSelRows.Text = "Toggle Cell/Row";
+            this.buttonSelCellSelRows.UseVisualStyleBackColor = true;
+            this.buttonSelCellSelRows.Click += new System.EventHandler(this.buttonSelCellSelRows_Click);
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(854, 709);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(99, 23);
+            this.button2.TabIndex = 1;
+            this.button2.Text = "Toggle";
+            this.button2.UseVisualStyleBackColor = true;
+            // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(854, 738);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(99, 23);
+            this.button3.TabIndex = 1;
+            this.button3.Text = "Toggle";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(854, 767);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(99, 23);
+            this.button4.TabIndex = 1;
+            this.button4.Text = "Toggle";
+            this.button4.UseVisualStyleBackColor = true;
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1555, 1005);
             this.Controls.Add(this.buttonToggleFillMode);
+            this.Controls.Add(this.button4);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.buttonSelCellSelRows);
+            this.Controls.Add(this.buttonClearSel);
+            this.Controls.Add(this.buttonToggleDragCells);
+            this.Controls.Add(this.buttonSelectCells);
+            this.Controls.Add(this.buttonDragRows);
+            this.Controls.Add(this.buttonSelRows);
             this.Controls.Add(this.buttonToggleR1Sel);
             this.Controls.Add(this.buttonSelR1C1);
             this.Controls.Add(this.buttonColumnHeightAdjust);
@@ -249,6 +354,15 @@
         private System.Windows.Forms.Button buttonColumnHeightAdjust;
         private System.Windows.Forms.Button buttonSelR1C1;
         private System.Windows.Forms.Button buttonToggleR1Sel;
+        private System.Windows.Forms.Button buttonSelRows;
+        private System.Windows.Forms.Button buttonDragRows;
+        private System.Windows.Forms.Button buttonSelectCells;
+        private System.Windows.Forms.Button buttonToggleDragCells;
+        private System.Windows.Forms.Button buttonClearSel;
+        private System.Windows.Forms.Button buttonSelCellSelRows;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button4;
     }
 }
 
