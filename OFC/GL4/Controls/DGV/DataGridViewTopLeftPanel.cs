@@ -65,7 +65,7 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                Cursor = (e.Location.X >= Width - leftmargin && dgv.AllowUserToResizeColumns) ? GLCursorType.EW :
+                Cursor = (e.Location.X >= Width + leftmargin && dgv.AllowUserToResizeColumns) ? GLCursorType.EW :
                          (e.Location.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight) ? GLCursorType.NS :
                           GLCursorType.Normal;
             }

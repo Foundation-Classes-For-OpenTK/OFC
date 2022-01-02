@@ -42,6 +42,8 @@
             this.buttonToggleColumnWidthAdjust = new System.Windows.Forms.Button();
             this.buttonToggleFillMode = new System.Windows.Forms.Button();
             this.buttonColumnHeightAdjust = new System.Windows.Forms.Button();
+            this.buttonSelR1C1 = new System.Windows.Forms.Button();
+            this.buttonToggleR1Sel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -182,12 +184,34 @@
             this.buttonColumnHeightAdjust.UseVisualStyleBackColor = true;
             this.buttonColumnHeightAdjust.Click += new System.EventHandler(this.buttonColumnHeightAdjust_Click);
             // 
+            // buttonSelR1C1
+            // 
+            this.buttonSelR1C1.Location = new System.Drawing.Point(854, 477);
+            this.buttonSelR1C1.Name = "buttonSelR1C1";
+            this.buttonSelR1C1.Size = new System.Drawing.Size(99, 23);
+            this.buttonSelR1C1.TabIndex = 1;
+            this.buttonSelR1C1.Text = "Toggle Sel R1C1";
+            this.buttonSelR1C1.UseVisualStyleBackColor = true;
+            this.buttonSelR1C1.Click += new System.EventHandler(this.buttonSelR1C1_Click);
+            // 
+            // buttonToggleR1Sel
+            // 
+            this.buttonToggleR1Sel.Location = new System.Drawing.Point(854, 506);
+            this.buttonToggleR1Sel.Name = "buttonToggleR1Sel";
+            this.buttonToggleR1Sel.Size = new System.Drawing.Size(99, 23);
+            this.buttonToggleR1Sel.TabIndex = 1;
+            this.buttonToggleR1Sel.Text = "Toggle Sel R1";
+            this.buttonToggleR1Sel.UseVisualStyleBackColor = true;
+            this.buttonToggleR1Sel.Click += new System.EventHandler(this.buttonToggleR1Sel_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1555, 1005);
             this.Controls.Add(this.buttonToggleFillMode);
+            this.Controls.Add(this.buttonToggleR1Sel);
+            this.Controls.Add(this.buttonSelR1C1);
             this.Controls.Add(this.buttonColumnHeightAdjust);
             this.Controls.Add(this.buttonToggleColumnWidthAdjust);
             this.Controls.Add(this.buttonDisableTextRow1);
@@ -223,6 +247,8 @@
         private System.Windows.Forms.Button buttonToggleColumnWidthAdjust;
         private System.Windows.Forms.Button buttonToggleFillMode;
         private System.Windows.Forms.Button buttonColumnHeightAdjust;
+        private System.Windows.Forms.Button buttonSelR1C1;
+        private System.Windows.Forms.Button buttonToggleR1Sel;
     }
 }
 

@@ -18,11 +18,17 @@ namespace GLOFC.GL4.Controls
 {
     public abstract class GLDataGridViewCell
     {
-        public Action<GLDataGridViewCell> Changed { get; set; }
+        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
+        public Action<GLDataGridViewCell> SelectionChanged { get; set; } 
         public GLDataGridViewRow Parent { get; set; }
         public Rectangle CellBounds { get; set; }
         public int Index { get; set; }
         public GLDataGridViewCellStyle Style { get { return style; } }
+
+        public GLDataGridViewRow Row { get { return row; } set { row = value; } }
+
+        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged(this); } } }
+        public bool SelectedNI { get { return selected; } set { selected = value; } } 
 
         public GLDataGridViewCell()
         {
@@ -34,25 +40,40 @@ namespace GLOFC.GL4.Controls
         public abstract int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
 
         private GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
-    }
+        private bool selected;
+        private GLDataGridViewRow row;
 
-    public class GLDataGridViewCellText : GLDataGridViewCell
-    {
-        public GLDataGridViewCellText() { }
-        public GLDataGridViewCellText(string t) { text = t; }
-        public string Value { get { return text; } set { if (value != text) { text = value; Changed(this); } } }
-
-        public override void Paint(Graphics gr, Rectangle area)
+        protected void PaintBack(Graphics gr, Rectangle area)
         {
-            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
-
-            if (Style.BackColor != Color.Transparent)
+            if (Selected)
+            {
+                using (Brush b = new SolidBrush(Style.SelectedColor))
+                {
+                    gr.FillRectangle(b, area);
+                }
+            }
+            else if (Style.BackColor != Color.Transparent)
             {
                 using (Brush b = new SolidBrush(Style.BackColor))
                 {
                     gr.FillRectangle(b, area);
                 }
             }
+
+        }
+    }
+
+    public class GLDataGridViewCellText : GLDataGridViewCell
+    {
+        public GLDataGridViewCellText() { }
+        public GLDataGridViewCellText(string t) { text = t; }
+        public string Value { get { return text; } set { if (value != text) { text = value; Changed(this,true); } } }
+
+        public override void Paint(Graphics gr, Rectangle area)
+        {
+            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
+
+            PaintBack(gr, area);
 
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(Style.ContentAlignment))
             {

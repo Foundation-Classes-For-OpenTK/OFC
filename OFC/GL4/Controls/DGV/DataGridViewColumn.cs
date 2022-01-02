@@ -32,7 +32,7 @@ namespace GLOFC.GL4.Controls
         public bool? SortGlyphAscending { get; set; } = null;                               // for displaying sort glyph
 
         public bool ShowGlyph { get { return showglyph; } set { showglyph = value; Changed?.Invoke(this, true); } }
-        public bool ShowText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
+        public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
 
         public void SetColNo(int i)
         {
@@ -51,7 +51,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            if (ShowText)
+            if (ShowHeaderText)
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
                 {

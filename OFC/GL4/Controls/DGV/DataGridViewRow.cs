@@ -15,12 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
     public class GLDataGridViewRow
     {
-        public Action<GLDataGridViewRow,int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
+        public Action<GLDataGridViewRow, int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
+        public Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
         public GLDataGridView Parent { get; set; }
         public int Index { get { return rowno; } }
         public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
@@ -33,8 +35,10 @@ namespace GLOFC.GL4.Controls
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
         public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }
 
-        public bool ShowText { get { return showtext; } set { showtext = value; Changed?.Invoke(this,-1); } }
+        public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this,-1); } }
 
+        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; foreach (var c in cells) c.SelectedNI = value; SelectionChanged(this, -1); } } }
+        public bool SelectedNI { get { return selected; } set { selected = value; } }
 
         public GLDataGridViewRow()
         {
@@ -47,11 +51,18 @@ namespace GLOFC.GL4.Controls
             cell.Style.Parent = defaultcellstyle;
             cell.Style.Index = index;
             cell.Index = index;
+            cell.Row = this;
 
             // if a cell style has changed
             cell.Style.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
             // if a cell content has changed
-            cell.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
+            cell.Changed += (e1,aus) => { if (aus) autosizegeneration = 0; Changed?.Invoke(this, index); };
+            cell.SelectionChanged += (e1) => 
+            {
+                int celsel = cells.Where(x => x.Selected).Count();
+                selected = celsel == cells.Count;
+                SelectionChanged?.Invoke(this, e1.Index); 
+            };
 
             cells.Add(cell);
             Changed?.Invoke(this, index);
@@ -89,7 +100,14 @@ namespace GLOFC.GL4.Controls
         {
             area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, area.Width - HeaderStyle.Padding.TotalWidth, area.Height - HeaderStyle.Padding.TotalHeight);
 
-            if (HeaderStyle.BackColor != Color.Transparent)
+            if ( Selected )
+            {
+                using (Brush b = new SolidBrush(HeaderStyle.SelectedColor))
+                {
+                    gr.FillRectangle(b, area);
+                }
+            }
+            else if (HeaderStyle.BackColor != Color.Transparent)
             {
                 using (Brush b = new SolidBrush(HeaderStyle.BackColor))
                 {
@@ -97,7 +115,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            if (ShowText)
+            if (ShowHeaderText)
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(HeaderStyle.ContentAlignment))
                 {
@@ -120,5 +138,6 @@ namespace GLOFC.GL4.Controls
         private bool autosize;
         private uint autosizegeneration = 0;
         private bool showtext = true;
+        private bool selected = false;
     }
 }

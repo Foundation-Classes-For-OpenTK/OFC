@@ -73,7 +73,7 @@ namespace GLOFC.GL4.Controls
         {
             if (index >= gridbitmapfirstline && index <= gridbitmaplastcompleteline + 1)        // if within (incl half painted end row), need a redraw
             {
-                System.Diagnostics.Debug.WriteLine($"Content row remove {index} inside grid {gridbitmapfirstline}.. {gridbitmaplastcompleteline + 1} redraw");
+                System.Diagnostics.Debug.WriteLine($"Content row changed {index} inside grid {gridbitmapfirstline}.. {gridbitmaplastcompleteline + 1} redraw");
                 Redraw();
                 return true;
             }
@@ -298,6 +298,12 @@ namespace GLOFC.GL4.Controls
                     if ( xoffset>=left && xoffset< left+dgv.Columns[i].Width)
                     {
                         row += gridbitmapfirstline;
+
+                        if (dgv.AllowUserToSelectCells && i < dgv.Rows[row].Cells.Count)
+                        {
+                            dgv.Rows[row].Cells[i].Selected = !dgv.Rows[row].Cells[i].Selected;
+                        }
+
                         // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
                         MouseClickOnGrid(row, i, e);
                         return;

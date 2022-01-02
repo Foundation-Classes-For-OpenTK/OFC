@@ -150,7 +150,7 @@ namespace TestOpenTk
                 col2.Text = "Col2";
                 dgv.AddColumn(col0);
                 dgv.AddColumn(col1);
-                //dgv.AddColumn(col2);
+                dgv.AddColumn(col2);
 
                 for (int i = 0; i < 10; i++)
                 {
@@ -160,10 +160,13 @@ namespace TestOpenTk
                     //row.AddCell(new GLDataGridViewCellText($"{prefix} Text"));
                     row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C0 long bit of text for it to wrap again and again and again"));
                     row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
+                    row.AddCell(new GLDataGridViewCellText($"R{i}C2"));
                     dgv.AddRow(row);
                 }
 
                 dgv.Rows[1].Height = 40;
+
+              //  dgv.Rows[1].Cells[0].Selected = true;
 
                 pform.Add(dgv);
             }
@@ -286,12 +289,12 @@ namespace TestOpenTk
 
         private void buttonDisableTextCol0_Click(object sender, EventArgs e)
         {
-            dgv.Columns[0].ShowText = !dgv.Columns[0].ShowText;
+            dgv.Columns[0].ShowHeaderText = !dgv.Columns[0].ShowHeaderText;
         }
 
         private void buttonDisableTextRow1_Click(object sender, EventArgs e)
         {
-            dgv.Rows[1].ShowText = !dgv.Rows[1].ShowText;
+            dgv.Rows[1].ShowHeaderText = !dgv.Rows[1].ShowHeaderText;
 
         }
 
@@ -309,6 +312,16 @@ namespace TestOpenTk
         {
             dgv.AllowUserToResizeColumnHeight = !dgv.AllowUserToResizeColumnHeight;
 
+        }
+
+        private void buttonSelR1C1_Click(object sender, EventArgs e)
+        {
+            dgv.Rows[1].Cells[1].Selected = !dgv.Rows[1].Cells[1].Selected;
+        }
+
+        private void buttonToggleR1Sel_Click(object sender, EventArgs e)
+        {
+            dgv.Rows[1].Selected = !dgv.Rows[1].Selected;
         }
     }
 }

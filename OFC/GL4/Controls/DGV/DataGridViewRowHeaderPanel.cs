@@ -73,7 +73,7 @@ namespace GLOFC.GL4.Controls
                 gr.Clear(Color.Transparent);
 
                 using (Brush b = new SolidBrush(dgv.CellBorderColor))
-                {
+                { 
                     using (Pen p = new Pen(b, dgv.CellBorderWidth))
                     {
                         int vpos = 0;
@@ -137,15 +137,26 @@ namespace GLOFC.GL4.Controls
                 int y = yoffset + e.Location.Y;
                 dgv.Rows[gridbitmapfirstline + dragging].Height = y - gridrowoffsets[dragging];
             }
-            else if (dgv.AllowUserToResizeRows)
+            else if ( dragging == -2)
             {
-                int row = GridRow(e.Location, true);
-                Cursor = (row >= 0 && dgv.Rows[row + gridbitmapfirstline].AutoSize == false) ? GLCursorType.NS : GLCursorType.Normal;
+                dgv.RowHeaderWidth = e.Location.X;
             }
             else
-                Cursor = GLCursorType.Normal;
+            {
+                int row;
+                if (dgv.AllowUserToResizeRows && (row=GridRow(e.Location,true))>=0)
+                {
+                    Cursor = dgv.Rows[row + gridbitmapfirstline].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
+                    return;
+                }
 
-            return;
+                if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
+                {
+                    Cursor = GLCursorType.EW;
+                    return;
+                }
+                Cursor = GLCursorType.Normal;
+            }
         }
 
         protected override void OnMouseDown(GLMouseEventArgs e)
@@ -158,6 +169,8 @@ namespace GLOFC.GL4.Controls
                 int row = GridRow(e.Location, true);
                 if (row >= 0)
                     dragging = row;
+                else if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
+                    dragging = -2;
             }
         }
         protected override void OnMouseUp(GLMouseEventArgs e)
@@ -171,7 +184,15 @@ namespace GLOFC.GL4.Controls
             base.OnMouseClick(e);
             int row = GridRow(e.Location);
             if (row >= 0)
-            { 
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+
+                if (dgv.AllowUserToSelectRows)
+                {
+                    dgv.ClearSelection();
+                    dgv.Rows[gridbitmapfirstline + row].Selected = !dgv.Rows[gridbitmapfirstline + row].Selected;
+                }
+
                 MouseClickRowHeader(row + gridbitmapfirstline, e);
             }
         }
@@ -190,7 +211,7 @@ namespace GLOFC.GL4.Controls
                     return gridrow;
                 }
             }
-
+            
             return -1;
         }
 
@@ -201,5 +222,6 @@ namespace GLOFC.GL4.Controls
 
         private int dragging = -1;
         private const int bottommargin = 4;
+        private const int leftmargin = -4;
     }
 }

@@ -21,6 +21,45 @@ namespace GLOFC.GL4.Controls
 {
     public class GLDataGridView : GLBaseControl
     {
+        public int SortColumn { get; set; } = 1;
+        public bool SortAscending { get; set; } = true;
+        public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
+
+        public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
+
+        public enum ColFillMode { FillWidth, Width };
+        public ColFillMode ColumnFillMode { get { return colfillmode; } set { if (value != colfillmode) { colfillmode = value; ContentInvalidateLayout(); } } }
+        public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
+        public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
+        public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
+        public bool AllowUserToResizeColumns { get; set; } = true;
+        public bool AllowUserToResizeColumnHeight { get; set; } = true;
+        public bool AllowUserToSortColumns { get; set; } = true;
+
+        public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
+        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
+        public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
+        public bool AllowUserToResizeRows { get; set; } = true;
+        public bool AllowUserToSelectRows { get; set; } = true;
+        public bool AllowUserToSelectCells { get; set; } = true;
+
+        public List<GLDataGridViewColumn> Columns { get { return columns; } }
+        public List<GLDataGridViewRow> Rows { get { return rows; } }
+
+        public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
+        public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
+
+        // pixel positions
+        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c + cellborderwidth; }
+        public int ColumnPixelRight(int c) { return ColumnPixelLeft(c) + columns[c].Width; }
+        public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
+
+        public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
+        public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
+        public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
+
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
+
         public GLDataGridView(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
@@ -52,23 +91,21 @@ namespace GLOFC.GL4.Controls
             colheaderstyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
             rowheaderstyle.Changed += (e1) => { ContentInvalidateLayout(); };
             defaultcellstyle.Changed += (e1) => { ContentInvalidateLayout(); };
-            upperleftstyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
 
-            upperleftstyle.BackColor = Color.Gray;
             colheaderstyle.BackColor = rowheaderstyle.BackColor = Color.Orange;
             defaultcellstyle.BackColor = Color.White;
-            upperleftstyle.ForeColor = colheaderstyle.ForeColor = rowheaderstyle.ForeColor = defaultcellstyle.ForeColor = Color.Black;
-            upperleftstyle.SelectedColor = colheaderstyle.SelectedColor = rowheaderstyle.SelectedColor = defaultcellstyle.SelectedColor = Color.Yellow;
-            upperleftstyle.HighlightColor = colheaderstyle.HighlightColor = rowheaderstyle.HighlightColor = defaultcellstyle.HighlightColor = Color.Red;
-            upperleftstyle.ContentAlignment = colheaderstyle.ContentAlignment = rowheaderstyle.ContentAlignment = defaultcellstyle.ContentAlignment = ContentAlignment.MiddleCenter;
-            upperleftstyle.TextFormat = colheaderstyle.TextFormat = rowheaderstyle.TextFormat = defaultcellstyle.TextFormat = 0;
-            upperleftstyle.Font = colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
-            upperleftstyle.Padding = colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new Padding(0);
+            colheaderstyle.ForeColor = rowheaderstyle.ForeColor = defaultcellstyle.ForeColor = Color.Black;
+            colheaderstyle.SelectedColor = rowheaderstyle.SelectedColor = defaultcellstyle.SelectedColor = Color.Yellow;
+            colheaderstyle.HighlightColor = rowheaderstyle.HighlightColor = defaultcellstyle.HighlightColor = Color.Red;
+            colheaderstyle.ContentAlignment = rowheaderstyle.ContentAlignment = defaultcellstyle.ContentAlignment = ContentAlignment.MiddleCenter;
+            colheaderstyle.TextFormat = rowheaderstyle.TextFormat = defaultcellstyle.TextFormat = 0;
+            colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
+            colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new Padding(0);
 
             colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
                 //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
-                if (col >= 0 && AllowUserToSort)
+                if (col >= 0 && AllowUserToSortColumns)
                     Sort(col, !SortAscending);
             };
 
@@ -84,43 +121,6 @@ namespace GLOFC.GL4.Controls
             };
 
         }
-        public int SortColumn { get; set; } = 1;
-        public bool SortAscending { get; set; } = true;
-        public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
-
-        public GLDataGridViewCellStyle UpperLeftStyle { get { return upperleftstyle; } set { upperleftstyle = value; colheaderpanel.Invalidate(); } }
-        public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
-
-        public enum ColFillMode { FillWidth, Width };
-        public ColFillMode ColumnFillMode { get { return colfillmode; } set { if (value != colfillmode) { colfillmode = value; ContentInvalidateLayout(); } } }
-        public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
-        public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
-        public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
-        public bool AllowUserToResizeColumns { get; set; } = true;
-        public bool AllowUserToResizeColumnHeight { get; set; } = true;
-
-        public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
-        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
-        public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
-        public bool AllowUserToResizeRows { get; set; } = true;
-        public bool AllowUserToSort { get; set; } = true;
-
-        public List<GLDataGridViewColumn> Columns { get { return columns; } }
-        public List<GLDataGridViewRow> Rows { get { return rows; } }
-
-        public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
-        public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
-
-        // pixel positions
-        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c + cellborderwidth; }
-        public int ColumnPixelRight(int c) { return ColumnPixelLeft(c) + columns[c].Width; }
-        public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
-
-        public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
-        public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
-        public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
-
-        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
 
         public GLDataGridViewRow CreateRow()
         {
@@ -198,6 +198,47 @@ namespace GLOFC.GL4.Controls
             {
                 contentpanel.RowChanged(row.Index);     // inform CP
                 UpdateScrollBar();  // update scroll bar
+            };
+
+            row.SelectionChanged += (rw, cellno) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"Selection row {rw.Index} {cellno}");
+
+                if (cellno == -1)
+                {
+                    if (rw.Selected)
+                    {
+                        if (!selectedcells.ContainsKey(rw.Index))
+                            selectedcells[rw.Index] = new HashSet<int>();
+
+                        foreach (var c in rw.Cells)
+                            selectedcells[rw.Index].Add(c.Index);
+                    }
+                    else
+                    {
+                        foreach (var c in rw.Cells)
+                            selectedcells[rw.Index].Remove(c.Index);
+
+                        if (selectedcells[rw.Index].Count == 0)
+                            selectedcells.Remove(rw.Index);
+                    }
+                }
+                else if (rows[rw.Index].Cells[cellno].Selected)
+                {
+                    if (!selectedcells.ContainsKey(rw.Index))
+                        selectedcells[rw.Index] = new HashSet<int>();
+                    selectedcells[rw.Index].Add(cellno);
+                }
+                else
+                {
+                    selectedcells[rw.Index].Remove(cellno);
+
+                    if (selectedcells[rw.Index].Count == 0)
+                        selectedcells.Remove(rw.Index);
+                }
+
+                DumpSelectedCells();
+                contentpanel.RowChanged(row.Index);     // inform CP
             };
 
             if (insertat == -1)
@@ -297,7 +338,38 @@ namespace GLOFC.GL4.Controls
 
                 ContentInvalidateLayout();
             }
+        }
 
+        public void ClearSelection()
+        {
+            foreach (var kvp in selectedcells)
+            {
+                foreach (var cell in kvp.Value)
+                {
+                    rows[kvp.Key].Cells[cell].SelectedNI = false;
+                    contentpanel.RowChanged(kvp.Key);     // inform CP
+                }
+
+                rows[kvp.Key].SelectedNI = false;
+            }
+
+            selectedcells.Clear();
+        }
+        
+        public void DumpSelectedCells()
+        {
+            foreach (var kvp in selectedcells)
+            {
+                System.Diagnostics.Debug.Write($"Current Sel State Row {kvp.Key} {rows[kvp.Key].Selected} : ");
+                foreach (var cell in kvp.Value)
+                {
+                    System.Diagnostics.Debug.Write($"{cell} ");
+                }
+                System.Diagnostics.Debug.WriteLine("");
+            }
+
+            if ( selectedcells.Count == 0 )
+                System.Diagnostics.Debug.WriteLine($"Current Sel EMPTY");
         }
 
         protected override void PerformRecursiveLayout()     
@@ -487,8 +559,6 @@ namespace GLOFC.GL4.Controls
         private GLDataGridViewCellStyle rowheaderstyle = new GLDataGridViewCellStyle();
         private GLDataGridViewCellStyle colheaderstyle = new GLDataGridViewCellStyle();
 
-        private GLDataGridViewCellStyle upperleftstyle = new GLDataGridViewCellStyle();
-
         private ColFillMode colfillmode = ColFillMode.Width;
         private int cellborderwidth = 1;
         private int columnheaderheight = 40;
@@ -505,6 +575,10 @@ namespace GLOFC.GL4.Controls
         private GLDataGridViewColumnHeaderPanel colheaderpanel;
         private GLDataGridViewRowHeaderPanel rowheaderpanel;
         private GLDataGridViewTopLeftHeaderPanel topleftpanel;
+
+        private Dictionary<int, HashSet<int>> selectedcells = new Dictionary<int, HashSet<int>>();
+
+
     }
 
 }
