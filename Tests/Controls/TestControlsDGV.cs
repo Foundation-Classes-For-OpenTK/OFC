@@ -136,7 +136,10 @@ namespace TestOpenTk
             {
                 dgv = new GLDataGridView("DGV-1", new Rectangle(10, 10, 600, 500));
                 dgv.Dock = DockingType.Fill;
-               // dgv.ColumnFillMode = GLDataGridView.ColFillMode.FillWidth;
+                dgv.DefaultAltRowCellStyle.BackColor = Color.FromArgb(255, 240, 240, 240);
+                dgv.DefaultAltRowCellStyle.ForeColor = Color.DarkBlue;
+
+                // dgv.ColumnFillMode = GLDataGridView.ColFillMode.FillWidth;
                 var col0 = dgv.CreateColumn();
                 var col1 = dgv.CreateColumn();
                 var col2 = dgv.CreateColumn();

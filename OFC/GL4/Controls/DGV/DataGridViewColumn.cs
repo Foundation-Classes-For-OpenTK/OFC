@@ -23,17 +23,20 @@ namespace GLOFC.GL4.Controls
     {
         public int Index { get { return colno; } }
         public GLDataGridView Parent { get; set; }
-        public Action<GLDataGridViewColumn,bool> Changed { get; set; }
         public string Text { get { return text; } set { text = value; Changed?.Invoke(this,false); } }
         public int Width { get { return width; } set { if (value != width) { width = Math.Max(minwidth,value); Changed?.Invoke(this, true); } } }
         public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this, true); } } }
         public int MinimumWidth { get { return minwidth; } set { if (value != minwidth) { minwidth = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
         public bool? SortGlyphAscending { get; set; } = null;                               // for displaying sort glyph
-
         public bool ShowGlyph { get { return showglyph; } set { showglyph = value; Changed?.Invoke(this, true); } }
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
 
+        public GLDataGridViewColumn() { }
+        public GLDataGridViewColumn(string t) { text = t; }
+
+        #region Implementation
+        public Action<GLDataGridViewColumn, bool> Changed { get; set; }
         public void SetColNo(int i)
         {
             colno = i;
@@ -92,6 +95,6 @@ namespace GLOFC.GL4.Controls
         private bool showtext = true;
         private bool showglyph = true;
 
-
+        #endregion
     }
 }

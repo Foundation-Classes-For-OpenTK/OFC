@@ -18,23 +18,23 @@ namespace GLOFC.GL4.Controls
 {
     public abstract class GLDataGridViewCell
     {
-        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
-        public Action<GLDataGridViewCell> SelectionChanged { get; set; } 
         public GLDataGridViewRow Parent { get; set; }
-        public Rectangle CellBounds { get; set; }
         public int Index { get; set; }
         public GLDataGridViewCellStyle Style { get { return style; } }
 
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged(this); } } }
-        public bool SelectedNI { get { return selected; } set { selected = value; } } 
 
         public GLDataGridViewCell()
         {
         }
 
+        #region Implementation
+
+        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
+        public Action<GLDataGridViewCell> SelectionChanged { get; set; }
+        public bool SelectedNI { get { return selected; } set { selected = value; } }
         public abstract void Paint(Graphics gr, Rectangle area);
         public abstract Size PerformAutoSize(int width);
-
         public abstract int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
 
         private GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
@@ -56,15 +56,19 @@ namespace GLOFC.GL4.Controls
                     gr.FillRectangle(b, area);
                 }
             }
-
         }
+        
+        #endregion
+
     }
 
     public class GLDataGridViewCellText : GLDataGridViewCell
     {
+        public string Value { get { return text; } set { if (value != text) { text = value; Changed(this, true); } } }
         public GLDataGridViewCellText() { }
         public GLDataGridViewCellText(string t) { text = t; }
-        public string Value { get { return text; } set { if (value != text) { text = value; Changed(this,true); } } }
+
+        #region Implementation
 
         public override void Paint(Graphics gr, Rectangle area)
         {
@@ -105,5 +109,7 @@ namespace GLOFC.GL4.Controls
         }
 
         private string text;
+
+        #endregion
     }
 }

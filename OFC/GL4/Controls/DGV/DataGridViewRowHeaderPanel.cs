@@ -20,7 +20,6 @@ using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
-
     public class GLDataGridViewRowHeaderPanel : GLPanel
     {
         public Action<int, GLMouseEventArgs> MouseClickRowHeader;                // -1 for top left cell
@@ -135,9 +134,6 @@ namespace GLOFC.GL4.Controls
                 gr.DrawImage(gridbitmap, drawarea, 0, yoffset, drawarea.Width, drawarea.Height, GraphicsUnit.Pixel);
             }
         }
-
-
-        public new Action<int, GLMouseEventArgs> MouseClick;
 
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
@@ -260,10 +256,10 @@ namespace GLOFC.GL4.Controls
             if ( dragging == -1 && lastselectionend == -1 )
             {
                 var g = GridRow(e.Location);
-                System.Diagnostics.Debug.WriteLine($"Click valid  {g.Item1}");
 
                 if (g != null )
                 {
+                    //System.Diagnostics.Debug.WriteLine($"Click valid  {g.Item1}");
                     MouseClickRowHeader(g.Item1 + gridbitmapfirstline, e);
                 }
             }

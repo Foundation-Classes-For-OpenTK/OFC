@@ -26,6 +26,7 @@ namespace GLOFC.GL4.Controls
         public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
 
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
+        public GLDataGridViewCellStyle DefaultAltRowCellStyle { get { return defaultaltrowcellstyle; } set { defaultaltrowcellstyle = value; ContentInvalidateLayout(); } }
 
         public enum ColFillMode { FillWidth, Width };
         public ColFillMode ColumnFillMode { get { return colfillmode; } set { if (value != colfillmode) { colfillmode = value; ContentInvalidateLayout(); } } }
@@ -109,6 +110,8 @@ namespace GLOFC.GL4.Controls
             colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
             colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new Padding(0);
 
+            defaultaltrowcellstyle.Parent = defaultcellstyle;       // all null, uses cell style until overridden
+
             colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
                 //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
@@ -129,6 +132,7 @@ namespace GLOFC.GL4.Controls
 
         }
 
+        // rows must be created via this call
         public GLDataGridViewRow CreateRow()
         {
             GLDataGridViewRow row = new GLDataGridViewRow();
@@ -138,6 +142,8 @@ namespace GLOFC.GL4.Controls
             row.Height = 24;
             return row;
         }
+
+        // columns must be created via this call
         public GLDataGridViewColumn CreateColumn()
         {
             GLDataGridViewColumn col = new GLDataGridViewColumn();
@@ -148,9 +154,6 @@ namespace GLOFC.GL4.Controls
             return col;
         }
 
-        public uint AutoSizeGeneration { get; set; } = 1;
-
-        bool ignorecolumncommands = false;
         public void AddColumn(GLDataGridViewColumn col)
         {
             System.Diagnostics.Debug.Assert(col.Parent == this && col.HeaderStyle.Parent != null);      // ensure created by us
@@ -253,7 +256,7 @@ namespace GLOFC.GL4.Controls
 
             if (insertat == -1)
             {
-                row.SetRowNo(rows.Count);
+                row.SetRowNo(rows.Count, (rows.Count & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
                 rows.Add(row);
                 contentpanel.AddRow(row.Index);       // see if content panel needs redrawing
             }
@@ -261,7 +264,7 @@ namespace GLOFC.GL4.Controls
             {
                 rows.Insert(insertat, row);
                 for (int i = insertat; i < rows.Count; i++)
-                    rows[i].SetRowNo(i);
+                    rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
                 contentpanel.InsertRow(row.Index);       // see if content panel needs redrawing
             }
 
@@ -279,7 +282,7 @@ namespace GLOFC.GL4.Controls
             contentpanel.RemoveRow(index);
             rows.RemoveAt(index);
             for (int i = index; i < rows.Count; i++)
-                rows[i].SetRowNo(i);
+                rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
             UpdateScrollBar();
         }
 
@@ -314,7 +317,6 @@ namespace GLOFC.GL4.Controls
                     columns[i].FillWidth *= proportion;
                 }
             }
-
         }
 
         public void Sort(int colno, bool sortascending)
@@ -342,7 +344,7 @@ namespace GLOFC.GL4.Controls
                 SortAscending = sortascending;
 
                 for (int i = 0; i < rows.Count; i++)
-                    rows[i].SetRowNo(i);
+                    rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
 
                 columns[colno].SortGlyphAscending = sortascending;
 
@@ -365,26 +367,14 @@ namespace GLOFC.GL4.Controls
 
             selectedcells.Clear();
         }
-        
-        public void DumpSelectedCells()
-        {
-            foreach (var kvp in selectedcells)
-            {
-                System.Diagnostics.Debug.Write($"Current Sel State Row {kvp.Key} {rows[kvp.Key].Selected} : ");
-                foreach (var cell in kvp.Value)
-                {
-                    System.Diagnostics.Debug.Write($"{cell} ");
-                }
-                System.Diagnostics.Debug.WriteLine("");
-            }
 
-            if ( selectedcells.Count == 0 )
-                System.Diagnostics.Debug.WriteLine($"Current Sel EMPTY");
-        }
+        #region Implementation
 
         protected override void PerformRecursiveLayout()     
         {
-            colheaderpanel.Height = columnheaderheight + cellborderwidth;        // set before children layout
+            // set before children layout
+
+            colheaderpanel.Height = columnheaderheight + cellborderwidth;        
             rowheaderpanel.Width = rowheaderwidth + cellborderwidth;
             rowheaderpanel.DockingMargin = new Margin(0, ColumnHeaderEnable ? colheaderpanel.Height : 0, 0, 0);
             topleftpanel.Size = new Size(rowheaderwidth + cellborderwidth, columnheaderheight + cellborderwidth);
@@ -394,13 +384,14 @@ namespace GLOFC.GL4.Controls
 
             base.PerformRecursiveLayout();      // do layout on children.
 
-            // work out the column layout
-
-            int pixelsforborder = (columns.Count + 1 + (rowheaderenable ? 1 : 0)) * cellborderwidth;
+            // work out the column layout - we do it here instead of content panel so its in one place - only
+            // this view overrides recursive layout
+            // and we do it in layout before any paints
 
             ignorecolumncommands = true;
             if (colfillmode == ColFillMode.FillWidth)
             {
+                int pixelsforborder = (columns.Count + 1) * cellborderwidth;
                 int cellpixels = contentpanel.Width - pixelsforborder;
                 float filltotalallcolumns = columns.Select(x => x.FillWidth).Sum();
 
@@ -447,7 +438,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
             else
-            {
+            {   // normal width fill ,just make sure not below min width
                 foreach (var col in columns)
                 {
                     if (col.Width < col.MinimumWidth)
@@ -503,7 +494,7 @@ namespace GLOFC.GL4.Controls
 
         // given a start point : +ve from here, -ve from end (-1 = first end row)
         // and the maximum bit map height to measure, run thru rows till end return lastcompleted row and total height
-        public Tuple<int, int> ComputeHeight(int start, int maxbitmapheight)
+        private Tuple<int, int> ComputeHeight(int start, int maxbitmapheight)
         {
             int dir = start >= 0 ? 1 : -1;
 
@@ -561,11 +552,27 @@ namespace GLOFC.GL4.Controls
             AutoSizeGeneration++;
             ContentInvalidateLayout();
         }
+        public void DumpSelectedCells()
+        {
+            foreach (var kvp in selectedcells)
+            {
+                System.Diagnostics.Debug.Write($"Current Sel State Row {kvp.Key} {rows[kvp.Key].Selected} : ");
+                foreach (var cell in kvp.Value)
+                {
+                    System.Diagnostics.Debug.Write($"{cell} ");
+                }
+                System.Diagnostics.Debug.WriteLine("");
+            }
+
+            if (selectedcells.Count == 0)
+                System.Diagnostics.Debug.WriteLine($"Current Sel EMPTY");
+        }
 
         private List<GLDataGridViewColumn> columns = new List<GLDataGridViewColumn>();
         private List<GLDataGridViewRow> rows = new List<GLDataGridViewRow>();
 
         private GLDataGridViewCellStyle defaultcellstyle = new GLDataGridViewCellStyle();
+        private GLDataGridViewCellStyle defaultaltrowcellstyle = new GLDataGridViewCellStyle();
         private GLDataGridViewCellStyle rowheaderstyle = new GLDataGridViewCellStyle();
         private GLDataGridViewCellStyle colheaderstyle = new GLDataGridViewCellStyle();
 
@@ -588,7 +595,11 @@ namespace GLOFC.GL4.Controls
 
         private Dictionary<int, HashSet<int>> selectedcells = new Dictionary<int, HashSet<int>>();
 
+        private bool ignorecolumncommands = false;
 
+        public uint AutoSizeGeneration { get; set; } = 1;       // needs to be able to be changed by externals
+
+        #endregion
     }
 
 }

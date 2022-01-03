@@ -18,7 +18,6 @@ using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
-
     public class GLDataGridViewColumnHeaderPanel : GLPanel
     {
         public Action<int, GLMouseEventArgs> MouseClickColumnHeader;                // -1 for top left cell
@@ -67,8 +66,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-
-        private enum ClickOn { Divider, Header , Height }
 
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
@@ -142,7 +139,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private int horzscroll = 0;
+        private enum ClickOn { Divider, Header, Height }
 
         private Tuple<ClickOn, int> Over(Point p)
         {
@@ -189,6 +186,7 @@ namespace GLOFC.GL4.Controls
             return null;
         }
 
+        private int horzscroll = 0;
         private int dragging = -1;
         private int initialrowheaderwidth;
         private const int leftmargin = -4;

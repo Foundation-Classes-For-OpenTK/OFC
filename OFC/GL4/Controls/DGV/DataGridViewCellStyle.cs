@@ -19,9 +19,6 @@ namespace GLOFC.GL4.Controls
 {
     public class GLDataGridViewCellStyle
     {
-        public int Index { get; set; }      // for use by parent
-        public GLDataGridViewCellStyle Parent { get; set; }
-        public Action<GLDataGridViewCellStyle> Changed { get; set; }
         public Color BackColor { get { return backcolor.HasValue ? backcolor.Value : Parent.BackColor; } set { if (value != backcolor) { backcolor = value; Changed?.Invoke(this); } } }
         public Color ForeColor { get { return forecolor.HasValue ? forecolor.Value : Parent.ForeColor; } set { if (value != forecolor) { forecolor = value; Changed?.Invoke(this); } } }
         public Color SelectedColor { get { return selectedcolor.HasValue ? selectedcolor.Value : Parent.SelectedColor; } set { if (value != selectedcolor) {  selectedcolor = value; Changed?.Invoke(this); } } }
@@ -39,5 +36,7 @@ namespace GLOFC.GL4.Controls
         private StringFormatFlags? textformatflags;
         private Font font;
         private Padding? padding;
+        public GLDataGridViewCellStyle Parent { get; set; }
+        public Action<GLDataGridViewCellStyle> Changed { get; set; }
     }
 }

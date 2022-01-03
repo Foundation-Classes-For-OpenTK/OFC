@@ -21,8 +21,6 @@ namespace GLOFC.GL4.Controls
 {
     public class GLDataGridViewRow
     {
-        public Action<GLDataGridViewRow, int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
-        public Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
         public GLDataGridView Parent { get; set; }
         public int Index { get { return rowno; } }
         public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
@@ -31,14 +29,9 @@ namespace GLOFC.GL4.Controls
         public List<GLDataGridViewCell> Cells { get { return cells; } }
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
-
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
-        public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }
-
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this,-1); } }
-
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; foreach (var c in cells) c.SelectedNI = value; SelectionChanged(this, -1); } } }
-        public bool SelectedNI { get { return selected; } set { selected = value; } }
 
         public GLDataGridViewRow()
         {
@@ -49,7 +42,6 @@ namespace GLOFC.GL4.Controls
             int index = cells.Count;
             cell.Parent = this;
             cell.Style.Parent = defaultcellstyle;
-            cell.Style.Index = index;
             cell.Index = index;
 
             // if a cell style has changed
@@ -85,22 +77,9 @@ namespace GLOFC.GL4.Controls
             Changed?.Invoke(this, index);
         }
 
-        // from the wanted values work out height of row
-        // true if we change height.  
-        public void SetAutoSizeHeight(uint gen, int h)
-        {
-            autosizegeneration = gen;
-            height = Math.Max(minheight,h);
-        }
-
-        public void SetRowNo(int i)
-        {
-            rowno= i;
-        }
-
         public void RemoveCellAt(int index)
         {
-            if ( cells.Count>index)
+            if (cells.Count > index)
             {
                 cells.RemoveAt(index);
                 Changed?.Invoke(this, -1);
@@ -110,10 +89,29 @@ namespace GLOFC.GL4.Controls
         public void Clear()
         {
             cells.Clear();
-            Changed?.Invoke(this,-1);
+            Changed?.Invoke(this, -1);
         }
 
-        public void Paint(Graphics gr, Rectangle area)
+        #region Implementation
+        public Action<GLDataGridViewRow, int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
+        public Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
+        public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }   // for autosize tracking
+        public bool SelectedNI { get { return selected; } set { selected = value; } }
+
+        public void SetAutoSizeHeight(uint gen, int h)
+        {
+            autosizegeneration = gen;
+            height = Math.Max(minheight,h);
+        }
+
+        public void SetRowNo(int i, GLDataGridViewCellStyle defcellstyle)
+        {
+            rowno= i;
+            defaultcellstyle.Parent = defcellstyle;
+        }
+
+        // row header area
+        public void Paint(Graphics gr, Rectangle area)      
         {
             area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, area.Width - HeaderStyle.Padding.TotalWidth, area.Height - HeaderStyle.Padding.TotalHeight);
 
@@ -145,7 +143,6 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-
         private GLDataGridViewCellStyle defaultcellstyle = new GLDataGridViewCellStyle();
         private GLDataGridViewCellStyle headerstyle = new GLDataGridViewCellStyle();
         private List<GLDataGridViewCell> cells = new List<GLDataGridViewCell>();
@@ -156,5 +153,7 @@ namespace GLOFC.GL4.Controls
         private uint autosizegeneration = 0;
         private bool showtext = true;
         private bool selected = false;
+
+        #endregion
     }
 }
