@@ -305,6 +305,21 @@ namespace GLOFC
             return (-tolerance < difference && tolerance > difference);
         }
 
+        public static int Max(params int[] list)
+        {
+            int m = int.MinValue;
+            foreach (var i in list)
+                m = Math.Max(i, m);
+            return m;
+        }
+
+        public static int Min(params int[] list)
+        {
+            int m = int.MaxValue;
+            foreach (var i in list)
+                m = Math.Min(i, m);
+            return m;
+        }
 
         #endregion
     }

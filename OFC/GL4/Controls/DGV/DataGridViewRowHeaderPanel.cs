@@ -170,7 +170,7 @@ namespace GLOFC.GL4.Controls
                 {
                     int row = g.Item1 + gridbitmapfirstline;
 
-                    for (int i = lastselectionstart; i <= lastselectionend; i++)
+                    for (int i = Math.Min(lastselectionstart,g.Item1); i <= Math.Max(lastselectionend,g.Item1); i++)
                         dgv.Rows[i].Selected = row < selectionstart ? i >= row && i <= selectionstart : i >= selectionstart && i <= row;
 
                     if ( row < selectionstart )
@@ -225,7 +225,6 @@ namespace GLOFC.GL4.Controls
                 if (dgv.AllowUserToResizeRows && g.Item2 < bottommargin)
                 {
                     dragging = g.Item1;
-                    return;
                 }
                 else if (dgv.AllowUserToSelectRows)
                 {
@@ -235,6 +234,7 @@ namespace GLOFC.GL4.Controls
                     bool itwason = dgv.Rows[row].Selected;
 
                     dgv.ClearSelection();
+
                     if (!itwason)
                     {
                         lastselectionstart = lastselectionend = selectionstart = row;
@@ -253,7 +253,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if ( dragging == -1 && lastselectionend == -1 )
+            if ( dragging == -1 && lastselectionstart == lastselectionend)      // if not dragging sizing or area
             {
                 var g = GridRow(e.Location);
 
@@ -281,7 +281,6 @@ namespace GLOFC.GL4.Controls
             return null;
         }
 
-        Timer autoscroll = new Timer();
 
         private Bitmap gridbitmap = null;
         private int yoffset = 0;
@@ -289,9 +288,12 @@ namespace GLOFC.GL4.Controls
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
 
         private int dragging = -1;              // grid nos
+
+        Timer autoscroll = new Timer();
         private int selectionstart = -1;        // real row numbers
         private int lastselectionstart = -1;      // real row numbers
         private int lastselectionend = -1;      // real row numbers
+
         private const int bottommargin = 4;
         private const int leftmargin = -4;
     }

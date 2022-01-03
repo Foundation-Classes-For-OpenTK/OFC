@@ -21,6 +21,9 @@ namespace GLOFC.GL4.Controls
 {
     public class GLDataGridView : GLBaseControl
     {
+        public List<GLDataGridViewColumn> Columns { get { return columns; } }
+        public List<GLDataGridViewRow> Rows { get { return rows; } }
+
         public int SortColumn { get; set; } = 1;
         public bool SortAscending { get; set; } = true;
         public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
@@ -49,9 +52,7 @@ namespace GLOFC.GL4.Controls
 
         public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
         public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
-
-        public List<GLDataGridViewColumn> Columns { get { return columns; } }
-        public List<GLDataGridViewRow> Rows { get { return rows; } }
+        public Tuple<int,int> FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
 
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
@@ -126,7 +127,7 @@ namespace GLOFC.GL4.Controls
             };
             contentpanel.MouseClickOnGrid += (row, col, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Click on {row} {col}");
+                System.Diagnostics.Debug.WriteLine($"Click on grid {row} {col}");
                 MouseClickOnGrid?.Invoke(row, col, e);
             };
 
@@ -250,7 +251,7 @@ namespace GLOFC.GL4.Controls
                         selectedcells.Remove(rw.Index);
                 }
 
-                DumpSelectedCells();
+                //DumpSelectedCells();
                 contentpanel.RowChanged(row.Index);     // inform CP
             };
 

@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Timers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -46,6 +47,17 @@ namespace GLOFC.GL4.Controls
             this.rowheaderpanel = rowheaderpanel;
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = Color.Red;// DefaultVerticalScrollPanelBackColor;
+
+            autoscroll.Tick += (t, tick) =>
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+
+                //System.Diagnostics.Debug.WriteLine($"First line {dgv.FirstDisplayIndex} last complete {dgv.LastCompleteLine()}");
+                if (dgv.LastCompleteLine() < dgv.Rows.Count - 1)     // and scroll to the end, until all lines are on screen
+                    dgv.FirstDisplayIndex++;
+                UpdateSelection(lastmousemove);
+            };
+
         }
 
         public void Redraw()            // forced redraw, maybe because a new column has been added..
@@ -176,13 +188,13 @@ namespace GLOFC.GL4.Controls
                         return;
                     }
 
-                    gridbitmapfirstline = Math.Max(0, firstdisplayindex - backup);      // tbd how much to back up..
+                    gridbitmapfirstline = Math.Max(0, firstdisplayindex - backup);      // back up a little
 
                     using (Brush b = new SolidBrush(dgv.CellBorderColor))
                     {
                         using (Pen p = new Pen(b, dgv.CellBorderWidth))
                         {
-                            int gridwidth = dgv.ColumnPixelWidth- 1;      // width of grid
+                            int gridwidth = dgv.ColumnPixelWidth-1;      // width of grid incl cell borders
                             int vpos = 0;
 
                             for (var rowno = gridbitmapfirstline; rowno < dgv.Rows.Count && vpos < gridbitmap.Height; rowno++)
@@ -247,7 +259,7 @@ namespace GLOFC.GL4.Controls
                         }
                     }
 
-                    if (firstdisplayindex > gridbitmaplastcompleteline)
+                    if (firstdisplayindex > gridbitmaplastcompleteline)     // if not got to first display index, backup too much, decrease
                     {
                         if (backup > 0)
                         {
@@ -300,49 +312,134 @@ namespace GLOFC.GL4.Controls
             Redraw();
         }
 
+        private Point lastmousemove;
+
+        protected override void OnMouseMove(GLMouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+
+            GLDataGridView dgv = Parent as GLDataGridView;
+
+            if (e.Location.Y <= ClientHeight)
+                autoscroll.Stop();
+
+            if ( selectionstart != null )
+            {
+                if (!dgv.AllowUserToDragSelectCells)     // disable drag
+                    return;
+
+                if (e.Location.Y > ClientHeight)       // if past end, need to autoscroll
+                {
+                    //System.Diagnostics.Debug.WriteLine($"First line {dgv.FirstDisplayIndex} last complete {dgv.LastCompleteLine()}");
+                    autoscroll.Start(50, 200);
+                }
+
+                lastmousemove = e.Location;     // record this for autoscroll purposes
+                UpdateSelection(e.Location);
+            }
+        }
+
+        private void UpdateSelection(Point loc)
+        {
+            var g = GridRowCol(loc);    
+
+            if (g != null)
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+
+                // get the min/max ranges of selection, which can be the minimum/max of start/end and current loc
+
+                int minrow = ObjectExtensionsNumbersBool.Min(lastselectionstart.Item1, lastselectionend.Item1,g.Item1);
+                int maxrow = ObjectExtensionsNumbersBool.Max(lastselectionstart.Item1, lastselectionend.Item1,g.Item1);
+                int mincol = ObjectExtensionsNumbersBool.Min(lastselectionstart.Item2, lastselectionend.Item2,g.Item2);
+                int maxcol = ObjectExtensionsNumbersBool.Max(lastselectionstart.Item2, lastselectionend.Item2,g.Item2);
+
+                //System.Diagnostics.Debug.WriteLine($"Cursor {loc} at {g.Item1} {g.Item2} minr {minrow} maxr {maxrow}");
+
+                for (int row = minrow; row <= maxrow; row++)
+                {
+                    for (int col = mincol; col <= maxcol && col < dgv.Rows[row].Cells.Count; col++)
+                    {
+                        bool selrow = g.Item1 < selectionstart.Item1 ? row >= g.Item1 && row <= selectionstart.Item1 : row >= selectionstart.Item1 && row <= g.Item1;
+                        bool selcol = g.Item2 < selectionstart.Item2 ? col >= g.Item2 && col <= selectionstart.Item2 : col >= selectionstart.Item2 && col <= g.Item2;
+                 //       System.Diagnostics.Debug.WriteLine($"{col} {row} = {selrow} {selcol}");
+                        dgv.Rows[row].Cells[col].Selected = selrow && selcol;
+                    }
+                }
+
+                lastselectionstart = selectionstart;
+                lastselectionend = g;
+            }
+        }
+
+        protected override void OnMouseDown(GLMouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+
+            GLDataGridView dgv = Parent as GLDataGridView;
+
+            var g = GridRowCol(e.Location);
+            if (g != null)
+            {
+                if (dgv.AllowUserToSelectCells && g.Item2 < dgv.Rows[g.Item1].Cells.Count)
+                {
+                    lastselectionstart = lastselectionend = selectionstart = g;
+                    dgv.ClearSelection();
+                    dgv.Rows[g.Item1].Cells[g.Item2].Selected = true;
+                }
+            }
+        }
+
+        protected override void OnMouseUp(GLMouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            autoscroll.Stop();
+            lastselectionstart = lastselectionend = selectionstart = null;
+        }
+
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            int row = GridRow(e.Location);
-            if (row>=0)
+
+            if (lastselectionstart == lastselectionend)
             {
-                GLDataGridView dgv = Parent as GLDataGridView;
-                int xoffset = gridoffset.X + e.Location.X;
-                for( int i = 0; i < dgv.Columns.Count; i++ )
+                var g = GridRowCol(e.Location);
+                if (g != null)
                 {
-                    int left = dgv.ColumnPixelLeft(i);
-                    if ( xoffset>=left && xoffset< left+dgv.Columns[i].Width)
+                    MouseClickOnGrid(g.Item1, g.Item2, e);
+                }
+                else
+                    MouseClickOnGrid(-1, -1, e);
+            }
+        }
+
+        public Tuple<int,int> GridRowCol(Point p)
+        {
+            if (gridrowoffsets.Count > 0)
+            {
+                int y = gridoffset.Y + Math.Min(p.Y,ClientHeight);      // if mouse if captured, y may be well beyond grid, clip to it
+
+                int gridrow = gridrowoffsets.FindLastIndex(a => a < y);
+
+                if (gridrow >= 0 && gridrow < gridrowoffsets.Count-1)        // last entry is end of grid, either reject or accept
+                {
+                    GLDataGridView dgv = Parent as GLDataGridView;
+                    
+                    int xoffset = gridoffset.X + Math.Min(p.X,ClientWidth);     // clip X
+
+                    for (int i = 0; i < dgv.Columns.Count; i++)
                     {
-                        row += gridbitmapfirstline;
-
-                        if (dgv.AllowUserToSelectCells && i < dgv.Rows[row].Cells.Count)
+                        int left = dgv.ColumnPixelLeft(i);
+                        if (xoffset >= left && xoffset < left + dgv.Columns[i].Width)
                         {
-                            dgv.Rows[row].Cells[i].Selected = !dgv.Rows[row].Cells[i].Selected;
+                            gridrow += gridbitmapfirstline;
+                            return new Tuple<int, int>(gridrow, i);
                         }
-
-                        // System.Diagnostics.Debug.WriteLine($"Contentpanel click on row {row} col {col}");
-                        MouseClickOnGrid(row, i, e);
-                        return;
                     }
                 }
             }
 
-            MouseClickOnGrid(-1, -1, e);
-        }
-
-        private int GridRow(Point p)
-        {
-            if (gridrowoffsets.Count > 0)
-            {
-                int y = gridoffset.Y + p.Y;
-                int gridrow = gridrowoffsets.FindLastIndex(a => a < y);
-                if (gridrow >= 0 && gridrow < gridrowoffsets.Count-1)       // last entry is end, ignore
-                {
-                    return gridrow;
-                }
-            }
-
-            return -1;
+            return null;
         }
 
         private int firstdisplayindex = 0;
@@ -355,6 +452,11 @@ namespace GLOFC.GL4.Controls
         private List<int> gridrowoffsets = new List<int>();     // cell boundary pixel upper of cell line on Y
 
         private GLDataGridViewRowHeaderPanel rowheaderpanel;
+
+        Timer autoscroll = new Timer();
+        private Tuple<int, int> selectionstart;
+        private Tuple<int, int> lastselectionstart;
+        private Tuple<int, int> lastselectionend;
 
     }
 }
