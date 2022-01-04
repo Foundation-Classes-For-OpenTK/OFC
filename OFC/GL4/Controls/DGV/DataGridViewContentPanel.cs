@@ -341,20 +341,23 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-         protected override void OnMouseDown(GLMouseEventArgs e)
+        protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
 
-            GLDataGridView dgv = Parent as GLDataGridView;
-
-            var g = GridRowCol(e.Location);
-            if (g != null)
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                if (dgv.AllowUserToSelectCells && g.Item2 < dgv.Rows[g.Item1].Cells.Count)
+                GLDataGridView dgv = Parent as GLDataGridView;
+
+                var g = GridRowCol(e.Location);
+                if (g != null)
                 {
-                    lastselectionstart = lastselectionend = selectionstart = g;
-                    dgv.ClearSelection();
-                    dgv.Rows[g.Item1].Cells[g.Item2].Selected = true;
+                    if (dgv.AllowUserToSelectCells && g.Column < dgv.Rows[g.Row].Cells.Count)
+                    {
+                        lastselectionstart = lastselectionend = selectionstart = g;
+                        dgv.ClearSelection();
+                        dgv.Rows[g.Row].Cells[g.Column].Selected = true;
+                    }
                 }
             }
         }
@@ -370,15 +373,30 @@ namespace GLOFC.GL4.Controls
         {
             base.OnMouseClick(e);
 
-            if (lastselectionstart == lastselectionend)
+            GLDataGridView dgv = Parent as GLDataGridView;
+            var g = GridRowCol(e.Location);
+
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                var g = GridRowCol(e.Location);
-                if (g != null)
+                if (lastselectionstart == lastselectionend)
                 {
-                    MouseClickOnGrid(g.Item1, g.Item2, e);
+                    if (g != null)
+                    {
+                        MouseClickOnGrid(g.Row, g.Column, e);
+                    }
+                    else
+                        MouseClickOnGrid(-1, -1, e);
                 }
-                else
-                    MouseClickOnGrid(-1, -1, e);
+            }
+            else if ( e.Button == GLMouseEventArgs.MouseButtons.Right)
+            {
+                if (dgv.ContextPanelContent != null)
+                {
+                    if (g == null)      // out of cell, return pos of click
+                        g = new GLDataGridView.RowColPos() { Column = -1, Row = -1, Location = e.Location };
+
+                    dgv.ContextPanelContent.Show(FindDisplay(), e.ScreenCoord, opentag:g);
+                }
             }
         }
 
@@ -399,19 +417,19 @@ namespace GLOFC.GL4.Controls
 
                 // get the min/max ranges of selection, which can be the minimum/max of start/end and current loc
 
-                int minrow = ObjectExtensionsNumbersBool.Min(lastselectionstart.Item1, lastselectionend.Item1, g.Item1);
-                int maxrow = ObjectExtensionsNumbersBool.Max(lastselectionstart.Item1, lastselectionend.Item1, g.Item1);
-                int mincol = ObjectExtensionsNumbersBool.Min(lastselectionstart.Item2, lastselectionend.Item2, g.Item2);
-                int maxcol = ObjectExtensionsNumbersBool.Max(lastselectionstart.Item2, lastselectionend.Item2, g.Item2);
+                int minrow = ObjectExtensionsNumbersBool.Min(lastselectionstart.Row, lastselectionend.Row, g.Row);
+                int maxrow = ObjectExtensionsNumbersBool.Max(lastselectionstart.Row, lastselectionend.Row, g.Row);
+                int mincol = ObjectExtensionsNumbersBool.Min(lastselectionstart.Column, lastselectionend.Column, g.Column);
+                int maxcol = ObjectExtensionsNumbersBool.Max(lastselectionstart.Column, lastselectionend.Column, g.Column);
 
-                //System.Diagnostics.Debug.WriteLine($"Cursor {loc} at {g.Item1} {g.Item2} minr {minrow} maxr {maxrow}");
+                //System.Diagnostics.Debug.WriteLine($"Cursor {loc} at {g.Row} {g.Column} minr {minrow} maxr {maxrow}");
 
                 for (int row = minrow; row <= maxrow; row++)
                 {
                     for (int col = mincol; col <= maxcol && col < dgv.Rows[row].Cells.Count; col++)
                     {
-                        bool selrow = g.Item1 < selectionstart.Item1 ? row >= g.Item1 && row <= selectionstart.Item1 : row >= selectionstart.Item1 && row <= g.Item1;
-                        bool selcol = g.Item2 < selectionstart.Item2 ? col >= g.Item2 && col <= selectionstart.Item2 : col >= selectionstart.Item2 && col <= g.Item2;
+                        bool selrow = g.Row < selectionstart.Row ? row >= g.Row && row <= selectionstart.Row : row >= selectionstart.Row && row <= g.Row;
+                        bool selcol = g.Column < selectionstart.Column ? col >= g.Column && col <= selectionstart.Column : col >= selectionstart.Column && col <= g.Column;
                         //       System.Diagnostics.Debug.WriteLine($"{col} {row} = {selrow} {selcol}");
                         dgv.Rows[row].Cells[col].Selected = selrow && selcol;
                     }
@@ -423,7 +441,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // returns real row number
-        public Tuple<int,int,Point> GridRowCol(Point p)
+        public GLDataGridView.RowColPos GridRowCol(Point p)
         {
             if (gridrowoffsets.Count > 0)
             {
@@ -444,7 +462,7 @@ namespace GLOFC.GL4.Controls
                         {
                             Point off = new Point(xoffset-left, y-gridrowoffsets[gridrow]);
                             gridrow += gridbitmapfirstline;
-                            return new Tuple<int, int,Point>(gridrow, i, off);
+                            return new GLDataGridView.RowColPos() { Row = gridrow, Column = i, Location = off };
                         }
                     }
                 }
@@ -466,9 +484,9 @@ namespace GLOFC.GL4.Controls
 
         Timer autoscroll = new Timer();
         private Point lastmousemove;
-        private Tuple<int, int, Point> selectionstart;                 // real row numbers
-        private Tuple<int, int, Point> lastselectionstart;
-        private Tuple<int, int, Point> lastselectionend;
+        private GLDataGridView.RowColPos selectionstart;                 // real row numbers
+        private GLDataGridView.RowColPos lastselectionstart;
+        private GLDataGridView.RowColPos lastselectionend;
 
     }
 }

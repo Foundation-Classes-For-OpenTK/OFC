@@ -20,7 +20,7 @@ namespace GLOFC.GL4.Controls
 {
     public class GLDataGridViewColumnHeaderPanel : GLPanel
     {
-        public Action<int, GLMouseEventArgs> MouseClickColumnHeader;                // -1 for top left cell
+        public Action<int, GLMouseEventArgs> MouseClickColumnHeader;                // col>=0
 
         public int HorzScroll { get { return horzscroll; } set { horzscroll = value; Invalidate(); } }
 
@@ -107,21 +107,27 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
-            var over = Over(e.Location);
-            GLDataGridView dgv = Parent as GLDataGridView;
-            if (over != null)
+
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                if (over.Item1 == ClickOn.Divider && dgv.AllowUserToResizeColumns)
+                var over = Over(e.Location);
+                if (over != null)
                 {
-                    dragging = over.Item2;
-                    initialrowheaderwidth = dgv.RowHeaderWidth;
-                }
-                else if (over.Item1 == ClickOn.Height && dgv.AllowUserToResizeColumnHeight)
-                {
-                    dragging = -2;
+                    GLDataGridView dgv = Parent as GLDataGridView;
+
+                    if (over.Item1 == ClickOn.Divider && dgv.AllowUserToResizeColumns)
+                    {
+                        dragging = over.Item2;
+                        initialrowheaderwidth = dgv.RowHeaderWidth;
+                    }
+                    else if (over.Item1 == ClickOn.Height && dgv.AllowUserToResizeColumnHeight)
+                    {
+                        dragging = -2;
+                    }
                 }
             }
         }
+
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
@@ -131,11 +137,28 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if ( dragging == -1 )
+
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                var over = Over(e.Location);
-                if (over != null && over.Item1 != ClickOn.Divider)
-                    MouseClickColumnHeader(over.Item2, e);
+                if (dragging == -1)
+                {
+                    var over = Over(e.Location);
+                    if (over != null && over.Item1 != ClickOn.Divider)
+                        MouseClickColumnHeader(over.Item2, e);
+                }
+            }
+            else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+                if (dgv.ContextPanelColumnHeaders != null)
+                {
+                    var over = Over(e.Location);
+
+                    if (over != null && over.Item1 == ClickOn.Header)
+                    {
+                        dgv.ContextPanelColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = over.Item2, Row = -1, Location = over.Item3 });
+                    }
+                }
             }
         }
 
@@ -148,7 +171,7 @@ namespace GLOFC.GL4.Controls
 
         private enum ClickOn { Divider, Header, Height }
 
-        private Tuple<ClickOn, int> Over(Point p)
+        private Tuple<ClickOn, int, Point> Over(Point p)
         {
             GLDataGridView dgv = Parent as GLDataGridView;
             int xoff = p.X + HorzScroll;
@@ -163,7 +186,7 @@ namespace GLOFC.GL4.Controls
                     if (hoff >= leftmargin && hoff <= rightmargin)
                     {
                         // System.Diagnostics.Debug.WriteLine($"Header mouse over divider {c.Index} {p}");
-                        return new Tuple<ClickOn, int>(ClickOn.Divider, c.Index);
+                        return new Tuple<ClickOn, int, Point>(ClickOn.Divider, c.Index, Point.Empty);
                     }
                 }
 
@@ -172,13 +195,13 @@ namespace GLOFC.GL4.Controls
                     int hoff = xoff - dgv.ColumnPixelRight(dgv.Columns.Count - 1);
                     if (hoff >= leftmargin && hoff <= rightmargin)
                     {
-                        return new Tuple<ClickOn, int>(ClickOn.Divider, dgv.Columns.Count);
+                        return new Tuple<ClickOn, int,Point>(ClickOn.Divider, dgv.Columns.Count, new Point(hoff,p.Y));
                     }
                 }
             }
 
             if (p.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight)
-                return new Tuple<ClickOn, int>(ClickOn.Height, -1);
+                return new Tuple<ClickOn, int,Point>(ClickOn.Height, -1, Point.Empty);
 
             foreach (var c in dgv.Columns)  // horz part, col headers
             {
@@ -186,7 +209,7 @@ namespace GLOFC.GL4.Controls
                 if (xoff > left && xoff < left+c.Width)
                 {
                    // System.Diagnostics.Debug.WriteLine($"Header mouse over {c.Index} {p}");
-                    return new Tuple<ClickOn, int>(ClickOn.Header, c.Index);
+                    return new Tuple<ClickOn, int,Point>(ClickOn.Header, c.Index, new Point(xoff-left,p.Y));
                 }
             }
 

@@ -170,10 +170,10 @@ namespace GLOFC.GL4.Controls
                     return;
                 }
 
-                Tuple<int, int, Point> g;
-                if (dgv.AllowUserToResizeRows && (g = contentpanel.GridRowCol(e.Location)) != null && g.Item3.Y >= dgv.Rows[g.Item1].Height - bottommargin)
+                GLDataGridView.RowColPos g;
+                if (dgv.AllowUserToResizeRows && (g = contentpanel.GridRowCol(e.Location)) != null && g.Location.Y >= dgv.Rows[g.Row].Height - bottommargin)
                 {
-                    Cursor = dgv.Rows[g.Item1].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
+                    Cursor = dgv.Rows[g.Row].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
                     return;
                 }
 
@@ -185,39 +185,43 @@ namespace GLOFC.GL4.Controls
         {
             base.OnMouseDown(e);
 
-            GLDataGridView dgv = Parent as GLDataGridView;
-
-            if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                dragging = -2;
-                return;
-            }
+                GLDataGridView dgv = Parent as GLDataGridView;
 
-            var g = contentpanel.GridRowCol(e.Location);
-
-            if (g != null)
-            {
-                System.Diagnostics.Debug.WriteLine($"Grid {g.Item1} {g.Item2} {g.Item3}");
-                if (dgv.AllowUserToResizeRows && g.Item3.Y >= dgv.Rows[g.Item1].Height - bottommargin)
+                if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
                 {
-                    dragging = g.Item1;
-                    draggingstart = e.Location.Y - g.Item3.Y;       // compute where top line, based on location, would be
+                    dragging = -2;
+                    return;
                 }
-                else if (dgv.AllowUserToSelectRows)
+
+                var g = contentpanel.GridRowCol(e.Location);
+
+                if (g != null)
                 {
-                    //System.Diagnostics.Debug.WriteLine($"Selection start on {g.Item1}");
-                    bool itwason = dgv.Rows[g.Item1].Selected;
-
-                    dgv.ClearSelection();
-
-                    if (!itwason)
+                    //System.Diagnostics.Debug.WriteLine($"Grid {g.Row} {g.Column} {g.Location}");
+                    if (dgv.AllowUserToResizeRows && g.Location.Y >= dgv.Rows[g.Row].Height - bottommargin)
                     {
-                        lastselectionstart = lastselectionend = selectionstart = g.Item1;
-                        dgv.Rows[selectionstart].Selected = true;
+                        dragging = g.Row;
+                        draggingstart = e.Location.Y - g.Location.Y;       // compute where top line, based on location, would be
+                    }
+                    else if (dgv.AllowUserToSelectRows)
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"Selection start on {g.Row}");
+                        bool itwason = dgv.Rows[g.Row].Selected;
+
+                        dgv.ClearSelection();
+
+                        if (!itwason)
+                        {
+                            lastselectionstart = lastselectionend = selectionstart = g.Row;
+                            dgv.Rows[selectionstart].Selected = true;
+                        }
                     }
                 }
             }
         }
+
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
@@ -228,14 +232,27 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if ( dragging == -1 && lastselectionstart == lastselectionend)      // if not dragging sizing or area
-            {
-                var g = contentpanel.GridRowCol(e.Location);
 
-                if (g != null )
+            GLDataGridView dgv = Parent as GLDataGridView;
+            var g = contentpanel.GridRowCol(e.Location);
+
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
+            {
+                if (dragging == -1 && lastselectionstart == lastselectionend)      // if not dragging sizing or area
                 {
-                    //System.Diagnostics.Debug.WriteLine($"Click valid  {g.Item1}");
-                    MouseClickRowHeader(g.Item1, e);
+                    if (g != null)
+                    {
+                        //System.Diagnostics.Debug.WriteLine($"Click valid  {g.Row}");
+                        MouseClickRowHeader(g.Row, e);
+                    }
+                }
+            }
+            else if ( e.Button == GLMouseEventArgs.MouseButtons.Right)
+            {
+                if (g != null && dgv.ContextPanelRowHeaders != null)
+                {
+                    g.Column = -1;
+                    dgv.ContextPanelRowHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: g);
                 }
             }
         }
@@ -255,16 +272,16 @@ namespace GLOFC.GL4.Controls
             {
                 GLDataGridView dgv = Parent as GLDataGridView;
 
-                int minrow = ObjectExtensionsNumbersBool.Min(lastselectionstart, lastselectionend, g.Item1);
-                int maxrow = ObjectExtensionsNumbersBool.Max(lastselectionstart, lastselectionend, g.Item1);
+                int minrow = ObjectExtensionsNumbersBool.Min(lastselectionstart, lastselectionend, g.Row);
+                int maxrow = ObjectExtensionsNumbersBool.Max(lastselectionstart, lastselectionend, g.Row);
 
                 for (int i = minrow; i <= maxrow; i++)
-                    dgv.Rows[i].Selected = g.Item1 < selectionstart ? i >= g.Item1 && i <= selectionstart : i >= selectionstart && i <= g.Item1;
+                    dgv.Rows[i].Selected = g.Row < selectionstart ? i >= g.Row && i <= selectionstart : i >= selectionstart && i <= g.Row;
 
                 lastselectionstart = selectionstart;
-                lastselectionend = g.Item1;
+                lastselectionend = g.Row;
 
-                System.Diagnostics.Debug.WriteLine($"Selection {lastselectionstart}..{selectionstart}..{lastselectionend}");
+               // System.Diagnostics.Debug.WriteLine($"Selection {lastselectionstart}..{selectionstart}..{lastselectionend}");
             }
         }
 

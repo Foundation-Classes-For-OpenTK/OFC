@@ -169,7 +169,57 @@ namespace TestOpenTk
 
                 dgv.Rows[1].Height = 40;
 
-              //  dgv.Rows[1].Cells[0].Selected = true;
+                //  dgv.Rows[1].Cells[0].Selected = true;
+
+                {
+                    GLContextMenu cm = new GLContextMenu("CMContent");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
+                    cm2.CheckOnClick = true;
+                    GLMenuItem cm3 = new GLMenuItem("CM1C", "Menu-3");
+                    cm.Add(cm1);
+                    cm.Add(cm2);
+                    cm.Add(cm3);
+                    cm.Opening += (e1, tag) =>
+                    {
+                        GLDataGridView.RowColPos g = (GLDataGridView.RowColPos)tag;
+                        System.Diagnostics.Debug.WriteLine($"Open menu content at {g.Row} {g.Column} {g.Location}");
+                    };
+
+                    dgv.ContextPanelContent = cm;
+                }
+
+                {
+                    GLContextMenu cm = new GLContextMenu("CMColheader");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1-ColMenu");
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
+                    cm.Add(cm1);
+                    cm.Add(cm2);
+                    cm.Opening += (e1, tag) =>
+                    {
+                        GLDataGridView.RowColPos g = (GLDataGridView.RowColPos)tag;
+                        System.Diagnostics.Debug.WriteLine($"Open menu col header at {g.Row} {g.Column} {g.Location}");
+                    };
+
+                    dgv.ContextPanelColumnHeaders = cm;
+                }
+
+                {
+                    GLContextMenu cm = new GLContextMenu("CMRowheader");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1-RowMenu");
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
+                    cm.Add(cm1);
+                    cm.Add(cm2);
+                    cm.Opening += (e1, tag) =>
+                    {
+                        GLDataGridView.RowColPos g = (GLDataGridView.RowColPos)tag;
+                        System.Diagnostics.Debug.WriteLine($"Open menu row header at {g.Row} {g.Column} {g.Location}");
+                    };
+
+                    dgv.ContextPanelRowHeaders = cm;
+                }
+
+                dgv.MouseClickOnGrid += (r, c, e1) => { System.Diagnostics.Debug.WriteLine($"Mouse click on grid {r} {c}"); };
 
                 pform.Add(dgv);
             }
@@ -359,7 +409,18 @@ namespace TestOpenTk
         private void buttonSelCellSelRows_Click(object sender, EventArgs e)
         {
             dgv.SelectCellSelectsRow = !dgv.SelectCellSelectsRow;
-            buttonSelCellSelRows.ForeColor = dgv.SelectCellSelectsRow ?Color.Green : Color.Red;
+            buttonSelCellSelRows.ForeColor = dgv.SelectCellSelectsRow ? Color.Green : Color.Red;
+        }
+
+        private void buttonToggleSort_Click(object sender, EventArgs e)
+        {
+            dgv.AllowUserToSortColumns = !dgv.AllowUserToSortColumns;
+            buttonToggleSort.ForeColor = dgv.AllowUserToSortColumns ? Color.Green : Color.Red;
+        }
+
+        private void buttonDumpSelection_Click(object sender, EventArgs e)
+        {
+            dgv.DumpSelectedCells();
         }
     }
 }

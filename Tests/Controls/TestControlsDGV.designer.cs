@@ -50,9 +50,10 @@
             this.buttonToggleDragCells = new System.Windows.Forms.Button();
             this.buttonClearSel = new System.Windows.Forms.Button();
             this.buttonSelCellSelRows = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.buttonToggleSort = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
+            this.buttonDumpSelection = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -95,7 +96,7 @@
             // 
             // buttonRemoveCol0
             // 
-            this.buttonRemoveCol0.Location = new System.Drawing.Point(854, 114);
+            this.buttonRemoveCol0.Location = new System.Drawing.Point(854, 100);
             this.buttonRemoveCol0.Name = "buttonRemoveCol0";
             this.buttonRemoveCol0.Size = new System.Drawing.Size(99, 23);
             this.buttonRemoveCol0.TabIndex = 1;
@@ -105,7 +106,7 @@
             // 
             // buttonAddCol0
             // 
-            this.buttonAddCol0.Location = new System.Drawing.Point(854, 154);
+            this.buttonAddCol0.Location = new System.Drawing.Point(856, 129);
             this.buttonAddCol0.Name = "buttonAddCol0";
             this.buttonAddCol0.Size = new System.Drawing.Size(99, 23);
             this.buttonAddCol0.TabIndex = 1;
@@ -115,7 +116,7 @@
             // 
             // buttonAddCell
             // 
-            this.buttonAddCell.Location = new System.Drawing.Point(854, 211);
+            this.buttonAddCell.Location = new System.Drawing.Point(856, 158);
             this.buttonAddCell.Name = "buttonAddCell";
             this.buttonAddCell.Size = new System.Drawing.Size(99, 23);
             this.buttonAddCell.TabIndex = 1;
@@ -125,7 +126,7 @@
             // 
             // buttonSizeA
             // 
-            this.buttonSizeA.Location = new System.Drawing.Point(854, 259);
+            this.buttonSizeA.Location = new System.Drawing.Point(854, 211);
             this.buttonSizeA.Name = "buttonSizeA";
             this.buttonSizeA.Size = new System.Drawing.Size(99, 23);
             this.buttonSizeA.TabIndex = 1;
@@ -135,7 +136,7 @@
             // 
             // buttonSizeB
             // 
-            this.buttonSizeB.Location = new System.Drawing.Point(854, 288);
+            this.buttonSizeB.Location = new System.Drawing.Point(959, 211);
             this.buttonSizeB.Name = "buttonSizeB";
             this.buttonSizeB.Size = new System.Drawing.Size(99, 23);
             this.buttonSizeB.TabIndex = 1;
@@ -145,7 +146,7 @@
             // 
             // buttonDisableTextCol0
             // 
-            this.buttonDisableTextCol0.Location = new System.Drawing.Point(854, 330);
+            this.buttonDisableTextCol0.Location = new System.Drawing.Point(854, 255);
             this.buttonDisableTextCol0.Name = "buttonDisableTextCol0";
             this.buttonDisableTextCol0.Size = new System.Drawing.Size(99, 23);
             this.buttonDisableTextCol0.TabIndex = 1;
@@ -155,7 +156,7 @@
             // 
             // buttonDisableTextRow1
             // 
-            this.buttonDisableTextRow1.Location = new System.Drawing.Point(854, 359);
+            this.buttonDisableTextRow1.Location = new System.Drawing.Point(959, 255);
             this.buttonDisableTextRow1.Name = "buttonDisableTextRow1";
             this.buttonDisableTextRow1.Size = new System.Drawing.Size(99, 23);
             this.buttonDisableTextRow1.TabIndex = 1;
@@ -165,7 +166,7 @@
             // 
             // buttonToggleColumnWidthAdjust
             // 
-            this.buttonToggleColumnWidthAdjust.Location = new System.Drawing.Point(854, 399);
+            this.buttonToggleColumnWidthAdjust.Location = new System.Drawing.Point(856, 294);
             this.buttonToggleColumnWidthAdjust.Name = "buttonToggleColumnWidthAdjust";
             this.buttonToggleColumnWidthAdjust.Size = new System.Drawing.Size(99, 23);
             this.buttonToggleColumnWidthAdjust.TabIndex = 1;
@@ -175,7 +176,7 @@
             // 
             // buttonToggleFillMode
             // 
-            this.buttonToggleFillMode.Location = new System.Drawing.Point(854, 438);
+            this.buttonToggleFillMode.Location = new System.Drawing.Point(856, 333);
             this.buttonToggleFillMode.Name = "buttonToggleFillMode";
             this.buttonToggleFillMode.Size = new System.Drawing.Size(99, 23);
             this.buttonToggleFillMode.TabIndex = 1;
@@ -185,7 +186,7 @@
             // 
             // buttonColumnHeightAdjust
             // 
-            this.buttonColumnHeightAdjust.Location = new System.Drawing.Point(959, 399);
+            this.buttonColumnHeightAdjust.Location = new System.Drawing.Point(961, 294);
             this.buttonColumnHeightAdjust.Name = "buttonColumnHeightAdjust";
             this.buttonColumnHeightAdjust.Size = new System.Drawing.Size(99, 23);
             this.buttonColumnHeightAdjust.TabIndex = 1;
@@ -195,7 +196,7 @@
             // 
             // buttonSelR1C1
             // 
-            this.buttonSelR1C1.Location = new System.Drawing.Point(854, 477);
+            this.buttonSelR1C1.Location = new System.Drawing.Point(856, 372);
             this.buttonSelR1C1.Name = "buttonSelR1C1";
             this.buttonSelR1C1.Size = new System.Drawing.Size(99, 23);
             this.buttonSelR1C1.TabIndex = 1;
@@ -205,7 +206,7 @@
             // 
             // buttonToggleR1Sel
             // 
-            this.buttonToggleR1Sel.Location = new System.Drawing.Point(854, 506);
+            this.buttonToggleR1Sel.Location = new System.Drawing.Point(856, 401);
             this.buttonToggleR1Sel.Name = "buttonToggleR1Sel";
             this.buttonToggleR1Sel.Size = new System.Drawing.Size(99, 23);
             this.buttonToggleR1Sel.TabIndex = 1;
@@ -215,7 +216,7 @@
             // 
             // buttonSelRows
             // 
-            this.buttonSelRows.Location = new System.Drawing.Point(854, 535);
+            this.buttonSelRows.Location = new System.Drawing.Point(856, 430);
             this.buttonSelRows.Name = "buttonSelRows";
             this.buttonSelRows.Size = new System.Drawing.Size(99, 23);
             this.buttonSelRows.TabIndex = 1;
@@ -225,7 +226,7 @@
             // 
             // buttonDragRows
             // 
-            this.buttonDragRows.Location = new System.Drawing.Point(854, 564);
+            this.buttonDragRows.Location = new System.Drawing.Point(856, 459);
             this.buttonDragRows.Name = "buttonDragRows";
             this.buttonDragRows.Size = new System.Drawing.Size(99, 23);
             this.buttonDragRows.TabIndex = 1;
@@ -235,7 +236,7 @@
             // 
             // buttonSelectCells
             // 
-            this.buttonSelectCells.Location = new System.Drawing.Point(854, 593);
+            this.buttonSelectCells.Location = new System.Drawing.Point(856, 488);
             this.buttonSelectCells.Name = "buttonSelectCells";
             this.buttonSelectCells.Size = new System.Drawing.Size(99, 23);
             this.buttonSelectCells.TabIndex = 1;
@@ -245,7 +246,7 @@
             // 
             // buttonToggleDragCells
             // 
-            this.buttonToggleDragCells.Location = new System.Drawing.Point(854, 622);
+            this.buttonToggleDragCells.Location = new System.Drawing.Point(856, 517);
             this.buttonToggleDragCells.Name = "buttonToggleDragCells";
             this.buttonToggleDragCells.Size = new System.Drawing.Size(99, 23);
             this.buttonToggleDragCells.TabIndex = 1;
@@ -255,7 +256,7 @@
             // 
             // buttonClearSel
             // 
-            this.buttonClearSel.Location = new System.Drawing.Point(959, 535);
+            this.buttonClearSel.Location = new System.Drawing.Point(959, 635);
             this.buttonClearSel.Name = "buttonClearSel";
             this.buttonClearSel.Size = new System.Drawing.Size(99, 23);
             this.buttonClearSel.TabIndex = 1;
@@ -265,7 +266,7 @@
             // 
             // buttonSelCellSelRows
             // 
-            this.buttonSelCellSelRows.Location = new System.Drawing.Point(854, 651);
+            this.buttonSelCellSelRows.Location = new System.Drawing.Point(856, 546);
             this.buttonSelCellSelRows.Name = "buttonSelCellSelRows";
             this.buttonSelCellSelRows.Size = new System.Drawing.Size(99, 23);
             this.buttonSelCellSelRows.TabIndex = 1;
@@ -273,14 +274,15 @@
             this.buttonSelCellSelRows.UseVisualStyleBackColor = true;
             this.buttonSelCellSelRows.Click += new System.EventHandler(this.buttonSelCellSelRows_Click);
             // 
-            // button2
+            // buttonToggleSort
             // 
-            this.button2.Location = new System.Drawing.Point(854, 709);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(99, 23);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Toggle";
-            this.button2.UseVisualStyleBackColor = true;
+            this.buttonToggleSort.Location = new System.Drawing.Point(856, 593);
+            this.buttonToggleSort.Name = "buttonToggleSort";
+            this.buttonToggleSort.Size = new System.Drawing.Size(99, 23);
+            this.buttonToggleSort.TabIndex = 1;
+            this.buttonToggleSort.Text = "Toggle Sort";
+            this.buttonToggleSort.UseVisualStyleBackColor = true;
+            this.buttonToggleSort.Click += new System.EventHandler(this.buttonToggleSort_Click);
             // 
             // button3
             // 
@@ -300,6 +302,16 @@
             this.button4.Text = "Toggle";
             this.button4.UseVisualStyleBackColor = true;
             // 
+            // buttonDumpSelection
+            // 
+            this.buttonDumpSelection.Location = new System.Drawing.Point(854, 635);
+            this.buttonDumpSelection.Name = "buttonDumpSelection";
+            this.buttonDumpSelection.Size = new System.Drawing.Size(99, 23);
+            this.buttonDumpSelection.TabIndex = 1;
+            this.buttonDumpSelection.Text = "Dump Selection";
+            this.buttonDumpSelection.UseVisualStyleBackColor = true;
+            this.buttonDumpSelection.Click += new System.EventHandler(this.buttonDumpSelection_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -307,8 +319,9 @@
             this.ClientSize = new System.Drawing.Size(1555, 1005);
             this.Controls.Add(this.buttonToggleFillMode);
             this.Controls.Add(this.button4);
+            this.Controls.Add(this.buttonDumpSelection);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.buttonToggleSort);
             this.Controls.Add(this.buttonSelCellSelRows);
             this.Controls.Add(this.buttonClearSel);
             this.Controls.Add(this.buttonToggleDragCells);
@@ -360,9 +373,10 @@
         private System.Windows.Forms.Button buttonToggleDragCells;
         private System.Windows.Forms.Button buttonClearSel;
         private System.Windows.Forms.Button buttonSelCellSelRows;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button buttonToggleSort;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button buttonDumpSelection;
     }
 }
 

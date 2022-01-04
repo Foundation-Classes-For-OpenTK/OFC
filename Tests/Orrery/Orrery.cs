@@ -192,7 +192,7 @@ namespace TestOpenTk
                 }
                 );
 
-            rightclickmenubody.Opening += (ms) =>
+            rightclickmenubody.Opening += (ms,tag) =>
             {
                 ms["RCMUntrack"].Enabled = track != -1;
             };
@@ -213,7 +213,7 @@ namespace TestOpenTk
                 }
                 );
 
-            rightclickmenuscreen.Opening += (ms) =>
+            rightclickmenuscreen.Opening += (ms,tag) =>
             {
                 ms["RCMUntrack"].Enabled = track != -1;
             };

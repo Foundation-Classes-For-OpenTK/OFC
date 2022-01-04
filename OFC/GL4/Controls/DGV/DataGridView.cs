@@ -52,7 +52,14 @@ namespace GLOFC.GL4.Controls
 
         public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
         public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
-        public Tuple<int,int,Point> FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
+
+        public class RowColPos
+        {
+            public int Row { get; set; }
+            public int Column { get; set; }
+            public Point Location { get; set; }
+        }
+        public RowColPos FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
 
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
@@ -67,7 +74,12 @@ namespace GLOFC.GL4.Controls
         public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
         public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
 
-        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row, col = -1 for row header
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;       // return row,col,mouse event. row = -1 for column headers. col = -1 for row headers. Both -1 for top left        
+
+        // Context panel Opening function is fed with tag RowColPos.        
+        public GLContextMenu ContextPanelContent;           // row=col=-1 if not on cell
+        public GLContextMenu ContextPanelColumnHeaders;     // row=-1,col>=0 column, -1 top left
+        public GLContextMenu ContextPanelRowHeaders;        // row=N, col = -1
 
         public GLDataGridView(string name, Rectangle location) : base(name, location)
         {
@@ -116,9 +128,17 @@ namespace GLOFC.GL4.Controls
 
             colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
-                //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
-                if (col >= 0 && AllowUserToSortColumns)
+                System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
+                if (AllowUserToSortColumns)
                     Sort(col, !SortAscending);
+                else
+                    MouseClickOnGrid?.Invoke(-1, col, e);
+            };
+
+            topleftpanel.MouseClickColumnHeader += (e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"Click on top left");
+                MouseClickOnGrid?.Invoke(-1, -1, e);
             };
 
             rowheaderpanel.MouseClickRowHeader += (row, e) =>
@@ -214,7 +234,7 @@ namespace GLOFC.GL4.Controls
 
             row.SelectionChanged += (rw, cellno) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Selection changed on {rw.Index} {cellno}");
+                //System.Diagnostics.Debug.WriteLine($"Selection changed on {rw.Index} {cellno}");
 
                 if (cellno == -1)       // if whole row select
                 {
@@ -321,11 +341,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // perform column sort
         public void Sort(int colno, bool sortascending)
         {
             if (colno < columns.Count)
             {
-                System.Diagnostics.Debug.WriteLine($"Sort col {colno} by ascending {sortascending}");
+                //System.Diagnostics.Debug.WriteLine($"Sort col {colno} by ascending {sortascending}");
                 rows.Sort(delegate (GLDataGridViewRow l, GLDataGridViewRow r) 
                     {
                         if (colno < l.Cells.Count)

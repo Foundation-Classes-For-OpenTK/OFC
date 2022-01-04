@@ -25,7 +25,7 @@ namespace GLOFC.GL4.Controls
 
         // all Menu Items
 
-        public Action<GLMenuStrip> Opening = null;         // Menu opening due to Show
+        public Action<GLMenuStrip,Object> Opening = null;         // Menu opening due to Show
 
         // Called on top level menu item only.
         public Func<GLMenuStrip, bool> Closing = null;      // All Submenus closing (and if context menu, the top level is detaching), return true to allow the close to happen
@@ -78,7 +78,8 @@ namespace GLOFC.GL4.Controls
         // you can double call and the previous one is closed
         // if changewidthifrequired, it will reflow to not exceed parent, making the window wider if required
         // It always makes sure right/bottom is within parent
-        public void Show(GLBaseControl parent, Point coord, bool changewidthifrequired = false)        
+        // the opentag is passed to the Opening function, allowing you to pass critical info to it
+        public void Show(GLBaseControl parent, Point coord, bool changewidthifrequired = false, Object opentag = null)        
         {
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             Detach(this);
@@ -95,7 +96,7 @@ namespace GLOFC.GL4.Controls
             if (overflowx > 0)
                 Left -= overflowx;
             SetFocus();
-            Opening?.Invoke(this);
+            Opening?.Invoke(this,opentag);
         }
 
         #endregion  

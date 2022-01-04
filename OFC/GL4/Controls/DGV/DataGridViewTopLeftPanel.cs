@@ -18,9 +18,10 @@ using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
-
     public class GLDataGridViewTopLeftHeaderPanel : GLPanel
     {
+        public Action<GLMouseEventArgs> MouseClickColumnHeader;            
+
         public GLDataGridViewTopLeftHeaderPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
@@ -75,22 +76,46 @@ namespace GLOFC.GL4.Controls
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
-            GLDataGridView dgv = Parent as GLDataGridView;
-            if (e.Location.X >= Width + leftmargin && dgv.AllowUserToResizeColumns)
+
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
             {
-                dragging = 0;
-            }
-            else if (e.Location.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight)
-            {
-                dragging = 1;
+                GLDataGridView dgv = Parent as GLDataGridView;
+                if (e.Location.X >= Width + leftmargin && dgv.AllowUserToResizeColumns)
+                {
+                    dragging = 0;
+                }
+                else if (e.Location.Y >= Height - bottommargin && dgv.AllowUserToResizeColumnHeight)
+                {
+                    dragging = 1;
+                }
             }
         }
+
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
             dragging = -1;
         }
 
+        protected override void OnMouseClick(GLMouseEventArgs e)
+        {
+            base.OnMouseClick(e);
+            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
+            {
+                if (dragging == -1)
+                {
+                     MouseClickColumnHeader(e);
+                }
+            }
+            else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+                if (dgv.ContextPanelColumnHeaders != null)
+                {
+                    dgv.ContextPanelColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = -1, Row = -1, Location = e.Location });
+                }
+            }
+        }
 
         private int dragging = -1;
         private const int leftmargin = -4;
