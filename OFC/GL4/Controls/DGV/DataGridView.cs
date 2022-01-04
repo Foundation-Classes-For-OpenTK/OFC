@@ -52,7 +52,7 @@ namespace GLOFC.GL4.Controls
 
         public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
         public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
-        public Tuple<int,int> FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
+        public Tuple<int,int,Point> FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
 
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
@@ -86,6 +86,7 @@ namespace GLOFC.GL4.Controls
             rowheaderpanel.Dock = DockingType.Left;
             contentpanel = new GLDataGridViewContentPanel(name + "_CP", rowheaderpanel, location);
             contentpanel.Dock = DockingType.Fill;
+            rowheaderpanel.contentpanel = contentpanel;
             colheaderpanel = new GLDataGridViewColumnHeaderPanel(name + "_CHP", location);
             colheaderpanel.Dock = DockingType.Top;
             topleftpanel = new GLDataGridViewTopLeftHeaderPanel(name + "_TLP", location);
@@ -367,6 +368,14 @@ namespace GLOFC.GL4.Controls
             }
 
             selectedcells.Clear();
+        }
+
+        public void Scroll(int delta)
+        {
+            if (delta > 0)
+                FirstDisplayIndex--;
+            else if (LastCompleteLine() < Rows.Count - 1)
+                FirstDisplayIndex++;
         }
 
         #region Implementation

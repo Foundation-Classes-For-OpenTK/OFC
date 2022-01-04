@@ -139,6 +139,13 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        protected override void OnMouseWheel(GLMouseEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            GLDataGridView dgv = Parent as GLDataGridView;
+            dgv.Scroll(e.Delta);
+        }
+
         private enum ClickOn { Divider, Header, Height }
 
         private Tuple<ClickOn, int> Over(Point p)
