@@ -22,7 +22,7 @@ namespace GLOFC.GL4.Controls
         public int Index { get; set; }
         public GLDataGridViewCellStyle Style { get { return style; } }
 
-        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged(this); } } }
+        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged?.Invoke(this); } } }
 
         public GLDataGridViewCell()
         {
@@ -64,7 +64,7 @@ namespace GLOFC.GL4.Controls
 
     public class GLDataGridViewCellText : GLDataGridViewCell
     {
-        public string Value { get { return text; } set { if (value != text) { text = value; Changed(this, true); } } }
+        public string Value { get { return text; } set { if (value != text) { text = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellText() { }
         public GLDataGridViewCellText(string t) { text = t; }
 
@@ -86,12 +86,12 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-        public override Size PerformAutoSize(int width) 
+        public override Size PerformAutoSize(int width)
         {
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(Style.ContentAlignment))
             {
                 fmt.FormatFlags = Style.TextFormat;
-                var size = BitMapHelpers.MeasureStringInBitmap(text, Style.Font, fmt, new Size(width - Style.Padding.TotalWidth,20000));
+                var size = BitMapHelpers.MeasureStringInBitmap(text, Style.Font, fmt, new Size(width - Style.Padding.TotalWidth, 20000));
                 return new Size((int)(size.Width + 0.99F), (int)(size.Height + 0.99F));
             }
         }
@@ -109,6 +109,40 @@ namespace GLOFC.GL4.Controls
         }
 
         private string text;
+
+        #endregion
+    }
+    public class GLDataGridViewCellImage : GLDataGridViewCell
+    {
+        public Image Image { get { return image; } set { if (value != image) { image = value; size = value.Size; Changed?.Invoke(this, true); } } }
+        public Size Size { get { return size; }  set { if (value != size) { size = value; Changed?.Invoke(this, true); } } }
+        public GLDataGridViewCellImage() { }
+        public GLDataGridViewCellImage(Image t) { image = t; size = image.Size; }
+
+        #region Implementation
+
+        public override void Paint(Graphics gr, Rectangle area)
+        {
+            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
+
+            PaintBack(gr, area);
+
+            Rectangle drawarea = Style.ContentAlignment.ImagePositionFromContentAlignment(area, size, true, true);
+            gr.DrawImage(Image, drawarea, 0,0, image.Width, image.Height, GraphicsUnit.Pixel);
+        }
+
+        public override Size PerformAutoSize(int width)
+        {
+            return size;
+        }
+
+        public override int CompareTo(GLDataGridViewCell other)
+        {
+            return -1;
+        }
+
+        private Image image;
+        private Size size;
 
         #endregion
     }

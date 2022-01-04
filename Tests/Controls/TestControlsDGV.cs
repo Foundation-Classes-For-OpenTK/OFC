@@ -144,11 +144,11 @@ namespace TestOpenTk
                 var col1 = dgv.CreateColumn();
                 var col2 = dgv.CreateColumn();
                 col0.Width = 20;
-                col0.MinimumWidth = 100;
+                col0.MinimumWidth = 30;
                 col0.Text = "Col0";
                 col1.Width = 250;
                 col1.Text = "Col1";
-                col1.MinimumWidth = 25;
+                col1.MinimumWidth = 50;
                 col2.Width = 250;
                 col2.Text = "Col2";
                 dgv.AddColumn(col0);
@@ -161,8 +161,11 @@ namespace TestOpenTk
                     if ( i < 2 || i > 5) row.AutoSize = true;
                     string prefix = char.ConvertFromUtf32(i + 65);
                     //row.AddCell(new GLDataGridViewCellText($"{prefix} Text"));
-                    row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C0 long bit of text for it to wrap again and again and again"));
-                    row.AddCell(new GLDataGridViewCellText($"R{i}C1"));
+                    var imgcell = new GLDataGridViewCellImage(Properties.Resources.GoBackward);
+                    imgcell.Style.ContentAlignment = ContentAlignment.MiddleLeft;
+                    imgcell.Size = new Size(16,16);
+                    row.AddCell(imgcell);
+                    row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C1 long bit of text for it to wrap again and again and again"));
                     row.AddCell(new GLDataGridViewCellText($"R{i}C2"));
                     dgv.AddRow(row);
                 }

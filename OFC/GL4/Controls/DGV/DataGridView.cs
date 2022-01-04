@@ -62,6 +62,7 @@ namespace GLOFC.GL4.Controls
         public RowColPos FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
 
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
+        public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
 
         // pixel positions
@@ -83,9 +84,6 @@ namespace GLOFC.GL4.Controls
 
         public GLDataGridView(string name, Rectangle location) : base(name, location)
         {
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = Color.AliceBlue;
-            cellbordercolor = Color.Magenta;
 
             int sbwidth = 16;
             vertscroll = new GLVerticalScrollBar(name + "_VSB", new Rectangle(0, 0, sbwidth, 10), 0, 100);
@@ -114,6 +112,10 @@ namespace GLOFC.GL4.Controls
             rowheaderstyle.Changed += (e1) => { ContentInvalidateLayout(); };
             defaultcellstyle.Changed += (e1) => { ContentInvalidateLayout(); };
 
+            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = Color.AliceBlue;
+            cellbordercolor = Color.Magenta;
+            upperleftbackcolor = Color.Orange;
             colheaderstyle.BackColor = rowheaderstyle.BackColor = Color.Orange;
             defaultcellstyle.BackColor = Color.White;
             colheaderstyle.ForeColor = rowheaderstyle.ForeColor = defaultcellstyle.ForeColor = Color.Black;
@@ -616,6 +618,7 @@ namespace GLOFC.GL4.Controls
         private bool rowheaderenable = true;
 
         private Color cellbordercolor;
+        private Color upperleftbackcolor;
 
         private GLHorizontalScrollBar horzscroll;
         private GLVerticalScrollBar vertscroll;

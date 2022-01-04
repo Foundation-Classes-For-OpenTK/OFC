@@ -933,7 +933,9 @@ namespace GLOFC.GL4.Controls
                     window = new Rectangle(parentarea.Left + dockingmargin.Left, parentarea.Bottom - dockingmargin.Bottom - hl, dockedwidth, hl);
             }
 
-            window.Size = new Size(Math.Max(0,window.Width),Math.Max(0,window.Height));
+            // limit size to max/min
+            window.Size = new Size(Math.Max(minimumsize.Width,Math.Min(maximumsize.Width,window.Width)),
+                                   Math.Max(minimumsize.Height,Math.Min(maximumsize.Width,window.Height)));
 
             CalcClientRectangle();
 
@@ -1398,7 +1400,7 @@ namespace GLOFC.GL4.Controls
         private Rectangle window;       // total area owned, in parent co-ords
         private Padding padding;
         private Margin margin;
-        protected Size minimumsize = new Size(1, 1);
+        protected Size minimumsize = new Size(0, 0);
         protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
 
         private bool needLayout  = false;        // need a layout after suspend layout was called

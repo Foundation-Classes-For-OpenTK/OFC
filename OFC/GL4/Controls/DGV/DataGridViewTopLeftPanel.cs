@@ -31,6 +31,15 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             GLDataGridView dgv = Parent as GLDataGridView;
+
+            if (dgv.UpperLeftBackColor != Color.Transparent)
+            {
+                using (Brush b = new SolidBrush(dgv.UpperLeftBackColor))
+                {
+                    gr.FillRectangle(b, new Rectangle(0,0,ClientWidth,ClientHeight));
+                }
+            }
+
             if (dgv.CellBorderWidth > 0)
             {
                 using (Brush b = new SolidBrush(dgv.CellBorderColor))
