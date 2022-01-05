@@ -24,7 +24,6 @@ namespace GLOFC.GL4.Controls
     public abstract partial class GLBaseControl : IDisposable
     {
         private GLBaseControl currentmouseover = null;
-        private Point currentmouseoverscreenpos;            // need to keep upper left bounds of screen pos of control for drag purposes
         private GLBaseControl currentfocus = null;                  
         private GLBaseControl mousedowninitialcontrol = null;       // track where mouse down occurred
 
@@ -103,10 +102,9 @@ namespace GLOFC.GL4.Controls
 
             if (currentmouseover != null)
             {
-                currentmouseoverscreenpos = new Point(e.ScreenCoord.X - leftover.X, e.ScreenCoord.Y - leftover.Y);  // need to keep its screen pos so we can calculate its offset
                 currentmouseover.Hover = true;
 
-                SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);
+                SetControlLocation(ref e, currentmouseover);
 
                 ((GLControlDisplay)this).SetCursor(currentmouseover.Cursor);
 
@@ -146,7 +144,7 @@ namespace GLOFC.GL4.Controls
 
                 if (currentmouseover != null)   // for current, its a leave or its a drag..
                 {
-                    SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);
+                    SetControlLocation(ref e, currentmouseover);
 
                     if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
                     {
@@ -166,12 +164,10 @@ namespace GLOFC.GL4.Controls
                 }
 
                 currentmouseover = c;   // change to new value
-                if (currentmouseover != null)
-                    currentmouseoverscreenpos = new Point(e.ScreenCoord.X - leftover.X, e.ScreenCoord.Y - leftover.Y);  // need to keep its screen pos so we can calculate its offset
 
                 if (currentmouseover != null)       // now, are we going over a new one?
                 {
-                    SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
                    // System.Diagnostics.Debug.WriteLine($"Changed to WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} bnd {e.BoundsLocation} {currentmouseover?.Name} @ {currentmouseoverscreenpos}");
 
                     currentmouseover.Hover = true;
@@ -197,7 +193,7 @@ namespace GLOFC.GL4.Controls
             {                                                       // over same control
                 if (currentmouseover != null)
                 {
-                    SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
                     //System.Diagnostics.Debug.WriteLine($"move WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} Loc {e.Location} Bnd {e.BoundsLocation} {currentmouseover?.Name}");
 
                     GlobalMouseMove?.Invoke(e);     // we move, with the new currentmouseover
@@ -223,7 +219,7 @@ namespace GLOFC.GL4.Controls
                 currentmouseover.FindControlUnderDisplay()?.BringToFront();     // this brings to the front of the z-order the top level element holding this element and makes it visible.
 
                 SetViewScreenCoord(ref e);
-                SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);
+                SetControlLocation(ref e, currentmouseover);
 
                 OnGlobalMouseDown(currentmouseover, e);
 
@@ -251,7 +247,7 @@ namespace GLOFC.GL4.Controls
             {
                 currentmouseover.MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
 
-                SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // reset location etc
+                SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseUp(e);
@@ -277,7 +273,7 @@ namespace GLOFC.GL4.Controls
 
                 if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
                 {
-                    SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                     OnGlobalMouseClick(currentmouseover, e);
 
@@ -305,7 +301,7 @@ namespace GLOFC.GL4.Controls
 
                 if (currentmouseover != null)     // set focus could have force a loss, thru the global focus hook
                 {
-                    SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // reset location etc
+                    SetControlLocation(ref e, currentmouseover);    // reset location etc
 
                     if (currentmouseover.Enabled)
                         currentmouseover.OnMouseDoubleClick(e);
@@ -325,7 +321,7 @@ namespace GLOFC.GL4.Controls
             if (currentmouseover != null && currentmouseover.Enabled)
             {
                 SetViewScreenCoord(ref e);
-                SetControlLocation(ref e, currentmouseover, currentmouseoverscreenpos);    // set location etc
+                SetControlLocation(ref e, currentmouseover);    // set location etc
 
                 if (currentmouseover.Enabled)
                     currentmouseover.OnMouseWheel(e);
@@ -340,8 +336,7 @@ namespace GLOFC.GL4.Controls
             GLBaseControl c = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display
             if (c != null)
             {
-                Point mouseoverscreenpos = new Point(e.ScreenCoord.X - leftover.X, e.ScreenCoord.Y - leftover.Y);  // calculate screen pos of control
-                SetControlLocation(ref e, c, mouseoverscreenpos);
+                SetControlLocation(ref e, c);
             }
 
             return e;
@@ -353,11 +348,14 @@ namespace GLOFC.GL4.Controls
         }
 
         // pass in current control and its upper left screen location, and it will set up the mouse events args for you
-        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur, Point curscreenloc)
+        private void SetControlLocation(ref GLMouseEventArgs e, GLBaseControl cur)
         {
             // record control, bounds, and client location
             e.Control = cur;
-            e.BoundsLocation = new Point(e.ScreenCoord.X - curscreenloc.X, e.ScreenCoord.Y - curscreenloc.Y);
+            
+            Point ctrlloc = cur.FindScreenCoords(new Point(0, 0));      // we need to find this each time, the control may have been dragged, can't cache it like previous goes at this code!
+
+            e.BoundsLocation = new Point(e.ScreenCoord.X - ctrlloc.X, e.ScreenCoord.Y - ctrlloc.Y);
             e.Location = new Point(e.BoundsLocation.X-cur.ClientLeftMargin, e.BoundsLocation.Y-cur.ClientTopMargin);      // translate to client rectangle co-ords
 
             // determine logical area
@@ -377,7 +375,7 @@ namespace GLOFC.GL4.Controls
             else
                 e.Area = GLMouseEventArgs.AreaType.Client;
 
-            System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
+         //   System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name} {cur.Bounds}");
         }
 
         // feed keys to focus is present and enabled, else the control display gets them

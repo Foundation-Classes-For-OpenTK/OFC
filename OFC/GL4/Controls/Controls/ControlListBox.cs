@@ -98,7 +98,7 @@ namespace GLOFC.GL4.Controls
             InvalidateOnFocusChange = true;
             InvalidateOnEnterLeave = true;
             scrollbar = new GLScrollBar();
-            scrollbar.Name = "GLLSB";
+            scrollbar.Name = n + "_SB";
             scrollbar.Dock = DockingType.Right;
             scrollbar.SmallChange = 1;
             scrollbar.LargeChange = 1;

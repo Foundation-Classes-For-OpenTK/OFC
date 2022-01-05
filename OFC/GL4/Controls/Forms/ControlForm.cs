@@ -212,7 +212,7 @@ namespace GLOFC.GL4.Controls
 
             if (e.Handled == false )
             {
-                System.Diagnostics.Debug.WriteLine("Form Mouse move " + e.Location + " " +  e.Area);
+                //System.Diagnostics.Debug.WriteLine("Form Mouse move " + e.Location + " " +  e.Area);
                 if (captured != GLMouseEventArgs.AreaType.Client)       // Client meaning none
                 {
                     Point curscrlocation = e.ScreenCoord; 
@@ -266,11 +266,15 @@ namespace GLOFC.GL4.Controls
                 {
                     // look at where we are pointing, and change cursor appropriately
 
-                    if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizeable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizeable))
+                    if ( OverClose(e))      // we could animate close, but that requires invalidating the whole form, too much just for this
+                    {
+                        //System.Diagnostics.Debug.WriteLine("Over form close");
+                    }
+                    else if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizeable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizeable))
                     {
                         Cursor = GLCursorType.EW;
                     }
-                    else if (Moveable && e.Area == GLMouseEventArgs.AreaType.Top && !OverClose(e))
+                    else if (Moveable && e.Area == GLMouseEventArgs.AreaType.Top )
                     {
                         Cursor = GLCursorType.Move;
                     }
@@ -310,13 +314,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (OverClose(e))
                 {
-                    System.Diagnostics.Debug.WriteLine("Click Close!");
                     Close();
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine("No Click Close!");
-
                 }
             }
         }
@@ -363,7 +361,7 @@ namespace GLOFC.GL4.Controls
 
         private bool OverClose(GLMouseEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Over close {0} {1} {2} {3}", e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight, e.Area, e.Location.X , Width - TitleBarHeight);
+            //System.Diagnostics.Debug.WriteLine("Over close {0} {1} {2} {3}", e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight, e.Area, e.Location.X , Width - TitleBarHeight);
             return ShowClose && e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight;
         }
 
