@@ -269,11 +269,19 @@ namespace TestOpenTk
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
-                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                GLButton but = new GLButton("SPB1BUT1", new Rectangle(40, 120, 40, 20), "But1");
+                but.Click += (en, eb) => { System.Diagnostics.Debug.WriteLine("Click on SP Button"); };
+                spb1.Add(but);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i2);
                 spb1.EnableHorzScrolling = false;
             }
 
+            {
+                GLButton but = new GLButton("ButExample", new Rectangle(40, 160, 40, 20), "But1");
+                but.Click += (en, eb) => { System.Diagnostics.Debug.WriteLine("Click on SP Button"); };
+                pform.Add(but);
+            }
             int col3 = 400;
 
             if (true)

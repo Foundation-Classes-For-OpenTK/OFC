@@ -35,9 +35,9 @@ namespace GLOFC.GL4.Controls
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
-        public int VertScrollPos { get { return vertscrollpos; } set { SetScrollPos(horzscrollpos,value); } }
+        public int VertScrollPos { get { return ScrollOffset.Y; } set { SetScrollPos(ScrollOffset.X,value); } }
         public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }
-        public int HorzScrollPos { get { return horzscrollpos; } set { SetScrollPos(value,vertscrollpos); } }
+        public int HorzScrollPos { get { return ScrollOffset.X; } set { SetScrollPos(value,ScrollOffset.Y); } }
 
         // Width/Height is size of the control without scrolling
         // we layout the children within that area.
@@ -79,7 +79,7 @@ namespace GLOFC.GL4.Controls
         protected override void Paint(Graphics gr)
         {
             if ( LevelBitmap != null )
-                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(horzscrollpos, vertscrollpos, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
+                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(ScrollOffset.X, ScrollOffset.Y, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
         }
 
         private void SetScrollPos(int hpos, int vpos)
@@ -87,17 +87,12 @@ namespace GLOFC.GL4.Controls
             if (LevelBitmap != null)
             {
                 int maxhsp = LevelBitmap.Width - Width;
-                horzscrollpos = Math.Max(0, Math.Min(hpos, maxhsp));
                 int maxvsp = LevelBitmap.Height - Height;
-                vertscrollpos = Math.Max(0, Math.Min(vpos, maxvsp));
+                ScrollOffset = new Point(Math.Max(0, Math.Min(hpos, maxhsp)), Math.Max(0, Math.Min(vpos, maxvsp)));
              //   System.Diagnostics.Debug.WriteLine($"ScrollPanel scrolled to {horzscrollpos} {vertscrollpos} range {maxhsp} {maxvsp}");
                 Invalidate();
             }
         }
-
-
-        private int vertscrollpos = 0;
-        private int horzscrollpos = 0;
     }
 }
 

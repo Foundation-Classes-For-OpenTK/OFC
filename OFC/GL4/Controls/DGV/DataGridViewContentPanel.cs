@@ -24,7 +24,7 @@ namespace GLOFC.GL4.Controls
     public class GLDataGridViewContentPanel : GLPanel
     {
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row (-1 outside bounds), col = -1 for row header
-        public int HorzScroll { get { return gridoffset.X; } set { gridoffset = new Point(value, gridoffset.Y); Invalidate(); } }
+        public int HorzScroll { get { return ScrollOffset.X; } set { ScrollOffset = new Point(value, ScrollOffset.Y); Invalidate(); } }
         public int DepthMult { get; set; } = 3;
         public int FirstDisplayIndex { get { return firstdisplayindex; } set { MoveTo(value); } }
         public int LastCompleteLine()       // last line on screen completely
@@ -137,7 +137,7 @@ namespace GLOFC.GL4.Controls
                 // if enough bitmap left.. OR we drew complete the last line, nothing to redraw. Move to pos
                 if (depthleft >= ClientHeight || gridbitmaplastcompleteline == dgv.Rows.Count - 1)
                 {
-                    gridoffset = new Point(gridoffset.X, ystart);      // move the image down to this position
+                    ScrollOffset = new Point(ScrollOffset.X, ystart);      // move the image down to this position
                     Invalidate();                           // invalidate only, no need to redraw
                     return;
                 }
@@ -166,12 +166,12 @@ namespace GLOFC.GL4.Controls
                 gridredraw = false;
             }
 
-            // the drawn rectangle is whats left of the bitmap after gridoffset..
-            Rectangle drawarea = new Rectangle(0, 0, gridbitmap.Width - gridoffset.X, gridbitmap.Height - gridoffset.Y);
-            gr.DrawImage(gridbitmap, drawarea, gridoffset.X, gridoffset.Y, drawarea.Width, drawarea.Height, GraphicsUnit.Pixel);
+            // the drawn rectangle is whats left of the bitmap after ScrollOffset..
+            Rectangle drawarea = new Rectangle(0, 0, gridbitmap.Width - ScrollOffset.X, gridbitmap.Height - ScrollOffset.Y);
+            gr.DrawImage(gridbitmap, drawarea, ScrollOffset.X, ScrollOffset.Y, drawarea.Width, drawarea.Height, GraphicsUnit.Pixel);
 
             if ( rowheaderpanel.Visible)
-                rowheaderpanel.Redraw(gridoffset.Y);
+                rowheaderpanel.Redraw(ScrollOffset.Y);
         }
 
 
@@ -191,7 +191,7 @@ namespace GLOFC.GL4.Controls
 
                     if (dgv.Columns.Count == 0 || dgv.Rows.Count == 0)
                     {
-                        gridoffset = Point.Empty;
+                        ScrollOffset = Point.Empty;
                         rowheaderpanel.DrawEmpty();
                         return;
                     }
@@ -294,7 +294,7 @@ namespace GLOFC.GL4.Controls
                         }
                         else
                         {
-                            gridoffset = new Point(gridoffset.X, ystart);
+                            ScrollOffset = new Point(ScrollOffset.X, ystart);
 
                             if ( rowheaderpanel.Visible)
                                 rowheaderpanel.DrawHeaders(gridbitmapfirstline, gridbitmaplastcompleteline + 1, gridbitmapdrawndepth, ystart);
@@ -445,7 +445,7 @@ namespace GLOFC.GL4.Controls
         {
             if (gridrowoffsets.Count > 0)
             {
-                int y = gridoffset.Y + Math.Max(0,Math.Min(p.Y,ClientHeight));      // if mouse if captured, y may be well beyond grid, clip to it
+                int y = ScrollOffset.Y + Math.Max(0,Math.Min(p.Y,ClientHeight));      // if mouse if captured, y may be well beyond grid, clip to it
 
                 int gridrow = gridrowoffsets.FindLastIndex(a => a < y);
 
@@ -453,7 +453,7 @@ namespace GLOFC.GL4.Controls
                 {
                     GLDataGridView dgv = Parent as GLDataGridView;
                     
-                    int xoffset = gridoffset.X + Math.Max(0,Math.Min(p.X,ClientWidth));     // clip X
+                    int xoffset = ScrollOffset.X + Math.Max(0,Math.Min(p.X,ClientWidth));     // clip X
 
                     for (int i = 0; i < dgv.Columns.Count; i++)
                     {
@@ -473,7 +473,6 @@ namespace GLOFC.GL4.Controls
 
         private int firstdisplayindex = 0;
         private Bitmap gridbitmap = null;
-        private Point gridoffset;       // scroll index, to be replaced
         private int gridbitmapfirstline = -1;
         private int gridbitmaplastcompleteline = -1;
         private int gridbitmapdrawndepth = -1;
@@ -490,4 +489,6 @@ namespace GLOFC.GL4.Controls
 
     }
 }
+
+
 

@@ -132,6 +132,9 @@ namespace GLOFC.GL4.Controls
         // Bitmap
         public Bitmap LevelBitmap { get { return levelbmp; } }  // return level bitmap, null if does not have a level bitmap 
 
+        // if has a bitmap, its scroll offset.  Only derived classes can set this
+        public Point ScrollOffset { get { return scrolloffset; } protected set { scrolloffset = value;  } }
+
         // User properties
         public Object Tag { get; set; }                         // control tag, user controlled
 
@@ -499,7 +502,7 @@ namespace GLOFC.GL4.Controls
             {
                 //System.Diagnostics.Debug.WriteLine($"Find {Name} {coords} {ScaleWindow} {sz}");
 
-                coords = new Point(coords.X - Left, coords.Y - Top);            // coords translated to inside the bounds of this control
+                coords = new Point(coords.X - Left + ScrollOffset.X, coords.Y - Top + ScrollOffset.Y);            // coords translated to inside the bounds of this control
                 //System.Diagnostics.Debug.WriteLine($"-> {coords} ");
                 
                 if ( ScaleWindow != null )      // we need to match the offset above, in screen pixels, to the internal scale. / because if the ScaleWindow <1, it means the internal scale is bigger than the visual one
@@ -1062,7 +1065,20 @@ namespace GLOFC.GL4.Controls
                     clientgr.Dispose();
             }
 
-            if (forceredraw)       // will be set if NeedRedrawn or forceredrawn.  Draw in the backgr, which is the current bitmap
+            // if we are operating a bitmap, and the children redrew, and we are not a child of control display
+            // we must call paint, because thats the thing which throws the now modified bitmap onto the screen
+            // note the background has not been repainted (above children) but that is okay, its just the bitmap which needs to be refreshed
+
+            if ( redrawn && levelbmp != null && parentgr != null )
+            {
+                forceredraw = true; // we must Paint
+                //System.Diagnostics.Debug.WriteLine("Child has redrawn in scroll panel but scroll panel is not redrawing");
+            }
+
+            // if we need drawing..
+            // will be set if NeedRedrawn or forceredrawn.  Draw in the backgr, which is the current bitmap
+
+            if (forceredraw)       
             {
                 backgr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
                     
@@ -1143,7 +1159,10 @@ namespace GLOFC.GL4.Controls
             MouseLeave?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Invalid on enter {Name}");
                 Invalidate();
+            }
         }
 
         protected virtual void OnMouseEnter(GLMouseEventArgs e)
@@ -1152,7 +1171,10 @@ namespace GLOFC.GL4.Controls
             MouseEnter?.Invoke(this, e);
 
             if (InvalidateOnEnterLeave)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Invalid on enter {Name}");
                 Invalidate();
+            }
         }
 
         protected  virtual void OnMouseUp(GLMouseEventArgs e)
@@ -1392,6 +1414,8 @@ namespace GLOFC.GL4.Controls
         public bool TopLevelControlUpdate { get; set; } = false;        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
+        private Point scrolloffset;     // offset of bit map
+
         private Font font = null;
 
         private Point lastlocation;    // setpos/setNI changes these if changed sizes
