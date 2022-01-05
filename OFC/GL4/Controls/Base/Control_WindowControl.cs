@@ -377,7 +377,7 @@ namespace GLOFC.GL4.Controls
             else
                 e.Area = GLMouseEventArgs.AreaType.Client;
 
-            //System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
+            System.Diagnostics.Debug.WriteLine($"Pos {e.WindowLocation} VP {e.ViewportLocation} SC {e.ScreenCoord} BL {e.BoundsLocation} loc {e.Location} {e.Area} {cur.Name}");
         }
 
         // feed keys to focus is present and enabled, else the control display gets them

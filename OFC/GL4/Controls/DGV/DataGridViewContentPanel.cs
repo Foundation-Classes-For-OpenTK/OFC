@@ -148,7 +148,6 @@ namespace GLOFC.GL4.Controls
 
         // called after layout of data grid view, all parts have been sized, including this
         // check bitmap for sizing
-
         public void LayoutComplete()
         {
             GLDataGridView dgv = Parent as GLDataGridView;

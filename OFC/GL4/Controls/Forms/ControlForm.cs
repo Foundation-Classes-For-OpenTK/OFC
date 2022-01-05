@@ -212,7 +212,7 @@ namespace GLOFC.GL4.Controls
 
             if (e.Handled == false )
             {
-                //System.Diagnostics.Debug.WriteLine("Form drag " + e.Location +" " +  e.Area);
+                System.Diagnostics.Debug.WriteLine("Form Mouse move " + e.Location + " " +  e.Area);
                 if (captured != GLMouseEventArgs.AreaType.Client)       // Client meaning none
                 {
                     Point curscrlocation = e.ScreenCoord; 
@@ -310,8 +310,13 @@ namespace GLOFC.GL4.Controls
             {
                 if (OverClose(e))
                 {
-                   // System.Diagnostics.Debug.WriteLine("Click Close!");
+                    System.Diagnostics.Debug.WriteLine("Click Close!");
                     Close();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("No Click Close!");
+
                 }
             }
         }
@@ -358,7 +363,7 @@ namespace GLOFC.GL4.Controls
 
         private bool OverClose(GLMouseEventArgs e)
         {
-            //System.Diagnostics.Debug.WriteLine("Over close {0} {1} {2} {3}", e.Area == GLMouseEventArgs.AreaType.Top && e.X >= Width - TitleBarHeight, e.Area, e.X , Width - TitleBarHeight);
+            System.Diagnostics.Debug.WriteLine("Over close {0} {1} {2} {3}", e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight, e.Area, e.Location.X , Width - TitleBarHeight);
             return ShowClose && e.Area == GLMouseEventArgs.AreaType.Top && e.Location.X >= Width - TitleBarHeight;
         }
 

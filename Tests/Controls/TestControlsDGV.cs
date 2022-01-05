@@ -143,29 +143,33 @@ namespace TestOpenTk
                 var col0 = dgv.CreateColumn();
                 var col1 = dgv.CreateColumn();
                 var col2 = dgv.CreateColumn();
+                var col3 = dgv.CreateColumn();
                 col0.Width = 20;
                 col0.MinimumWidth = 30;
                 col0.Text = "Col0";
-                col1.Width = 250;
+                col1.Width = 150;
                 col1.Text = "Col1";
                 col1.MinimumWidth = 50;
-                col2.Width = 250;
+                col2.Width = 150;
                 col2.Text = "Col2";
+                col3.Width = 150;
+                col3.Text = "Col2";
                 dgv.AddColumn(col0);
                 dgv.AddColumn(col1);
                 dgv.AddColumn(col2);
+                dgv.AddColumn(col3);
 
                 for (int i = 0; i < 200; i++)
                 {
                     var row = dgv.CreateRow();
                     if ( i < 2 || i > 5) row.AutoSize = true;
                     string prefix = char.ConvertFromUtf32(i + 65);
-                    //row.AddCell(new GLDataGridViewCellText($"{prefix} Text"));
                     var imgcell = new GLDataGridViewCellImage(Properties.Resources.GoBackward);
                     imgcell.Style.ContentAlignment = ContentAlignment.MiddleLeft;
                     imgcell.Size = new Size(16,16);
                     row.AddCell(imgcell);
                     row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C1 long bit of text for it to wrap again and again and again"));
+                    var but = new GLButton("EmbBut" + i, new Rectangle(0, 0, 30, 15), "But" + i);
                     row.AddCell(new GLDataGridViewCellText($"R{i}C2"));
                     dgv.AddRow(row);
                 }
@@ -223,7 +227,20 @@ namespace TestOpenTk
                 }
 
                 dgv.MouseClickOnGrid += (r, c, e1) => { System.Diagnostics.Debug.WriteLine($"Mouse click on grid {r} {c}"); };
+                dgv.SelectedRow += (rw, state) => {
+                    System.Diagnostics.Debug.WriteLine($"Row Selected {rw.Index} {state}");
+                    var rowset = dgv.GetSelectedRows();
+                    foreach (var r in rowset)
+                        System.Diagnostics.Debug.WriteLine($".. Row {r.Index} selected");
 
+                };
+                dgv.SelectedCell += (cell, state) => {
+                    System.Diagnostics.Debug.WriteLine($"Cell Selected {cell.Parent.Index} {cell.Index} ");
+                    var cellset = dgv.GetSelectedCells();
+                    foreach (var c in cellset)
+                        System.Diagnostics.Debug.WriteLine($".. Cell {c.Parent.Index} {c.Index} ");
+                };
+                dgv.SelectionCleared += () => { System.Diagnostics.Debug.WriteLine($"Selection cleared"); };
                 pform.Add(dgv);
             }
 

@@ -49,6 +49,9 @@ namespace GLOFC.GL4.Controls
         public bool AllowUserToSelectCells { get; set; } = true;
         public bool AllowUserToDragSelectCells { get; set; } = true;
         public bool SelectCellSelectsRow { get; set; } = false;
+        public Action<GLDataGridViewRow, bool> SelectedRow { get; set; } = null;        // called on user selecting or unselecting a row set
+        public Action<GLDataGridViewCell, bool> SelectedCell { get; set; } = null;      // called on user selecting or unselecting cells
+        public Action SelectionCleared { get; set; } = null;                            // called on Clear selection
 
         public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
         public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
@@ -247,6 +250,8 @@ namespace GLOFC.GL4.Controls
 
                         foreach (var c in rw.Cells)
                             selectedcells[rw.Index].Add(c.Index);
+
+                        SelectedRow?.Invoke(rw, true);
                     }
                     else
                     {   // turning off
@@ -255,6 +260,8 @@ namespace GLOFC.GL4.Controls
 
                         if (selectedcells[rw.Index].Count == 0)
                             selectedcells.Remove(rw.Index);
+
+                        SelectedRow?.Invoke(rw, false);
                     }
                 }
                 else if (rows[rw.Index].Cells[cellno].Selected)     // individual cell turning on
@@ -262,6 +269,8 @@ namespace GLOFC.GL4.Controls
                     if (!selectedcells.ContainsKey(rw.Index))
                         selectedcells[rw.Index] = new HashSet<int>();
                     selectedcells[rw.Index].Add(cellno);
+
+                    SelectedCell?.Invoke(rows[rw.Index].Cells[cellno], true);
                 }
                 else
                 {
@@ -269,9 +278,10 @@ namespace GLOFC.GL4.Controls
 
                     if (selectedcells[rw.Index].Count == 0)
                         selectedcells.Remove(rw.Index);
+
+                    SelectedCell?.Invoke(rows[rw.Index].Cells[cellno], false);
                 }
 
-                //DumpSelectedCells();
                 contentpanel.RowChanged(row.Index);     // inform CP
             };
 
@@ -388,6 +398,28 @@ namespace GLOFC.GL4.Controls
             }
 
             selectedcells.Clear();
+            SelectionCleared?.Invoke();
+        }
+
+        public List<GLDataGridViewRow> GetSelectedRows()
+        {
+            List<GLDataGridViewRow> set = new List<GLDataGridViewRow>();
+            foreach (var kvp in selectedcells)
+            {
+                if (rows[kvp.Key].Selected)
+                    set.Add(rows[kvp.Key]);
+            }
+            return set;
+        }
+        public List<GLDataGridViewCell> GetSelectedCells()
+        {
+            List<GLDataGridViewCell> set = new List<GLDataGridViewCell>();
+            foreach (var kvp in selectedcells)
+            {
+                foreach (var c in kvp.Value)
+                    set.Add(rows[kvp.Key].Cells[c]);
+            }
+            return set;
         }
 
         public void Scroll(int delta)

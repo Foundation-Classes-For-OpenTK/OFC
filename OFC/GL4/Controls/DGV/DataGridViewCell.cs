@@ -115,7 +115,7 @@ namespace GLOFC.GL4.Controls
     public class GLDataGridViewCellImage : GLDataGridViewCell
     {
         public Image Image { get { return image; } set { if (value != image) { image = value; size = value.Size; Changed?.Invoke(this, true); } } }
-        public Size Size { get { return size; }  set { if (value != size) { size = value; Changed?.Invoke(this, true); } } }
+        public Size Size { get { return size; } set { if (value != size) { size = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellImage() { }
         public GLDataGridViewCellImage(Image t) { image = t; size = image.Size; }
 
@@ -128,7 +128,7 @@ namespace GLOFC.GL4.Controls
             PaintBack(gr, area);
 
             Rectangle drawarea = Style.ContentAlignment.ImagePositionFromContentAlignment(area, size, true, true);
-            gr.DrawImage(Image, drawarea, 0,0, image.Width, image.Height, GraphicsUnit.Pixel);
+            gr.DrawImage(Image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
         }
 
         public override Size PerformAutoSize(int width)
@@ -146,4 +146,4 @@ namespace GLOFC.GL4.Controls
 
         #endregion
     }
-}
+ }
