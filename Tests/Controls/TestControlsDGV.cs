@@ -155,7 +155,7 @@ namespace TestOpenTk
                 dgv.AddColumn(col1);
                 dgv.AddColumn(col2);
 
-                for (int i = 0; i < 40; i++)
+                for (int i = 0; i < 200; i++)
                 {
                     var row = dgv.CreateRow();
                     if ( i < 2 || i > 5) row.AutoSize = true;

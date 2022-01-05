@@ -184,16 +184,13 @@ namespace GLOFC.GL4.Controls
             col.HeaderStyle.Changed += (e1) => { colheaderpanel.Invalidate(); };
             col.Changed += (e1, ci) => 
             {
-                if (!ignorecolumncommands)
+                if (ci)         // if set, it means width has changed in some way
                 {
-                    if (ci)         // if set, it means width has changed in some way
-                    {
-                        AutoSizeGeneration++;           // force autosize as we changed width
-                        ContentInvalidateLayout();
-                    }
-                    else
-                        colheaderpanel.Invalidate();
+                    AutoSizeGeneration++;           // force autosize as we changed width
+                    ContentInvalidateLayout();
                 }
+                else
+                    colheaderpanel.Invalidate();
             };
             col.SetColNo(columns.Count);
             columns.Add(col);
@@ -417,11 +414,9 @@ namespace GLOFC.GL4.Controls
 
             base.PerformRecursiveLayout();      // do layout on children.
 
-            // work out the column layout - we do it here instead of content panel so its in one place - only
-            // this view overrides recursive layout
+            // work out the column layout - we do it here instead of content panel so its in one place
             // and we do it in layout before any paints
 
-            ignorecolumncommands = true;
             if (colfillmode == ColFillMode.FillWidth)
             {
                 int pixelsforborder = (columns.Count + 1) * cellborderwidth;
@@ -437,7 +432,7 @@ namespace GLOFC.GL4.Controls
                     int width = (int)(cellpixels * col.FillWidth / filltotalallcolumns);         // candidate width for all columns
                     if (width < col.MinimumWidth)                                       // if less than min width, set it to that, take this column out of the fill equation
                     {
-                        col.Width = col.MinimumWidth;
+                        col.WidthNI = col.MinimumWidth;
                         cellpixels -= col.Width;
                         minwidths[col.Index] = true;
                         //System.Diagnostics.Debug.WriteLine($"{col.Index} less than min width");
@@ -453,7 +448,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if (!minwidths[col.Index])  // if not min width it, set it to the width, to the column minimum width
                     {
-                        col.Width = Math.Max(col.MinimumWidth, (int)(cellpixels * col.FillWidth / hfillfinaltotal)); 
+                        col.WidthNI = Math.Max(col.MinimumWidth, (int)(cellpixels * col.FillWidth / hfillfinaltotal)); 
                        // System.Diagnostics.Debug.WriteLine($"{col.Index} auto size to {col.Width}");
                         pixels += col.Width;
                     }
@@ -464,7 +459,7 @@ namespace GLOFC.GL4.Controls
                 int colno = 0;
                 while (pixels < cellpixels && columns.Count > 0)      // add 1 pixel to each column in turn until back to count
                 {
-                    columns[colno].Width += 1;
+                    columns[colno].WidthNI += 1;
                    // System.Diagnostics.Debug.WriteLine($"Distribute pixel to {colno}");
                     pixels++;
                     colno = (colno + 1) % columns.Count;
@@ -475,12 +470,15 @@ namespace GLOFC.GL4.Controls
                 foreach (var col in columns)
                 {
                     if (col.Width < col.MinimumWidth)
-                        col.Width = col.MinimumWidth;
+                        col.WidthNI = col.MinimumWidth;
                 }
             }
 
-            ignorecolumncommands = false;
+            // now column sizing is set, let content panel see if its bitmap needs adjusting
 
+            contentpanel.LayoutComplete();
+
+            // and update the scroll bar since its affected by sizing
             UpdateScrollBar();
         }
 
@@ -628,8 +626,6 @@ namespace GLOFC.GL4.Controls
         private GLDataGridViewTopLeftHeaderPanel topleftpanel;
 
         private Dictionary<int, HashSet<int>> selectedcells = new Dictionary<int, HashSet<int>>();
-
-        private bool ignorecolumncommands = false;
 
         public uint AutoSizeGeneration { get; set; } = 1;       // needs to be able to be changed by externals
 

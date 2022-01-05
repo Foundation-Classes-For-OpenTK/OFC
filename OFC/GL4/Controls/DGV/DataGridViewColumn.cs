@@ -24,7 +24,7 @@ namespace GLOFC.GL4.Controls
         public int Index { get { return colno; } }
         public GLDataGridView Parent { get; set; }
         public string Text { get { return text; } set { text = value; Changed?.Invoke(this,false); } }
-        public int Width { get { return width; } set { if (value != width) { width = Math.Max(minwidth,value); Changed?.Invoke(this, true); } } }
+        public int Width { get { return width; } set { if (value != width) { width = Math.Max(minwidth, value); Changed?.Invoke(this, true); } } }
         public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this, true); } } }
         public int MinimumWidth { get { return minwidth; } set { if (value != minwidth) { minwidth = value; Changed?.Invoke(this, true); } } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
@@ -41,6 +41,7 @@ namespace GLOFC.GL4.Controls
         {
             colno = i;
         }
+        public int WidthNI { get { return width; } set { width = Math.Max(minwidth, value); } }
 
         public void Paint(Graphics gr, Rectangle area)
         {
