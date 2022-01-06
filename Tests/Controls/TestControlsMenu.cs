@@ -193,6 +193,7 @@ namespace TestOpenTk
 
                     ctx1 = new GLContextMenu("CM1");
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
+                    cm1.CheckOnClick = true;
 
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
@@ -204,6 +205,14 @@ namespace TestOpenTk
                     GLCheckBox l1a3 = new GLCheckBox("CM1C-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                     l1a3.CheckOnClick = true;
                     cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
+
+                    int count = 0;
+                    ctx1.Opening += (c1,c2) =>
+                    {
+                        bool on = count++ % 2 == 0;
+                        System.Diagnostics.Debug.WriteLine($"Set cm2 state {on}");
+                        cm2.Visible = on;
+                    };
 
                     ctx1.Add(cm1);
                     ctx1.Add(cm2);
@@ -224,6 +233,7 @@ namespace TestOpenTk
                     {
                         if (ev.Button == GLMouseEventArgs.MouseButtons.Left)
                         {
+                            System.Diagnostics.Debug.WriteLine($"*********************** OPEN");
                             ctx1.Show(displaycontrol, ev.ScreenCoord);
                         }
                         else  if (ev.Button == GLMouseEventArgs.MouseButtons.Right)

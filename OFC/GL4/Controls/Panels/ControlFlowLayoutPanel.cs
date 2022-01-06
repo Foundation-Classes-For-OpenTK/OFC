@@ -84,7 +84,7 @@ namespace GLOFC.GL4.Controls
                     SetNI(clientsize: new Size(flowsize.Width , ClientHeight));
                 }
 
-                //System.Diagnostics.Debug.WriteLine("..panel size now {0} ", Size);
+               // System.Diagnostics.Debug.WriteLine($"Flow panel {Name} size now {Size}");
                 //foreach (var cc in ControlsIZ) System.Diagnostics.Debug.WriteLine($"  children size {cc.Size}");
             }
         }
@@ -112,9 +112,14 @@ namespace GLOFC.GL4.Controls
             Point flowpos = new Point(0, 0);        // in client co-ords
             Size max = new Size(0, 0);
 
-           // System.Diagnostics.Debug.WriteLine("Flow in {0} {1} dir {2}", area, usearea, FlowDirection);
+           // System.Diagnostics.Debug.WriteLine($"Flow in {Name} {area} {usearea} dir {FlowDirection}");
             foreach (GLBaseControl c in (FlowInZOrder ? ControlsZ: ControlsIZ))
             {
+                if (c.Visible == false)     // invisibles don't flow
+                    continue;
+
+             //   System.Diagnostics.Debug.WriteLine($".. {c.Name} {c.Size}");
+
                 Point pos;
 
                 int controlwidth = c.Width + c.FlowOffsetPosition.X;        // including any flow offsets

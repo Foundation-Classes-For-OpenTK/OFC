@@ -84,6 +84,7 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             Detach(this);
             openedascontextmenu = true;
+            Visible = true;     
             Location = coord;
             AutoSize = true;
             TopMost = true;
@@ -133,7 +134,7 @@ namespace GLOFC.GL4.Controls
                     submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
                     submenu.ScaleWindow = FindScaler();
 
-                    System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
+                    //System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
 
                     submenu.Font = Font;
                     submenu.BackColor = this.BackColor;
@@ -244,7 +245,7 @@ namespace GLOFC.GL4.Controls
 
         public void CloseMenus()        // all menus close down
         {
-            System.Diagnostics.Debug.WriteLine($"{Name} Close menus");
+            //System.Diagnostics.Debug.WriteLine($"{Name} Close menus");
 
             var allow = Closing?.Invoke(this) ?? true;
             if (allow)
@@ -253,7 +254,7 @@ namespace GLOFC.GL4.Controls
                 SetSelected(-1);
                 if (openedascontextmenu)
                 {
-                    System.Diagnostics.Debug.WriteLine($"{Name} Detach");
+                    //System.Diagnostics.Debug.WriteLine($"{Name} Detach");
                     Detach(this);
                 }
             }
@@ -265,7 +266,7 @@ namespace GLOFC.GL4.Controls
             {
                 GetTopLevelMenu().SubmenuClosing?.Invoke(ControlsIZ[selected] as GLMenuItem, submenu);                 // call before close
                 submenu.CloseSubMenus();    // close child submenus first
-                System.Diagnostics.Debug.WriteLine($"{Name} Close down");
+                //System.Diagnostics.Debug.WriteLine($"{Name} Close down");
                 submenu.Close();
                 submenu = null;
                 SetFocus();
@@ -340,7 +341,7 @@ namespace GLOFC.GL4.Controls
             if ( parentmenu == null )       // if top level menu.. top of heirarchy
             {
                 bool isthisorchild = ctrl != null && IsThisOrChildOf(ctrl);
-                System.Diagnostics.Debug.WriteLine($"{Name} Top level, click on child {isthisorchild}");
+                //System.Diagnostics.Debug.WriteLine($"{Name} Top level, click on child {isthisorchild}");
 
                 if (!isthisorchild)
                 {

@@ -139,7 +139,7 @@ namespace GLOFC.GL4.Controls
             base.SizeControl(parentsize);
             if (AutoSize)
             {
-                Rectangle area = ChildArea(x=>(x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area (ignore autoplaced items and autosize to it)
+                Rectangle area = VisibleChildArea(x=>(x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area (ignore autoplaced items and autosize to it)
 
                 if (AutoSizeToTitle)        // if required, take into considering the title text
                 {

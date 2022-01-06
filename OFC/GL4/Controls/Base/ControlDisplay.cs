@@ -128,6 +128,7 @@ namespace GLOFC.GL4.Controls
 
                         if (redrawn)
                         {
+                           // System.Diagnostics.Debug.WriteLine($"texture changed refresh GL {c.Name} {c.Size} {c.LevelBitmap.Size}");
                             textures[c].CreateLoadBitmap(c.LevelBitmap, SizedInternalFormat.Rgba8);  // and update texture unit with new bitmap
                             //float[] p = textures[c].GetTextureImageAsFloats(end:100);
                         }
@@ -325,14 +326,14 @@ namespace GLOFC.GL4.Controls
 
                         if (size[c] != c.Size)          // if level bitmap changed size, remake bitmap
                         {
-                            //System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} changed size {c.Size}");
+                           // System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} windows size is not texture size {size[c]} remake bitmap");
                             c.MakeLevelBitmap(c.Width, c.Height);
                             size[c] = c.Size;
                         }
 
                         if (textures[c].Id < 0 || textures[c].Width != c.LevelBitmap.Width || textures[c].Height != c.LevelBitmap.Height)      // if layout changed bitmap
                         {
-                            //System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} new texture of {c.Size} {c.LevelBitmap.Size}");
+                           // System.Diagnostics.Debug.WriteLine($"Displaycontrol {c.Name} make new texture of {c.Size} {c.LevelBitmap.Size}");
                             textures[c].CreateOrUpdateTexture(c.Width, c.Height, SizedInternalFormat.Rgba8);   // and make a texture, this will dispose of the old one 
                             changedtlist = true;
                         }

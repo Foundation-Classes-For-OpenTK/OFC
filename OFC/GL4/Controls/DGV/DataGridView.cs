@@ -434,7 +434,7 @@ namespace GLOFC.GL4.Controls
 
         protected override void PerformRecursiveLayout()     
         {
-            // set before children layout
+            // set before children layout set up some basic parameters of the children
 
             colheaderpanel.Height = columnheaderheight + cellborderwidth;        
             rowheaderpanel.Width = rowheaderwidth + cellborderwidth;
@@ -446,72 +446,8 @@ namespace GLOFC.GL4.Controls
 
             base.PerformRecursiveLayout();      // do layout on children.
 
-            // work out the column layout - we do it here instead of content panel so its in one place
-            // and we do it in layout before any paints
-
-            if (colfillmode == ColFillMode.FillWidth)
-            {
-                int pixelsforborder = (columns.Count + 1) * cellborderwidth;
-                int cellpixels = contentpanel.Width - pixelsforborder;
-                float filltotalallcolumns = columns.Select(x => x.FillWidth).Sum();
-
-                bool[] minwidths = new bool[columns.Count];
-
-                float hfillfinaltotal = 0;
-
-                foreach (var col in columns)
-                {
-                    int width = (int)(cellpixels * col.FillWidth / filltotalallcolumns);         // candidate width for all columns
-                    if (width < col.MinimumWidth)                                       // if less than min width, set it to that, take this column out of the fill equation
-                    {
-                        col.WidthNI = col.MinimumWidth;
-                        cellpixels -= col.Width;
-                        minwidths[col.Index] = true;
-                        //System.Diagnostics.Debug.WriteLine($"{col.Index} less than min width");
-                    }
-                    else
-                        hfillfinaltotal += col.FillWidth;
-                }
-
-                //System.Diagnostics.Debug.WriteLine($"{hfillfinaltotal} cell pixels {cellpixels}");
-                int pixels = 0;
-
-                foreach (var col in columns)
-                {
-                    if (!minwidths[col.Index])  // if not min width it, set it to the width, to the column minimum width
-                    {
-                        col.WidthNI = Math.Max(col.MinimumWidth, (int)(cellpixels * col.FillWidth / hfillfinaltotal)); 
-                       // System.Diagnostics.Debug.WriteLine($"{col.Index} auto size to {col.Width}");
-                        pixels += col.Width;
-                    }
-                }
-
-               // System.Diagnostics.Debug.WriteLine($"Cell pixels {cellpixels} total {pixels}");
-
-                int colno = 0;
-                while (pixels < cellpixels && columns.Count > 0)      // add 1 pixel to each column in turn until back to count
-                {
-                    columns[colno].WidthNI += 1;
-                   // System.Diagnostics.Debug.WriteLine($"Distribute pixel to {colno}");
-                    pixels++;
-                    colno = (colno + 1) % columns.Count;
-                }
-            }
-            else
-            {   // normal width fill ,just make sure not below min width
-                foreach (var col in columns)
-                {
-                    if (col.Width < col.MinimumWidth)
-                        col.WidthNI = col.MinimumWidth;
-                }
-            }
-
-            // now column sizing is set, let content panel see if its bitmap needs adjusting
-
-            contentpanel.LayoutComplete();
-
-            // and update the scroll bar since its affected by sizing
-            UpdateScrollBar();
+            
+            UpdateScrollBar();                  // update the scroll bar since its affected by sizing
         }
 
         private void ContentInvalidateLayout()

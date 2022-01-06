@@ -47,7 +47,7 @@ namespace GLOFC.GL4.Controls
 
             if (AutoSize)       
             {
-                var area = ChildArea();     // all children, find area and set it to it.
+                var area = VisibleChildArea();     // all children, find area and set it to it.
                 SetNI(clientsize: new Size(area.Left + area.Right, area.Top + area.Bottom));
             }
         }

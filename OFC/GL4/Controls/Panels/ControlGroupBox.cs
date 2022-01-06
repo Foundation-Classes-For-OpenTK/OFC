@@ -69,7 +69,7 @@ namespace GLOFC.GL4.Controls
                 {
                     var texts = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
                     int textminwidth = (int)texts.Width + GBXoffset;
-                    var area = ChildArea();     // all children, find area and set it to it.
+                    var area = VisibleChildArea();     // all children, find area and set it to it.
                     SetNI(clientsize: new Size(Math.Max(area.Left + area.Right, textminwidth), area.Top + area.Bottom));
                 }
             }

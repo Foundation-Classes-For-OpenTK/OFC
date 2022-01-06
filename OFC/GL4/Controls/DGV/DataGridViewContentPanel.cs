@@ -146,19 +146,86 @@ namespace GLOFC.GL4.Controls
             Redraw();
         }
 
-        // called after layout of data grid view, all parts have been sized, including this
-        // check bitmap for sizing
-        public void LayoutComplete()
+        // we have just been layedout by parent, we know our size
+        // set up columns 
+
+        protected override void PerformRecursiveLayout()
         {
+            base.PerformRecursiveLayout();
+
             GLDataGridView dgv = Parent as GLDataGridView;
+
+            if (dgv.ColumnFillMode == GLDataGridView.ColFillMode.FillWidth)
+            {
+                int pixelsforborder = (dgv.Columns.Count + 1) * dgv.CellBorderWidth;
+                int cellpixels = Width - pixelsforborder;
+                float filltotalallcolumns = dgv.Columns.Select(x => x.FillWidth).Sum();
+
+                bool[] minwidths = new bool[dgv.Columns.Count];
+
+                float hfillfinaltotal = 0;
+
+                foreach (var col in dgv.Columns)
+                {
+                    int width = (int)(cellpixels * col.FillWidth / filltotalallcolumns);         // candidate width for all columns
+                    if (width < col.MinimumWidth)                                       // if less than min width, set it to that, take this column out of the fill equation
+                    {
+                        col.WidthNI = col.MinimumWidth;
+                        cellpixels -= col.Width;
+                        minwidths[col.Index] = true;
+                        //System.Diagnostics.Debug.WriteLine($"{col.Index} less than min width");
+                    }
+                    else
+                        hfillfinaltotal += col.FillWidth;
+                }
+
+                //System.Diagnostics.Debug.WriteLine($"{hfillfinaltotal} cell pixels {cellpixels}");
+                int pixels = 0;
+
+                foreach (var col in dgv.Columns)
+                {
+                    if (!minwidths[col.Index])  // if not min width it, set it to the width, to the column minimum width
+                    {
+                        col.WidthNI = Math.Max(col.MinimumWidth, (int)(cellpixels * col.FillWidth / hfillfinaltotal));
+                        // System.Diagnostics.Debug.WriteLine($"{col.Index} auto size to {col.Width}");
+                        pixels += col.Width;
+                    }
+                }
+
+                // System.Diagnostics.Debug.WriteLine($"Cell pixels {cellpixels} total {pixels}");
+
+                int colno = 0;
+                while (pixels < cellpixels && dgv.Columns.Count > 0)      // add 1 pixel to each column in turn until back to count
+                {
+                    dgv.Columns[colno].WidthNI += 1;
+                    // System.Diagnostics.Debug.WriteLine($"Distribute pixel to {colno}");
+                    pixels++;
+                    colno = (colno + 1) % dgv.Columns.Count;
+                }
+            }
+            else
+            {   // normal width fill ,just make sure not below min width
+                foreach (var col in dgv.Columns)
+                {
+                    if (col.Width < col.MinimumWidth)
+                        col.WidthNI = col.MinimumWidth;
+                }
+            }
+
             int gridwidth = Math.Max(1, dgv.ColumnPixelWidth);      // width of grid
 
-            if (LevelBitmap == null || LevelBitmap.Width < gridwidth || LevelBitmap.Height < ClientHeight*2)   // if bitmap not there, or different width needed
+            if (LevelBitmap == null || LevelBitmap.Width < gridwidth || LevelBitmap.Height < ClientHeight * 2)   // if bitmap not there, or different width needed
             {
                 MakeLevelBitmap(Math.Max(gridwidth, 10), Math.Max(Height * DepthMult, 10));
-               // System.Diagnostics.Debug.WriteLine($"Make Grid bitmap {LevelBitmap.Width} {LevelBitmap.Height}");
+                // System.Diagnostics.Debug.WriteLine($"Make Grid bitmap {LevelBitmap.Width} {LevelBitmap.Height}");
                 gridredraw = true;
             }
+        }
+
+        protected override void OnResize()
+        {
+            base.OnResize();
+            Redraw();
         }
 
         protected override void Paint(Graphics gr)

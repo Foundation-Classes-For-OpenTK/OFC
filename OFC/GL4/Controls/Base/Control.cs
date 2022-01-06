@@ -244,13 +244,13 @@ namespace GLOFC.GL4.Controls
         }
 
         // Area needed for children controls. empty if none
-        public Rectangle ChildArea(Predicate<GLBaseControl> test = null)        
+        public Rectangle VisibleChildArea(Predicate<GLBaseControl> test = null)        
         {
             int left = int.MaxValue, right = int.MinValue, top = int.MaxValue, bottom = int.MinValue;
 
             foreach (var c in childrenz)
             {
-                if (test == null || test(c))
+                if (c.visible && (test == null || test(c)))     // must be visible to be part of area, and pass the test
                 {
                     if (c.Left < left)
                         left = c.Left;
@@ -266,7 +266,7 @@ namespace GLOFC.GL4.Controls
             return left == int.MaxValue ? Rectangle.Empty : new Rectangle(left, top, right - left, bottom - top);
         }
 
-        // Invalidate us - our children will also repaint
+        // Invalidate us - our children will also repaint. Overriden in ControlDisplay 
         public virtual void Invalidate()
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
@@ -316,8 +316,7 @@ namespace GLOFC.GL4.Controls
 
                     if (us != Size)           // if we changed size.. we need to go and let the parent have a full go, since it needs to be layed out
                     {
-                        Parent.Invalidate();
-                        Parent.PerformLayout();
+                        ParentInvalidateLayout();       // Must call this, as its overriden in control display and causes a refresh of the bitmap/texture.
                         return;
                     }
                 }
@@ -611,11 +610,12 @@ namespace GLOFC.GL4.Controls
         // all inheritors should use these NI functions
         // in constructors of inheritors or for Layout/SizeControl overrides
         // these change without invalidation or layout 
+        // must be public due to external derived controls needed it
+        public Color BorderColorNI { set { bordercolor = value; } }
+        public Color BackColorNI { set { backcolor = value; } }
+        public Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
+        public bool VisibleNI { set { visible = value; } }
 
-        protected Color BorderColorNI { set { bordercolor = value; } }
-        protected Color BackColorNI { set { backcolor = value; } }
-        protected Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
-        protected bool VisibleNI { set { visible = value; } }
         public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
         {
@@ -663,7 +663,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        // recursively go thru children, bottom child first, and remove everything 
+        // recursively go thru children, bottom child first, and remove everything 
+        protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        
         {
             if (removechildren)
             {
@@ -689,8 +690,9 @@ namespace GLOFC.GL4.Controls
             childreniz.Remove(child);
             CheckZOrder();
         }
-
-        public void MakeLevelBitmap(int width , int height)     // make a bitmap for this level of this size
+ 
+        // make a bitmap for this level of this size - needs to be public due to external derived controls needing it
+        public void MakeLevelBitmap(int width , int height)     
         {
             levelbmp?.Dispose();
             levelbmp = null;
@@ -698,7 +700,7 @@ namespace GLOFC.GL4.Controls
                 levelbmp = new Bitmap(width, height);
         }
 
-        public void Animate(ulong ts)
+        internal void Animate(ulong ts)
         {
             if (Visible)
             {
@@ -718,6 +720,7 @@ namespace GLOFC.GL4.Controls
         // called by above giving child reason (or null for remove) for invalidate layout
         // overriden by display control to pick a better method to just relayout the relevant child
         // normally we don't care about which child caused it
+        // go thru this function - don't every call invalidate then performlayout as it won't be properly overriden otherwise !
         protected virtual void InvalidateLayout(GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
@@ -725,8 +728,8 @@ namespace GLOFC.GL4.Controls
             PerformLayout();
         }
 
-        // called by displaycontrol on chosen child
-        public void PerformLayoutAndSize()
+        // called by displaycontrol on chosen child. Only display control can call this
+        internal void PerformLayoutAndSize()
         {
             Size us = Size;
 
@@ -738,7 +741,8 @@ namespace GLOFC.GL4.Controls
 
             if (us != Size)     // if we changed size, need to do a full layout on parent so all the docking will work
             {
-                Parent.PerformLayout();
+               // System.Diagnostics.Debug.WriteLine($"PerformLayoutSize {Name} changed size, inform parent");
+                ParentInvalidateLayout();
             }
             else
             {
@@ -798,12 +802,13 @@ namespace GLOFC.GL4.Controls
             ClearLayoutFlags();
         }
 
+        // clear layout. Must be public for external derived classes
         public void ClearLayoutFlags()
         { 
             suspendLayoutCount = 0;   // we can't be suspended
             needLayout = false;     // we have layed out
         }
-        public void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
+        internal void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
         {
             PerformRecursiveLayout();
         }
@@ -967,7 +972,7 @@ namespace GLOFC.GL4.Controls
         // cliparea = area that we can draw into, in bitmap co-ords, so we don't exceed the bounds of any parent clip areas above us. clipareas are continually narrowed
         // we must be visible to be called. Children may not be visible
 
-        public virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
+        internal virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
         {
             Graphics backgr = parentgr;
 

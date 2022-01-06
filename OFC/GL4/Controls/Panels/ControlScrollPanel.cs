@@ -51,7 +51,7 @@ namespace GLOFC.GL4.Controls
 
             if (ControlsZ.Count > 0)
             {
-                Rectangle r = ChildArea();
+                Rectangle r = VisibleChildArea();
 
                 int childwidth = r.Left + r.Right;
                 int childheight = r.Bottom + r.Top;
@@ -62,7 +62,7 @@ namespace GLOFC.GL4.Controls
                 {
                     if ( LevelBitmap == null || childwidth != LevelBitmap.Width || childheight != LevelBitmap.Height) // if height is different, or width is different
                     {
-                       // System.Diagnostics.Debug.WriteLine($"Make SP bitmap {childwidth} {childheight}");
+                        //System.Diagnostics.Debug.WriteLine($"RecursiveLayout make SP bitmap {childwidth} {childheight}");
                         MakeLevelBitmap(childwidth, childheight);
                     }
                 }

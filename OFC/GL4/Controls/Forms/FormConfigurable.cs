@@ -527,7 +527,7 @@ namespace GLOFC.GL4.Controls
 
                     base.SizeControl(parentsize);           // first perform the Form Autosize - taking into consideration title and objects other than the autoplacement items
 
-                    Rectangle area = ChildArea(x => (x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area , ignoring anchor buttons
+                    Rectangle area = VisibleChildArea(x => (x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area , ignoring anchor buttons
 
                     int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max() + AutoSizeClientMargin.Height;
                     int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum() + AutoSizeClientMargin.Width;
