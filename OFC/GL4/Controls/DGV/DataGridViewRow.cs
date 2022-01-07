@@ -23,59 +23,62 @@ namespace GLOFC.GL4.Controls
     {
         public GLDataGridView Parent { get; set; }
         public int Index { get { return rowno; } }
-        public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
-        public int MinimumHeight { get { return minheight; } set { if (value != minheight) { minheight = value; autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
+        public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this); } } }
+        public int MinimumHeight { get { return minheight; } set { if (value != minheight) { minheight = value; autosizegeneration = 0; Changed?.Invoke(this); } } }
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value;  } }  }
         public List<GLDataGridViewCell> Cells { get { return cells; } }
         public int CellCount { get { return cells.Count; } }
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
-        public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this,-1); } }
+        public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this); } }
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; foreach (var c in cells) c.SelectedNI = value; SelectionChanged(this, -1); } } }
 
         public GLDataGridViewRow()
         {
         }
 
-        public void AddCell(GLDataGridViewCell cell)
+        public void AddCell(params GLDataGridViewCell[] celllist)
         {
-            int index = cells.Count;
-            cell.RowParent = this;
-            cell.Style.Parent = defaultcellstyle;
-            cell.Index = index;
-
-            // if a cell style has changed
-            cell.Style.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this, index); };
-            // if a cell content has changed
-            cell.Changed += (e1,aus) => { if (aus) autosizegeneration = 0; Changed?.Invoke(this, index); };
-            cell.SelectionChanged += (e1) => 
+            foreach (var cell in celllist)
             {
-                if ( Selected )      // if row selected, and we are clicked (therefore turning off), then we turn off whole of row
-                {
-                    selected = false;
-                    foreach (var cell in Cells)
-                        cell.SelectedNI = false;
-                    SelectionChanged?.Invoke(this, -1);
-                }
-                else if (Parent.SelectCellSelectsRow)   // if in whole row select
-                {
-                    foreach (var cell in Cells)
-                        cell.SelectedNI = e1.Selected;
+                int index = cells.Count;
+                cell.RowParent = this;
+                cell.Style.Parent = defaultcellstyle;
+                cell.Index = index;
 
-                    selected = e1.Selected;
-                    SelectionChanged?.Invoke(this, -1);
-                }
-                else
+                // if a cell style has changed
+                cell.Style.Changed += (e1) => { autosizegeneration = 0; Changed?.Invoke(this); };
+                // if a cell content has changed
+                cell.Changed += (e1, aus) => { if (aus) autosizegeneration = 0; Changed?.Invoke(this); };
+                cell.SelectionChanged += (e1) =>
                 {
-                    int celsel = cells.Where(x => x.Selected || !x.Selectable).Count();     // either selected, or not selectable, counts towards highlight total
-                    selected = celsel == cells.Count;
-                    SelectionChanged?.Invoke(this, e1.Index);
-                }
-            };
+                    if (Selected)      // if row selected, and we are clicked (therefore turning off), then we turn off whole of row
+                    {
+                        selected = false;
+                        foreach (var cell in Cells)
+                            cell.SelectedNI = false;
+                        SelectionChanged?.Invoke(this, -1);
+                    }
+                    else if (Parent.SelectCellSelectsRow)   // if in whole row select
+                    {
+                        foreach (var cell in Cells)
+                            cell.SelectedNI = e1.Selected;
 
-            cells.Add(cell);
-            Changed?.Invoke(this, index);
+                        selected = e1.Selected;
+                        SelectionChanged?.Invoke(this, -1);
+                    }
+                    else
+                    {
+                        int celsel = cells.Where(x => x.Selected || !x.Selectable).Count();     // either selected, or not selectable, counts towards highlight total
+                        selected = celsel == cells.Count;
+                        SelectionChanged?.Invoke(this, e1.Index);
+                    }
+                };
+
+                cells.Add(cell);
+            }
+            Changed?.Invoke(this);
         }
 
         public void RemoveCellAt(int index)
@@ -83,18 +86,18 @@ namespace GLOFC.GL4.Controls
             if (cells.Count > index)
             {
                 cells.RemoveAt(index);
-                Changed?.Invoke(this, -1);
+                Changed?.Invoke(this);
             }
         }
 
         public void Clear()
         {
             cells.Clear();
-            Changed?.Invoke(this, -1);
+            Changed?.Invoke(this);
         }
 
         #region Implementation
-        public Action<GLDataGridViewRow, int> Changed { get; set; }     // Changed, cell which changed, -1 if general row
+        public Action<GLDataGridViewRow> Changed { get; set; }     // Changed
         public Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
         public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }   // for autosize tracking
         public bool SelectedNI { get { return selected; } set { selected = value; } }

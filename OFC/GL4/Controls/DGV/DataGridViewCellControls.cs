@@ -25,8 +25,8 @@ namespace GLOFC.GL4.Controls
         public GLDataGridViewCellStyle Style { get { return style; } }
         public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
         public Action<GLDataGridViewCell> SelectionChanged { get; set; }
-
         public bool Selectable { get; set; } = false;
+
         public new Padding Padding { get { return Style.Padding; } set { Style.Padding = value; } }     // override padding back to style.padding
         public new Margin Margin { get { return base.Margin; } set { throw new NotImplementedException(); } }     // prevent margin
 

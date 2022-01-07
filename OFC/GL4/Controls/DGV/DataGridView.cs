@@ -233,7 +233,7 @@ namespace GLOFC.GL4.Controls
             System.Diagnostics.Debug.Assert(row.Parent == this && row.HeaderStyle.Parent != null);      // ensure created by us
             row.HeaderStyle.Changed += (e1) => { ContentInvalidateLayout(); };       // header style changed, need a complete refresh
             row.AutoSizeGeneration = 0;
-            row.Changed += (e1, cellno) => 
+            row.Changed += (e1) => 
             {
                 contentpanel.RowChanged(row.Index);     // inform CP
                 UpdateScrollBar();  // update scroll bar
@@ -366,7 +366,12 @@ namespace GLOFC.GL4.Controls
                         if (colno < l.Cells.Count)
                         {
                             if (colno < r.Cells.Count)
-                                return l.Cells[colno].CompareTo(r.Cells[colno]) * (sortascending ? +1 : -1);
+                            {
+                                if (columns[colno].SortCompare != null)
+                                    return columns[colno].SortCompare(l.Cells[colno], r.Cells[colno]) * (sortascending ? +1 : -1);      // sort override on a per column basis
+                                else
+                                    return l.Cells[colno].CompareTo(r.Cells[colno]) * (sortascending ? +1 : -1);
+                            }
                             else
                                 return 1;
                         }

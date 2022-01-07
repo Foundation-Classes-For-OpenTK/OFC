@@ -159,6 +159,8 @@ namespace TestOpenTk
                 dgv.AddColumn(col2);
                 dgv.AddColumn(col3);
 
+                col2.SortCompare = GLDataGridViewSorts.SortCompareDouble;
+
                 for (int i = 0; i < 200; i++)
                 {
                     var row = dgv.CreateRow();
@@ -170,7 +172,7 @@ namespace TestOpenTk
                     row.AddCell(imgcell);
                     row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C1 long bit of text for it to wrap again and again and again"));
                     var but = new GLButton("EmbBut" + i, new Rectangle(0, 0, 30, 15), "But" + i);
-                    row.AddCell(new GLDataGridViewCellText($"R{i}C2"));
+                    row.AddCell(new GLDataGridViewCellText($"{i}"));
                     dgv.AddRow(row);
                 }
 

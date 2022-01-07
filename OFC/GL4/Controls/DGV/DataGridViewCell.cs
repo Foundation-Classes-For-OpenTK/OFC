@@ -35,6 +35,7 @@ namespace GLOFC.GL4.Controls
         public void OnMouseLeaveCell(GLMouseEventArgs e);
         public void OnMouseMoveCell(GLMouseEventArgs e);
         public void OnMouseClickCell(GLMouseEventArgs e);
+        public object Tag { get; set; }
     }
 
     // common stuff useful for cells
@@ -46,8 +47,8 @@ namespace GLOFC.GL4.Controls
         public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
         public Action<GLDataGridViewCell> SelectionChanged { get; set; }
         public bool Selectable { get; set; } = true;
-
         public bool SelectedNI { get { return selected; } set { if ( Selectable) selected = value; } }
+        public object Tag { get; set; }
 
         protected void PaintBack(Graphics gr, Rectangle area)
         {

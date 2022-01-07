@@ -32,6 +32,8 @@ namespace GLOFC.GL4.Controls
         public bool ShowGlyph { get { return showglyph; } set { showglyph = value; Changed?.Invoke(this, true); } }
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
 
+        public Func<GLDataGridViewCell, GLDataGridViewCell, int> SortCompare = null;        // override this on a column to do a custom sort
+
         public GLDataGridViewColumn() { }
         public GLDataGridViewColumn(string t) { text = t; }
 

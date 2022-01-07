@@ -99,5 +99,29 @@ namespace GLOFC
             return DateTime.FromOADate(jd - 2415018.5);
         }
 
+        // left and right can be null or not dates..
+
+        static public int CompareDate(this string left, string right)
+        {
+            DateTime v1 = DateTime.MinValue, v2 = DateTime.MinValue;
+
+            bool v1hasval = left != null && DateTime.TryParse(left, out v1);
+            bool v2hasval = right != null && DateTime.TryParse(right, out v2);
+
+            if (!v1hasval)
+            {
+                return 1;
+            }
+            else if (!v2hasval)
+            {
+                return -1;
+            }
+            else
+            {
+                return v1.CompareTo(v2);
+            }
+        }
+
+
     }
 }
