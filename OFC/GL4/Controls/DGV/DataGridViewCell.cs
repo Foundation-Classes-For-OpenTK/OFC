@@ -16,65 +16,100 @@ using System.Drawing;
 
 namespace GLOFC.GL4.Controls
 {
-    public abstract class GLDataGridViewCell
+    public interface GLDataGridViewCell
     {
-        public GLDataGridViewRow Parent { get; set; }
+        public GLDataGridViewRow RowParent { get; set; }
         public int Index { get; set; }
-        public GLDataGridViewCellStyle Style { get { return style; } }
-
-        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged?.Invoke(this); } } }
-
-        public GLDataGridViewCell()
-        {
-        }
-
-        #region Implementation
-
+        public GLDataGridViewCellStyle Style { get; }
+        public bool Selected { get; set; }
+        public bool Selectable { get; set; }
+        public bool SelectedNI { get; set; }
         public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
         public Action<GLDataGridViewCell> SelectionChanged { get; set; }
-        public bool SelectedNI { get { return selected; } set { selected = value; } }
-        public abstract void Paint(Graphics gr, Rectangle area);
-        public abstract Size PerformAutoSize(int width);
-        public abstract int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
+        public void Paint(Graphics gr, Rectangle area);
+        public Size PerformAutoSize(int width);
+        public int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
+        public void OnMouseDownCell(GLMouseEventArgs e);
+        public void OnMouseUpCell(GLMouseEventArgs e);
+        public void OnMouseEnterCell(GLMouseEventArgs e);
+        public void OnMouseLeaveCell(GLMouseEventArgs e);
+        public void OnMouseMoveCell(GLMouseEventArgs e);
+        public void OnMouseClickCell(GLMouseEventArgs e);
+    }
 
-        private GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
-        private bool selected;
-        
+    // common stuff useful for cells
+    public abstract class GLDataGridViewCellBase
+    {
+        public GLDataGridViewRow RowParent { get; set; }
+        public int Index { get; set; }
+        public GLDataGridViewCellStyle Style { get { return style; } }
+        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
+        public Action<GLDataGridViewCell> SelectionChanged { get; set; }
+        public bool Selectable { get; set; } = true;
+
+        public bool SelectedNI { get { return selected; } set { if ( Selectable) selected = value; } }
+
         protected void PaintBack(Graphics gr, Rectangle area)
         {
-            if (Selected)
+            if (selected)
             {
-                using (Brush b = new SolidBrush(Style.SelectedColor))
+                using (Brush b = new SolidBrush(style.SelectedColor))
                 {
                     gr.FillRectangle(b, area);
                 }
             }
-            else if (Style.BackColor != Color.Transparent)
+            else if (style.BackColor != Color.Transparent)
             {
-                using (Brush b = new SolidBrush(Style.BackColor))
+                using (Brush b = new SolidBrush(style.BackColor))
                 {
                     gr.FillRectangle(b, area);
                 }
             }
         }
-        
-        #endregion
 
+        public virtual void OnMouseDownCell(GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Enter cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+        public virtual void OnMouseUpCell(GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Leave cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+        public virtual void OnMouseEnterCell(GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Enter cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+        public virtual void OnMouseLeaveCell(GLMouseEventArgs e)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Leave cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+        public virtual void OnMouseMoveCell(GLMouseEventArgs e)
+        {
+           // System.Diagnostics.Debug.WriteLine($"Move in cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+        public virtual void OnMouseClickCell(GLMouseEventArgs e)
+        {
+           // System.Diagnostics.Debug.WriteLine($"Click in cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
+        }
+
+        protected GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
+        protected bool selected;
     }
 
-    public class GLDataGridViewCellText : GLDataGridViewCell
+    public class GLDataGridViewCellText : GLDataGridViewCellBase, GLDataGridViewCell
     {
         public string Value { get { return text; } set { if (value != text) { text = value; Changed?.Invoke(this, true); } } }
+        public bool Selected { get { return selected; } set { if (value != selected && Selectable) { selected = value; SelectionChanged?.Invoke(this); } } }
         public GLDataGridViewCellText() { }
         public GLDataGridViewCellText(string t) { text = t; }
 
         #region Implementation
 
-        public override void Paint(Graphics gr, Rectangle area)
+        public void Paint(Graphics gr, Rectangle area)
         {
-            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
-
             PaintBack(gr, area);
+
+            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
 
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(Style.ContentAlignment))
             {
@@ -86,17 +121,17 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-        public override Size PerformAutoSize(int width)
+        public Size PerformAutoSize(int width)
         {
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(Style.ContentAlignment))
             {
                 fmt.FormatFlags = Style.TextFormat;
                 var size = BitMapHelpers.MeasureStringInBitmap(text, Style.Font, fmt, new Size(width - Style.Padding.TotalWidth, 20000));
-                return new Size((int)(size.Width + 0.99F), (int)(size.Height + 0.99F));
+                return new Size((int)(size.Width + 0.99F) + Style.Padding.TotalWidth, (int)(size.Height + 0.99F) + Style.Padding.TotalHeight);
             }
         }
 
-        public override int CompareTo(GLDataGridViewCell other)
+        public int CompareTo(GLDataGridViewCell other)
         {
             if (other is GLDataGridViewCellText)
             {
@@ -112,31 +147,32 @@ namespace GLOFC.GL4.Controls
 
         #endregion
     }
-    public class GLDataGridViewCellImage : GLDataGridViewCell
+    public class GLDataGridViewCellImage : GLDataGridViewCellBase, GLDataGridViewCell
     {
         public Image Image { get { return image; } set { if (value != image) { image = value; size = value.Size; Changed?.Invoke(this, true); } } }
         public Size Size { get { return size; } set { if (value != size) { size = value; Changed?.Invoke(this, true); } } }
+        public bool Selected { get { return selected; } set { if (value != selected) { selected = value; SelectionChanged?.Invoke(this); } } }
         public GLDataGridViewCellImage() { }
         public GLDataGridViewCellImage(Image t) { image = t; size = image.Size; }
 
         #region Implementation
 
-        public override void Paint(Graphics gr, Rectangle area)
+        public void Paint(Graphics gr, Rectangle area)
         {
-            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
-
             PaintBack(gr, area);
+
+            area = new Rectangle(area.Left + Style.Padding.Left, area.Top + Style.Padding.Top, area.Width - Style.Padding.TotalWidth, area.Height - Style.Padding.TotalHeight);
 
             Rectangle drawarea = Style.ContentAlignment.ImagePositionFromContentAlignment(area, size, true, true);
             gr.DrawImage(Image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
         }
 
-        public override Size PerformAutoSize(int width)
+        public Size PerformAutoSize(int width)
         {
-            return size;
+            return new Size(size.Width + Style.Padding.TotalWidth, size.Height + Style.Padding.TotalHeight);
         }
 
-        public override int CompareTo(GLDataGridViewCell other)
+        public int CompareTo(GLDataGridViewCell other)
         {
             return -1;
         }
@@ -146,4 +182,4 @@ namespace GLOFC.GL4.Controls
 
         #endregion
     }
- }
+}

@@ -47,6 +47,7 @@ namespace GLOFC
         // Set by displaycontrol if over a control.  Tell by Control != null
 
         public Object Control { get; set; }             // Control type found (GLBaseControl)
+        public Rectangle Bounds { get; set; }           // bounds of control (in parent terms)
         public Point BoundsLocation { get; set; }       // offset within control bounds
         public Point Location { get; set; }             // offset within control ClientRectangle (similar to Location in winforms) in bitmap terms
         public enum AreaType { Client, Left, Top, Right, Bottom , NWSE };

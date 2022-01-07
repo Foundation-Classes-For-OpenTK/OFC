@@ -355,8 +355,9 @@ namespace GLOFC.GL4.Controls
             
             Point ctrlloc = cur.FindScreenCoords(new Point(0, 0));      // we need to find this each time, the control may have been dragged, can't cache it like previous goes at this code!
 
-            e.BoundsLocation = new Point(e.ScreenCoord.X - ctrlloc.X, e.ScreenCoord.Y - ctrlloc.Y);
-            e.Location = new Point(e.BoundsLocation.X-cur.ClientLeftMargin, e.BoundsLocation.Y-cur.ClientTopMargin);      // translate to client rectangle co-ords
+            e.Bounds = cur.Bounds;  // in parent co-ords
+            e.BoundsLocation = new Point(e.ScreenCoord.X - ctrlloc.X, e.ScreenCoord.Y - ctrlloc.Y);     // to location in bounds
+            e.Location = new Point(e.BoundsLocation.X-cur.ClientLeftMargin, e.BoundsLocation.Y-cur.ClientTopMargin);      // to location in client rectangle co-ords
 
             // determine logical area
             if (e.Location.X < 0)

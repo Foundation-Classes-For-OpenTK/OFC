@@ -27,6 +27,7 @@ namespace GLOFC.GL4.Controls
         public int MinimumHeight { get { return minheight; } set { if (value != minheight) { minheight = value; autosizegeneration = 0; Changed?.Invoke(this, -1); } } }
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value;  } }  }
         public List<GLDataGridViewCell> Cells { get { return cells; } }
+        public int CellCount { get { return cells.Count; } }
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } }
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
         public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
@@ -40,7 +41,7 @@ namespace GLOFC.GL4.Controls
         public void AddCell(GLDataGridViewCell cell)
         {
             int index = cells.Count;
-            cell.Parent = this;
+            cell.RowParent = this;
             cell.Style.Parent = defaultcellstyle;
             cell.Index = index;
 
@@ -67,7 +68,7 @@ namespace GLOFC.GL4.Controls
                 }
                 else
                 {
-                    int celsel = cells.Where(x => x.Selected).Count();
+                    int celsel = cells.Where(x => x.Selected || !x.Selectable).Count();     // either selected, or not selectable, counts towards highlight total
                     selected = celsel == cells.Count;
                     SelectionChanged?.Invoke(this, e1.Index);
                 }

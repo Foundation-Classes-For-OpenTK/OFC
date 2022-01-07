@@ -70,11 +70,14 @@
     <Compile Include="GL4\Buffers\GLSetOfObjectsWithLabels.cs" />
     <Compile Include="GL4\Buffers\GLVertexBufferIndirect.cs" />
     <Compile Include="GL4\Buffers\GLObjectsWithLabels.cs" />
+    <Compile Include="GL4\Controls\Base\Control_Implementation.cs" />
+    <Compile Include="GL4\Controls\Base\Control_DefaultColours.cs" />
     <Compile Include="GL4\Controls\Base\Control_WindowControl.cs" />
     <Compile Include="GL4\Controls\Animation\ControlAnimators.cs" />
     <Compile Include="GL4\Controls\Animation\ControlAnimation.cs" />
     <Compile Include="GL4\Controls\Controls\ControlBaseCheckBox.cs" />
     <Compile Include="GL4\Controls\Controls\ControlCalendar.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCellControls.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuItem.cs" />
     <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />

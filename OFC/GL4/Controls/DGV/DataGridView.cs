@@ -61,6 +61,7 @@ namespace GLOFC.GL4.Controls
             public int Row { get; set; }
             public int Column { get; set; }
             public Point Location { get; set; }
+            public Point CellLocation { get; set; }
         }
         public RowColPos FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
 
@@ -78,7 +79,9 @@ namespace GLOFC.GL4.Controls
         public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
         public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
 
-        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;       // return row,col,mouse event. row = -1 for column headers. col = -1 for row headers. Both -1 for top left        
+        // return row,col,mouse event.
+        // row = -1 for column headers. col = -1 for row headers. -1,-1 for invalid area in content area, -2 -2 for top left
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;       
 
         // Context panel Opening function is fed with tag RowColPos.        
         public GLContextMenu ContextPanelContent;           // row=col=-1 if not on cell
@@ -115,15 +118,15 @@ namespace GLOFC.GL4.Controls
             rowheaderstyle.Changed += (e1) => { ContentInvalidateLayout(); };
             defaultcellstyle.Changed += (e1) => { ContentInvalidateLayout(); };
 
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = Color.AliceBlue;
-            cellbordercolor = Color.Magenta;
-            upperleftbackcolor = Color.Orange;
-            colheaderstyle.BackColor = rowheaderstyle.BackColor = Color.Orange;
-            defaultcellstyle.BackColor = Color.White;
-            colheaderstyle.ForeColor = rowheaderstyle.ForeColor = defaultcellstyle.ForeColor = Color.Black;
-            colheaderstyle.SelectedColor = rowheaderstyle.SelectedColor = defaultcellstyle.SelectedColor = Color.Yellow;
-            colheaderstyle.HighlightColor = rowheaderstyle.HighlightColor = defaultcellstyle.HighlightColor = Color.Red;
+            BorderColorNI = DefaultDGVBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultDGVBackColor;
+            cellbordercolor = DefaultDGVCellBorderColor;
+            upperleftbackcolor = colheaderstyle.BackColor = rowheaderstyle.BackColor = DefaultDGVColumnRowBackColor;
+            colheaderstyle.ForeColor = rowheaderstyle.ForeColor = DefaultDGVColumnRowForeColor;
+            defaultcellstyle.BackColor = DefaultDGVCellBackColor;
+            defaultcellstyle.ForeColor = DefaultDGVCellForeColor;
+            colheaderstyle.SelectedColor = rowheaderstyle.SelectedColor = defaultcellstyle.SelectedColor = DefaultDGVCellSelectedColor;
+            colheaderstyle.HighlightColor = rowheaderstyle.HighlightColor = defaultcellstyle.HighlightColor = DefaultDGVCellHighlightColor;  
             colheaderstyle.ContentAlignment = rowheaderstyle.ContentAlignment = defaultcellstyle.ContentAlignment = ContentAlignment.MiddleCenter;
             colheaderstyle.TextFormat = rowheaderstyle.TextFormat = defaultcellstyle.TextFormat = 0;
             colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
@@ -143,7 +146,7 @@ namespace GLOFC.GL4.Controls
             topleftpanel.MouseClickColumnHeader += (e) =>
             {
                 System.Diagnostics.Debug.WriteLine($"Click on top left");
-                MouseClickOnGrid?.Invoke(-1, -1, e);
+                MouseClickOnGrid?.Invoke(-2, -2, e);
             };
 
             rowheaderpanel.MouseClickRowHeader += (row, e) =>
@@ -171,13 +174,15 @@ namespace GLOFC.GL4.Controls
         }
 
         // columns must be created via this call
-        public GLDataGridViewColumn CreateColumn()
+        public GLDataGridViewColumn CreateColumn(int width = 50, int fillwidth = 100, int minwidth = 10, string title = "")
         {
             GLDataGridViewColumn col = new GLDataGridViewColumn();
             col.HeaderStyle.Parent = colheaderstyle;
             col.Parent = this;
-            col.Width = 50;
-            col.FillWidth = 100;
+            col.Width = width;
+            col.FillWidth = fillwidth;
+            col.MinimumWidth = minwidth;
+            col.Text = title;
             return col;
         }
 

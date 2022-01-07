@@ -162,17 +162,23 @@ namespace TestOpenTk
                 for (int i = 0; i < 200; i++)
                 {
                     var row = dgv.CreateRow();
-                    if ( i < 2 || i > 5) row.AutoSize = true;
+                    if (i < 2 || i > 5) row.AutoSize = true;
                     string prefix = char.ConvertFromUtf32(i + 65);
                     var imgcell = new GLDataGridViewCellImage(Properties.Resources.GoBackward);
                     imgcell.Style.ContentAlignment = ContentAlignment.MiddleLeft;
-                    imgcell.Size = new Size(16,16);
+                    imgcell.Size = new Size(16, 16);
                     row.AddCell(imgcell);
                     row.AddCell(new GLDataGridViewCellText($"{prefix} R{i,2}C1 long bit of text for it to wrap again and again and again"));
                     var but = new GLButton("EmbBut" + i, new Rectangle(0, 0, 30, 15), "But" + i);
                     row.AddCell(new GLDataGridViewCellText($"R{i}C2"));
                     dgv.AddRow(row);
                 }
+
+                var butcel = new GLDataGridViewCellButton(new Rectangle(0, 0, 80, 24), "Buttext");
+                butcel.MouseClick += (e2, e3) => { System.Diagnostics.Debug.WriteLine("Click on grid button"); };
+                butcel.Style.Padding = new Padding(3);
+                butcel.Style.ContentAlignment = ContentAlignment.MiddleLeft;
+                dgv.Rows[0].AddCell(butcel);
 
                 dgv.Rows[1].Height = 40;
 
@@ -235,10 +241,10 @@ namespace TestOpenTk
 
                 };
                 dgv.SelectedCell += (cell, state) => {
-                    System.Diagnostics.Debug.WriteLine($"Cell Selected {cell.Parent.Index} {cell.Index} ");
+                    System.Diagnostics.Debug.WriteLine($"Cell Selected {cell.RowParent.Index} {cell.Index} ");
                     var cellset = dgv.GetSelectedCells();
                     foreach (var c in cellset)
-                        System.Diagnostics.Debug.WriteLine($".. Cell {c.Parent.Index} {c.Index} ");
+                        System.Diagnostics.Debug.WriteLine($".. Cell {c.RowParent.Index} {c.Index} ");
                 };
                 dgv.SelectionCleared += () => { System.Diagnostics.Debug.WriteLine($"Selection cleared"); };
                 pform.Add(dgv);

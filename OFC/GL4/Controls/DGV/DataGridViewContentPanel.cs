@@ -212,6 +212,8 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
+            //int hpos = dgv.CellBorderWidth;   foreach (var col in dgv.Columns) { System.Diagnostics.Debug.WriteLine($"Col {col.Index} {hpos} {col.Width}"); hpos += dgv.CellBorderWidth + col.Width; }
+
             int gridwidth = Math.Max(1, dgv.ColumnPixelWidth);      // width of grid
 
             if (LevelBitmap == null || LevelBitmap.Width < gridwidth || LevelBitmap.Height < ClientHeight * 2)   // if bitmap not there, or different width needed
@@ -302,7 +304,7 @@ namespace GLOFC.GL4.Controls
                                 {
                                     var col = dgv.Columns[i];
 
-                                    if (i < row.Cells.Count)
+                                    if (i < row.CellCount)
                                     {
                                         var cell = row.Cells[i];
                                         Rectangle area = new Rectangle(hpos, vpos, col.Width, row.Height);
@@ -332,6 +334,7 @@ namespace GLOFC.GL4.Controls
 
                                 for (int i = 0; i < dgv.Columns.Count; i++)
                                 {
+                                  //  System.Diagnostics.Debug.WriteLine($"Cell boundary {hpos}");
                                     gr.DrawLine(p, hpos, 0, hpos, vpos);    // each column one
                                     hpos += dgv.CellBorderWidth + dgv.Columns[i].Width;
                                 }
@@ -380,6 +383,23 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        GLDataGridViewCell currentcell = null;
+
+        protected override void OnMouseLeave(GLMouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+            if (currentcell != null)
+            {
+                currentcell.OnMouseLeaveCell(e);
+                currentcell = null;
+            }
+        }
+        protected override void OnMouseEnter(GLMouseEventArgs e)
+        {
+            base.OnMouseEnter(e);
+            MoveToCell(e);
+        }
+
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -399,6 +419,10 @@ namespace GLOFC.GL4.Controls
                 lastmousemove = e.Location;     // record this for autoscroll purposes
                 UpdateSelection(e.Location);
             }
+            else
+            {
+                MoveToCell(e);
+            }
         }
 
         protected override void OnMouseDown(GLMouseEventArgs e)
@@ -412,7 +436,10 @@ namespace GLOFC.GL4.Controls
                 var g = GridRowCol(e.Location);
                 if (g != null)
                 {
-                    if (dgv.AllowUserToSelectCells && g.Column < dgv.Rows[g.Row].Cells.Count)
+                    var newcell = CellPara(g, e);       // may return null if cell not there
+                    newcell?.OnMouseDownCell(e);
+
+                    if (!e.Handled && dgv.AllowUserToSelectCells && g.Column < dgv.Rows[g.Row].CellCount)
                     {
                         lastselectionstart = lastselectionend = selectionstart = g;
                         dgv.ClearSelection();
@@ -427,6 +454,18 @@ namespace GLOFC.GL4.Controls
             base.OnMouseUp(e);
             autoscroll.Stop();
             lastselectionstart = lastselectionend = selectionstart = null;
+
+            if ( e.Button == GLMouseEventArgs.MouseButtons.Left)
+            {
+                GLDataGridView dgv = Parent as GLDataGridView;
+
+                var g = GridRowCol(e.Location);
+                if (g != null)
+                {
+                    var newcell = CellPara(g, e);       // may return null if cell not there
+                    newcell?.OnMouseUpCell(e);
+                }
+            }
         }
 
         protected override void OnMouseClick(GLMouseEventArgs e)
@@ -442,7 +481,20 @@ namespace GLOFC.GL4.Controls
                 {
                     if (g != null)
                     {
-                        MouseClickOnGrid(g.Row, g.Column, e);
+                        var orgbounds = e.Bounds;
+                        var orgbloc = e.BoundsLocation;
+                        var orgloc = e.Location;
+
+                        var newcell = CellPara(g,e);        // may return null if cell not there
+                        newcell?.OnMouseClickCell(e);
+
+                        if (e.Handled == false) // and if it did not, call global click
+                        {
+                            e.Bounds = orgbounds;
+                            e.BoundsLocation = orgbloc;
+                            e.Location = orgloc;
+                            MouseClickOnGrid(g.Row, g.Column, e);
+                        }
                     }
                     else
                         MouseClickOnGrid(-1, -1, e);
@@ -467,6 +519,51 @@ namespace GLOFC.GL4.Controls
             dgv.Scroll(e.Delta);
         }
 
+        public void MoveToCell(GLMouseEventArgs e)
+        {
+            GLDataGridView dgv = Parent as GLDataGridView;
+            var g = GridRowCol(e.Location);
+            if (g != null)
+            {
+                if (g.Column < dgv.Rows[g.Row].CellCount)
+                {
+                    var newcell = CellPara(g, e);
+                    if (newcell == currentcell)
+                    {
+                        currentcell.OnMouseMoveCell(e);
+                    }
+                    else
+                    {
+                        if (currentcell != null)
+                            currentcell.OnMouseLeaveCell(e);
+                        currentcell = newcell;
+                        currentcell.OnMouseEnterCell(e);
+                    }
+                    return;
+                }
+            }
+            if (currentcell != null)
+            {
+                currentcell.OnMouseLeaveCell(e);
+                currentcell = null;
+            }
+        }
+
+        private GLDataGridViewCell CellPara(GLDataGridView.RowColPos g, GLMouseEventArgs e)
+        {
+            GLDataGridView dgv = Parent as GLDataGridView;
+            if (g.Column < dgv.Rows[g.Row].CellCount)
+            {
+                var newcell = dgv.Rows[g.Row].Cells[g.Column];
+                e.Bounds = new Rectangle(g.CellLocation.X, g.CellLocation.Y, dgv.Columns[g.Column].Width, dgv.Rows[g.Row].Height);
+                e.BoundsLocation = g.Location;
+                e.Location = new Point(g.Location.X - newcell.Style.Padding.Left, g.Location.Y - newcell.Style.Padding.Top);
+                return newcell;
+            }
+            else
+                return null;
+        }
+
         private void UpdateSelection(Point loc)
         {
             var g = GridRowCol(loc);
@@ -486,7 +583,7 @@ namespace GLOFC.GL4.Controls
 
                 for (int row = minrow; row <= maxrow; row++)
                 {
-                    for (int col = mincol; col <= maxcol && col < dgv.Rows[row].Cells.Count; col++)
+                    for (int col = mincol; col <= maxcol && col < dgv.Rows[row].CellCount; col++)
                     {
                         bool selrow = g.Row < selectionstart.Row ? row >= g.Row && row <= selectionstart.Row : row >= selectionstart.Row && row <= g.Row;
                         bool selcol = g.Column < selectionstart.Column ? col >= g.Column && col <= selectionstart.Column : col >= selectionstart.Column && col <= g.Column;
@@ -520,9 +617,10 @@ namespace GLOFC.GL4.Controls
                         int left = dgv.ColumnPixelLeft(i);
                         if (xoffset >= left && xoffset < left + dgv.Columns[i].Width)
                         {
-                            Point off = new Point(xoffset-left, y-gridrowoffsets[gridrow]);
+                            Point off = new Point(xoffset - left, y - gridrowoffsets[gridrow]);
+                            Point cellloc = new Point(left, gridrowoffsets[gridrow] + dgv.CellBorderWidth);
                             gridrow += gridfirstline;
-                            return new GLDataGridView.RowColPos() { Row = gridrow, Column = i, Location = off };
+                            return new GLDataGridView.RowColPos() { Row = gridrow, Column = i, Location = off, CellLocation = cellloc };
                         }
                     }
                 }
