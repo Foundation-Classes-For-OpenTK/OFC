@@ -153,7 +153,7 @@ namespace TestOpenTk
                 col2.Width = 150;
                 col2.Text = "Col2";
                 col3.Width = 150;
-                col3.Text = "Col2";
+                col3.Text = "Col3";
                 dgv.AddColumn(col0);
                 dgv.AddColumn(col1);
                 dgv.AddColumn(col2);

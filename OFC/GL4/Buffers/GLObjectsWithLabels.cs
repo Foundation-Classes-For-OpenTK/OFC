@@ -43,6 +43,7 @@ namespace GLOFC.GL4
         private GLTexture2DArray[] textures;                                // holds the text labels
         private int objectvertexescount;                                    // vert count for object
         private int textureinuse = 0;                                       // textures in use, up to max textures.
+        private IntPtr context;
 
         public class BlockRef                                               // used by adders to pass back a list of block refs
         {
@@ -63,6 +64,7 @@ namespace GLOFC.GL4
                                 int debuglimittexture = 0)  // use to limit texture map depth for debugging
         {
             this.objectvertexescount = objectvertexes;
+            this.context = GLStatics.GetContext();
 
             // Limit number of 2d textures in a single 2d array
             int maxtextper2darray = GL4Statics.GetMaxTextureDepth();
@@ -78,7 +80,7 @@ namespace GLOFC.GL4
             int groupcount = objectcount / estimateditemspergroup;      
             groupcount = Math.Max(mingroups, groupcount);               // min groups
 
-            System.Diagnostics.Debug.WriteLine($"GLObjectWithLabels oc {objectcount} gc {groupcount}");
+           // System.Diagnostics.Debug.WriteLine($"GLObjectWithLabels oc {objectcount} gc {groupcount}");
 
             // estimate maximum vert buffer needed, allowing for extra due to the need to align the mat4
             int vertbufsize = objectcount * (GLBuffer.Vec4size + GLBuffer.Mat4size) +       // for a vec4 + mat4 per object
@@ -144,6 +146,8 @@ namespace GLOFC.GL4
 
         public int Add(Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0, int arraylength = -1)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
+
             if (arraylength == -1)      // this means use length of array
                 arraylength = array.Length;
 

@@ -35,13 +35,12 @@ namespace GLOFC.WinForm
         public Point MouseWindowPosition { get { var mp = Control.MousePosition; var ctop = glControl.PointToScreen(Point.Empty); return new Point(mp.X - ctop.X, mp.Y - ctop.Y); } }
         public GL4.GLRenderState RenderState { get; set; } = null;
 
-        public bool EnsureCurrentPaintResize { get; set; } = false;         // must be set for multiple opengl windows in one thread
-        public bool EnsureCurrentKeyboardMouse { get; set; } = false;       // only if you try and do something like resizing the viewport or doing GL work
+        public bool EnsureCurrent { get; set; } = false;         // must be set for multiple opengl windows in one thread
 
         // what buffers to clear
         public ClearBufferMask ClearBuffers {get;set;} = ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit;
 
-        // use EnsureCurrentKeyboardMouse to ensure context is selected if running multiple windows in one thread
+        // use EnsureCurrent to ensure context is selected if running multiple windows in one thread
         public Action<Object, GLMouseEventArgs> MouseDown { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseUp { get; set; } = null;
         public Action<Object, GLMouseEventArgs> MouseMove { get; set; } = null;
@@ -62,6 +61,8 @@ namespace GLOFC.WinForm
 
         private System.Diagnostics.Stopwatch gltime = new System.Diagnostics.Stopwatch();
         private GLControlKeyOverride glControl { get; set; }
+
+        public IntPtr context;
 
         public GLWinFormControl(Control attachcontrol, OpenTK.Graphics.GraphicsMode mode = null)
         {
@@ -94,7 +95,8 @@ namespace GLOFC.WinForm
             glControl.KeyPress += Gc_KeyPress;
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
-
+            context = GLStatics.GetContext();
+            System.Diagnostics.Debug.WriteLine($"GL Context {context} created");
             gltime.Start();
         }
 
@@ -115,6 +117,12 @@ namespace GLOFC.WinForm
         public void EnsureCurrentContext()
         {
             glControl.MakeCurrent();
+        }
+
+        public bool IsCurrent()
+        {
+            var ctx = GLStatics.GetContext();
+            return glControl.Context.IsCurrent && ctx == context;
         }
 
         public void SetCursor(GLCursorType t)
@@ -149,7 +157,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseEnter(object sender, EventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             Point relcurpos = FindCursorFormCoords();
             var ev = new GLMouseEventArgs(relcurpos);
@@ -158,7 +166,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseLeave(object sender, EventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             Point relcurpos = FindCursorFormCoords();
             var ev = new GLMouseEventArgs(relcurpos);
@@ -167,7 +175,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -180,7 +188,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -193,7 +201,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -205,7 +213,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseDoubleClick(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -217,7 +225,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -229,7 +237,7 @@ namespace GLOFC.WinForm
 
         private void Gc_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLMouseEventArgs.MouseButtons b = (((e.Button & System.Windows.Forms.MouseButtons.Left) != 0) ? GLMouseEventArgs.MouseButtons.Left : 0) |
                 (((e.Button & System.Windows.Forms.MouseButtons.Middle) != 0) ? GLMouseEventArgs.MouseButtons.Middle : 0) |
@@ -241,7 +249,7 @@ namespace GLOFC.WinForm
 
         private void Gc_KeyDown(object sender, System.Windows.Forms.KeyEventArgs e)      
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
           //  System.Diagnostics.Debug.WriteLine("GLWIN KD " + e.KeyCode);
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
@@ -250,7 +258,7 @@ namespace GLOFC.WinForm
 
         private void Gc_KeyUp(object sender, System.Windows.Forms.KeyEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLKeyEventArgs ka = new GLKeyEventArgs(e.Alt, e.Control, e.Shift, e.KeyCode, e.KeyValue, e.Modifiers);
             KeyUp?.Invoke(this, ka);
@@ -258,7 +266,7 @@ namespace GLOFC.WinForm
 
         private void Gc_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
         {
-            if (EnsureCurrentKeyboardMouse)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();
             GLKeyEventArgs ka = new GLKeyEventArgs(e.KeyChar);     
             KeyPress?.Invoke(this, ka);
@@ -268,7 +276,7 @@ namespace GLOFC.WinForm
         {
             if (!gltime.IsRunning)          // we can get a resize when detaching, ignore it if timer is not going
                 return;
-            if (EnsureCurrentPaintResize)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
             Resize?.Invoke(this);
         }
@@ -277,8 +285,10 @@ namespace GLOFC.WinForm
 
         private void GlControl_Paint(object sender, PaintEventArgs e)
         {
-            if (EnsureCurrentPaintResize)
+            if (EnsureCurrent)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
+
+            System.Diagnostics.Debug.Assert(IsCurrent());
 
             if (RenderState == null)
             {

@@ -27,6 +27,7 @@ namespace GLOFC.GL4
     public class GLBuffer : GLLayoutStandards, IDisposable
     {
         public int Id { get; private set; } = -1;
+        private IntPtr context;
 
         public GLBuffer(bool std430 = false) : base(std430)
         {
@@ -34,6 +35,7 @@ namespace GLOFC.GL4
             GLStatics.RegisterAllocation(typeof(GLBuffer));
             GLStatics.Check();
             Id = id;
+            context = GLStatics.GetContext();
         }
 
         public GLBuffer(int allocatesize, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw) : this(std430)
@@ -45,6 +47,7 @@ namespace GLOFC.GL4
 
         public void AllocateBytes(int bytessize, BufferUsageHint uh = BufferUsageHint.StaticDraw)  // call first to set buffer size.. allow for alignment in your size
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             if (bytessize > 0)                                               // can call twice - get fresh buffer each time
             {
                 Length = bytessize;

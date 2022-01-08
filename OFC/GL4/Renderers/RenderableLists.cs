@@ -33,6 +33,7 @@ namespace GLOFC.GL4
         private List<Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>> renderables;
         private Dictionary<string,IGLRenderableItem> byname;
         private int unnamed = 0;
+        private IntPtr context = (IntPtr)0;
 
         public GLRenderProgramSortedList()
         {
@@ -124,6 +125,9 @@ namespace GLOFC.GL4
         {
             if (verbose) System.Diagnostics.Trace.WriteLine("***Begin RList");
 
+            GLStatics.Check();      // ensure clear before start
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context not correct for render list");     // double check context
+
             GLRenderState lastapplied = null;
             IGLProgramShader curshader = null;
 
@@ -166,6 +170,8 @@ namespace GLOFC.GL4
 
                         foreach (var g in shaderri.Item2)
                         {
+                            GLOFC.GLStatics.Check();
+
                             if (g.Item2 != null && g.Item2.Visible)                    // Make sure its visible and not empty slot
                             {
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
@@ -191,6 +197,8 @@ namespace GLOFC.GL4
                             {
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Not visible " + g.Item1 + " " + shaderri.Item1.GetType().Name);
                             }
+
+                            GLOFC.GLStatics.Check();
                         }
                     }
                     else
@@ -215,6 +223,11 @@ namespace GLOFC.GL4
         // add a shader, under a name, indicate if at end, and if allowed to end join
         private void AddItem(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend, bool allowendjoin)
         {
+            if (context == (IntPtr)0)           // on add, see which context we are in
+                context = GLStatics.GetContext();
+            else
+                System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context not correct for AddItem");     // double check cross windowing
+
             Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> shaderpos = null;
             if ( atend )        // must be at end
             {

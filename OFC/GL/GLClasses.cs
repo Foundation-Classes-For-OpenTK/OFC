@@ -109,6 +109,7 @@ namespace GLOFC
         Action<Object, GLKeyEventArgs> KeyPress { get; set; }
 
         void EnsureCurrentContext();
+        bool IsCurrent();
         void Invalidate();
         Rectangle GLWindowControlScreenRectangle { get; }
         Point MousePosition { get; }

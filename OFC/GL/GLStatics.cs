@@ -16,11 +16,20 @@ using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace GLOFC
 {
     public static class GLStatics
     {
+        [DllImport("opengl32.dll", EntryPoint = "wglGetCurrentContext")]
+        extern static IntPtr wglGetCurrentContext();// DCAl
+
+        public static IntPtr GetContext()
+        {
+            return wglGetCurrentContext();
+        }
+
         [System.Diagnostics.Conditional("DEBUG")]
         public static void Check([CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {

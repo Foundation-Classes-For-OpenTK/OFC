@@ -25,6 +25,7 @@ namespace GLOFC.GL4
     {
         protected GLTextureBase()
         {
+            context = GLStatics.GetContext();
         }
 
         public int Id { get; protected set; } = -1;
@@ -48,8 +49,11 @@ namespace GLOFC.GL4
 
         // normal sampler bind - for sampler2D access etc.
 
+        private IntPtr context;     // double check bind is the same as create
+
         public void Bind(int bindingpoint)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindTextureUnit(bindingpoint, Id);
             GLOFC.GLStatics.Check();
         }
@@ -58,6 +62,7 @@ namespace GLOFC.GL4
         // Also the layout(binding = N, rgba32f) readonly - make the readonly match the access below, and make the rgba32f match the internal format (see page 186 of SuperBible)
         public void BindImage(int bindingpoint, int mipmaplevel = 0, bool allarraylayersavailable = true, int layer = 0, TextureAccess tx = TextureAccess.ReadWrite)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindImageTexture(bindingpoint, Id, mipmaplevel, allarraylayersavailable, layer, tx, InternalFormat);
             GLOFC.GLStatics.Check();
         }
@@ -65,6 +70,7 @@ namespace GLOFC.GL4
         // this one is special, because you are allowed to use a different sized internal format to texture created type as long as they are in the same class (see page 185 of SuperBible)
         public void BindImage(int bindingpoint, SizedInternalFormat sioverride, int mipmaplevel = 0, bool allarraylayersavailable = true, int layer = 0, TextureAccess tx = TextureAccess.ReadWrite)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindImageTexture(bindingpoint, Id, mipmaplevel, allarraylayersavailable, layer, tx, sioverride);
             GLOFC.GLStatics.Check();
         }
@@ -72,6 +78,7 @@ namespace GLOFC.GL4
         // and a quick default one
         public void BindImage(int bindingpoint)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindImageTexture(bindingpoint, Id, 0, true, 0, TextureAccess.ReadWrite, InternalFormat);
             GLOFC.GLStatics.Check();
         }
@@ -86,6 +93,7 @@ namespace GLOFC.GL4
 
         public void Dispose()           // you can double dispose.
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             if (Id >= 0)
             {
                 if (arbid != -1)        // if its been arb'd, de-arb it
@@ -127,6 +135,7 @@ namespace GLOFC.GL4
 
         public void LoadBitmap(Bitmap bmp, int zoffset, bool ownbmp = false, int bmpmipmaplevels = 1, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             System.Diagnostics.Debug.Assert(bmpmipmaplevels <= MipMapLevels);
 
             System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),

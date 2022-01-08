@@ -26,16 +26,20 @@ namespace GLOFC.GL4
     public class GLVertexArray : IGLVertexArray
     {
         public int Id { get; private set; } = -1;
+        private IntPtr context;
 
         public GLVertexArray()
         {
             Id = GL.GenVertexArray();        // get the handle
+            context = GLStatics.GetContext();
             GLStatics.RegisterAllocation(typeof(GLVertexArray));
         }
 
         public virtual void Bind()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.BindVertexArray(Id);                  // Bind vertex
+            GLOFC.GLStatics.Check();
         }
 
         public virtual void Dispose()

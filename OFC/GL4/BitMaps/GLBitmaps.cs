@@ -43,6 +43,7 @@ namespace GLOFC.GL4
                                             bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue, bool yfixed = false )
         {
             this.name = name;
+            this.context = GLStatics.GetContext();
 
             int maxdepthpertexture = GL4Statics.GetMaxTextureDepth();     // limits the number of textures per 2darray
             int max = Math.Min(maxdepthpertexture, maxpergroup);        //note RI uses a VertexArray to load the matrix in, so not limited by that (max size of uniform buffer)
@@ -109,6 +110,8 @@ namespace GLOFC.GL4
                             bool visible=  true
                          )
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Bitmaps detected context incorrect");
+
             Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
@@ -141,6 +144,8 @@ namespace GLOFC.GL4
 
             public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)     // called per renderable item..
             {
+                GLOFC.GLStatics.Check();
+
                 if (texture.Id >= 0)
                 {
                     if (texture.MipMapAutoGenNeeded)
@@ -150,6 +155,7 @@ namespace GLOFC.GL4
                     }
 
                     texture.Bind(1);
+                    GLOFC.GLStatics.Check();
                 }
             }
 
@@ -219,6 +225,8 @@ namespace GLOFC.GL4
         private GLShaderPipeline shader;
         private Bitmap textdrawbitmap;      // for drawing into alpha text
         private string name;
+
+        private IntPtr context;     // double check for window swapping
     }
 }
 

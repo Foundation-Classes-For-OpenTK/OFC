@@ -49,6 +49,10 @@ namespace GLOFC.GL4.Controls
         {
             glwin.EnsureCurrentContext();
         }
+        public bool IsCurrent()
+        {
+            return glwin.IsCurrent();
+        }
 
         // need items, need a window to attach to, need a MC
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc,
@@ -60,6 +64,7 @@ namespace GLOFC.GL4.Controls
         {
             glwin = win;
             MatrixCalc = mc;
+            context = GLStatics.GetContext();
             
             this.items = items;
 
@@ -110,6 +115,8 @@ namespace GLOFC.GL4.Controls
         // call this during your Paint to render.
         public void Render(GLRenderState currentstate, ulong ts)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
+
             //System.Diagnostics.Debug.WriteLine("Render");
 
             NeedRedraw = false;
@@ -276,6 +283,8 @@ namespace GLOFC.GL4.Controls
         // update the vertex buffer with positions
         private void UpdateVertexPositionsTextures(bool forceupdatetextures = false)        
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
+
             if (ControlsZ.Count > 0)            // may end up with nothing to draw, in which case, don't update anything
             {
                 vertexes.AllocateBytes(ControlsZ.Count * sizeof(float) * vertexesperentry * 4);
@@ -395,6 +404,7 @@ namespace GLOFC.GL4.Controls
         // window is painting - hooked up to GLWindowControl Paint function. ts is elapsed time in ms.
         private void Gc_Paint(object sender,ulong ts)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
             Paint?.Invoke(sender,ts);
         }
 
@@ -411,6 +421,7 @@ namespace GLOFC.GL4.Controls
         private IGLProgramShader shader;
         private float startz, deltaz;
         private GLCursorType lastcursor = GLCursorType.Normal;
+        private IntPtr context;
 
         #endregion
 

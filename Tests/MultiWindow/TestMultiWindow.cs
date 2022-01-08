@@ -48,7 +48,7 @@ namespace TestOpenTk
             InitializeComponent();
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-            glwfc.EnsureCurrentPaintResize = true;
+            glwfc.EnsureCurrent = true;
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

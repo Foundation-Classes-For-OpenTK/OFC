@@ -31,12 +31,14 @@ namespace GLOFC.GL4
         private int indirectsize;
         private BufferUsageHint bufferusage;
         private GLItemsList items;
+        private IntPtr context;
 
         public GLVertexBufferIndirect(GLItemsList items, int vertsize, int indirectsize, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw)
         {
             this.items = items;
             this.indirectsize = indirectsize;
             this.bufferusage = bh;
+            this.context = GLStatics.GetContext();
             Vertex = new GLBuffer(vertsize, std430, bh);
             items.Add(Vertex);
         }
@@ -60,6 +62,7 @@ namespace GLOFC.GL4
                                     int ic = 1,                     // number of items to instance
                                     int baseinstance = -1)          // baseinstance, <0 use CurrentPos on vertex buffer to estimate instance number, else use this
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             CreateIndirect(indirectbuffer);
 
             if (EnoughSpaceVertex(sourcelength, indirectbuffer))
@@ -87,6 +90,7 @@ namespace GLOFC.GL4
                                     int indirectbuffer, 
                                     int vertexcount = -1, int vertexbaseindex = 0, int ic = 1, int baseinstance = -1)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             CreateIndirect(indirectbuffer);
 
             if (EnoughSpaceMatrix(sourcelength, indirectbuffer))
