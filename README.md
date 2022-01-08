@@ -15,7 +15,7 @@ A 3dcontroller is present to allow you to move the eye/target position through t
 
 A basic set of shape factories allow some basic shapes to be turned into vertex lists.
 
-Also present is a WINFORM style set of classes to allow a basic UI to be presented in GL, allowing creation of Forms, Buttons, Labels, Comboboxes, drop down lists, panels, etc.
+Also present is a WINFORM style set of classes to allow a UI to be presented in GL, allowing creation of Forms, Buttons, Labels, Comboboxes, drop down lists, panels, data grid views, etc.
 
 This code was written for the EDDiscovery project and so is orientated for that use.
 
