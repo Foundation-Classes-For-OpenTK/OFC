@@ -22,6 +22,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -146,7 +147,7 @@ namespace TestOpenTk
                 {
                     int v = -45000 + 1000 * i;      // range from -45000 to +70000 
                     numbitmaps[i] = new Bitmap(100, 100);
-                    BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
+                    GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                 }
 
                 GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, SizedInternalFormat.Rgba8, ownbitmaps: true);
@@ -294,7 +295,7 @@ namespace TestOpenTk
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
-                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: BitMapHelpers.BitmapFunction.HeatMap);
+                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: GLOFC.Utils.BitMapHelpers.BitmapFunction.HeatMap);
                 heat.Save(@"c:\code\heatmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
                 if (false)       // heat map checkout debug

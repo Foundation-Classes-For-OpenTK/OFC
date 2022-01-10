@@ -15,6 +15,7 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -127,12 +128,12 @@ void main(void)
             {
                 items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
 
-                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
+                using (var bmp = GLOFC.Utils.BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
                     items.Add(new GLTexture2D(bmp, SizedInternalFormat.Rgba8), "200,100");
                 }
 
-                using (var bmp = BitMapHelpers.DrawTextIntoAutoSizedBitmap("-200,-100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
+                using (var bmp = GLOFC.Utils.BitMapHelpers.DrawTextIntoAutoSizedBitmap("-200,-100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {
                     items.Add(new GLTexture2D(bmp, SizedInternalFormat.Rgba8), "-200,-100");
                 }

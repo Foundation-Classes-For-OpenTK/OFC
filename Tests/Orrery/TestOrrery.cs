@@ -17,6 +17,7 @@ using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;

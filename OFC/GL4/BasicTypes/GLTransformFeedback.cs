@@ -18,12 +18,16 @@ using System;
 
 namespace GLOFC.GL4
 {
-    // Holds a transform feedback object and has statics for general TF operations
+    /// <summary>
+    /// Holds a transform feedback object and has statics for general TF operations
+    /// </summary>
 
     public class GLTransformFeedbackObject : IDisposable
     {
+        /// <summary> GL ID </summary>
         public int Id { get; set; } = -1;
 
+        /// <summary> Construct a Transform Feedback object </summary>
         public GLTransformFeedbackObject()
         {
             Id = GL.GenTransformFeedback();
@@ -31,16 +35,19 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        /// <summary> Bind this object to the transform feeback binding point</summary>
         public void Bind()
         {
             GL.BindTransformFeedback(TransformFeedbackTarget.TransformFeedback, Id);    // bind this
         }
 
+        /// <summary> Unbind this object </summary>
         public static void UnBind()
         {
             GL.BindTransformFeedback(TransformFeedbackTarget.TransformFeedback, 0);     // back to default
         }
 
+        /// <summary> Dispose of the object </summary>
         public void Dispose()
         {
             if (Id != -1)
@@ -56,20 +63,24 @@ namespace GLOFC.GL4
 
         // use to start/end up the bound transform (either default or this one)
 
-        public static void BeginTransformFeedback(TransformFeedbackPrimitiveType t)
+        /// <summary> Start feedback on the primitive type </summary>
+        public static void Begin(TransformFeedbackPrimitiveType t)
         {
             GL.BeginTransformFeedback(t);
         }
 
-        public static void EndTransformFeedback()
+        /// <summary> End feedback </summary>
+        public static void End()
         {
             GL.EndTransformFeedback();
         }
-        public static void PauseTransformFeedback()
+        /// <summary> Pause feedback </summary>
+        public static void Pause()
         {
             GL.PauseTransformFeedback();
         }
-        public static void ResumeTransformFeedback()
+        /// <summary> Resume from pause </summary>
+        public static void Resume()
         {
             GL.ResumeTransformFeedback();
         }

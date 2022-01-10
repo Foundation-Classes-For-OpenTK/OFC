@@ -12,23 +12,31 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 
 namespace GLOFC
 {
+    /// <summary>
+    /// Static helper functions for Vector3
+    /// </summary>
+
     public static class GLStaticsVector3
     {
+        /// <summary> Floor the components</summary>
         static public Vector3 Floor(this Vector3 v)
         {
             return new Vector3((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z));
         }
 
+        /// <summary> Fract the components </summary>
         static public Vector3 Fract(this Vector3 v)
         {
             return new Vector3((float)(v.X - Math.Floor(v.X)), (float)(v.Y - Math.Floor(v.Y)), (float)(v.Z - Math.Floor(v.Z)));
         }
 
+        /// <summary> Floor and Fract the components </summary>
         static public Vector3 FloorFract(this Vector3 v, out Vector3 fract) // floor and fract
         {
             float fx = (float)Math.Floor(v.X);
@@ -38,6 +46,7 @@ namespace GLOFC
             return new Vector3(fx, fy, fz);
         }
 
+        /// <summary> Find position between two vectors with a definable position</summary>
         public static Vector3 Mix(Vector3 a, Vector3 b, float mix)
         {
             float x = (float)(a.X + (b.X - a.X) * mix);
@@ -46,12 +55,14 @@ namespace GLOFC
             return new Vector3(x, y, z);
         }
 
+        /// <summary> Absolute the components</summary>
         static public Vector3 Abs(this Vector3 v)
         {
             return new Vector3(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
         }
 
 
+        /// <summary> AZel between curpos and target </summary>
         public static Vector2 AzEl(this Vector3 curpos, Vector3 target, bool returndegrees)     // az and elevation between curpos and target
         {
             Vector3 delta = Vector3.Subtract(target, curpos);
@@ -86,6 +97,7 @@ namespace GLOFC
             return new Vector2(inclination, azimuth);
         }
 
+        /// <summary>AZel between curpos and target </summary>
         public static Vector2d AzEl(this Vector3d curpos, Vector3d target, bool returndegrees)     // az and elevation between curpos and target
         {
             Vector3d delta = Vector3d.Subtract(target, curpos);
@@ -120,16 +132,15 @@ namespace GLOFC
             return new Vector2d(inclination, azimuth);
         }
 
-
-
+        /// <summary> Translate to vector 4 </summary>
         public static Vector4 ToVector4(this Vector3 v, float w = 0)
         {
             return new Vector4(v.X, v.Y, v.Z,w);
         }
 
-        private static Vector3 cameravector = new Vector3(0, 1, 0);        // camera vector, at CameraDir(0,0)
+        private static Vector3 cameravector { get; set; } = new Vector3(0, 1, 0);        // camera vector, at CameraDir(0,0)
 
-        // from current eye position, calculate lookat, given a camera angle and a distance
+        /// <summary> Calculate look position from eye given distance </summary>
         public static Vector3 CalculateLookatPositionFromEye(this Vector3 eyeposition, Vector2 cameradirdegreesp, float distance)
         {
             Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
@@ -140,6 +151,8 @@ namespace GLOFC
             Vector3 eyerel = Vector3.Transform(cameravector, transform);
             return eyeposition + eyerel * distance;
         }
+
+        /// <summary> Calculate look position from eye given distance </summary>
         public static Vector3d CalculateLookatPositionFromEye(this Vector3d eyeposition, Vector2d cameradirdegreesp, double distance)
         {
             Matrix4d transform = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees
@@ -151,8 +164,7 @@ namespace GLOFC
             return eyeposition + eyerel * distance;
         }
 
-
-        // from current lookat, calculate eyeposition, given a camera angle and a distance
+        /// <summary> From current lookat, calculate eyeposition, given a camera angle and a distance</summary>
         public static Vector3 CalculateEyePositionFromLookat(this Vector3 lookat, Vector2 cameradirdegreesp, float distance)
         {
             Matrix3 transform = Matrix3.Identity;                   // identity nominal matrix, dir is in degrees
@@ -164,6 +176,8 @@ namespace GLOFC
 
             return lookat - eyerel * distance;
         }
+
+        /// <summary> From current lookat, calculate eyeposition, given a camera angle and a distance</summary>
         public static Vector3d CalculateEyePositionFromLookat(this Vector3d lookat, Vector2d cameradirdegreesp, double distance)
         {
             Matrix4d transform = Matrix4d.Identity;                   // identity nominal matrix, dir is in degrees

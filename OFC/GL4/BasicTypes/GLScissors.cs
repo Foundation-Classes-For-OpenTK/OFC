@@ -18,28 +18,35 @@ using System.Drawing;
 
 namespace GLOFC.GL4
 {
-    // Set up by a shader start/end, or inline during render paint
+    /// <summary>
+    /// Scissor control - use manually between render lists or use via operations
+    /// </summary>
 
     public static class GLScissors 
     {
+        /// <summary> Disable scissor test on this viewport</summary>
         static public void Disable(int viewport)
         {
             GL.Disable(IndexedEnableCap.ScissorTest, viewport);
         }
 
-        static public void Set(int viewport, Rectangle r)               // 0,0 is lower left
+        /// <summary> Enable scissor test on this viewport with this rectangle (0,0) is lower left</summary>
+        static public void Set(int viewport, Rectangle r)             
         {
             GL.ScissorIndexed(viewport, r.Left, r.Top, r.Width, r.Height);
             GL.Enable(IndexedEnableCap.ScissorTest, viewport);
         }
 
+        /// <summary> Enable scissor test on this viewport with this rectangle (0,0) is top left, GLMatrixCalc gives screen size</summary>
         static public void Set(int viewport, Rectangle r, GLMatrixCalc c)  // 0,0 is top left
         {
             GL.ScissorIndexed(viewport, r.Left, c.ScreenSize.Height - r.Bottom, r.Width, r.Height);
             GL.Enable(IndexedEnableCap.ScissorTest, viewport);
         }
 
-        // calculate the area to scissor for screen coords.. Note scissor is defined by the openGL whole windows, not its viewport.
+        /// <summary> Calculate the area to scissor for the MatrixCalc screen coords.. 
+        /// Note scissor is defined by the openGL whole window, not its viewport.
+        /// </summary>
 
         static public void SetToScreenCoords(int viewport, GLMatrixCalc c)
         {

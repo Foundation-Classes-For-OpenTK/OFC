@@ -14,6 +14,8 @@
  * 
  */
 
+using GLOFC.Utils;
+
 namespace GLOFC
 {
     public class CommandArgs

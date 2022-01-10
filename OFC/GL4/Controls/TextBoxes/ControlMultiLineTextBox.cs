@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -429,7 +430,7 @@ namespace GLOFC.GL4.Controls
         {
             bool horzscroll = false;
 
-            SizeF area = BitMapHelpers.MeasureStringInBitmap(Text, Font);
+            SizeF area = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font);
 
             int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + Font.Height/2));       // add a nerf based on font height
             width += TextBoundary.TotalWidth;

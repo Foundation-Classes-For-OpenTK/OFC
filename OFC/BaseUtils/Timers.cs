@@ -19,6 +19,7 @@ using System.Diagnostics;
 
 namespace GLOFC.Timers
 {
+    
     // timer is thread safe
 
     public class Timer : IDisposable

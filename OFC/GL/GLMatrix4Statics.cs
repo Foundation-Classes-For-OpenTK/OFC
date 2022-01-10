@@ -12,13 +12,21 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 
 namespace GLOFC
 {
+    /// <summary>
+    /// Matrix 4 helpers
+    /// 
+    /// </summary>
     public static class GLStaticsMatrix4
     {
+        /// <summary>
+        /// Perform Approx equals on two matrix, with definable maxerror
+        /// </summary>
         static public bool ApproxEquals(Matrix4 lm, Matrix4 rm, float maxerr = 0.0001f)
         {
             for (int r = 0; r < 4; r++)
@@ -33,12 +41,15 @@ namespace GLOFC
             return true;
         }
 
-        // opengl matrixes are layed out as
-        //  x.x x.y x.z 0       in row order in memory (locations 0,1,2,3 across)
-        //  y.x y.y y.z 0       x, y, z are 3-component vectors describing the matrix coordinate system(local coordinate system within relative to the global coordinate system).
-        //  z.x z.y z.z 0
-        //  p.x p.y p.z 1       p is a 3-component vector describing the origin of matrix coordinate system.
-        //  or in memory order: x.x x.y x.z 0 y.x y.y y.z 0 z.x z.y z.z 0 p.x p.y p.z 1
+        /// <summary>
+        /// To Float array
+        /// opengl matrixes are layed out as
+        ///  x.x x.y x.z 0       in row order in memory (locations 0,1,2,3 across)
+        ///  y.x y.y y.z 0       x, y, z are 3-component vectors describing the matrix coordinate system(local coordinate system within relative to the global coordinate system).
+        ///  z.x z.y z.z 0
+        ///  p.x p.y p.z 1       p is a 3-component vector describing the origin of matrix coordinate system.
+        ///  or in memory order: x.x x.y x.z 0 y.x y.y y.z 0 z.x z.y z.z 0 p.x p.y p.z 1
+        /// </summary>
 
         static public float[] ToFloatArray(this Matrix4 mat)
         {
@@ -49,6 +60,9 @@ namespace GLOFC
             return r;
         }
 
+        /// <summary>
+        /// Create a matrix from worldpos, size and rotation
+        /// </summary>
         static public Matrix4 CreateMatrix(Vector3 worldpos, Vector3 size, Vector3 rotationradians)
         {
             Matrix4 mat = Matrix4.Identity;
@@ -63,7 +77,10 @@ namespace GLOFC
             return mat;
         }
 
-        // presumes axis is on X plane, positive tips away, and rotation on Y plane, postive values rotate anticlockwise
+        /// <summary>
+        /// Create a Planet type rotation matrix
+        /// presumes axis is on X plane, positive tips away, and rotation on Y plane, postive values rotate anticlockwise
+        /// </summary>
         static public Matrix4 CreateMatrixPlanetRot(Vector3 worldpos, Vector3 size, float axis, float rotation) 
         {
             Matrix4 mat = Matrix4.Identity;

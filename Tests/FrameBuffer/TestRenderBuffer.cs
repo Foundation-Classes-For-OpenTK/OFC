@@ -16,6 +16,7 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -75,7 +76,7 @@ namespace TestOpenTk
             {
                 Bitmap bmp = new Bitmap(Properties.Resources.dotted2);      // demo argb copy
                 byte[] argbbytes = bmp.GetARGBBytes();
-                Bitmap copy = BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
+                Bitmap copy = GLOFC.Utils.BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
                 var tex = new GLTexture2D(copy, SizedInternalFormat.Rgba8);
                 items.Add(tex, "dotted2");
                 Bitmap bmp2 = tex.GetBitmap(inverty: false);
@@ -164,7 +165,7 @@ namespace TestOpenTk
                 GLRenderBuffer rb = new GLRenderBuffer();
                 items.Add(rb);
                 rb.Allocate(RenderbufferStorage.DepthComponent32f, ctex.Width, ctex.Height);
-                fb.AttachDepth(rb, 0);
+                fb.AttachDepth(rb);
 
                 // bind Framebuffer to system for it to be the target to draw to, with a default back colour
                 fb.BindColor(new OpenTK.Graphics.Color4(40, 40, 40, 255));
@@ -242,7 +243,7 @@ namespace TestOpenTk
                 gl3dcontroller.MatrixCalc.SetViewPort();        // restore the view port
 
                 byte[] texdatab = ctex.GetTextureImageAs<byte>(OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, 0, true);
-                Bitmap bmp = BitMapHelpers.CreateBitmapFromARGBBytes(ctex.Width, ctex.Height, texdatab);
+                Bitmap bmp = GLOFC.Utils.BitMapHelpers.CreateBitmapFromARGBBytes(ctex.Width, ctex.Height, texdatab);
                 bmp.Save(@"c:\code\out.bmp");
             }
 

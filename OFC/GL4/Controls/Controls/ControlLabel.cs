@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -48,7 +49,7 @@ namespace GLOFC.GL4.Controls
                 if (Text.HasChars())
                 {
                     using( var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                        size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                        size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
                 }
 
                 Size s = new Size((int)(size.Width + 0.999) + Margin.TotalWidth + Padding.TotalWidth + BorderWidth + 4,

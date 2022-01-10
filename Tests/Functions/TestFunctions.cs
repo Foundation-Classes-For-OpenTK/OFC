@@ -21,6 +21,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -367,6 +368,8 @@ void main(void)
                 StringMatrix res = StringMatrix.Mult(roxm90, roy);
                 string r = res.ToString(true);
                 System.Diagnostics.Debug.WriteLine($"{r}");
+                r = res.ToList();
+                System.Diagnostics.Debug.WriteLine($"{r}");
 
                 res = StringMatrix.Mult(rox, roy);
                 r = res.ToString(true);
@@ -381,7 +384,8 @@ void main(void)
             }
 
 
-            //    System.Diagnostics.Debug.WriteLine(rotplustransscale.ToString());
+            //    System.Di
+            //    agnostics.Debug.WriteLine(rotplustransscale.ToString());
 
 
         }

@@ -15,6 +15,7 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -281,11 +282,11 @@ namespace TestOpenTk
                     }
 
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(sl.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(sl.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
                     List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
                     sl.Add(array, mats, bmps, bref);
-                    BitMapHelpers.Dispose(bmps);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
                 {
                     Vector3 pos = new Vector3(0, 0, 0);
@@ -351,10 +352,10 @@ namespace TestOpenTk
                     }
 
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
                     slset.Add("GA", text, array, mats, bmps);
-                    BitMapHelpers.Dispose(bmps);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
                 {
                     Vector3 pos = new Vector3(20, 0, 0);
@@ -368,10 +369,10 @@ namespace TestOpenTk
                     }
 
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
                     slset.Add("GB", text, array, mats, bmps);
-                    BitMapHelpers.Dispose(bmps);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
                 {
                     Vector3 pos = new Vector3(20, 0, 15);
@@ -385,10 +386,10 @@ namespace TestOpenTk
                     }
 
                     var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                    var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
                     slset.Add("GC", text, array, mats, bmps);
-                    BitMapHelpers.Dispose(bmps);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
             }
 
@@ -464,10 +465,10 @@ namespace TestOpenTk
 
                 Font fnt = new Font("MS sans serif", 16f);
                 var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkGreen, 0.5f);
+                var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkGreen, 0.5f);
 
                 slset.Add("GD" + (tagn++).ToString(), text, array, mats, bmps);
-                BitMapHelpers.Dispose(bmps);
+                GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 gl3dcontroller.Redraw();
             }
 

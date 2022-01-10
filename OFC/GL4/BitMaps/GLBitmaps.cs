@@ -91,7 +91,7 @@ namespace GLOFC.GL4
             if (textdrawbitmap == null)
                 textdrawbitmap = new Bitmap(bitmapsize.Width, bitmapsize.Height);
 
-            BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
+            GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
             Add(tag, textdrawbitmap, 1, worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, ownbitmap:false, visible);
         }

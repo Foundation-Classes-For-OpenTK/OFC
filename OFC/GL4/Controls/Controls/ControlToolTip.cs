@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System.Drawing;
 
 namespace GLOFC.GL4.Controls
@@ -81,7 +82,7 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible == false)
             {
-                var size = BitMapHelpers.MeasureStringInBitmap(text, Font, StringFormat);
+                var size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(text, Font, StringFormat);
                 Location = new Point(pos.X+AutoPlacementOffset.X, pos.Y + AutoPlacementOffset.Y);
                 ClientSize = new Size((int)size.Width + 1, (int)size.Height + 1);
                 TopMost = true;

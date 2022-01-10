@@ -20,7 +20,9 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace GLOFC
+#pragma warning disable 1591
+
+namespace GLOFC.Utils
 {
     public static class ResourceHelpers
     {

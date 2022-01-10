@@ -42,7 +42,7 @@ namespace GLOFC.GL4
             GLStatics.Check();
             VaryingBuffer.BindTransformFeedback(BindingIndex, TFObj.Id, Offset, Size);
             GLStatics.Check();
-            GLTransformFeedbackObject.BeginTransformFeedback(Mode);
+            GLTransformFeedbackObject.Begin(Mode);
             GLStatics.Check();
         }
     }
@@ -61,7 +61,7 @@ namespace GLOFC.GL4
 
         public override void Execute(GLMatrixCalc c)
         {
-            GLTransformFeedbackObject.EndTransformFeedback();
+            GLTransformFeedbackObject.End();
             GLBuffer.UnbindTransformFeedback(BindingIndex, TFObj.Id);
             GLTransformFeedbackObject.UnBind();
         }

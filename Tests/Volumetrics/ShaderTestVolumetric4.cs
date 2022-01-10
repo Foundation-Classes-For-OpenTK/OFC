@@ -21,6 +21,7 @@ using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.Utils;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -157,7 +158,7 @@ void main(void)
                 {
                     int v = -100 + i * 10;
                     numbers[i] = new Bitmap(100, 100);
-                    BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
+                    GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                     numberpos[i] = Matrix4.CreateScale(1);
                     numberpos[i] *= Matrix4.CreateRotationX(-80f.Radians());
                     numberpos[i] *= Matrix4.CreateTranslation(new Vector3(20, 0, v));

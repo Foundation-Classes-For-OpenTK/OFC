@@ -13,6 +13,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;

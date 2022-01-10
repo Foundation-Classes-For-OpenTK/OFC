@@ -21,6 +21,7 @@ using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.Utils;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -151,7 +152,7 @@ namespace TestOpenTk
                 {
                     int v = -45000 + 1000 * i;      // range from -45000 to +70000 
                     numbitmaps[i] = new Bitmap(100, 100);
-                    BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
+                    GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                 }
 
                 GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, SizedInternalFormat.Rgba8, ownbitmaps: true);

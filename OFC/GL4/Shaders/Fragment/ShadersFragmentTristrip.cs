@@ -14,6 +14,7 @@
  */
 
 
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System.Drawing;
@@ -109,10 +110,7 @@ void main(void)
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
 
-        public string Code(int binding)
-        {
-            return
-    @"
+        public string Code(int binding) => @"
 #version 450 core
 layout (location=0) in vec2 vs_textureCoordinate;
 layout (location=2) flat in int vertexid;
@@ -140,8 +138,6 @@ void main(void)
         color = colorin;
 
 }";
-
-        }
 
     }
 

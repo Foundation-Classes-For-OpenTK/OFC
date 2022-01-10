@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -171,7 +172,7 @@ namespace GLOFC.GL4.Controls
                     {
                         foreach (var s in Items)
                         {
-                            SizeF cur = BitMapHelpers.MeasureStringInBitmap(s, Font, f);
+                            SizeF cur = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(s, Font, f);
                             if (cur.Width > max.Width)
                                 max.Width = cur.Width;
                         }

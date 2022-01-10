@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +24,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\Debug\GLOFC.xml</DocumentationFile>
+    <DisableDefaultDocumentation>True</DisableDefaultDocumentation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +34,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+    <DefaultDocumentationGeneratedPages>Types</DefaultDocumentationGeneratedPages>
+    <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
+    <DefaultDocumentationFolder>bin\release\mddoc</DefaultDocumentationFolder>
+    <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
+    <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
+    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -151,6 +162,7 @@
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
+    <Compile Include="GLOFC\FileHelpers.cs" />
     <Compile Include="GL\GLMatrixArray.cs" />
     <Compile Include="GL\GLMatrixString.cs" />
     <Compile Include="GL\GLMatrix4Statics.cs" />
@@ -212,7 +224,6 @@
     <Compile Include="Controller3D\Controller3D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaseUtils\ColorObjectExtensions.cs" />
-    <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\ControlHelpers.cs" />
     <Compile Include="BaseUtils\BitMapHelpers.cs" />
     <Compile Include="BaseUtils\DisposableDictionary.cs" />
@@ -257,4 +268,11 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets" Condition="Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets'))" />
+  </Target>
 </Project>

@@ -12,9 +12,9 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace GLOFC.GL4.Controls
 {
@@ -67,7 +67,7 @@ namespace GLOFC.GL4.Controls
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
-                    var texts = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                    var texts = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
                     int textminwidth = (int)texts.Width + GBXoffset;
                     var area = VisibleChildArea();     // all children, find area and set it to it.
                     SetNI(clientsize: new Size(Math.Max(area.Left + area.Right, textminwidth), area.Top + area.Bottom));
@@ -116,7 +116,7 @@ namespace GLOFC.GL4.Controls
 
                 if (this.Text.HasChars())
                 { 
-                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
+                    using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : ForeColor.Multiply(ForeDisabledScaling)))
                     {
                         gr.DrawString(this.Text, this.Font, textb, titlearea, fmt);
                     }

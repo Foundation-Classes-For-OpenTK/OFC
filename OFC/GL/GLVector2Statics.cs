@@ -12,18 +12,25 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 
 namespace GLOFC
 {
+    /// <summary>
+    /// Static helper functions for Vector2
+    /// </summary>
+
     public static class GLStaticsVector2
     {
+        /// <summary> Floor the components</summary>
         public static Vector2 Floor(this Vector2 a)
         {
             return new Vector2((float)Math.Floor(a.X), (float)Math.Floor(a.Y));
         }
 
+        /// <summary>Fract the components </summary>
         public static Vector2 Fract(this Vector2 a)
         {
             float x = (float)(a.X - Math.Floor(a.X));
@@ -31,6 +38,7 @@ namespace GLOFC
             return new Vector2(x, y);
         }
 
+        /// <summary> Find position between two vectors with a definable position </summary>
         public static Vector2 Mix(Vector2 a, Vector2 b, float mix)
         {
             float x = (float)(a.X + (b.X - a.X) * mix);
@@ -38,12 +46,14 @@ namespace GLOFC
             return new Vector2(x, y);
         }
 
+        /// <summary> Absolute the components </summary>
         static public Vector2 Abs(this Vector2 v)
         {
             return new Vector2(Math.Abs(v.X), Math.Abs(v.Y));
         }
 
 
+        /// <summary> Randomise vector to float </summary>
         public static float randA(Vector2 n)
         {
             Vector2 i0 = new Vector2(12.9898f, 4.1414f);
@@ -52,6 +62,7 @@ namespace GLOFC
             return i2.Fract();
         }
 
+        /// <summary> generate noise </summary>
         public static float noiseA(Vector2 p)
         {
             Vector2 ip = p.Floor();
@@ -66,6 +77,7 @@ namespace GLOFC
             return res * res;
         }
 
+        /// <summary> Rotate the vector </summary>
         public static Vector2 Rotate(this Vector2 v, float degreesrad)
         {
             double sin = Math.Sin(degreesrad);
@@ -78,11 +90,13 @@ namespace GLOFC
             return v;
         }
 
+        /// <summary> Angle between two vectors </summary>
         public static float Angle(this Vector2 start, Vector2 end)
         {
             return (float)Math.Atan2(end.Y - start.Y, end.X - start.X);
         }
 
+        /// <summary> Vector2 to Vector4 </summary>
         public static Vector4 ToVector4XZ(this Vector2 vxz, float y = 0, float w = 1)
         {
             return new Vector4(vxz.X, y, vxz.Y, w);

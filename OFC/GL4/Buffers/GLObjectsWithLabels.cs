@@ -129,10 +129,10 @@ namespace GLOFC.GL4
                                 Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,   // see GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix
                                 StringFormat fmt, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
         {
-            var bmps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
+            var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
             var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, textoffset, size, rot, rotatetoviewer, rotateelevation,0,0,0,true);
             int v = Add(array, mats, bmps, blocklist);
-            BitMapHelpers.Dispose(bmps);
+            GLOFC.Utils.BitMapHelpers.Dispose(bmps);
             return v;
         }
 

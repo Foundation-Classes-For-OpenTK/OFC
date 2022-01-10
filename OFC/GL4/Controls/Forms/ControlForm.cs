@@ -12,9 +12,9 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 
 namespace GLOFC.GL4.Controls
 {
@@ -145,7 +145,7 @@ namespace GLOFC.GL4.Controls
                 {
                     using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                     {
-                        var titlearea = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                        var titlearea = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
                         area.Width = Math.Max(area.Width, (int)titlearea.Width + (ShowClose ? TitleBarHeight : 0) - ClientLeftMargin);
                     }
                 }

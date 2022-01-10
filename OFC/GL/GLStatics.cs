@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL;
 using System;
 using System.Collections.Generic;
@@ -20,16 +21,27 @@ using System.Runtime.InteropServices;
 
 namespace GLOFC
 {
+    /// <summary>
+    /// GL Statics functions are generic to GL as a whole (not specifically for GL4).  Most of these are used by the render state so you don't have to control them manually.
+    /// Extensions and HasExtensions is useful to know if your GL has a specific GL extension.
+    /// Check is used to verify GL is happy and can be sprinkled around your code to make sure nothing is wrong.
+    /// </summary>
     public static class GLStatics
     {
         [DllImport("opengl32.dll", EntryPoint = "wglGetCurrentContext")]
         extern static IntPtr wglGetCurrentContext();// DCAl
 
+        /// <summary>
+        /// Get the currentopenGL rendering context handle.
+        /// </summary>
         public static IntPtr GetContext()
         {
             return wglGetCurrentContext();
         }
 
+        /// <summary>
+        /// Call to check that the GL system is okay. GL stores errors in GetError() and you must explicitly check.
+        /// </summary>
         [System.Diagnostics.Conditional("DEBUG")]
         public static void Check([CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
@@ -54,8 +66,11 @@ namespace GLOFC
 
         // Allocation tracking, for debug mode, to check we are disposing correctly
 
-        public static Dictionary<Type, int> allocatecounts = new Dictionary<Type, int>();
+        private static Dictionary<Type, int> allocatecounts = new Dictionary<Type, int>();
 
+        /// <summary>
+        /// Register an allocation of type T
+        /// </summary>
         [System.Diagnostics.Conditional("DEBUG")]
         public static void RegisterAllocation(Type t)
         {
@@ -63,12 +78,19 @@ namespace GLOFC
                 allocatecounts[t] = 0;
             allocatecounts[t]++;
         }
+        /// <summary>
+        /// Register an deallocation of type T
+        /// </summary>
         [System.Diagnostics.Conditional("DEBUG")]
         public static void RegisterDeallocation(Type t)
         {
             if ( --allocatecounts[t] < 0 )
                 System.Diagnostics.Debug.Assert(false, $"Type {t.Name} over deallocated");
         }
+
+        /// <summary>
+        /// Verify all deallocated - call at the end of your program after Items.Dispose()
+        /// </summary>
         [System.Diagnostics.Conditional("DEBUG")]
         public static void VerifyAllDeallocated()
         {
@@ -84,6 +106,9 @@ namespace GLOFC
             }
         }
 
+        /// <summary>
+        /// Set a EnableCap flag to state
+        /// </summary>
         public static void SetEnable(EnableCap c, bool state)
         {
             if (state)
@@ -92,53 +117,83 @@ namespace GLOFC
                 GL.Disable(c);
         }
 
+        /// <summary>
+        /// Clear depth buffer
+        /// </summary>
         public static void ClearDepthBuffer()       // nicer name
         {
             GL.Clear(ClearBufferMask.DepthBufferBit);
         }
 
+        /// <summary>
+        /// Clear depth buffer to value
+        /// </summary>
         public static void ClearDepthBuffer(int s)       
         {
             GL.ClearDepth(s);
             GL.Clear(ClearBufferMask.DepthBufferBit);
         }
 
+        /// <summary>
+        /// Clear stencil buffer
+        /// </summary>
         public static void ClearStencilBuffer()       // nicer name
         {
             GL.Clear(ClearBufferMask.StencilBufferBit);
         }
 
+        /// <summary>
+        /// Clear depth buffer to value
+        /// </summary>
         public static void ClearStencilBuffer(int s)       // clear to S
         {
             GL.ClearStencil(s);
             GL.Clear(ClearBufferMask.StencilBufferBit);
         }
 
+        /// <summary>
+        /// Clear buffer set using ClearBufferMask
+        /// </summary>
         public static void ClearBuffer(ClearBufferMask mask)       // nicer name
         {
             GL.Clear(mask);
         }
 
+        /// <summary>
+        /// Flush GL pipeline - avoid
+        /// </summary>
         public static void Flush()
         {
             GL.Flush();
         }
 
+        /// <summary>
+        /// Push all GL commands to pipeline
+        /// </summary>
         public static void Finish()
         {
             GL.Finish();
         }
 
+        /// <summary>
+        /// Set colour masks in use
+        /// </summary>
         public static void ColorMasks(bool red, bool green, bool blue, bool alpha)  // enable/disable frame buffer components
         {
             GL.ColorMask(red, green, blue, alpha);
         }
 
+        /// <summary>
+        /// Return list of extensions
+        /// </summary>
         public static string[] Extensions()
         {
             return GL.GetString(StringName.Extensions).Split(' ');
         }
 
+        /// <summary>
+        /// Has GL got this extension?
+        /// </summary>
         public static bool HasExtensions(string s)
         {
             return Array.IndexOf(Extensions(), s) >= 0;
@@ -146,6 +201,9 @@ namespace GLOFC
 
         // public delegate void DebugProc(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam);
 
+        /// <summary>
+        /// Enable GL debug proc and vector to this function
+        /// </summary>
         public static bool EnableDebug(DebugProc p)
         {
             if (HasExtensions("GL_KHR_debug"))

@@ -19,7 +19,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace GLOFC
+#pragma warning disable 1591
+
+namespace GLOFC.Utils
 {
     public class LineReader : IDisposable
     {

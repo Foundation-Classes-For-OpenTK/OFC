@@ -16,6 +16,8 @@ using OpenTK;
 using System.Collections.Generic;
 using System.Linq;
 
+#pragma warning disable 1591
+
 namespace GLOFC
 {
     public class GLMeshVertices     // Vertex store for verts, normals, textures

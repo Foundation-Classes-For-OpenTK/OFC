@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GLOFC;
+using GLOFC.Utils;
 
 namespace EliteDangerousCore.EDSM
 {

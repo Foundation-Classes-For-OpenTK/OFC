@@ -17,6 +17,7 @@ using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -239,7 +240,7 @@ namespace TestOpenTk
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
-                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: BitMapHelpers.BitmapFunction.HeatMap);
+                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: GLOFC.Utils.BitMapHelpers.BitmapFunction.HeatMap);
                 heat.Save(@"c:\code\heatmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
                 Random rnd = new Random(23);

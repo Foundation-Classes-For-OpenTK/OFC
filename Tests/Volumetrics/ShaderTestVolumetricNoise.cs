@@ -14,6 +14,7 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -184,7 +185,7 @@ namespace TestOpenTk
                 {
                     int v = -35000 + i * 1000;
                     numbers[i] = new Bitmap(100, 100);
-                    BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
+                    GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
 
                     numberpos[i] = Matrix4.CreateScale(1);
                     numberpos[i] *= Matrix4.CreateRotationX(-25f.Radians());

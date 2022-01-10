@@ -14,6 +14,7 @@
  */
 
 
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -145,7 +146,7 @@ namespace TestOpenTk
                         while (cleanbitmaps.TryDequeue(out Sector sectoclean))
                         {
                             // System.Diagnostics.Debug.WriteLine($"Clean bitmap for {sectoclean.pos}");
-                            BitMapHelpers.Dispose(sectoclean.bitmaps);
+                            GLOFC.Utils.BitMapHelpers.Dispose(sectoclean.bitmaps);
                             sectoclean.bitmaps = null;
                         }
 
@@ -190,7 +191,7 @@ namespace TestOpenTk
 
             d.stars = array;       
             d.text = text;
-            d.bitmaps = BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f);
+            d.bitmaps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f);
             d.textpos = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, -2f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
 
             generatedsectors.Enqueue(d);       // d has been filled

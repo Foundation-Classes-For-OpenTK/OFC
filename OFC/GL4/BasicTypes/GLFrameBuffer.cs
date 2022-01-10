@@ -17,19 +17,22 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // local data block, writable in Vectors etc, supports std140 and std430
-    // you can use Allocate then Fill direct
-    // or you can use the GL Mapping function which maps the buffer into memory
+    ///<summary> Frame Buffer object, for drawing into </summary>
 
-    [System.Diagnostics.DebuggerDisplay("Id {Id} Length {Length}")]
+    [System.Diagnostics.DebuggerDisplay("Id {Id} {Width} {Height} {ColorTarget}")]
     public class GLFrameBuffer : IDisposable
     {
+        ///<summary>  </summary>
         public int Id { get; private set; } = -1;
 
-        public int Width { get; protected set; } = 0;           // Set when colour texture attaches
+        ///<summary> Width in pixels. Set when colour texture attaches </summary>
+        public int Width { get; protected set; } = 0;
+        ///<summary> Height in pixels. Set when colour texture attaches </summary>
         public int Height { get; protected set; } = 1;
+        ///<summary> Color Target number </summary>
         public int ColorTarget { get; protected set; } = 0;
 
+        ///<summary> Make a new frame buffer and get ID  </summary>
         public GLFrameBuffer()
         {
             GL.CreateFramebuffers(1, out int id);
@@ -37,8 +40,7 @@ namespace GLOFC.GL4
             Id = id;
         }
 
-        // attach textures to framebuffer
-
+        ///<summary> Attach a 2D texture to frame buffer on colourtarget and mipmaplevel </summary>
         public void AttachColor(GLTexture2D tex, int colourtarget = 0, int mipmaplevel = 0)
         {
             ColorTarget = colourtarget;
@@ -48,6 +50,7 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        ///<summary> Attach a 2D Array texture to frame buffer on colourtarget and mipmaplevel </summary>
         public void AttachColor(GLTexture2DArray tex, int colourtarget = 0, int mipmaplevel = 0)    // not tested.. page 397
         {
             ColorTarget = colourtarget;
@@ -57,6 +60,7 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        ///<summary> Attach a 2D texture to frame buffer on colourtarget and mipmaplevel, to a specific layer </summary>
         public void AttachColorLayered(GLTexture2DArray tex, int colourtarget = 0, int mipmaplevel = 0, int layer = 0)    // not tested.. page 401
         {
             ColorTarget = colourtarget;
@@ -66,24 +70,28 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        ///<summary> Attach a 2D texture for the depth buffer, on mipmaplevel </summary>
         public void AttachDepth(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthAttachment, tex.Id, mipmaplevel);
             GLStatics.Check();
         }
 
+        ///<summary> Attach a 2D texture for the stencil buffer, on mipmaplevel </summary>
         public void AttachStensil(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.StencilAttachment, tex.Id, mipmaplevel);
             GLStatics.Check();
         }
 
+        ///<summary> Attach a 2D texture for the stencil and depth buffer, on mipmaplevel </summary>
         public void AttachDepthStensil(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthStencilAttachment, tex.Id, mipmaplevel);
             GLStatics.Check();
         }
 
+        ///<summary>  Attach a render buffer on colourtarget </summary>
         public void AttachColor(GLRenderBuffer r, int colourtarget)
         {
             ColorTarget = colourtarget;
@@ -91,36 +99,41 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
-        public void AttachDepth(GLRenderBuffer r, int mipmaplevel = 0)
+        ///<summary>  Attach a render buffer for the depth buffer</summary>
+        public void AttachDepth(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, r.Id);
             GLStatics.Check();
         }
 
-        public void AttachStensil(GLRenderBuffer r, int mipmaplevel = 0)
+        ///<summary>  Attach a render buffer for the stencil buffer </summary>
+        public void AttachStensil(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
             GLStatics.Check();
         }
 
-        public void AttachDepthStensil(GLRenderBuffer r, int mipmaplevel = 0)
+        ///<summary>  Attach a render buffer for the depth and stencil buffer</summary>
+        public void AttachDepthStensil(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
             GLStatics.Check();
         }
 
 
+        ///<summary>Bind a framebuffer for reading to the ReadFrameBuffer target </summary>
         public void BindRead()
         {
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, Id);
         }
 
+        ///<summary> Unbind the read frame buffer </summary>
         public static void UnbindRead()
         {
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
         }
 
-        // Changes GL target for rendering to this FB, sets viewport, clears to colourback
+        ///<summary> Changes GL target for rendering to this frame buffer, sets viewport, clears to colourback </summary>
         public void BindColor(OpenTK.Graphics.Color4 colourback)
         {
             GL.NamedFramebufferDrawBuffer(Id, DrawBufferMode.ColorAttachment0 + ColorTarget);   // attach the FB to draw buffer target 
@@ -131,18 +144,23 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        ///<summary> Unbind this framebuffer for rendering </summary>
+        public static void UnBind()
+        {
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+        }
+        ///<summary> Get Framebuffer completion status </summary>
         public FramebufferStatus GetStatus(FramebufferTarget tb = FramebufferTarget.DrawFramebuffer)     // page 405 get status
         {
             return GL.CheckNamedFramebufferStatus(Id, tb);
 
         }
 
-        public static void UnBind()
-        {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-        }
 
-        // Blit from read FB into this
+        ///<summary> Blit from read FB into this, x0/y0/x1/y1 are source area, dx0/dy0/dx1/dy1 are destination area. 
+        ///Mask indicates what buffer contents are to be copied: GL_COLOR_BUFFER_BIT, GL_DEPTH_BUFFER_BIT and GL_STENCIL_BUFFER_BIT. 
+        ///Filt is the interpolation filter, GL_NEAREST or GL_LINEAR
+        ///</summary>
         public void Blit(GLFrameBuffer read, ReadBufferMode src, int x0, int y0, int x1, int y1, int dx0, int dy0, int dx1, int dy1, ClearBufferMask mask, BlitFramebufferFilter filt)
         {
             GL.NamedFramebufferReadBuffer(read.Id, src);
@@ -150,7 +168,8 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
-        // Read from bound Read Frame buffer target
+        // 
+        ///<summary> Read from bound Read Frame buffer target in this pixel format and type. Bufsize indicates amount of space needed for byte array </summary>
         public void ReadPixels(ReadBufferMode src, int x0, int y0, int x1, int y1, PixelFormat format, PixelType type, int bufsize)
         {
             GL.ReadBuffer(src);
@@ -159,6 +178,7 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        ///<summary> Dispose of the frame buffer </summary>
         public void Dispose()           // you can double dispose.
         {
             if (Id != -1)

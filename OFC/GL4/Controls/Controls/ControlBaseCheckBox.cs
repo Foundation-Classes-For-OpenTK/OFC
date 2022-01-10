@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace GLOFC.GL4.Controls
         {
             SizeF size = SizeF.Empty;
             using( var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                size = BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
+                size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font, fmt);
             size = new SizeF(Math.Max(size.Width, 16), Math.Max(size.Height, 16));
             int h = (int)(size.Height + 0.999);
             Size s = new Size((int)(size.Width + 0.999) + h + 4, h + 4);        // add h to width to account for the tick

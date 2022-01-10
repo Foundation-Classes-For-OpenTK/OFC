@@ -18,18 +18,25 @@ using System;
 
 namespace GLOFC.GL4
 {
-    // Simple functions to move GL into OFC namespace
-
+    /// <summary>
+    /// Fence Functions
+    /// </summary>
     public class GLFenceSync: IDisposable
     {
+        /// <summary>GL ID </summary>
         public IntPtr Id { get; set; } = (IntPtr)0;
 
+        /// <summary>Make a new fence, with condition and wait flags </summary>
         public GLFenceSync(SyncCondition c = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags f = WaitSyncFlags.None)
         {
             Id = GL.FenceSync(c, f);
             GLStatics.RegisterAllocation(typeof(GLFenceSync));
         }
 
+
+        /// <summary> Get the sync status of the fence. </summary>
+        /// <param name="p">Get SyncCondition, SyncStatus, SyncFlags or ObjectType. Default is to get sync status</param>
+        /// <returns>Returns an array of sync properties. Dependent on fence type</returns>
         public int[] Get(SyncParameterName p = SyncParameterName.SyncStatus)
         {
             int[] array = new int[20];
@@ -40,16 +47,30 @@ namespace GLOFC.GL4
             return res;
         }
 
+        /// <summary>
+        /// Wait for fence
+        /// </summary>
+        /// <param name="flags">Only None or SyncFlushCommandsBit</param>
+        /// <param name="timeout">In nanoseconds!</param>
+        /// <returns>Wait state (AlreadySignalled (pre signalled),Expired (timeout),Satisfied (signalled during timeout), Failed)</returns>
+
         public WaitSyncStatus ClientWait(ClientWaitSyncFlags flags, int timeout)
         {
             var status = GL.ClientWaitSync(Id, flags, timeout);
             return status;
         }
-        public void GLWait(WaitSyncFlags flags, int timeout)
+   
+        /// <summary>
+        /// Wait for sync
+        /// </summary>
+        /// <param name="timeout">In nanoseconds!</param>
+
+        public void GLWait(int timeout)
         {
-            GL.WaitSync(Id, flags, timeout);
+            GL.WaitSync(Id, WaitSyncFlags.None, timeout);
         }
 
+        /// <summary> Dispose of this fence </summary>
         public void Dispose()
         {
             if (Id != (IntPtr)0)

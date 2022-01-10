@@ -16,6 +16,7 @@
 
 using System;
 using GLOFC;
+using GLOFC.Utils;
 
 public static class ObjectExtensionsStrings2
 {

@@ -12,11 +12,14 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using GLOFC.WaveFront;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.Drawing;
+
+#pragma warning disable 1591
 
 namespace GLOFC.GL4
 {

@@ -11,6 +11,7 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+using GLOFC.Utils;
 using System;
 using System.Drawing;
 
@@ -18,24 +19,24 @@ namespace GLOFC.GL4.Controls
 {
     public interface GLDataGridViewCell
     {
-        public GLDataGridViewRow RowParent { get; set; }
-        public int Index { get; set; }
-        public GLDataGridViewCellStyle Style { get; }
-        public bool Selected { get; set; }
-        public bool Selectable { get; set; }
-        public bool SelectedNI { get; set; }
-        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
-        public Action<GLDataGridViewCell> SelectionChanged { get; set; }
-        public void Paint(Graphics gr, Rectangle area);
-        public Size PerformAutoSize(int width);
-        public int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
-        public void OnMouseDownCell(GLMouseEventArgs e);
-        public void OnMouseUpCell(GLMouseEventArgs e);
-        public void OnMouseEnterCell(GLMouseEventArgs e);
-        public void OnMouseLeaveCell(GLMouseEventArgs e);
-        public void OnMouseMoveCell(GLMouseEventArgs e);
-        public void OnMouseClickCell(GLMouseEventArgs e);
-        public object Tag { get; set; }
+        GLDataGridViewRow RowParent { get; set; }
+        int Index { get; set; }
+        GLDataGridViewCellStyle Style { get; }
+        bool Selected { get; set; }
+        bool Selectable { get; set; }
+        bool SelectedNI { get; set; }
+        Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
+        Action<GLDataGridViewCell> SelectionChanged { get; set; }
+        void Paint(Graphics gr, Rectangle area);
+        Size PerformAutoSize(int width);
+        int CompareTo(GLDataGridViewCell other); // -1 less than, 0 equal, +1 greater than other
+        void OnMouseDownCell(GLMouseEventArgs e);
+        void OnMouseUpCell(GLMouseEventArgs e);
+        void OnMouseEnterCell(GLMouseEventArgs e);
+        void OnMouseLeaveCell(GLMouseEventArgs e);
+        void OnMouseMoveCell(GLMouseEventArgs e);
+        void OnMouseClickCell(GLMouseEventArgs e);
+        object Tag { get; set; }
     }
 
     // common stuff useful for cells
@@ -127,7 +128,7 @@ namespace GLOFC.GL4.Controls
             using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(Style.ContentAlignment))
             {
                 fmt.FormatFlags = Style.TextFormat;
-                var size = BitMapHelpers.MeasureStringInBitmap(text, Style.Font, fmt, new Size(width - Style.Padding.TotalWidth, 20000));
+                var size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(text, Style.Font, fmt, new Size(width - Style.Padding.TotalWidth, 20000));
                 return new Size((int)(size.Width + 0.99F) + Style.Padding.TotalWidth, (int)(size.Height + 0.99F) + Style.Padding.TotalHeight);
             }
         }

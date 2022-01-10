@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -109,7 +110,7 @@ namespace GLOFC.GL4.Controls
                     string longest = Items.Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
                     if (longest.HasChars())
                     {
-                        size = BitMapHelpers.MeasureStringInBitmap(longest, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleLeft));
+                        size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(longest, Font, ControlHelpersStaticFunc.StringFormatFromContentAlignment(ContentAlignment.MiddleLeft));
                         int arrowwidth = Font.ScalePixels(20);
                         size.Width += arrowwidth + textspacing*2;
                         size.Height += textspacing*2;

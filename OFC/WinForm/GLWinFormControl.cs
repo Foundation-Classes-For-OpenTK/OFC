@@ -15,6 +15,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL;
 
 namespace GLOFC.WinForm

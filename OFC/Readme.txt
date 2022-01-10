@@ -1,4 +1,36 @@
-﻿GL OpenTK Foundation Classes
+﻿Documentation flow:
+
+Ensure all xml comments are made
+
+Build in release mode, .md documents are made to bin/debug/mddoc
+
+In the mddoc folder:
+
+run eddtest xmltomd . *.md OpenTK.Graphics.OpenGL c:\code\ofc\ofc\docexternlinks.txt opengl 
+
+This will output any OpenTK.Graphics.OpenGL types which are not in docexternlinks.txt, if so, add them.
+
+OpenTK.Graphics seems to be documented by microsoft and thus they can be left.
+
+Add any to the docexternlinks.txt file.
+
+
+Copy the .md files to the OFC Wiki checkout.  
+
+home 
+
+
+
+
+
+
+
+
+
+
+
+
+GL OpenTK Foundation Classes
 
 Samplers
 Logical Ops 387

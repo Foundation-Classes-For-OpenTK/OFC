@@ -23,6 +23,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using GLOFC.WaveFront;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {

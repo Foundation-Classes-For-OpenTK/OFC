@@ -14,6 +14,7 @@
 
 // Rules - no winforms in Control land except for Keys
 
+using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

@@ -15,6 +15,7 @@
  * 
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 using System.Drawing;
@@ -52,68 +53,102 @@ namespace GLOFC
     //    |                          |       |    -------------------   |               |  -----------------------------  |
     //    ----------------------------       ----------------------------               -----------------------------------
 
-    // this class computes the model and projection matrices
-    // also the screen co-ord matrix
+    /// <summary>
+    /// This class holds and computes the model and projection matrices, and the screen co-ord matrix
+    /// </summary>
 
     public class GLMatrixCalc
     {
-        public bool InPerspectiveMode { get; set; } = true;                     // perspective mode
+        /// <summary>Perspective mode </summary>
+        public bool InPerspectiveMode { get; set; } = true;
 
-        public float PerspectiveFarZDistance { get; set; } = 100000.0f;         // Model maximum z (corresponding to GL viewport Z=1)
-                                                                                // Model minimum z (corresponding to GL viewport Z=0) 
-        public float PerspectiveNearZDistance { get; set; } = 1f;               // Don't set this too small othersize depth testing starts going wrong as you exceed the depth buffer resolution
+        /// <summary> Model maximum z (corresponding to GL viewport Z=1)</summary>
+        public float PerspectiveFarZDistance { get; set; } = 100000.0f;
+        // 
+        /// <summary> Model minimum z (corresponding to GL viewport Z=0) 
+        /// Don't set this too small othersize depth testing starts going wrong as you exceed the depth buffer resolution
+        /// </summary>
+        public float PerspectiveNearZDistance { get; set; } = 1f;
 
-        public float OrthographicDistance { get; set; } = 5000.0f;              // Orthographic, give scale
+        /// <summary> Orthographic, give scale</summary>
+        public float OrthographicDistance { get; set; } = 5000.0f;
 
-        public float Fov { get; set; } = (float)(Math.PI / 2.0f);               // field of view, radians, in perspective mode
+        /// <summary> Field of view, radians, in perspective mode</summary>
+        public float Fov { get; set; } = (float)(Math.PI / 2.0f);              
+        /// <summary> Fov in degrees </summary>
         public float FovDeg { get { return Fov.Degrees(); } }
-        public float FovFactor { get; set; } = 1.258925F;                       // scaling
+        /// <summary> Fov Scaling factor </summary>
+        public float FovFactor { get; set; } = 1.258925F;
 
-        public Size ScreenSize { get; protected set; }                          // screen size, total, of GL window.
+        /// <summary> Screen size, total, of GL window. </summary>
+        public Size ScreenSize { get; protected set; }
 
-        public Rectangle ViewPort { get; protected set; }                       // area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left
-        public Vector2 DepthRange { get; set; } = new Vector2(0, 1);            // depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)
+        /// <summary> Area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left </summary>
+        public Rectangle ViewPort { get; protected set; }
+        /// <summary> Depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)</summary>
+        public Vector2 DepthRange { get; set; } = new Vector2(0, 1);            
 
-        public Size ScreenCoordMax { get; set; }                                // screen co-ords max. Does not have to match the screensize. If not, you get a fixed scalable area
-        public virtual SizeF ScreenCoordClipSpaceSize { get; set; } = new SizeF(2, 2);   // Clip space size to use for screen coords, override to set up another
-        public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);     // Origin in clip space (-1,1) = top left, screen coord (0,0)
+        /// <summary> Screen co-ords max. Does not have to match the screensize. If not, you get a fixed scalable area</summary>
+        public Size ScreenCoordMax { get; set; }
 
-        // after Calculate model matrix
+        /// <summary> Clip space size to use for screen coords, override to set up another</summary>
+        public virtual SizeF ScreenCoordClipSpaceSize { get; set; } = new SizeF(2, 2);
+        /// <summary> Origin in clip space (-1,1) = top left, screen coord (0,0)</summary>
+        public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);
+
+        /// <summary> Eye Position (after CalculateModelMatrix)</summary>
         public Vector3 EyePosition { get; private set; }
+        /// <summary> Look At Position (after CalculateModelMatrix)</summary>
         public Vector3 LookAt { get; private set; }
+        /// <summary> Eye Distance (after CalculateModelMatrix)</summary>
         public float EyeDistance { get; private set; }
+        /// <summary> Model Matrix (after CalculateModelMatrix)</summary>
         public Matrix4 ModelMatrix { get; private set; }
+        /// <summary> Projection Position (after CalculateProjectionMatrix)</summary>
         public Matrix4 ProjectionMatrix { get; private set; }
+        /// <summary> ModelProjection Position (after CalculateModelMatrix)</summary>
         public Matrix4 ProjectionModelMatrix { get; private set; }
-        public Matrix4 GetResMat { get { return ProjectionModelMatrix; } }      // used for calculating positions on the screen from pixel positions.  Remembering Apollo
-
-        // after Projection calc
+        /// <summary> Res Mat. Used for calculating positions on the screen from pixel positions.  Remembering Apollo </summary>
+        public Matrix4 GetResMat { get { return ProjectionModelMatrix; } }
+        /// <summary>Projection Z Near (after CalculateProjectionMatrix) </summary>
         public float ZNear { get; private set; }
 
-        // incremented when Model or Project matrix changed
+        /// <summary> Incremented when Model or Project matrix changed</summary>
         public int CountMatrixCalcs { get; private set;  } = 0;
-        
-        // Screen coords are different from windows cooreds. Used for controls
 
-        // axis flip to set direction of +x,+y,+z.
-        // notice flipping y affects the order of vertex for winding.. the vertex models need to have a opposite winding order
-        // to make the ccw cull test work.  this also affects things in shaders if you do rotations inside them
+        /// <summary> 
+        /// Axis flip to set direction of +x,+y,+z. 
+        /// notice flipping y affects the order of vertex for winding.. the vertex models need to have a opposite winding order
+        /// to make the ccw cull test work.  this also affects things in shaders if you do rotations inside them
+        /// </summary>
+
         public bool ModelAxisFlipY = true;      // normally we have Y pointing + up
 
-        // camera normal is +Z, so camera(x=elevation=0, y=azimuth=0) is straight up, camera(90,0) is straight forward, samera(90,180) is straight back
-        // camera.x rotates around the x axis (elevation) and camera.y rotates around the y axis (aziumth)
+        /// <summary> 
+        /// camera normal is +Z, so camera(x=elevation=0, y=azimuth=0) is straight up, camera(90,0) is straight forward, samera(90,180) is straight back
+        /// camera.x rotates around the x axis (elevation) and camera.y rotates around the y axis (aziumth)
+        /// </summary>
         private Vector3 cameranormal = new Vector3(0, 0, 1);
+        private IntPtr context;
 
-        // Calculate the model matrix, which is the model translated to world space then to view space..
+        /// <summary> Construct </summary>
+        public GLMatrixCalc()
+        {
+            context = GLStatics.GetContext();
+        }
 
+        /// <summary>Calculate the model matrix, which is the model translated to world space then to view space..</summary> 
         public void CalculateModelMatrix(Vector3 lookat, Vector2 cameradirection, float distance, float camerarotation)       
         {
             Vector3 eyeposition = lookat.CalculateEyePositionFromLookat(cameradirection, distance);
             CalculateModelMatrix(lookat, eyeposition, cameradirection, camerarotation);
         }
 
+        /// <summary>Calculate the model matrix, which is the model translated to world space then to view space..</summary> 
         public void CalculateModelMatrix(Vector3 lookat, Vector3 eyeposition, Vector2 cameradirection, float camerarotation)  
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+
             LookAt = lookat;      // record for shader use
             EyePosition = eyeposition;
             EyeDistance = (lookat - eyeposition).Length;
@@ -152,10 +187,11 @@ namespace GLOFC
             CountMatrixCalcs++;
         }
 
-        // Projection matrix - projects the 3d model space to the 2D screen
-
+        /// <summary>Calculate the Projection matrix - projects the 3d model space to the 2D screen</summary> 
         public void CalculateProjectionMatrix()           // calculate and return znear.
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+
             Size scr = ViewPort.Size;
 
             if (InPerspectiveMode)
@@ -187,9 +223,11 @@ namespace GLOFC
 
         private Vector3d cameranormald = new Vector3d(0, 0, 1);
 
-        // double version
+        /// <summary>Calculate the Projection matrix - projects the 3d model space to the 2D screen</summary> 
         public void CalculateModelMatrix(Vector3d lookatd, Vector3d eyepositiond, Vector2d cameradirection, double camerarotation)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+
             LookAt = new Vector3((float)lookatd.X, (float)lookatd.Y, (float)lookatd.Z);      // record for shader use
             EyePosition = new Vector3((float)eyepositiond.X, (float)eyepositiond.Y, (float)eyepositiond.Z);
             EyeDistance = (float)((lookatd-eyepositiond).Length);
@@ -229,6 +267,7 @@ namespace GLOFC
             CountMatrixCalcs++;
         }
 
+        /// <summary> Scale the FOV in a direction</summary>
         public bool FovScale(bool direction)        // direction true is scale up FOV - need to tell it its changed
         {
             float curfov = Fov;
@@ -241,9 +280,11 @@ namespace GLOFC
             return curfov != Fov;
         }
 
-        // WARNING ensure current context is selected
+        /// <summary> Resize view port to newsize.</summary>
         public virtual void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+
             //System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
             ScreenSize = newsize;
             ScreenCoordMax = newsize;
@@ -251,15 +292,18 @@ namespace GLOFC
             SetViewPort();
         }
 
-        // WARNING ensure current context is selected
+        /// <summary> Set the view port into openGL</summary>
         public void SetViewPort()       
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+
             //System.Diagnostics.Debug.WriteLine("Set GL Viewport {0} {1} w {2} h {3}", ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
             OpenTK.Graphics.OpenGL.GL.Viewport(ViewPort.Left, ScreenSize.Height - ViewPort.Bottom, ViewPort.Width, ViewPort.Height);
             OpenTK.Graphics.OpenGL.GL.DepthRange(DepthRange.X, DepthRange.Y);
         }
 
-        public virtual Matrix4 MatrixScreenCoordToClipSpace()             // matrix to convert a screen co-ord to clip space
+        /// <summary> Get the matrix4 to translate screen co-ords to clip space</summary>
+        public virtual Matrix4 MatrixScreenCoordToClipSpace()             
         {
             Matrix4 screenmat = Matrix4.Zero;
             screenmat.Column0 = new Vector4(ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width , 0, 0, ScreenCoordClipSpaceOffset.X);      // transform of x = x * 2 / width - 1
@@ -269,22 +313,34 @@ namespace GLOFC
             return screenmat;
         }
 
-        public virtual Point AdjustWindowCoordToViewPortCoord(int x, int y)     // p is in windows coords (gl_Control), adjust to view port/clip space taking into account view port
+        /// <summary> Adjust x and y to view port co-ordinates
+        /// p is in windows coords (gl_Control), adjust to view port/clip space taking into account view port
+        /// </summary>
+        public virtual Point AdjustWindowCoordToViewPortCoord(int x, int y)     
         {
             return new Point(x - ViewPort.Left, y - ViewPort.Top);
         }
 
-        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)          // p is in windows coords (gl_Control), adjust to view port/clip space
+        /// <summary> Adjust point to view port co-ordinates
+        /// p is in windows coords (gl_Control), adjust to view port/clip space
+        /// </summary>
+        public virtual Point AdjustWindowCoordToViewPortCoord(Point p)          
         {
             return new Point(p.X - ViewPort.Left, p.Y - ViewPort.Top);
         }
 
-        public virtual Point AdjustWindowCoordToScreenCoord(Point p)            // p is window coords (gl_control), adjust to view port, then adjust to screen co-ord
+        /// <summary> Adjust window coord point to screen co-ordinates
+        /// p is in window co-ords (gl_control), adjust to clip space taking into account view port and scaling
+        /// </summary>
+        public virtual Point AdjustWindowCoordToScreenCoord(Point p)            
         {
             return AdjustViewSpaceToScreenCoord(AdjustWindowCoordToViewPortClipSpace(p));
         }
 
-        public virtual PointF AdjustWindowCoordToViewPortClipSpace(Point p)     // p is in window co-ords (gl_control), adjust to clip space taking into account view port and scaling
+        /// <summary> Adjust window coord point to view port coords
+        /// p is in window co-ords (gl_control), adjust to clip space taking into account view port and scaling
+        /// </summary>
+        public virtual PointF AdjustWindowCoordToViewPortClipSpace(Point p)    
         {
             float x = p.X - ViewPort.Left;
             float y = p.Y - ViewPort.Top;
@@ -293,7 +349,10 @@ namespace GLOFC
             return f;
         }
 
-        public virtual Point AdjustViewSpaceToScreenCoord(PointF cs)            //  cs is in view port space, scale to ScreenCoords      
+        /// <summary>
+        /// Adjust view space co-ordinate to screen co-ordinate
+        /// </summary>
+        public virtual Point AdjustViewSpaceToScreenCoord(PointF cs)            
         {
             Size scr = ScreenCoordMax;
             SizeF clipsize = ScreenCoordClipSpaceSize;
@@ -307,26 +366,33 @@ namespace GLOFC
             return np;
         }
 
-        
-        public Vector4 WorldToNormalisedClipSpace(Vector4 worldpos)         // World pos -> normalised clip space
+        /// <summary>
+        /// World pos -> normalised clip space
+        /// </summary>
+
+        public Vector4 WorldToNormalisedClipSpace(Vector4 worldpos)      
         {
             Vector4 m = Vector4.Transform(worldpos, ProjectionModelMatrix);  // go from world-> viewspace -> clip space
             Vector4 c = m / m.W;                                            // to normalised clip space
             return c;
         }
 
+        /// <summary> Is in normalised clip space?</summary>
         public bool IsNormalisedClipSpaceInView(Vector4 clipspace)
         {
             return !(clipspace.X <= -1 || clipspace.X >= 1 || clipspace.Y <= -1 || clipspace.Y >= 1 || clipspace.Z >= 1);
         }
 
-        public Vector4 NormalisedClipSpaceToViewPortScreenCoord(Vector4 clipspace)   // world->viewport co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords
+        /// <summary> World->viewport co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords</summary>
+        public Vector4 NormalisedClipSpaceToViewPortScreenCoord(Vector4 clipspace)   
         {
             bool inview = IsNormalisedClipSpaceInView(clipspace);
             return new Vector4((clipspace.X + 1) / 2 * ViewPort.Width, (-clipspace.Y + 1) / 2 * ViewPort.Height, 0, inview ? 0 : 1);
         }
 
-        public Vector4 NormalisedClipSpaceToWindowCoord(Vector4 clipspace)   // world->window co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords
+        /// <summary> World->window co-ord, W = 0 if in view. 0,0 = top left to match normal windows co-ords</summary>
+
+        public Vector4 NormalisedClipSpaceToWindowCoord(Vector4 clipspace)   
         {
             Vector4 viewportscreencoord = NormalisedClipSpaceToViewPortScreenCoord(clipspace);
             return new Vector4(viewportscreencoord.X + ViewPort.Left, viewportscreencoord.Y + ViewPort.Top, viewportscreencoord.Z, viewportscreencoord.W);

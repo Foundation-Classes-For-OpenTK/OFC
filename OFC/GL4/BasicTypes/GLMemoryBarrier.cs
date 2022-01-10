@@ -18,39 +18,49 @@ using System.Drawing;
 
 namespace GLOFC.GL4
 {
+    /// <summary>
+    /// This class wraps GL memory barriers
+    /// </summary>
     public static class GLMemoryBarrier
     {
+        /// <summary>Wait till all have completed </summary>
         static public void All()
         {
             GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
         }
 
-        static public void StorageBuffers()        // shader storage buffers
+        /// <summary>Wait till shader storage buffers have completed </summary>
+        static public void StorageBuffers()     
         {
             GL.MemoryBarrier(MemoryBarrierFlags.ShaderStorageBarrierBit);
         }
 
-        static public void Atomics()            // Atomic counters written to by shaders
+        /// <summary>Wait till atomic buffers have completed </summary>
+        static public void Atomics()            
         {
             GL.MemoryBarrier(MemoryBarrierFlags.AtomicCounterBarrierBit);
         }
 
-        static public void FrameBuffers()       // Frame buffer attachments
+        /// <summary>Wait till frame buffers have completed </summary>
+        static public void FrameBuffers()       
         {
             GL.MemoryBarrier(MemoryBarrierFlags.FramebufferBarrierBit);
         }
 
-        static public void BufferSubData()       // Copy/SubData to buffers
+        /// <summary>Wait till buffer update have completed </summary>
+        static public void BufferSubData()   
         {
             GL.MemoryBarrier(MemoryBarrierFlags.BufferUpdateBarrierBit);
         }
 
-        static public void Uniforms()           // Uniforms from buffer objects
+        /// <summary>Wait till buffer uniforms have completed </summary>
+        static public void Uniforms()         
         {
             GL.MemoryBarrier(MemoryBarrierFlags.UniformBarrierBit);
         }
 
-        static public void Vertex()             // Vertex data from buffer objects written to by shaders
+        /// <summary>Wait till vertex data from buffer objects writen by shaders have completed </summary>
+        static public void Vertex()             
         {
             GL.MemoryBarrier(MemoryBarrierFlags.VertexAttribArrayBarrierBit);
         }

@@ -75,8 +75,8 @@ namespace TestOpenTk
             items.Add(cosot,"COSOT");
 
             varyingbuffer = new GLBuffer(10000, true, BufferUsageHint.DynamicCopy);
-            cosot.StartAction += (a, s) => { varyingbuffer.BindTransformFeedback(0); GLTransformFeedbackObject.BeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles); };
-            cosot.FinishAction += (s) => { GLTransformFeedbackObject.EndTransformFeedback(); GLBuffer.UnbindTransformFeedback(0);  };
+            cosot.StartAction += (a, s) => { varyingbuffer.BindTransformFeedback(0); GLTransformFeedbackObject.Begin(TransformFeedbackPrimitiveType.Triangles); };
+            cosot.FinishAction += (s) => { GLTransformFeedbackObject.End(); GLBuffer.UnbindTransformFeedback(0);  };
 
             ts1 = new GLOperationQueryTimeStamp();
             ts2 = new GLOperationQueryTimeStamp();

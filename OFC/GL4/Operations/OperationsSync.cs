@@ -48,9 +48,9 @@ namespace GLOFC.GL4
         {
             return Sync.ClientWait(flags, timeout);
         }
-        public void GLWait(WaitSyncFlags flags, int timeout)
+        public void GLWait(int timeout)
         {
-            Sync.GLWait(flags, timeout);
+            Sync.GLWait(timeout);
         }
 
     }

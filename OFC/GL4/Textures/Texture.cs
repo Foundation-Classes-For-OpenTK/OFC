@@ -261,7 +261,7 @@ namespace GLOFC.GL4
             if (zoffset < 0)
                 zoffset = DepthIndex++;
 
-            BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
+            GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref textdrawbitmap, text, f, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
 
             LoadBitmap(textdrawbitmap, zoffset, true, 1);
         }
@@ -355,7 +355,7 @@ namespace GLOFC.GL4
         public Bitmap GetBitmap(int level = 0, bool inverty = false)
         {
             byte[] texdatab = GetTextureImageAs<byte>(OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, level, inverty);
-            return BitMapHelpers.CreateBitmapFromARGBBytes(Width, Height, texdatab);
+            return GLOFC.Utils.BitMapHelpers.CreateBitmapFromARGBBytes(Width, Height, texdatab);
         }
 
         public void SetSamplerMode(TextureWrapMode s, TextureWrapMode t, TextureWrapMode p)

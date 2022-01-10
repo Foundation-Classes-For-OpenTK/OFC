@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
 using System.Globalization;
@@ -70,7 +71,7 @@ namespace GLOFC.GL4.Controls
             if (AutoSize)
             {
                 string daynames = string.Join("xx", Culture.DateTimeFormat.AbbreviatedDayNames);        // by far the largest horz width, two xx allow for extra space around each name
-                int width = (int)BitMapHelpers.MeasureStringInBitmap(daynames, Font).Width;
+                int width = (int)GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(daynames, Font).Width;
                 int height = 9 * Font.Height;       // 9 seems to give the right proportions
                 SetNI(size: new Size(width,height));
             }

@@ -18,16 +18,26 @@ using System.Drawing;
 
 namespace GLOFC.GL4
 {
+    /// <summary>
+    /// Stencil Control functions, for use manually or via Operations
+    /// To draw, the stuff you want to keep use SetStencil() which fills up those pixels with 1 
+    /// To mask the rest, use OnlyIfEqual(0) which will allow painting only if stencil pixels are 0 (the default)
+    /// To only draw in the stencil area, use OnlyIfEqual(1)
+    /// </summary>
+   
     public static class GLStencil
     {
-        // to draw, the stuff you want to keep use SetStencil() which fills up those pixels with 1
-        // to mask the rest, use OnlyIfEqual(0) which will allow painting only if stencil pixels are 0 (the default)
-        // to only draw in the stencil area, use OnlyIfEqual(1)
-
-        static public void SetStencil(int v = 1, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack, int stencilactivebits = 0xff)
+        /// <summary>
+        /// Quick setup of all stencil parameters for a StencilFunction.Always and enable
+        /// </summary>
+        /// <param name="refvalue">Reference value</param>
+        /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
+        /// <param name="face">For this face (default front and back) perform stencil operation on</param>
+        /// <param name="stencilactivebits">Which bits are allowed to change when writing V to stencil buffer</param>
+        static public void SetStencil(int refvalue = 1, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack, int stencilactivebits = 0xff)
         {
             // stencil passes always, set stencil[pixel] = v
-            GL.StencilFuncSeparate(face, StencilFunction.Always, v, mask);
+            GL.StencilFuncSeparate(face, StencilFunction.Always, refvalue, mask);
             GL.StencilOpSeparate(face, StencilOp.Keep,          //if it fails, keep stencil value
                                        StencilOp.Keep,          //if depth buffer fails, Set zero
                                        StencilOp.Replace);      //if passed, replace stencil value with ref value
@@ -35,38 +45,65 @@ namespace GLOFC.GL4
             GL.Enable(EnableCap.StencilTest);
         }
 
-        static public void OnlyIf(StencilFunction f, int v = 1, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
+        /// <summary>
+        /// Set up the stencil operation without enable. Full control
+        /// </summary>
+        /// <param name="function">Stencil function</param>
+        /// <param name="refvalue">Reference value</param>
+        /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
+        /// <param name="face">For this face (default front and back) perform stencil operation on</param>
+        static public void OnlyIf(StencilFunction function, int refvalue = 1, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
         {
             // stencil passes if V op stencil[pixel]
-            GL.StencilFuncSeparate(face, f, v, mask);
+            GL.StencilFuncSeparate(face, function, refvalue, mask);
             GL.StencilOpSeparate(face, StencilOp.Keep,          //if it fails, keep stencil value
                                        StencilOp.Keep,          //if depth buffer fails, keep stencil value
                                        StencilOp.Keep);         //if passed, keep stencil value
         }
 
-        static public void OnlyIfGreater(int v = 2, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
+        /// <summary>
+        /// Quick setup for greater function
+        /// </summary>
+        /// <param name="refvalue">Reference value</param>
+        /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
+        /// <param name="face">For this face (default front and back) perform stencil operation on</param>
+        static public void OnlyIfGreater(int refvalue = 2, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
         {
             // stencil passes if V > stencil[pixel]
-            OnlyIf(StencilFunction.Greater, v, mask, face);
+            OnlyIf(StencilFunction.Greater, refvalue, mask, face);
         }
 
-        static public void OnlyIfLess(int v = 0, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
+        /// <summary>
+        /// Quick setup for less function
+        /// </summary>
+        /// <param name="refvalue">Reference value</param>
+        /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
+        /// <param name="face">For this face (default front and back) perform stencil operation on</param>
+        static public void OnlyIfLess(int refvalue = 0, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
         {
             // stencil passes if V < stencil[pixel]
-            OnlyIf(StencilFunction.Less, v, mask, face);
+            OnlyIf(StencilFunction.Less, refvalue, mask, face);
         }
 
-        static public void OnlyIfEqual(int v = 0, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
+        /// <summary>
+        /// Quick setup for equal function
+        /// </summary>
+        /// <param name="refvalue">Reference value</param>
+        /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
+        /// <param name="face">For this face (default front and back) perform stencil operation on</param>
+        static public void OnlyIfEqual(int refvalue = 0, int mask = 0xff, StencilFace face = StencilFace.FrontAndBack)
         {
             // stencil passes if V == stencil[pixel]
-            OnlyIf(StencilFunction.Equal, v, mask, face);
+            OnlyIf(StencilFunction.Equal, refvalue, mask, face);
         }
 
+        /// <summary> Disable stencil testing </summary>
         static public void Off()
         {
             GL.Disable(EnableCap.StencilTest);
         }
 
+        /// <summary> Clear the stencil </summary>
         static public void ClearStencilBuffer()       // nicer name
         {
             GL.Clear(ClearBufferMask.StencilBufferBit);

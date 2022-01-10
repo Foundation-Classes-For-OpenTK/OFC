@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Drawing;
 
@@ -54,7 +55,7 @@ namespace GLOFC.GL4.Controls
         protected void DrawImage(Image image, Rectangle box, Graphics g, System.Drawing.Imaging.ImageAttributes imgattr )
         {
             Size isize = ImageStretch ? box.Size : image.Size;
-            Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize,true,true);
+            Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize, true, true);
 
             if (imgattr != null)
                 g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, imgattr);
