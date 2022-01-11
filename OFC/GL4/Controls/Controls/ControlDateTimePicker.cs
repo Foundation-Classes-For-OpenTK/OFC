@@ -20,6 +20,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     public class GLDateTimePicker: GLForeDisplayBase

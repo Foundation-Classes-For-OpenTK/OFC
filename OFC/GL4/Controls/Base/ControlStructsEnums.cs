@@ -14,6 +14,8 @@
 
 using System;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     [System.Diagnostics.DebuggerDisplay("{Left} {Top} {Right} {Bottom}")]

@@ -17,6 +17,8 @@ using System;
 using System.Drawing;
 using System.Linq;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     public abstract class GLButtonBase : GLImageBase

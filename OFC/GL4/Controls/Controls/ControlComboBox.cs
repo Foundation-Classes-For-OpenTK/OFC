@@ -19,6 +19,8 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     public class GLComboBox : GLForeDisplayBase

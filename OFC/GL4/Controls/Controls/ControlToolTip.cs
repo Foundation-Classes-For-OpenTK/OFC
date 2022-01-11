@@ -15,6 +15,8 @@
 using GLOFC.Utils;
 using System.Drawing;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     // tooltip, if added to GLControlDisplay, and AutomaticDelay>0 it acts as a global tooltip and displays the tooltip of the current mouseover control

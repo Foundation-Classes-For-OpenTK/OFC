@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using GLOFC.GL4.Shaders.Tesselation;
+using GLOFC.GL4.Bitmaps;
 
 namespace TestOpenTk
 {
@@ -166,7 +167,7 @@ namespace TestOpenTk
                         textrenderer.Add(o.id, o.name, fnt,
                             Color.White, Color.FromArgb(0, 255, 0, 255),
                             pos,
-                            new Vector3(objsize, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: dorotate, rotateelevation: doelevation,
+                            new Vector3(objsize, 0, 0), new Vector3(0, 0, 0), textformat: fmt, rotatetoviewer: dorotate, rotateelevation: doelevation,
                             alphafadescalar: -100, alphafadepos: 500); // fade in, alpha = 0 at >500, 1 at 400
 
                     }

@@ -17,6 +17,8 @@ using System;
 using System.Drawing;
 using System.Globalization;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     // a calendar control, single date selection

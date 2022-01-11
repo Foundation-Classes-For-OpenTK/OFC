@@ -12,9 +12,10 @@
  * governing permissions and limitations under the License.
  */
 
-
 using System;
 using System.Drawing;
+
+#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {

@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
+#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
     [System.Diagnostics.DebuggerDisplay("Control {Name} {window}")]

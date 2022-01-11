@@ -15,6 +15,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Geo;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
+using GLOFC.GL4.Bitmaps;
 
 namespace TestOpenTk
 {
@@ -193,7 +194,7 @@ namespace TestOpenTk
                     if (textrenderer.Exist(isys) == false)                   // if does not exist already, need a new label
                     {
                         textrenderer.Add(isys, isys.System.Name, fnt, Color.White, Color.Transparent, new Vector3((float)isys.System.X, (float)isys.System.Y - 5, (float)isys.System.Z),
-                                new Vector3(20, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: true, rotateelevation: false, alphafadescalar: -200, alphafadepos: 300);
+                                new Vector3(20, 0, 0), new Vector3(0, 0, 0), textformat: fmt, rotatetoviewer: true, rotateelevation: false, alphafadescalar: -200, alphafadepos: 300);
                     }
                 }
             }
