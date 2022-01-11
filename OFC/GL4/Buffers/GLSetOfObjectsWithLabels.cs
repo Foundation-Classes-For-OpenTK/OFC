@@ -13,7 +13,6 @@
  */
 
 using GLOFC.GL4.Shaders;
-using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Geo;
 using GLOFC.Utils;
 using OpenTK;
@@ -23,32 +22,58 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Buffers
 {
-    // Set of ObjectWithLabels
-    // add and remove blocks of tagged objects, will clean up empty OWL when required
+    /// <summary>
+    /// Set of GLObjectWithLabels
+    /// Add and remove blocks of tagged objects, will clean up empty OWL when required
+    /// </summary>
 
     public class GLSetOfObjectsWithLabels : IDisposable
     {
+        /// <summary> Text label size</summary>
         public Size LabelSize { get { return texturesize; } }
+        /// <summary> Number of objects </summary>
         public int Objects { get; private set; } = 0;
+        /// <summary> Number of sets </summary>
         public int Count { get { return set.Count; } }
 
+        /// <summary> The block list, giving information on all objects stored within the system </summary>
         public List<List<GLObjectsWithLabels.BlockRef>> BlockList { get; private set; } = new List<List<GLObjectsWithLabels.BlockRef>>();     // in add order
+        /// <summary> Tag to block entry list </summary>
         public Dictionary<object, List<GLObjectsWithLabels.BlockRef>> TagsToBlocks { get; private set; } = new Dictionary<object, List<GLObjectsWithLabels.BlockRef>>(); // tags to block list
+        /// <summary> User data, referenced by Tag </summary>
         public Dictionary<object, object> UserData { get; set; }  = new Dictionary<object, object>();     // tag to user data, optional
 
-        public GLSetOfObjectsWithLabels(string name,        // need a name for the renders
-                                        GLRenderProgramSortedList robjects,     // need to give it a render list to add/remove renders to
-                                        int textures,       // number of textures to allow per set
-                                        int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="name">Name of set</param>
+        /// <param name="rlist">Render list to draw into</param>
+        /// <param name="textures"> number of 2D textures to allow maximum (limited by GL)</param>
+        /// <param name="estimateditemspergroup">Estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.</param>
+        /// <param name="mingroups">Minimum number of groups</param>
+        /// <param name="objectshader">Shader for objects</param>
+        /// <param name="objectbuffer">Object buffer to use</param>
+        /// <param name="objectvertexes">Number of object vertexes</param>
+        /// <param name="objrc">The object render state control</param>
+        /// <param name="objpt">The object draw primitive type</param>
+        /// <param name="textshader">Text shader for labels</param>
+        /// <param name="texturesize">The size of the label</param>
+        /// <param name="textrc">The text render state</param>
+        /// <param name="textureformat">The texture format for the text</param>
+        /// <param name="debuglimittexturedepth">For debug, set this to limit maximum number of entries. 0 = off</param>
+        public GLSetOfObjectsWithLabels(string name,       
+                                        GLRenderProgramSortedList rlist,    
+                                        int textures,      
+                                        int estimateditemspergroup,     
                                         int mingroups,      // minimum number of groups
                                         IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc, PrimitiveType objpt,   // object shader, buffer, vertexes and its rendercontrol
                                         IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc, SizedInternalFormat textureformat,  // text shader, text size, and rendercontrol
                                         int debuglimittexturedepth = 0)     // set to limit texture depth per set
         {
             this.name = name;
-            this.robjects = robjects;
+            this.robjects = rlist;
             this.textures = textures;
             this.estimateditemspergroup = estimateditemspergroup;
             this.mingroups = mingroups;
@@ -64,28 +89,38 @@ namespace GLOFC.GL4
             this.limittexturedepth = debuglimittexturedepth;
         }
 
-        // call to reserve a tag, which you later add.  
+        /// <summary> Reserve a tag, which can be added later </summary>
         public void ReserveTag(object tag)          
         {
             TagsToBlocks[tag] = null;
         }
 
-        // tag should be unique, if not, it won't complain
-        // usertag is indexed by tag and is any user data the user wants to store against a tag
-        // array holds worldpositions for objects
-        // matrix holds pos, orientation, etc for text
-        // bitmaps are for each label.  Owned by caller
-        // pos = indicates one to start from
-        // arraylength = if -1, use length of array, else only go to this entry (so 10 means 0..9 used)
-        // All are added
-
-        public void Add(Object tag, Object usertag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
+        /// <summary>
+        /// Add a set of objects and text to the sets 
+        /// </summary>
+        /// <param name="tag">tag should be unique (if not, it won't complain)</param>
+        /// <param name="usertag">usertag is indexed by tag and is any user data the user wants to store against a tag</param>
+        /// <param name="worldpositions">Vector array of worldpositions for each object</param>
+        /// <param name="matrix">Array of matrix giving information for positioning each label</param>
+        /// <param name="bitmaps">Array of bitmaps for labels associated with each object. Bitmaps are owned by caller</param>
+        /// <param name="pos">Start position in array to start processing from</param>
+        /// <param name="arraylength">Amount to use in the array, or -1 for all</param>
+        public void Add(Object tag, Object usertag, Vector4[] worldpositions, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
         {
             UserData[tag] = usertag;
-            Add(tag, array, matrix, bitmaps,pos,arraylength);
+            Add(tag, worldpositions, matrix, bitmaps,pos,arraylength);
         }
 
-        public void Add(Object tag, Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
+        /// <summary>
+        /// Add a set of objects and text to the sets 
+        /// </summary>
+        /// <param name="tag">tag should be unique (if not, it won't complain)</param>
+        /// <param name="worldpositions">Vector array of worldpositions for each object</param>
+        /// <param name="matrix">Array of matrix giving information for positioning each label</param>
+        /// <param name="bitmaps">Array of bitmaps for labels associated with each object. Bitmaps are owned by caller</param>
+        /// <param name="pos">Start position in array to start processing from</param>
+        /// <param name="arraylength">Amount to use in the array, or -1 for all</param>
+        public void Add(Object tag, Vector4[] worldpositions, Matrix4[] matrix, Bitmap[] bitmaps, int pos = 0, int arraylength = -1)
         {
             System.Diagnostics.Debug.Assert(tag != null);
 
@@ -98,15 +133,15 @@ namespace GLOFC.GL4
             }
 
             if (arraylength == -1)          // this means use length of array
-                arraylength = array.Length;
+                arraylength = worldpositions.Length;
 
-            int endpos = set.Last().Add(array, matrix, bitmaps, blocklist,pos,arraylength);
+            int endpos = set.Last().Add(worldpositions, matrix, bitmaps, blocklist,pos,arraylength);
 
             while (endpos >= 0)    // if can't add
             {
                 //System.Diagnostics.Debug.WriteLine($"Create another set {set.Count} for {endpos}");
                 AddSet();
-                endpos = set.Last().Add(array, matrix, bitmaps, blocklist, endpos, arraylength);      // add the rest from endpos
+                endpos = set.Last().Add(worldpositions, matrix, bitmaps, blocklist, endpos, arraylength);      // add the rest from endpos
             }
 
             blocklist[0].tag = tag;                 // first entry only gets tag
@@ -115,7 +150,7 @@ namespace GLOFC.GL4
             Objects += arraylength;
         }
 
-        // remove a specific tag
+        /// <summary> remove a specific tag </summary>
         public bool Remove(object tag)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -150,7 +185,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
-        // remove the oldest N blocks
+        /// <summary> Remove the oldest N blocks</summary>
         public void RemoveOldest(int n)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -187,13 +222,13 @@ namespace GLOFC.GL4
             }
         }
 
-        // remove until Objects <= count, oldest first
-
+        /// <summary> Remove All </summary>
         public void Clear()
         {
             RemoveUntil(0);
         }
 
+        /// <summary> Remove until object count is less than count</summary>
         public void RemoveUntil(int count)
         {
             List<GLObjectsWithLabels> toremove = new List<GLObjectsWithLabels>();
@@ -233,6 +268,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Dispose of this set</summary>
         public void Dispose()
         {
             foreach (var s in set)
@@ -246,11 +282,18 @@ namespace GLOFC.GL4
             UserData.Clear();
         }
 
-        // Return set, render group, render index in group, z of find, or null
-        public Tuple<int,int,int,float> Find(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
+        /// <summary>
+        /// Find object on screen
+        /// </summary>
+        /// <param name="findshader">The shader to use for the find</param>
+        /// <param name="glstate">Render state</param>
+        /// <param name="pos">Position on screen of find point</param>
+        /// <param name="size">Screen size</param>
+        /// <returns>Return tuple of set, render group, render index in group, z of find, or null</returns>
+        public Tuple<int,int,int,float> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(pos, viewportsize);
+            geo.SetScreenCoords(pos, size);
             findshader.Start(null);     // this clears the buffer
 
             int setno = 0;
@@ -258,7 +301,7 @@ namespace GLOFC.GL4
             foreach (var s in set)      
             {
                 geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform (encoded in drawID in .W)
-                s.ObjectRenderer.Execute(findshader, state, noshaderstart:true); // execute find over ever set, not clearing the buffer
+                s.ObjectRenderer.Execute(findshader, glstate, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
             findshader.Finish();    // finish shader
@@ -273,13 +316,26 @@ namespace GLOFC.GL4
                 return null;
         }
 
-        // Find, item1 = return the list of blocks
-        // item2 = the found block, item3 = the index within that found block, item4 = the total index into the data (summed up), and item5 = the z of the find
-        // or null
+        // Find, 
 
-        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState state, Point pos, Size viewportsize)
+        /// <summary>
+        /// Find object on screen
+        /// </summary>
+        /// <param name="findshader">The shader to use for the find</param>
+        /// <param name="glstate">Render state</param>
+        /// <param name="pos">Position on screen of find point</param>
+        /// <param name="size">Screen size</param>
+        /// <returns>Returns null, or 
+        /// item1 = return the list of blocks
+        /// item2 = the found block
+        /// item3 = the index within that found block
+        /// item4 = the total index into the data (summed up)
+        /// item5 = the z of the find
+        ///</returns>
+       
+        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
         {
-            var ret = Find(findshader, state, pos, viewportsize);       // return set, group, index, z
+            var ret = Find(findshader, glstate, pos, size);       // return set, group, index, z
             if (ret != null)
             {
                 GLObjectsWithLabels s = set[ret.Item1];     // this is set
@@ -302,6 +358,7 @@ namespace GLOFC.GL4
 
             return null;
         }
+
 
         private void AddSet()       // add a new set
         {

@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using GLOFC.GL4.Shaders.Stars;
+using GLOFC.GL4.Buffers;
 
 // A simpler main for testing
 

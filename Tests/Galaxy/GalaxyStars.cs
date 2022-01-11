@@ -14,6 +14,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Geo;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
+using GLOFC.GL4.Buffers;
 
 namespace TestOpenTk
 {

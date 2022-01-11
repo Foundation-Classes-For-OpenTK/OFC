@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using GLOFC.GL4.Buffers;
 
 namespace GLOFC.GL4.Bitmaps
 {
@@ -95,7 +96,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="forecolor">Fore color</param>
         /// <param name="backcolor">Back color</param>
         /// <param name="worldpos">Position of bitmap in world</param>
-        /// <param name="size">Size to draw bitmap in world</param>
+        /// <param name="size">Size to draw bitmap in world. Note if Y and Z are zero, then Z is set to same ratio to width as bitmap</param>
         /// <param name="rotationradians">Rotation of bitmap (ignored if rotates below are on)</param>
         /// <param name="textformat">Text format to use to write text</param>
         /// <param name="backscale">Backscale for background to produce a graduated background</param>
@@ -107,10 +108,10 @@ namespace GLOFC.GL4.Bitmaps
         public void Add(object tag,
                             string text, Font font, Color forecolor, Color backcolor,
                             Vector3 worldpos,
-                            Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
-                            Vector3 rotationradians,        // ignored if rotates are on
+                            Vector3 size,       
+                            Vector3 rotationradians,        
                             StringFormat textformat = null, float backscale = 1.0f,
-                            bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
+                            bool rotatetoviewer = false, bool rotateelevation = false,   
                             float alphafadescalar = 0, 
                             float alphafadepos = 0,
                             bool visible = true
@@ -136,7 +137,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="bmp">Bitmap</param>
         /// <param name="bmpmipmaplevels">The bitmap mip map levels</param>
         /// <param name="worldpos">Position of bitmap in world</param>
-        /// <param name="size">Size to draw bitmap in world</param>
+        /// <param name="size">Size to draw bitmap in world.</param>
         /// <param name="rotationradians">Rotation of bitmap (ignored if rotates below are on)</param>
         /// <param name="rotatetoviewer">True to rotate to viewer in azimuth</param>
         /// <param name="rotateelevation">True to rotate to viewer in elevation</param>
@@ -150,9 +151,9 @@ namespace GLOFC.GL4.Bitmaps
                             Bitmap bmp,
                             int bmpmipmaplevels,
                             Vector3 worldpos,
-                            Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
-                            Vector3 rotationradians,        // ignored if rotates are on
-                            bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
+                            Vector3 size,      
+                            Vector3 rotationradians,        
+                            bool rotatetoviewer = false, bool rotateelevation = false,   
                             float alphafadescalar = 0, 
                             float alphafadepos = 0,
                             bool ownbitmap = false,
@@ -227,7 +228,7 @@ namespace GLOFC.GL4.Bitmaps
         {
             var texture = new GLTexture2DArray();
             items.Add(texture);
-            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.MaxPerGroup, textureformat, texmipmaplevels);
+            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.Matricesperbuffer, textureformat, texmipmaplevels);
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);

@@ -22,48 +22,55 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Buffers
 {
-    // class uses a GLVertexBufferIndirect to hold a vertex buffer and indirect commands, with multiple textures supplied to the shader
-    // The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength
-    // Object shader will get vertex 0 = objectbuffer vector4s, and vertex 1 = worldpositions of items added (instance divided)
-    // use with text shader GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
-    // multiple textures can be bound to carry the text labels, the number given by textures, limited by opengl texture limit per fragment shader(GetMaxTextureDepth())
-    // that gives the number of objects that can be produced 
+    /// <summary>
+    /// Class holds a set of objects, with labels underneath them
+    /// It uses a GLVertexBufferIndirect to hold a vertex buffer and indirect commands, with multiple textures supplied to the shader
+    /// The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength
+    /// Object shader will get vertex attribute 0 = objectbuffer vector4s, and vertex 1 = worldpositions of items added (instance divided)
+    /// use with text shader GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
+    /// multiple textures can be bound to carry the text labels, the number given by textures, limited by opengl texture limit per fragment shader(GetMaxTextureDepth())
+    /// that gives the number of objects that can be produced 
+    /// </summary>
 
     public class GLObjectsWithLabels : IDisposable
     {
+        /// <summary> Label size of bitmap</summary>
         public Size LabelSize { get { return textures[0].Size; } }
-
-        public int Blocks { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }      // how many blocks allocated
-        public int BlocksRemoved { get; private set; } = 0;     // how many have been removed
+        /// <summary> How many blocks allocated</summary>
+        public int Blocks { get { return dataindirectbuffer.Indirects.Count > 0 ? dataindirectbuffer.Indirects[0].Positions.Count : 0; } }     
+        /// <summary> How many blocks removed</summary>
+        public int BlocksRemoved { get; private set; } = 0;     
+        /// <summary> Is the system empty? </summary>
         public bool Emptied { get { return Blocks > 0 && BlocksRemoved == Blocks; } }
-
-        private GLVertexBufferIndirect dataindirectbuffer;                  // buffer and its indirect buffers [0] = objects, [1] = labels. [1].tags holds the object tag, [1].Tags holds the count of objects
+        /// <summary> The object renderer for this set </summary>
         public GLRenderableItem ObjectRenderer { get; private set; }
+        /// <summary> The text renderer for this set </summary>
         public GLRenderableItem TextRenderer { get; private set; }
-        private GLTexture2DArray[] textures;                                // holds the text labels
-        private int objectvertexescount;                                    // vert count for object
-        private int textureinuse = 0;                                       // textures in use, up to max textures.
-        private IntPtr context;
 
-        public class BlockRef                                               // used by adders to pass back a list of block refs
-        {
-            public GLObjectsWithLabels owl;
-            public int blockindex;
-            public int count;
-            public object tag;
-        };
-
-        GLItemsList items = new GLItemsList();      // our own item list to hold disposes
-
+        /// <summary>
+        /// Creator of this draw set 
+        /// </summary>
+        /// <param name="textures"> number of 2D textures to allow maximum (limited by GL)</param>
+        /// <param name="estimateditemspergroup">Estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.</param>
+        /// <param name="mingroups">Minimum groups to have</param>
+        /// <param name="objectbuffer">Object buffer to use</param>
+        /// <param name="objectvertexes">Number of object vertexes</param>
+        /// <param name="objrc">The object render state control</param>
+        /// <param name="objpt">The object draw primitive type</param>
+        /// <param name="texturesize">The size of the label</param>
+        /// <param name="textrc">The text render state</param>
+        /// <param name="textureformat">The texture format for the text</param>
+        /// <param name="debuglimittexture">For debug, set this to limit maximum number of entries. 0 = off</param>
+        /// <returns></returns>
         public Tuple<GLRenderableItem,GLRenderableItem> Create(
-                                int textures,       // number of 2D textures to allow maximum (limited by GL)
-                                int estimateditemspergroup,      // estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.
-                                int mingroups,     // minimum groups to have
-                                GLBuffer objectbuffer, int objectvertexes , GLRenderState objrc,  PrimitiveType objpt,  // object buffer, vertexes and its rendercontrol
-                                Size texturesize, GLRenderState textrc, SizedInternalFormat textureformat, // texturesize and render control
-                                int debuglimittexture = 0)  // use to limit texture map depth for debugging
+                                int textures,      
+                                int estimateditemspergroup,      
+                                int mingroups,     
+                                GLBuffer objectbuffer, int objectvertexes , GLRenderState objrc,  PrimitiveType objpt,  
+                                Size texturesize, GLRenderState textrc, SizedInternalFormat textureformat, 
+                                int debuglimittexture = 0)  
         {
             this.objectvertexescount = objectvertexes;
             this.context = GLStatics.GetContext();
@@ -122,36 +129,51 @@ namespace GLOFC.GL4
             return new Tuple<GLRenderableItem, GLRenderableItem>(ObjectRenderer, TextRenderer);
         }
 
-        // array/text holds worldpositions and text of each object
-        // tag gives a logical name to each group - must be unique
-        // returns position where it stopped, or -1 if all added
-
-        public int Add(Vector4[] array, string[] text, 
-                                Font fnt, Color fore, Color back, 
-                                Vector3 size, Vector3 rot, bool rotatetoviewer, bool rotateelevation,   // see GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix
-                                StringFormat fmt, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
+        /// <summary>
+        /// Add an set of text labels and objects to the draw
+        /// </summary>
+        /// <param name="worldpositions">Vector array of worldpositions for each object</param>
+        /// <param name="text">Text array of text for each object</param>
+        /// <param name="font">Text font</param>
+        /// <param name="forecolor">Text fore color</param>
+        /// <param name="backcolor">Text back color</param>
+        /// <param name="size">World size of object</param>
+        /// <param name="rotationradians">Rotation of object (ignored if rotateto are on)</param>
+        /// <param name="rotatetoviewer">True to rotate in azimuth to viewer</param>
+        /// <param name="rotateelevation">True to rotate in elevation to viewer</param>/// 
+        /// <param name="textformat">Text format</param>
+        /// <param name="backscale">Scale the back color</param>
+        /// <param name="textoffset">Offset of text relative to world position</param>
+        /// <param name="blocklist">Block list to update</param>
+        /// <returns>Returns position where it stopped, or -1 if all added</returns>
+        public int Add(Vector4[] worldpositions, string[] text, 
+                                Font font, Color forecolor, Color backcolor, 
+                                Vector3 size, Vector3 rotationradians, bool rotatetoviewer, bool rotateelevation,   
+                                StringFormat textformat, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
         {
-            var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, fore, back, backscale, false, fmt);
-            var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, textoffset, size, rot, rotatetoviewer, rotateelevation,0,0,0,true);
-            int v = Add(array, mats, bmps, blocklist);
+            var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, forecolor, backcolor, backscale, false, textformat);
+            var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(worldpositions, textoffset, size, rotationradians, rotatetoviewer, rotateelevation,0,0,0,true);
+            int v = Add(worldpositions, mats, bmps, blocklist);
             GLOFC.Utils.BitMapHelpers.Dispose(bmps);
             return v;
         }
 
-        // array holds worldpositions for objects
-        // matrix holds pos, orientation, etc for text
-        // bitmaps are for each label.  Owned by caller
-        // pos = indicates one to start from
-        // arraylength = if -1, use length of array, else only go to this entry (so 10 means 0..9 used)
-        // -1 all added, else the pos where it failed on
-        // block list updated
-
-        public int Add(Vector4[] array, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0, int arraylength = -1)
+        /// <summary>
+        /// Add an set of bitmaps and objects to the draw
+        /// </summary>
+        /// <param name="worldpositions">Vector array of worldpositions for each object</param>
+        /// <param name="matrix">Array of matrix giving information for positioning each label</param>
+        /// <param name="bitmaps">Array of bitmaps for labels associated with each object. Bitmaps are owned by caller</param>
+        /// <param name="blocklist">Block list to update</param>
+        /// <param name="pos">Start position in array to start processing from</param>
+        /// <param name="arraylength">Amount to use in the array, or -1 for all</param>
+        /// <returns>Returns -1 all added, else the pos where it failed on</returns>
+        public int Add(Vector4[] worldpositions, Matrix4[] matrix, Bitmap[] bitmaps, List<BlockRef> blocklist, int pos = 0, int arraylength = -1)
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
 
             if (arraylength == -1)      // this means use length of array
-                arraylength = array.Length;
+                arraylength = worldpositions.Length;
 
             do
             {
@@ -164,7 +186,7 @@ namespace GLOFC.GL4
                 //System.Diagnostics.Debug.WriteLine($"Fill {pos} {touse}");
                 // fill in vertex array entries from pos .. pos+touse-1
 
-                if (!dataindirectbuffer.Fill(array, pos, touse, 0, objectvertexescount, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
+                if (!dataindirectbuffer.Fill(worldpositions, pos, touse, 0, objectvertexescount, 0, touse, -1))  // indirect 0 holds object draws, objectvertexes long, touse objects, estimate base instance on position
                 {
                     System.Diagnostics.Debug.WriteLine("GLObjectWithLabels failed to add object indirect");
                     return pos;
@@ -206,8 +228,14 @@ namespace GLOFC.GL4
             return -1;
         }
 
-        // Find in objects.  Return block list render group and index into it, or null
-
+        /// <summary>
+        /// Find object on screen
+        /// </summary>
+        /// <param name="findshader">The shader to use for the find</param>
+        /// <param name="glstate">Render state</param>
+        /// <param name="pos">Position on screen of find point</param>
+        /// <param name="size">Screen size</param>
+        /// <returns>Return block list render group and index into it, or null</returns>
         public Tuple<int, int> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
@@ -223,6 +251,7 @@ namespace GLOFC.GL4
                 return null;
         }
 
+        /// <summary>Remove entry </summary>
         public bool Remove(int i)
         {
             if (dataindirectbuffer.Indirects.Count>0 && i < dataindirectbuffer.Indirects[0].Positions.Count )
@@ -235,10 +264,32 @@ namespace GLOFC.GL4
             return false;
         }
 
+        /// <summary>Dispose of set</summary>
         public void Dispose()
         {
             items.Dispose();
         }
+
+        /// <summary> Block information for a object </summary>
+        public class BlockRef                                               // used by adders to pass back a list of block refs
+        {
+            /// <summary> This pointer </summary>
+            public GLObjectsWithLabels owl;
+            /// <summary> Block index </summary>
+            public int blockindex;
+            /// <summary> Block count </summary>
+            public int count;
+            /// <summary> Block tag </summary>
+            public object tag;
+        };
+
+        private GLItemsList items = new GLItemsList();      // our own item list to hold disposes
+
+        private GLVertexBufferIndirect dataindirectbuffer;                  // buffer and its indirect buffers [0] = objects, [1] = labels. [1].tags holds the object tag, [1].Tags holds the count of objects
+        private GLTexture2DArray[] textures;                                // holds the text labels
+        private int objectvertexescount;                                    // vert count for object
+        private int textureinuse = 0;                                       // textures in use, up to max textures.
+        private IntPtr context;
 
     }
 }

@@ -18,37 +18,51 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Buffers
 {
-    // Class holds a MatrixBuffer
-    // You can delete by tag name or clear all
-    // You can delete by generation
+    /// <summary>
+    /// Class holds a set of GLMatrixBufferWithGenerations 
+    /// You can delete by tag name or clear all
+    /// You can delete by generation
+    /// </summary>
 
     public class GLSetOfMatrixBufferWithGenerations : IDisposable
     {
+        /// <summary> Callback indicating new group added </summary>
         public Action<int, GLBuffer> AddedNewGroup { get; set; } = null;      // add hook so you know when a new group made, its index and the matrix buffer
-
-        public int MaxPerGroup { get; private set; }
-
+        /// <summary> Maximum number of entries per buffer </summary>
+        public int Matricesperbuffer { get; private set; }
+        /// <summary> Number of tags defined</summary>
         public int TagCount { get { return tagtoentries.Count; } }            // number of tags recorded
-
+        /// <summary> Current generation </summary>
         public uint CurrentGeneration { get; set; } = 0;                       // to be set on write
 
-        public GLSetOfMatrixBufferWithGenerations(GLItemsList items, int groupsize)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="items">Item list to create buffers on</param>
+        /// <param name="matricesperbuffer">Number of matrices per buffer</param>
+        public GLSetOfMatrixBufferWithGenerations(GLItemsList items, int matricesperbuffer)
         {
-            MaxPerGroup = groupsize;
+            Matricesperbuffer = matricesperbuffer;
             this.items = items;
         }
 
-        // tag can be null, but then it can't be found
-        public Tuple<int,int,int> Add(object tag, IDisposable data, Matrix4 mat)        // returning group, pos, total count of group
+        /// <summary>
+        /// Add an entry to the set
+        /// </summary>
+        /// <param name="tag">User defined tag, may be null</param>
+        /// <param name="data">Disposable data to store, may be null</param>
+        /// <param name="mat">Matrix</param>
+        /// <returns>Returns tuple with group, pos, total count of group</returns>
+        public Tuple<int,int,int> Add(object tag, IDisposable data, Matrix4 mat)    
         {
             var gi = groups.FindIndex(x => x.Left > 0);      // find one with space..
 
             if (gi == -1)
             {
                 gi = groups.Count;
-                groups.Add(new GLMatrixBufferWithGenerations(items, MaxPerGroup));
+                groups.Add(new GLMatrixBufferWithGenerations(items, Matricesperbuffer));
                 AddedNewGroup?.Invoke(gi, groups[gi].MatrixBuffer);
                // System.Diagnostics.Debug.WriteLine("Make group");
             }
@@ -61,11 +75,13 @@ namespace GLOFC.GL4
             return new Tuple<int,int,int>(gi,pos,groups[gi].Count);
         }
 
-        public bool Exist(object tag)       // does this tag exist?
+        /// <summary> Does this tag exist? </summary>
+        public bool Exist(object tag)      
         {
             return tagtoentries.ContainsKey(tag);
         }
 
+        /// <summary> Remove this tag, true if done </summary>
         public bool Remove(Object tag)
         {
             if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
@@ -78,6 +94,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
+        /// <summary> Set visibility and rotation of a tag, true if done </summary>
         public bool SetVisibilityRotation(Object tag, float ctrl)       // ctrl is in the format described by the vertex sharer in use
         {
             if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
@@ -89,6 +106,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
+        /// <summary> Get Matrix. If does not exist, return empty matrix</summary>
         public Matrix4 GetMatrix(Object tag)
         {
             if (tagtoentries.TryGetValue(tag, out Tuple<GLMatrixBufferWithGenerations, int> pos))
@@ -99,6 +117,7 @@ namespace GLOFC.GL4
                 return Matrix4.Zero;
         }
 
+        /// <summary> Remove all entries up and including this generation from the buffer, except for tags in the keeplist </summary>
         public uint RemoveGeneration(uint removegenerationbelow, HashSet<object> keeplist = null)
         {
             uint oldestgenfound = 0;
@@ -112,6 +131,7 @@ namespace GLOFC.GL4
                
         }
 
+        /// <summary> Clear all </summary>
         public void Clear()
         {
             foreach (var g in groups)
@@ -122,6 +142,7 @@ namespace GLOFC.GL4
             tagtoentries = new Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>>(); // clear all tags
         }
 
+        /// <summary> Dispose of this set </summary>
         public void Dispose()           // you can double dispose.
         {
             foreach (var g in groups)
