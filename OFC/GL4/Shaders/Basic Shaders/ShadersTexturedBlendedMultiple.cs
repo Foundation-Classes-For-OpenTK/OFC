@@ -12,15 +12,19 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
- 
+
 using System;
+using GLOFC.GL4.Shaders;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Basic
 {
-    // Shader, allows blending of multiple images, and selection of image base through matrix/position
-    // instanced position.  Allows you to throw multiple blending differing images at random positions and common rotations.
+
+    /// <summary>
+    /// Shader, allows blending of multiple images, and selection of image base through matrix/position
+    /// instanced position.  Allows you to throw multiple blending differing images at random positions and common rotations.
+    /// </summary>
 
     public class GLMultipleTexturedBlended : GLShaderStandard
     {
@@ -151,18 +155,33 @@ void main(void)
     }
 }
 ";
-        public float Blend { get; set; } = 0;                   // from 0 to BlendImages-0.0001
+
+        /// <summary>
+        /// Blending amount. from 0 to BlendImages-0.0001
+        /// </summary>
+        public float Blend { get; set; } = 0;
+
+        /// <summary>
+        /// Number of images to blend
+        /// </summary>
         public int BlendImages { get; set; } = 0;
 
-        public GLRenderDataTranslationRotation CommonTransform { get; set; }           // only use this for rotation - position set by object data
+        /// <summary>
+        /// Common Transform.  Only use this for rotation - position set by object data
+        /// </summary>
+        public GLRenderDataTranslationRotation CommonTransform { get; set; }           //
 
-        public GLMultipleTexturedBlended(bool matrix, int blendimages)      // give the number of images to blend over, or 0 for not
+        /// <summary> Constructor. Matrix determines if using matrix or vector4 for position. Blendimages gives the number of images to blend, 0 for not </summary>
+        public GLMultipleTexturedBlended(bool matrix, int blendimages)
         {
-            CompileLink(vertex: (matrix ? vertmat : vertpos), frag: frag, geo:geo );
+            CompileLink(vertex: matrix ? vertmat : vertpos, frag: frag, geo: geo);
             BlendImages = blendimages;
             CommonTransform = new GLRenderDataTranslationRotation();
         }
 
+        /// <summary>
+        /// Start shader
+        /// </summary>
         public override void Start(GLMatrixCalc c)
         {
             base.Start(c);
@@ -171,7 +190,7 @@ void main(void)
             GL.ProgramUniformMatrix4(Id, 20, false, ref t);
 
             int image1 = (int)Math.Floor(Blend);            // compute first and next image indexes
-            int image2 = (BlendImages>0) ? ((image1 + 1) % BlendImages) : 0;
+            int image2 = BlendImages > 0 ? (image1 + 1) % BlendImages : 0;
             float mix = Blend - image1;                     // and the mix between them
 
             GL.ProgramUniform1(Id, 25, mix);
@@ -180,12 +199,7 @@ void main(void)
 
             // System.Diagnostics.Debug.WriteLine("Blend " + image1 + " to " + image2 + " Mix of" + mix);
 
-            GLOFC.GLStatics.Check();
-        }
-
-        public override void Finish()
-        {
-            base.Finish();
+            GLStatics.Check();
         }
     }
 }

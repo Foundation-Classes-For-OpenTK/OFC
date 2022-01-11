@@ -15,6 +15,10 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;

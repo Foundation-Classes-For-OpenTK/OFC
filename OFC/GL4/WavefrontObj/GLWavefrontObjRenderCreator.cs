@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders.Basic;
 using GLOFC.Utils;
 using GLOFC.WaveFront;
 using OpenTK;

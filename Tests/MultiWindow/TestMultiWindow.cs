@@ -30,6 +30,7 @@ using System.Windows.Forms;
 using GLOFC;
 using System.Threading;
 using GLOFC.Utils;
+using GLOFC.GL4.Shaders.Basic;
 
 namespace TestOpenTk
 {

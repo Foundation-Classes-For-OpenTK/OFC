@@ -24,8 +24,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
-    <DocumentationFile>bin\Debug\GLOFC.xml</DocumentationFile>
-    <DisableDefaultDocumentation>True</DisableDefaultDocumentation>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +41,7 @@
     <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
     <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
     <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
+    <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">

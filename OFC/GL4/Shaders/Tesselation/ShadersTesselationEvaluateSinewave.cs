@@ -12,7 +12,8 @@
  * governing permissions and limitations under the License.
  */
 
- using OpenTK.Graphics.OpenGL4;
+using GLOFC.GL4.Shaders;
+using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {

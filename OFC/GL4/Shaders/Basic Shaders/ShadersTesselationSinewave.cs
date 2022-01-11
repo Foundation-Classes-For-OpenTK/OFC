@@ -13,14 +13,15 @@
  * governing permissions and limitations under the License.
  */
 
-
+using GLOFC.GL4.Shaders;
 using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Basic
 {
-    // Shader, with tesselation, and Y change in amp using sin
-
+    /// <summary>
+    /// Shader, with tesselation, and Y change in amp using sin 
+    /// </summary>
     public class GLTesselationShaderSinewave : GLShaderStandard
     {
         string vert =
@@ -61,7 +62,7 @@ void main(void)
 ";
         }
 
-        string TES(float amplitude,float repeats)
+        string TES(float amplitude, float repeats)
         {
             return
 
@@ -106,20 +107,35 @@ void main(void)
 }
 ";
 
+        /// <summary>
+        /// Phase of tesselation, in radians
+        /// </summary>
         public float Phase { get; set; } = 0;                   // set to animate.
 
-        public GLTesselationShaderSinewave(float tesselation,float amplitude, float repeats)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="tesselation">Tesselation amount</param>
+        /// <param name="amplitude">Amplitude value</param>
+        /// <param name="repeats">Repeats across object</param>
+        public GLTesselationShaderSinewave(float tesselation, float amplitude, float repeats)
         {
-            CompileLink(vertex: vert, tcs: TCS(tesselation), tes: TES(amplitude,repeats), frag: frag);
+            CompileLink(vertex: vert, tcs: TCS(tesselation), tes: TES(amplitude, repeats), frag: frag);
         }
 
+        /// <summary>
+        /// Start, bind and program uniforms
+        /// </summary>
         public override void Start(GLMatrixCalc c)
         {
             base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
-            GLOFC.GLStatics.Check();
+            GLStatics.Check();
         }
 
+        /// <summary>
+        /// Finish shader
+        /// </summary>
         public override void Finish()
         {
             base.Finish();

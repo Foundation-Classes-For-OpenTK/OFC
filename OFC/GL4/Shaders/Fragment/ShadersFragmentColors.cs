@@ -15,20 +15,26 @@
 using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Fragment
 {
-    // Pipeline shader, Fixed Colour fragment shader
-    // Requires:
-    //      no inputs
+    /// <summary>
+    /// Pipeline shader, Fixed Colour fragment shader
+    /// Requires: No inputs 
+    /// </summary>
 
     public class GLPLFragmentShaderFixedColor : GLShaderPipelineComponentShadersBase
     {
-        OpenTK.Graphics.Color4 col;
+        private OpenTK.Graphics.Color4 col;
 
-        public GLPLFragmentShaderFixedColor(OpenTK.Graphics.Color4 c, bool saveable = false)
+        /// <summary>
+        /// Construcor for fixed colour shader
+        /// </summary>
+        /// <param name="color">Color to paint</param>
+        /// <param name="saveable">Make it saveable</param>
+        public GLPLFragmentShaderFixedColor(OpenTK.Graphics.Color4 color, bool saveable = false)
         {
-            col = c;
-            CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name, saveable:saveable);
+            col = color;
+            CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name, saveable: saveable);
         }
 
         private string Code()
@@ -47,15 +53,22 @@ void main(void)
 
     }
 
-    // Pipeline shader, uniform decides colour, use GLRenderDataTranslationRotationColour or similar to set the uniform on a per draw basis
-    // Requires:
-    //      uniform : vec4 of colour
+    /// <summary>
+    /// Pipeline shader, uniform decides colour, use GLRenderDataTranslationRotationColour or similar to set the uniform on a per draw basis
+    /// Requires:
+    ///      uniform : vec4 of colour
+    /// </summary>
 
     public class GLPLFragmentShaderUniformColor : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="uniform">Uniform number to get colour from</param>
+        /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentShaderUniformColor(int uniform = 25, bool saveable = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(), constvalues: new object[] { "bindingpoint", uniform }, auxname: GetType().Name, saveable:saveable);
+            CompileLink(ShaderType.FragmentShader, Code(), constvalues: new object[] { "bindingpoint", uniform }, auxname: GetType().Name, saveable: saveable);
         }
 
         private string Code()
@@ -76,12 +89,17 @@ void main(void)
         }
     }
 
-    // Pipeline shader, Vertex shader colour pass to it
-    // Requires:
-    //      vs_color : vec4 of colour
-
+    /// <summary>
+    /// Vertex shader colour pass to it 
+    /// Requires:
+    ///      location 0 : vec4 of colour
+    /// </summary>
     public class GLPLFragmentShaderVSColor : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentShaderVSColor(bool saveable = false)
         {
             CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name, saveable: saveable);
@@ -104,16 +122,23 @@ void main(void)
 
     }
 
-    // Pipeline shader, one of six colour based on primitive ID, selectable divisor, mostly for testing
+    /// <summary>
+    /// Shader, Fixed shader of one of six colours based on primitive ID, selectable divisor, mostly for testing
+    /// </summary>
 
     public class GLPLFragmentIDShaderColor : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="divisor">Primitive ID divisor</param>
+        /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentIDShaderColor(int divisor, bool saveable = false)
         {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Code(divisor), auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.FragmentShader, Code(divisor), auxname: GetType().Name, saveable: saveable);
         }
 
-        public string Code(int divisor)
+        private string Code(int divisor)
         {
             return
 @"
@@ -128,8 +153,5 @@ void main(void)
 }
 ";
         }
-
     }
-
-
 }

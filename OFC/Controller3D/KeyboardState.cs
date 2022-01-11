@@ -20,26 +20,26 @@ using System.Windows.Forms;
 
 namespace GLOFC.Controller
 {
-    // hook Keydown/Keyup to it, then it keeps track of what keys are currently pressed
-
+    /// <summary>
+    /// Keyboard monitor - used to track keypresses
+    /// </summary>
     public class KeyboardMonitor
     {
+        /// <summary> Shift keys state </summary>
         public enum ShiftState
         {
+            /// <summary> None </summary>
             None = 0,
+            /// <summary> Shift </summary>
             Shift = 1,
+            /// <summary> Ctrl </summary>
             Ctrl = 2,
+            /// <summary> Alt </summary>
             Alt = 4,
         };
 
-        public ShiftState SetShift(bool ctrl, bool shift, bool alt)
-        {
-            return (ShiftState)((ctrl ? ShiftState.Ctrl : 0) | (shift ? ShiftState.Shift : 0) | (alt ? ShiftState.Alt : 0));
-        }
-
-        // from the has been pressed list
-
-        public bool HasBeenPressed(Keys key, ShiftState state)       // is pressed and in this state, remove from list saying it has been pressed.
+        /// <summary> Is key pressed and in this state, remove from list saying it has been pressed.</summary>
+        public bool HasBeenPressed(Keys key, ShiftState state)       
         {
             bool ret = false;
             if (hasbeenpressed.ContainsKey(key) && hasbeenpressed[key] == state)
@@ -51,7 +51,8 @@ namespace GLOFC.Controller
             return ret;
         }
 
-        public int HasBeenPressed(ShiftState state, params Keys[] keys)       // is pressed and in this state, remove from list saying it has been pressed.
+        /// <summary>Are any keys pressed and in this state, remove from list saying it has been pressed. </summary>
+        public int HasBeenPressed(ShiftState state, params Keys[] keys)       
         {
             for (int i = 0; i < keys.Length; i++)
             {
@@ -64,7 +65,9 @@ namespace GLOFC.Controller
 
             return -1;
         }
-        public Tuple<int,ShiftState> HasBeenPressed(params Keys[] keys)       // is pressed, return index and state 
+
+        /// <summary>Are keys pressed, return index and state  </summary>
+        public Tuple<int,ShiftState> HasBeenPressed(params Keys[] keys)    
         {
             for (int i = 0; i < keys.Length; i++)
             {
@@ -79,19 +82,20 @@ namespace GLOFC.Controller
             return null;
         }
 
-        public void ClearHasBeenPressed()                                    // all has been checked, clear them
+        /// <summary> Clear all pressed keys </summary>
+        public void ClearHasBeenPressed()                          
         {
             hasbeenpressed.Clear();
         }
 
-        // Currently pressed
-
-        public bool IsCurrentlyPressed(ShiftState state, Keys key)             // is currently pressed and in this shift state
+        /// <summary> Is key currently pressed and in this state </summary>
+        public bool IsCurrentlyPressed(ShiftState state, Keys key)            
         {
             return keyspressed.ContainsKey(key) && keyspressed[key] == state;
         }
 
-        public ShiftState? IsCurrentlyPressed(Keys key)                        // is currently pressed and in any shift state
+        /// <summary> Is key currently pressed, if so, return state.  if not, return null </summary>
+        public ShiftState? IsCurrentlyPressed(Keys key)                        
         {
             if (keyspressed.ContainsKey(key))
                 return keyspressed[key];
@@ -99,7 +103,8 @@ namespace GLOFC.Controller
                 return null;
         }
 
-        public int IsCurrentlyPressed(ShiftState state, params Keys[] keys)  // is currently pressed and in this shift state
+        /// <summary> Is any keys currently pressed and in this shift state, return index into first key found which is down </summary>
+        public int IsCurrentlyPressed(ShiftState state, params Keys[] keys)  
         {
             System.Diagnostics.Debug.Assert(keys.Length > 0);
             for (int i = 0; i < keys.Length; i++)
@@ -111,6 +116,8 @@ namespace GLOFC.Controller
             return -1;
         }
 
+        /// <summary> Is any keys currently pressed, if so, return shift state of first key found </summary>
+        /// <summary> </summary>
         public ShiftState? IsCurrentlyPressed(params Keys[] keys)  // is currently pressed and in this shift state
         {
             System.Diagnostics.Debug.Assert(keys.Length > 0);
@@ -124,11 +131,13 @@ namespace GLOFC.Controller
             return null;
         }
 
+        /// <summary> Are any keys pressed </summary>
         public bool IsAnyCurrentlyPressed()
         {
             return keyspressed.Count > 0;
         }
 
+        /// <summary> Are any keys pressed or been pressed </summary>
         public bool IsAnyCurrentlyOrHasBeenPressed()
         {
             return keyspressed.Count > 0 || hasbeenpressed.Count > 0;
@@ -137,10 +146,14 @@ namespace GLOFC.Controller
         private Dictionary<Keys, ShiftState> keyspressed = new Dictionary<Keys, ShiftState>();
         private Dictionary<Keys, ShiftState> hasbeenpressed = new Dictionary<Keys, ShiftState>();
 
+        /// <summary> Control down </summary>
         public bool Ctrl { get; private set; } = false;
+        /// <summary> Alt down </summary>
         public bool Alt { get; private set; } = false;
+        /// <summary> Shift down </summary>
         public bool Shift { get; private set; } = false;
 
+        /// <summary> Reset the key pressed system </summary>
         public void Reset()
         {
             Ctrl = Alt = Shift = false;
@@ -148,6 +161,7 @@ namespace GLOFC.Controller
             hasbeenpressed.Clear();
         }
 
+        /// <summary> Call during keydown event in key handler </summary>
         public void KeyDown(bool c, bool s, bool a, Keys keycode)      // hook to handler
         {
             Ctrl = c;
@@ -158,6 +172,7 @@ namespace GLOFC.Controller
             //System.Diagnostics.Debug.WriteLine("Keycode down " + keycode);
         }
 
+        /// <summary> Call during keyup event in key handler </summary>
         public void KeyUp(bool c, bool s, bool a, Keys keycode)      // hook to handler
         {
             Ctrl = c;
@@ -166,5 +181,11 @@ namespace GLOFC.Controller
             keyspressed.Remove(keycode);
             //System.Diagnostics.Debug.WriteLine("Keycode up " + keycode);
         }
+
+        private ShiftState SetShift(bool ctrl, bool shift, bool alt)
+        {
+            return (ShiftState)((ctrl ? ShiftState.Ctrl : 0) | (shift ? ShiftState.Shift : 0) | (alt ? ShiftState.Alt : 0));
+        }
+
     }
 }

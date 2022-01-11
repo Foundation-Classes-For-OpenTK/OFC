@@ -20,38 +20,46 @@ using System.Windows.Forms;
 
 namespace GLOFC.Controller
 {
-    // base class for 3dControllers - handles mouse and keyboard
+    /// <summary>
+    /// base class for 3dControllers - handles mouse and keyboard 
+    /// </summary>
 
     public abstract class Controller3DBase
     {
-        public float MouseRotateAmountPerPixel { get; set; } = 0.15f;           // mouse speeds, degrees/pixel
-        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;       // per pixel movement at zoom 1 (zoom scaled)
-        public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 10.0f;  // per pixel movement at zoom 1
-        public bool YHoldMovement { get; set; } = true;                         // set true to make y hold during key translations
+        /// <summary> Amount to rotate per pixel for mouse </summary>
+        public float MouseRotateAmountPerPixel { get; set; } = 0.15f;         
+        /// <summary> Amount to move up/down per pixel (at zoom 1) for mouse</summary>
+        public float MouseUpDownAmountAtZoom1PerPixel { get; set; } = 5f;   
+        /// <summary> Amount to translate per pixel (at zoom 1) for mouse </summary>
+        public float MouseTranslateAmountAtZoom1PerPixel { get; set; } = 10.0f;  
+        /// <summary> Set for Y Hold movement </summary>
+        public bool YHoldMovement { get; set; } = true;                        
 
-        public Func<int, float, float> KeyboardTravelSpeed;                     // optional set to scale travel key commands given this time interval and camera distance
-        public Func<int, float> KeyboardRotateSpeed;                            // optional set to scale camera key rotation commands given this time interval
-        public Func<int, float> KeyboardZoomSpeed;                              // optional set to scale zoom speed commands given this time interval
+        /// <summary> Optional set to scale travel key commands given this time interval and camera distance </summary>
+        public Func<int, float, float> KeyboardTravelSpeed;                     
+        /// <summary> Optional set to scale camera key rotation commands given this time interval</summary>
+        public Func<int, float> KeyboardRotateSpeed;                             
+        /// <summary> Optional set to scale zoom speed commands given this time interval</summary>
+        public Func<int, float> KeyboardZoomSpeed;                               
 
+        /// <summary> Matrix Calc to use </summary>
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
 
+        /// <summary> Mouse Down handler - hook to GLWindowControl </summary>
         public void MouseDown(object sender, GLMouseEventArgs e)
         {
             mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
             //System.Diagnostics.Debug.WriteLine($"Mouse down {e.WindowLocation} -> {mouseDownPos}");
         }
 
+        /// <summary> Mouse Up handler - hook to GLWindowControl</summary>
         public void MouseUp(object sender, GLMouseEventArgs e)
         {
             // System.Diagnostics.Debug.WriteLine($"Mouse Up");
             mouseDeltaPos = mouseDownPos = new Point(int.MinValue, int.MinValue);
         }
 
-        public bool IsMouseDown()
-        {
-            return mouseDownPos.X != int.MinValue;
-        }
-
+        /// <summary> How much has the mouse moved since mouse down? </summary>
         public int MouseMovedSq(GLMouseEventArgs e)     // square of mouse moved, -1 if was not down
         {
             if (mouseDownPos.X != int.MinValue)
@@ -63,6 +71,7 @@ namespace GLOFC.Controller
                 return -1;
         }
 
+        /// <summary> Mouse Move handler - hook to GLWindowControl</summary>
         public void MouseMove(object sender, GLMouseEventArgs e)
         {
             if (mouseDownPos.X == int.MinValue)
@@ -143,6 +152,7 @@ namespace GLOFC.Controller
 
         }
 
+        /// <summary> Mouse Wheel handler - hook to GLWindowControl</summary>
         public void MouseWheel(object sender, GLMouseEventArgs e)
         {
             if (e.Delta != 0)
@@ -162,18 +172,20 @@ namespace GLOFC.Controller
             }
         }
 
+        /// <summary> Key Down handler - hook to GLWindowControl </summary>
         public void KeyDown(object sender, GLKeyEventArgs e)
         {
             keyboard.KeyDown(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
+        /// <summary> Key Up handler - hook to GLWindowControl</summary>
         public void KeyUp(object sender, GLKeyEventArgs e)
         {
             keyboard.KeyUp(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
 
-        // handle keyboard, handle other keys if required
-        // Does not call any GL functions 
-
+        /// <summary> 
+        /// Handle keyboard, handle other keys if required. Note does not call any GL functions 
+        /// </summary>
         protected int HandleKeyboardSlews(ulong curtime, bool focused, bool activated, Action<KeyboardMonitor> handleotherkeys = null)
         {
             int interval = lastkeyintervalcount.HasValue ? (int)(curtime - lastkeyintervalcount) : 1;
@@ -385,17 +397,17 @@ namespace GLOFC.Controller
         private ulong? lastkeyintervalcount = null;
 
         // abstract interface into inheritor
-        protected abstract void KillSlew();
-        protected abstract void RotateCamera(Vector2 dir, float addzrot, bool changelookat);
-        protected abstract void Translate(Vector3 dir);
-        protected abstract void ZoomBy(float v);
-        protected abstract float ZoomFactor { get; }
-        protected abstract void GoToZoom(float v, float time);
-        protected abstract float ZoomMin { get; }
-        protected abstract float ZoomMax { get; }
-        protected abstract void ZoomScale(bool dir);
-        protected abstract Vector2 CameraDirection { get; }
-        protected abstract float CameraRotation { get; }
-        protected abstract void Invalidate();
+        private protected abstract void KillSlew();
+        private protected abstract void RotateCamera(Vector2 dir, float addzrot, bool changelookat);
+        private protected abstract void Translate(Vector3 dir);
+        private protected abstract void ZoomBy(float v);
+        private protected abstract float ZoomFactor { get; }
+        private protected abstract void GoToZoom(float v, float time);
+        private protected abstract float ZoomMin { get; }
+        private protected abstract float ZoomMax { get; }
+        private protected abstract void ZoomScale(bool dir);
+        private protected abstract Vector2 CameraDirection { get; }
+        private protected abstract float CameraRotation { get; }
+        private protected abstract void Invalidate();
     }
 }

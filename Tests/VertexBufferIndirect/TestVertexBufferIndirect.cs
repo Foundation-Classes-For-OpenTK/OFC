@@ -15,6 +15,10 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
@@ -131,8 +135,8 @@ namespace TestOpenTk
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
             shapebuf.AllocateFill(shape);
 
-            int bufferfindbinding = 1;
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(bufferfindbinding, 16), null, null, null);
+            GLStorageBlock block = new GLStorageBlock(20);
+            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16), null, null, null);
 
             int texunitspergroup = 16;      // opengl minimum texture units per frag shader
 

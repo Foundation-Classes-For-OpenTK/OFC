@@ -13,6 +13,9 @@
  */
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;

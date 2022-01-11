@@ -16,83 +16,115 @@
 using System;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders
 {
-    // inherit from this to make a compute shader 
-    // you can either run it directly, or you can add it to a RenderableList to mix it with renderable items
-
+    /// <summary>
+    /// Compute Shader class. Inherit from this to make a compute shader 
+    /// You can either run it directly, or you can add it to a RenderableList to mix it with renderable items
+    /// </summary>
     public abstract class GLShaderCompute : IGLProgramShader
     {
+        /// <summary> GL ID</summary>
         public int Id { get { return Program.Id; } }
+
+        /// <summary> Program object</summary>
         public GLProgram Program { get; private set; }
 
-        public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
-        public virtual string Name { get { return "Standard:" + GetType().Name; } }     // override to give meaningful name
+        /// <summary> If Enabled </summary>
+        public bool Enable { get; set; } = true;
 
+        /// <summary> Name of shader </summary>
+        public virtual string Name { get { return "Compute:" + GetType().Name; } }     // override to give meaningful name
+
+        /// <summary> Get shader, always returns this</summary>
         public IGLShader GetShader(ShaderType t) { return this; }
-        public T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType t) where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
-        public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
 
+        /// <summary> Not implemented</summary>
+        public T GetShader<T>(ShaderType t) where T : IGLShader { throw new NotImplementedException(); }
+        /// <summary> Not implemented</summary>
+        public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }
+
+        /// <summary> Start Action callback </summary>
         public Action<IGLProgramShader, GLMatrixCalc> StartAction { get; set; }
+        /// <summary> Finish Action callback </summary>
         public Action<IGLProgramShader> FinishAction { get; set; }
 
+        /// <summary> Workgroup X size </summary>
         public int XWorkgroupSize { get; set; } = 1;
+        /// <summary> Workgroup Y size</summary>
         public int YWorkgroupSize { get; set; } = 1;
+        /// <summary> Workgroup Z size</summary>
         public int ZWorkgroupSize { get; set; } = 1;
 
+        /// <summary> Create a compute shader with default workgroup size</summary>
         public GLShaderCompute()
         {
         }
 
+        /// <summary> Create a compute shader with default workgroup size and optional start action</summary>
         public GLShaderCompute(Action<IGLProgramShader, GLMatrixCalc> sa = null) : this()
         {
             StartAction = sa;
         }
 
+        /// <summary> Create a compute shader with these workgroups and optional start action</summary>
         public GLShaderCompute(int x, int y, int z, Action<IGLProgramShader, GLMatrixCalc> sa = null) : this()
         {
             XWorkgroupSize = x; YWorkgroupSize = y; ZWorkgroupSize = z;
             StartAction = sa;
         }
 
-        // completeoutfile is output of file for debugging
-        public void CompileLink(string code, Object[] constvalues = null, bool saveable = false, string completeoutfile = null )
+        /// <summary>
+        /// Compile the compute program
+        /// </summary>
+        /// <param name="codelisting">The code</param>
+        /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="saveable">True if want to save to binary</param>
+        /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
+
+        public void CompileLink(string codelisting, object[] constvalues = null, bool saveable = false, string completeoutfile = null)
         {
             Program = new GLProgram();
-            string ret = Program.Compile(OpenTK.Graphics.OpenGL4.ShaderType.ComputeShader, code, constvalues, completeoutfile);
+            string ret = Program.Compile(ShaderType.ComputeShader, codelisting, constvalues, completeoutfile);
             System.Diagnostics.Debug.Assert(ret == null, "Compute Shader", ret);
-            ret = Program.Link(wantbinary:saveable);
+            ret = Program.Link(wantbinary: saveable);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
-            GLOFC.GLStatics.Check();
+            GLStatics.Check();
         }
 
-        public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary
+        /// <summary> Get binary. Must have linked with wantbinary</summary>
+        public byte[] GetBinary(out BinaryFormat binformat)
         {
             return Program.GetBinary(out binformat);
         }
 
+        /// <summary> Load a binary compute shader</summary>
         public void Load(byte[] bin, BinaryFormat binformat)
         {
             Program = new GLProgram(bin, binformat);
         }
 
-        public void Start(GLMatrixCalc c)                 // override.. but call back.  Executes compute.
+        /// <summary> Start shader - execute compute. StartAction is called </summary>
+        public void Start(GLMatrixCalc c)
         {
             GL.UseProgram(Id);
             StartAction?.Invoke(this, c);
             GL.DispatchCompute(XWorkgroupSize, YWorkgroupSize, ZWorkgroupSize);
         }
 
+        /// <summary> Finish shader. FinishAction is called </summary>
         public virtual void Finish()
         {
             FinishAction?.Invoke(this);                           // any shader hooks get a chance.
         }
 
+        /// <summary> Dispose of shader</summary>
         public virtual void Dispose()
         {
             Program.Dispose();
         }
 
+        /// <summary> Run the shader </summary>
         public void Run()                           // for compute shaders, we can just run them.  
         {
             Start(null);

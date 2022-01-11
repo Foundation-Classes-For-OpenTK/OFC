@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 

@@ -99,7 +99,7 @@ namespace GLOFC
             return new Vector4((float)color.R / 255.0f, (float)color.G / 255.0f, (float)color.B / 255.0f, (float)color.A / 255.0f);
         }
 
-        /// <summary> Rotate and translate an array of vertices <summary>
+        /// <summary> Rotate and translate an array of vertices </summary>
         public static void RotPos(ref Vector4[] vertices, Vector3? rotationradians = null, Vector3? pos = null)        // rotations in radians
         {
             if (rotationradians != null && rotationradians.Value.Length > 0)
@@ -115,7 +115,7 @@ namespace GLOFC
                 Translate(ref vertices, pos.Value);
         }
 
-        /// <summary> Give the % (<0 before, 0..1 inside, >1 after) of a point on vector from this->x1, the point being perpendicular to x2.</summary>
+        /// <summary> Give the % (less than 0 before, 0..1 inside, greater than 1 after) of a point on vector from this->x1, the point being perpendicular to x2.</summary>
         public static float InterceptPercent(this Vector4 x0, Vector4 x1, Vector4 x2)
         {
             float dotp = (x1.X - x0.X) * (x2.X - x1.X) + (x1.Y - x0.Y) * (x2.Y - x1.Y) + (x1.Z - x0.Z) * (x2.Z - x1.Z);

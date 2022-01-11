@@ -59,14 +59,14 @@ namespace GLOFC.GL4
         /// <summary>
         /// Compile the program
         /// </summary>
-        /// <param name="st">Shader type,Fragment, Vertex etc </param>
+        /// <param name="shadertype">Shader type,Fragment, Vertex etc </param>
         /// <param name="codelisting">The code</param>
-        /// <param name="constvalues">List of constant values to report. Set of {name,value}</param>
+        /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        /// <returns></returns>
-        public string Compile( ShaderType st, string codelisting, Object[] constvalues = null, string completeoutfile = null )        
+        /// <returns>Null string if sucessful, or error text</returns>
+        public string Compile( ShaderType shadertype, string codelisting, Object[] constvalues = null, string completeoutfile = null )        
         {
-            GLShader shader = new GLShader(st);
+            GLShader shader = new GLShader(shadertype);
 
             string ret = shader.Compile(codelisting, constvalues, completeoutfile);
 
@@ -81,6 +81,7 @@ namespace GLOFC.GL4
 
         /// <summary>
         /// Link the program.
+        /// If you specify varyings, you must set up a buffer, and a start action of Gl.BindBuffer(GL.TRANSFORM_FEEDBACK_BUFFER,bufid) AND BeingTransformFeedback.
         /// </summary>
         /// <param name="separable">Set to true to allow for pipeline shaders</param>
         /// <param name="varyings">List of varyings to report</param>

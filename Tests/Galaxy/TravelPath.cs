@@ -10,6 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Geo;
+using GLOFC.GL4.Shaders.Fragment;
 
 namespace TestOpenTk
 {

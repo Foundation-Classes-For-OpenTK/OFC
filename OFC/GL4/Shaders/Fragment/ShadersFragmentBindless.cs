@@ -13,42 +13,50 @@
  * governing permissions and limitations under the License.
  */
 
-
-using System;
-using System.Drawing;
 using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Fragment
 {
-    // Pipeline shader, texture shader,
-    // renders an texture ARB dependent either on primitive number/2 (so to be used with a triangle strip) or image id in location 2
-    // with alphablending and discard if transparent
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    //      location 3 : flat in wvalue for opacity control (if enabled by usealphablending)
-    //      location 4 : image id (if useprimidover2=false)
-    //      uniform binding <config>: ARB bindless texture handles, int 64s
-    //      location 24 : uniform of texture offset (written by start automatically)
+    /// <summary>
+    /// Pipeline shader, texture shader,
+    /// renders an texture ARB dependent either on primitive number/2 (so to be used with a triangle strip) or image id in location 2
+    /// with alphablending and discard if transparent
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    ///      location 3 : flat in wvalue for opacity control (if enabled by usealphablending)
+    ///      location 4 : image id (if useprimidover2=false)
+    ///      uniform binding config: ARB bindless texture handles, int 64s
+    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// </summary>
 
     public class GLPLFragmentShaderBindlessTexture : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Offset of texture in object, 0-1 </summary>
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="arbblock">Binding number of ARB Block</param>
+        /// <param name="usealphablending">Alpha blend on/off</param>
+        /// <param name="discardiftransparent">Discard if pixel is low intensity</param>
+        /// <param name="useprimidover2">Use primitive/2 as texture object number, else use location 4</param>
         public GLPLFragmentShaderBindlessTexture(int arbblock, bool usealphablending = false, bool discardiftransparent = false, bool useprimidover2 = true)
         {
-            CompileLink(ShaderType.FragmentShader, Code(arbblock), 
-                        constvalues: new object[] { "usewvalue", usealphablending, "discardiftransparent", discardiftransparent, "useprimidover2", useprimidover2 }, 
+            CompileLink(ShaderType.FragmentShader, Code(arbblock),
+                        constvalues: new object[] { "usewvalue", usealphablending, "discardiftransparent", discardiftransparent, "useprimidover2", useprimidover2 },
                         auxname: GetType().Name);
         }
 
+        /// <summary> Shader start </summary>
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
 
-        public string Code(int arbblock)
+        private string Code(int arbblock)
         {
             return
 @"
@@ -84,10 +92,6 @@ void main(void)
 }
 ";
         }
-
     }
-
-
-
 }
 

@@ -24,6 +24,9 @@ using System.Linq;
 using System.Windows.Forms;
 using GLOFC.WaveFront;
 using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
 
 namespace TestOpenTk
 {

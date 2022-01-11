@@ -14,20 +14,19 @@
  */
 
 
-using System;
 using GLOFC.Utils;
-using OpenTK;
-using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Compute
 {
-    // Compute shader, 3d noise, 8x8x8 multiple
-    // Requires:
-    //      3d texture to write to, bound on binding point
-    
+    /// <summary>
+    /// Compute shader, 1D gaussian distribution, 8x8x8 multiple 
+    /// Requires:
+    ///      1D texture to write to, bound on binding point
+    /// </summary>
+
     public class ComputeShaderGaussian : GLShaderCompute
     {
-        static int Localgroupsize = 8;
+        private static int Localgroupsize = 8;
 
         private string gencode(int points, float centre, float width, float stddist, int binding)
         {
@@ -55,10 +54,19 @@ void main(void)
 ";
         }
 
-        public ComputeShaderGaussian(int points,float centre, float width, float stddist, int binding = 4, bool saveable = false) : base(points / Localgroupsize, 1,1)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="points">Number of points, must be a multiple of 8 </param>
+        /// <param name="centre">Centre noise value (example 2) of guassian distribution</param>
+        /// <param name="width">Width noise value (example 2)</param>
+        /// <param name="stddist">Standard distribution (example 1.5)</param>
+        /// <param name="binding">Binding of texture</param>
+        /// <param name="saveable">Is shader to be saveable</param>
+        public ComputeShaderGaussian(int points, float centre, float width, float stddist, int binding = 4, bool saveable = false) : base(points / Localgroupsize, 1, 1)
         {
             System.Diagnostics.Debug.Assert(points % Localgroupsize == 0);
-            CompileLink(gencode(points, centre, width, stddist, binding),saveable:saveable);
+            CompileLink(gencode(points, centre, width, stddist, binding), saveable: saveable);
         }
     }
 }

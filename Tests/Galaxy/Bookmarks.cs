@@ -16,6 +16,9 @@
 
 using BaseUtils;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using Newtonsoft.Json.Linq;
 using OpenTK;
 using System;

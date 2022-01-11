@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 using System;
@@ -19,15 +20,17 @@ using System.Collections.Generic;
 
 namespace GLOFC.GL4
 {
-    // this is a render list, holding a list of Shader programs
-    // each shader program is associated with zero or more RenderableItems 
-    // The shader calls Start() for each shader, then goes thru the render list (if it has one) , setting up the render control, then Binding and Rendering each item
-    // then it Finish() the shader
-    // Shaders are executed in the order added, and all renderable items below them are executed in order added to that shader
-    // you can decide to force the normal renderable items to be added to the end of the list (creating a duplicate shader at the end if required) instead of the first instance of the shader
-    // Compute shaders are always added onto the end the end of the shader list
-    // Operations added in a shader slot are always added onto the end the end of the shader list
-    // you can add an operation to the render list of a shader as well.
+    /// <summary>
+    /// This is a render list, holding a list of Shader programs
+    /// Each shader program is associated with zero or more RenderableItems 
+    /// The shader calls Start() for each shader, then goes thru the render list (if it has one) , setting up the render control, then Binding and Rendering each item
+    /// then it calls Finish() on the shader and moves onto the next one.
+    /// Shaders are executed in the order added, and all renderable items below them are executed in order added to that shader (unless overriden by atend flag)
+    /// You can decide to force the normal renderable items to be added to the end of the list (creating a duplicate shader at the end if required) instead of the first instance of the shader
+    /// Compute shaders are always added onto the end the end of the shader list
+    /// Operations added in a shader slot are always added onto the end the end of the shader list
+    /// You can add an operation to the render list of a shader as well.
+    /// </summary>
 
     public class GLRenderProgramSortedList
     {
@@ -36,62 +39,76 @@ namespace GLOFC.GL4
         private int unnamed = 0;
         private IntPtr context = (IntPtr)0;
 
+        /// <summary>Create a render program sorted list</summary>
         public GLRenderProgramSortedList()
         {
             renderables = new List<Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>>();
             byname = new Dictionary<string, IGLRenderableItem>();
         }
 
-        // name can be null if required, which gives it an autoname
-        public void Add(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend = false)        // name is the id given to this renderable
+        /// <summary>Add a shader and renderable item to the list</summary>
+        /// <param name="prog">Shader program</param>
+        /// <param name="name">Name of renderable item, may be null in which case it will automatically be named</param>
+        /// <param name="renderableitem">The render to execute under this shader</param>
+        /// <param name="atend">Force the render to be the last in the current queue. If false, and a shader already is in the queue, then its placed at the end of that shader list.</param>
+        public void Add(IGLProgramShader prog, string name, IGLRenderableItem renderableitem, bool atend = false)       
         {
-            System.Diagnostics.Debug.Assert(r != null);
-            name = EnsureName(name, prog, r);
+            System.Diagnostics.Debug.Assert(renderableitem != null);
+            name = EnsureName(name, prog, renderableitem);
             //System.Diagnostics.Debug.WriteLine($"Add render {prog.Name} {name}");
-            AddItem(prog, name, r,atend, true);
-            byname.Add(name, r);
+            AddItem(prog, name, renderableitem,atend, true);
+            byname.Add(name, renderableitem);
         }
 
-        // with autoname
-        public void Add(IGLProgramShader prog, IGLRenderableItem r, bool atend = false)
+        /// <summary>Add a shader and renderable item to the list</summary>
+        /// <param name="prog">Shader program</param>
+        /// <param name="renderableitem">The render to execute under this shader</param>
+        /// <param name="atend">Force the render to be the last in the current queue. If false, and a shader already is in the queue, then its placed at the end of that shader list.</param>
+        public void Add(IGLProgramShader prog, IGLRenderableItem renderableitem, bool atend = false)
         {
-            System.Diagnostics.Debug.Assert(r != null);
-            AddItem(prog, EnsureName(null,prog,r), r, atend, true);
+            System.Diagnostics.Debug.Assert(renderableitem != null);
+            AddItem(prog, EnsureName(null,prog,renderableitem), renderableitem, atend, true);
         }
 
-        // a compute shader, always added at end
-        public void Add(GLShaderCompute cprog)  
+        /// <summary>Add a compute shader at the end of the list</summary>
+        public void Add(GLShaderCompute computeshader)  
         {
-            string n = "CS " + cprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
-            AddItem(cprog, n, null,true,false);     // must be at end, and must not join
+            string n = "CS " + computeshader.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            AddItem(computeshader, n, null,true,false);     // must be at end, and must not join
         }
 
-        // a operation in a shader slot
-        public void Add(GLOperationsBase nprog)
+        /// <summary>Add a operation, always at the end of the current list of renders. Operation is added in the shader slot.</summary>
+        public void Add(GLOperationsBase operation)
         {
-            string n = "OP " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
-            AddItem(nprog, n, null, true, false);  // must be at end, and must not join
+            string n = "OP " + operation.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            AddItem(operation, n, null, true, false);  // must be at end, and must not join
         }
 
-        // a operation in a render item slot
-        public void Add(IGLProgramShader shader, GLOperationsBase nprog, bool atend = false)
+        /// <summary>Add an operation at the end of the list of a particular shader. </summary>
+        /// <param name="shader">Shader to associate the operation with</param>
+        /// <param name="operation">Operation</param>
+        /// <param name="atend">Force the operation to be the last in the current queue. If false, and a shader already is in the queue, then its placed at the end of that shader list.</param>
+        public void Add(IGLProgramShader shader, GLOperationsBase operation, bool atend = false)
         {
-            string n = "OP-RI " + nprog.GetType().Name + " # " + (unnamed++).ToStringInvariant();
-            AddItem(shader, n, nprog, atend, true);  // must be at end, and can join at end
+            string n = "OP-RI " + operation.GetType().Name + " # " + (unnamed++).ToStringInvariant();
+            AddItem(shader, n, operation, atend, true);  // must be at end, and can join at end
         }
 
+        /// <summary>Remove the render from the list</summary>
         public bool Remove(IGLRenderableItem r)     
         {
             var f = Find(r);
             return r != null ? Remove(f.Item1, r) : false;
         }
 
+        /// <summary>Clear the render queue</summary>
         public void Clear()
         {
             byname.Clear();
             renderables.Clear();
         }
 
+        /// <summary>Remove the shader/render item</summary>
         public bool Remove(IGLProgramShader prog, IGLRenderableItem r)
         {
             Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> found = renderables.Find(x => x.Item1 == prog); // find the shader
@@ -119,9 +136,13 @@ namespace GLOFC.GL4
             return false;
         }
 
+        /// <summary>Find the render item by name</summary>
         public IGLRenderableItem this[string renderitem] { get { return byname[renderitem]; } }
+
+        /// <summary>Does the render queue contain this named render</summary>
         public bool Contains(string renderitem) { return byname.ContainsKey(renderitem); }
 
+        /// <summary>Execute the render list, given the render state, matrix calc. Optional verbose debug output mode </summary>
         public void Render(GLRenderState currentstate, GLMatrixCalc c, bool verbose = false)
         {
             if (verbose) System.Diagnostics.Trace.WriteLine("***Begin RList");
@@ -268,23 +289,26 @@ namespace GLOFC.GL4
         }
     }
 
-    // use this to just have a compute shader list - same as above, but can only add compute shaders
+    /// <summary>A compute shader list. Use Run() to execute all compute shaders</summary>
     public class GLComputeShaderList : GLRenderProgramSortedList        
     {
-        public new void Add(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend = false)
+
+        // disallow these adds.
+        private new void Add(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend = false)
         {
             System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
         }
 
-        public new  void Add(IGLProgramShader prog, IGLRenderableItem r, bool atend = false)
+        private new  void Add(IGLProgramShader prog, IGLRenderableItem r, bool atend = false)
         {
             System.Diagnostics.Debug.Assert(false, "Cannot add a normal shader to a compute shader list");
         }
-        public new void Add(GLOperationsBase nprog)
+        private new void Add(GLOperationsBase nprog)
         {
             System.Diagnostics.Debug.Assert(false, "Cannot add an operation to a compute shader list");
         }
 
+        /// <summary>Execute all compute shaders in the list. Remember to use memory barriers before reading results</summary>
         public void Run()      
         {
             Render(null,null);

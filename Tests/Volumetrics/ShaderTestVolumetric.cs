@@ -23,6 +23,9 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box.
 

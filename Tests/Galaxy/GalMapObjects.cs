@@ -15,6 +15,9 @@
 using EliteDangerousCore.EDSM;
 using GLOFC;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using OpenTK;
 using System.Collections.Generic;
 using System.Drawing;

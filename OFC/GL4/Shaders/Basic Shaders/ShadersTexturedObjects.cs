@@ -12,71 +12,92 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
- 
-using System;
-using OpenTK;
 
-namespace GLOFC.GL4
+using System;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Fragment;
+
+namespace GLOFC.GL4.Shaders.Basic
 {
-    // Texture, no translation
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions world coords
-    //      location 1 : vec2 texture co-ords
-    //      tex binding 1 : textureObject : 2D 
-    //      uniform 0 : GL MatrixCalc
+    /// <summary>
+    /// Texture, world co-ords
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions world coords
+    ///      location 1 : vec2 texture co-ords
+    ///      tex binding 1 : textureObject : 2D 
+    ///      uniform 0 : GL MatrixCalc
+    /// </summary>
 
     public class GLTexturedShaderWithWorldCoord : GLShaderPipeline
     {
+        /// <summary>
+        ///  Constructor
+        /// </summary>
         public GLTexturedShaderWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureWorldCoord(), new GLPLFragmentShaderTexture());
         }
     }
 
-    // Texture, translation
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions
-    //      location 1 : vec2 texture co-ords
-    //      tex binding 1 : textureObject : 2D 
-    //      uniform 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 transform
+    /// <summary>
+    /// Texture, translation
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions
+    ///      location 1 : vec2 texture co-ords
+    ///      tex binding 1 : textureObject : 2D 
+    ///      uniform 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 transform
+    /// </summary>
 
     public class GLTexturedShaderWithObjectTranslation : GLShaderPipeline
     {
+        /// <summary>
+        ///  Constructor
+        /// </summary>
         public GLTexturedShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture());
         }
     }
 
-    // Texture, translation, common translation
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions
-    //      location 1 : vec2 texture co-ords
-    //      tex binding 1 : textureObject : 2D 
-    //      uniform block 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 transform
-    //      uniform 23 : commontransform: mat4 transform
+    /// <summary>
+    /// Texture, translation, common translation
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions
+    ///      location 1 : vec2 texture co-ords
+    ///      tex binding 1 : textureObject : 2D 
+    ///      uniform block 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 transform
+    ///      uniform 23 : commontransform: mat4 transform
+    /// </summary>
 
     public class GLTexturedShaderWithObjectCommonTranslation : GLShaderPipeline
     {
+        /// <summary>
+        ///  Constructor
+        /// </summary>
         public GLTexturedShaderWithObjectCommonTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(), new GLPLFragmentShaderTexture());
         }
     }
 
-    // Texture, translation, 2d blend
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions
-    //      location 1 : vec2 texture co-ords
-    //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      uniform block 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 transform
-    //      uniform 30 : uniform float blend between the two texture
+    /// <summary>
+    /// Texture, translation, 2d blend
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions
+    ///      location 1 : vec2 texture co-ords
+    ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    ///      uniform block 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 transform
+    ///      uniform 30 : uniform float blend between the two texture
+    /// </summary>
 
     public class GLTexturedShader2DBlendWithWorldCoord : GLShaderPipeline
     {
+        /// <summary>
+        ///  Constructor
+        /// </summary>
         public GLTexturedShader2DBlendWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture2DBlend());
