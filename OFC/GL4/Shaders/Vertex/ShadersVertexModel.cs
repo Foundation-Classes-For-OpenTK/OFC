@@ -17,19 +17,22 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders, having a model input
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Translation, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords, W is ignored
-    //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    // Out:
-    //      gl_Position
-    //      location 1: modelpos
+    /// <summary>
+    /// Shader, Translation, Modelpos, transform
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions model coords, W is ignored
+    ///      uniform buffer 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 array of transforms
+    /// Out:
+    ///      gl_Position
+    ///      location 1: modelpos
+    /// </summary>
 
     public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Constructor </summary>
         public GLPLVertexShaderModelCoordWithObjectTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);

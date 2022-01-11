@@ -15,6 +15,7 @@
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using OpenTK;
 using OpenTK.Graphics;
@@ -22,6 +23,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.Shaders.Stars;
 
 namespace TestOpenTk
 {

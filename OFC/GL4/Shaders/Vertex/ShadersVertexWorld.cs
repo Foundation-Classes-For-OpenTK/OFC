@@ -19,19 +19,26 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders taking world positions
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // No extra translation, direct move, but with posibility of using external Y
-    // Requires:
-    //      location 0 : vec4 positions (W ignored)
-    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// <summary>
+    /// Shader, No extra translation, direct move, but with posibility of using external Y
+    /// Requires:
+    ///      location 0 : vec4 positions (W ignored)
+    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+    ///      uniform 22 : float Y optional
+    /// </summary>
 
     public class GLPLVertexShaderWorldCoord : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Constructor </summary>
+        /// <param name="yfromuniform">True to take Y from uniform 22</param>
         public GLPLVertexShaderWorldCoord(bool yfromuniform = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }
+        
+        /// <summary> Set Y </summary>
         public void SetY(float y)
         {
             GL.ProgramUniform1(Id, 22, y);

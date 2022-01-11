@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using GLOFC.Utils;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Fragment;
 
 namespace TestOpenTk

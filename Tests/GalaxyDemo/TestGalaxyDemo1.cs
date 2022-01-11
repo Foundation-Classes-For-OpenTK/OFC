@@ -24,9 +24,11 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using GLOFC.Utils;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Compute;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Sprites;
 
 namespace TestOpenTk
 {

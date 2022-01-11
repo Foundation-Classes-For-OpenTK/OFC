@@ -19,25 +19,30 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders taking world positions with colour
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // No extra translation, direct move, with colour input
-    // Requires:
-    //      location 0 : vec4 positions in world space (W ignored)
-    //      location 1 : vec4 color components
-    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
-    //      uniform 22 : optional offset
-    // Out:
-    //      location 0: vs_color
-    //      gl_Position
+    /// <summary>
+    /// Shader with colour input
+    /// Requires:
+    ///      location 0 : vec4 positions in world space (W ignored)
+    ///      location 1 : vec4 color components
+    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+    ///      uniform 22 : optional offset
+    /// Out:
+    ///      location 0: vs_color
+    ///      gl_Position
+    /// </summary>
 
     public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Constructor </summary>
+        /// <param name="useoffset">Use vector 4 offset from uniform 22 and add</param>
         public GLPLVertexShaderColorWorldCoord(bool useoffset = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues:new object[] { "useoffset", useoffset }, auxname: GetType().Name);
         }
 
+        /// <summary> Set Offset </summary>
         public void SetOffset(Vector4 y)
         {
             GL.ProgramUniform4(Id, 22, y);
@@ -79,25 +84,38 @@ void main(void)
         }
     }
 
-    // Pipeline shader, Colours,
-    // Requires:
-    //      location 0 : position: vec4 vertex array of world positions, w = colour image index,  fixed Y if required
-    //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
-    // Out:
-    //      location 0: vs_color
-    //      gl_Position
+    /// <summary>
+    /// Shader Colours
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of world positions, w = colour image index,  fixed Y if required
+    ///      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
+    /// Out:
+    ///      location 0: vs_color
+    ///      gl_Position
+    /// </summary>
 
     public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Contructor
+        /// </summary>
+        /// <param name="colourarray">Array of colours as vec4</param>
+        /// <param name="yfromuniform">True to take Y from uniform 22</param>
         public GLPLVertexShaderFixedColorPalletWorldCoords(Vector4[] colourarray, bool yfromuniform = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", colourarray, "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }
 
-        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] cpal, bool yfromuniform) : this(cpal.ToVector4(), yfromuniform)
+        /// <summary>
+        /// Contructor
+        /// </summary>
+        /// <param name="colourarray">Array of colours</param>
+        /// <param name="yfromuniform">True to take Y from uniform 22</param>
+        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] colourarray, bool yfromuniform) : this(colourarray.ToVector4(), yfromuniform)
         {
         }
 
+        /// <summary> Set Y </summary>
         public void SetY(float y)
         {
             GL.ProgramUniform1(Id, 22, y);

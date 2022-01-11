@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 

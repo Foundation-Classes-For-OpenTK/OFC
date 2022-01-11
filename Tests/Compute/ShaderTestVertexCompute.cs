@@ -23,6 +23,7 @@ using System.Linq;
 using System.Windows.Forms;
 using GLOFC.Utils;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 
 namespace TestOpenTk

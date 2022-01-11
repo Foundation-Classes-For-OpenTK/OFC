@@ -12,16 +12,38 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC;
 using GLOFC.GL4.Shaders;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Stars
 {
+    /// <summary>
+    /// Star Corona shader
+    /// </summary>
     public class GLShaderStarCorona : GLShaderStandard
     {
         const int BindingPoint = 1;
 
-        public string Vertex()
+        /// <summary> Constructor </summary>
+        public GLShaderStarCorona()
+        {
+            CompileLink(vertex: Vertex(), frag: Fragment());
+        }
+
+        /// <summary> Time delta, change to make corona change </summary>
+        public float TimeDelta { get; set; } = 0.00001f * 10;
+
+        /// <summary> Start shader </summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+
+            GL.ProgramUniform1(Id, 15, TimeDelta);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Vertex()
         {
             return
 @"
@@ -44,7 +66,7 @@ void main(void)
 ";
         }
 
-        public string Fragment()
+        private string Fragment()
         {
             return
 @"
@@ -105,20 +127,7 @@ void main(void)
 ";
         }
 
-        public GLShaderStarCorona()
-        {
-            CompileLink(vertex: Vertex(), frag: Fragment());
-        }
 
-        public float TimeDelta { get; set; } = 0.00001f * 10;
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-
-            GL.ProgramUniform1(Id, 15, TimeDelta);
-            GLOFC.GLStatics.Check();
-        }
     }
 }
 

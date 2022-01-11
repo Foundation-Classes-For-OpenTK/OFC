@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 
 namespace TestOpenTk
 {

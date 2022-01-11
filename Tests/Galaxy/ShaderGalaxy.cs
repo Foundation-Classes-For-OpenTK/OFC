@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Volumetric;
 
 namespace TestOpenTk
 {

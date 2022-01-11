@@ -15,6 +15,7 @@
 
 using System;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 

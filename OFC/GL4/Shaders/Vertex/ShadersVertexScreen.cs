@@ -19,21 +19,24 @@ using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders for screen coordinates
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Texture, real screen coords (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
-    // Requires:
-    //      location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w is passed thru on out 3
-    //      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
-    // Out:
-    //      gl_Position
-    //      location 0 : vec2 vs_textureCoordinate per triangle strip rules
-    //      location 1 : worldpos
-    //      location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
-    //      location 3 : flat out w for fragshader.
+    ///<summary>
+    ///  Shader, Texture, real screen coords (0-glcontrol.Width,0-glcontrol.height, 0,0 at top left)
+    ///  Requires:
+    ///       location 0 : position: vec4 vertex array of real screen coords in the x/y/z slots.  w is passed thru on out 3
+    ///       uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
+    ///  Out:
+    ///       gl_Position
+    ///       location 0 : vec2 vs_textureCoordinate per triangle strip rules
+    ///       location 1 : worldpos
+    ///       location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
+    ///       location 3 : flat out w for fragshader.
+    ///       </summary>
 
     public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Constructor </summary>
         public GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);

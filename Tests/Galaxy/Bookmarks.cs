@@ -17,6 +17,7 @@
 using BaseUtils;
 using GLOFC.GL4;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Geo;
 using Newtonsoft.Json.Linq;
@@ -41,7 +42,7 @@ namespace EliteDangerousCore.EDSM
                 //var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false, texcoords: true,      // a look at vertex shader
                 //                                                          
                 //                var vert = new GLPLVertexShaderWorldCoord();
-                var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
+                var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
                                                                 autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
 
 
