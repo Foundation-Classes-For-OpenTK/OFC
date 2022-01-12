@@ -13,12 +13,17 @@
  */
 
 
+using GLOFC.GL4.Textures;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
 namespace GLOFC.GL4
 {
+    /// <summary>
+    /// 2 Dimensional texture
+    /// </summary>
+
     public class GLTexture2D : GLTextureBase          // load a texture into open gl
     {
         public int MultiSample { get; set; } = 0;           // if non zero, multisample texture
@@ -44,7 +49,7 @@ namespace GLOFC.GL4
 
             if (Id < 0 || Width != width || Height != height || mipmaplevels != MipMapLevels || multisample != MultiSample)
             {
-                if ( Id >= 0 )     // dispose if set
+                if (Id >= 0)     // dispose if set
                     Dispose();
 
                 InternalFormat = internalformat;
@@ -81,7 +86,7 @@ namespace GLOFC.GL4
 
                 SetMinMagFilter();
 
-                GLOFC.GLStatics.Check();
+                GLStatics.Check();
             }
         }
 
@@ -108,18 +113,18 @@ namespace GLOFC.GL4
 
                 GL.TexImage2D(TextureTarget.Texture2D, 0, pi, width, height, 0, pf, pt, (IntPtr)0);     // we don't actually load data in, so its a null ptr.
 
-                GLOFC.GLStatics.Check();
+                GLStatics.Check();
             }
         }
 
         public void CreateDepthBuffer(int width, int height)
         {
-            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.DepthComponent32f, PixelFormat.DepthComponent, PixelType.Float);
         }
 
         public void CreateDepthStencilBuffer(int width, int height)
         {
-            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.Depth32fStencil8, PixelFormat.DepthComponent, OpenTK.Graphics.OpenGL4.PixelType.Float);
+            CreateOrUpdateTexturePixelFormat(width, height, PixelInternalFormat.Depth32fStencil8, PixelFormat.DepthComponent, PixelType.Float);
         }
 
         // You can reload the bitmap, it will create a new Texture if required
@@ -132,14 +137,14 @@ namespace GLOFC.GL4
 
             CreateOrUpdateTexture(bmp.Width, h, internalformat, texmipmaps);
 
-            LoadBitmap(bmp, -1, ownbitmap , bitmipmaplevels, alignment);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
+            LoadBitmap(bmp, -1, ownbitmap, bitmipmaplevels, alignment);    // use common load into bitmap, indicating its a 2D texture so use texturesubimage2d
 
             if (bitmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
-            
-            GLOFC.GLStatics.Check();
 
-           // float[] tex = GetTextureImageAsFloats(end:100);
+            GLStatics.Check();
+
+            // float[] tex = GetTextureImageAsFloats(end:100);
         }
 
         // from the bound read framebuffer (from sx/sy) into this texture at x/y
@@ -159,7 +164,7 @@ namespace GLOFC.GL4
         // from RenderBuffer
         public void CopyFrom(GLRenderBuffer rb, int sx, int sy, int dmiplevel, int dx, int dy, int width, int height)
         {
-            GL.CopyImageSubData(rb.Id, ImageTarget.Renderbuffer, 0, sx, sy, 0, 
+            GL.CopyImageSubData(rb.Id, ImageTarget.Renderbuffer, 0, sx, sy, 0,
                                     Id, ImageTarget.Texture2D, dmiplevel, dx, dy, 0, width, height, 1);
             GLStatics.Check();
         }

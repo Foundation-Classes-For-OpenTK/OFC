@@ -14,6 +14,7 @@
 
 using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Textures;
 using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 using System;

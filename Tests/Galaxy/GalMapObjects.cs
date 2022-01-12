@@ -26,6 +26,7 @@ using System.Linq;
 using GLOFC.GL4.Shaders.Tesselation;
 using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {

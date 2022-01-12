@@ -27,6 +27,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working

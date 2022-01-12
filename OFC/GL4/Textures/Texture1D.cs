@@ -16,15 +16,18 @@
 using OpenTK.Graphics.OpenGL4;
 using System;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Textures
 {
-    public class GLTexture1D : GLTextureBase          
+    /// <summary>
+    /// 1 Dimensional texture
+    /// </summary>
+    public class GLTexture1D : GLTextureBase
     {
         public GLTexture1D()
         {
         }
 
-        public GLTexture1D( int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
+        public GLTexture1D(int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
         {
             CreateOrUpdateTexture(width, internalformat, mipmaplevel);
         }
@@ -58,7 +61,7 @@ namespace GLOFC.GL4
             GL.TextureSubImage1D(Id, 0, xoffset, width, px, ty, ptr);
         }
 
-        public void Store(int xoffset, int width, Byte[] array, PixelFormat px = PixelFormat.Bgra)
+        public void Store(int xoffset, int width, byte[] array, PixelFormat px = PixelFormat.Bgra)
         {
             GL.TextureSubImage1D(Id, 0, xoffset, width, px, PixelType.UnsignedByte, array);
         }

@@ -31,6 +31,7 @@ using System.Windows.Forms;
 using GLOFC.GL4.Shaders.Stars;
 using GLOFC.GL4.Buffers;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 // A simpler main for testing
 

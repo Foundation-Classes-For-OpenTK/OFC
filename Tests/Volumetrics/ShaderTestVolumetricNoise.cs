@@ -26,6 +26,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {

@@ -2,7 +2,6 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using GLOFC;
-using GLOFC.GL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,6 +11,7 @@ using System.Threading.Tasks;
 using GLOFC.Utils;
 using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {

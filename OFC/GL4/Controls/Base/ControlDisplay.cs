@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using GLOFC.GL4.Textures;
 
 #pragma warning disable 1591
 

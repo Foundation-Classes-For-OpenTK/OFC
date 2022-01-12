@@ -81,13 +81,15 @@ namespace GLOFC.GL4
         /// <summary>GL ID</summary>
         int Id { get; }
         /// <summary>ARB ID of texture. Call to assign.</summary>
-        long ArbId { get; }
+        long ArbNumber { get; }
+        /// <summary>Ask for an ARB ID for this texture.</summary>
+        long AcquireArbId();
         /// <summary>Image width. Primary width of mipmap level 0 bitmap on first array entry</summary>
         int Width { get; }                                 
         /// <summary>Image Height</summary>
         int Height { get; }
         /// <summary>Bind image to texture binding point. Textures have a chance to bind themselves, called either by instance data (if per object texture) or by shader (either internally or via StartAction)</summary>
-        void Bind(int bindingpoint);                      
+        void Bind(int bindingpoint);
     }
 
     /// <summary> Renderable item interface</summary>

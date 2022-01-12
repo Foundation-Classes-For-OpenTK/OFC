@@ -20,6 +20,11 @@ using System.Collections.Generic;
 namespace GLOFC.GL4.ShapeFactory
 {
     /// <summary>
+    /// These factory classes allow you to create some common shapes for use in drawing
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Shape factory for cubes
     /// </summary>
 

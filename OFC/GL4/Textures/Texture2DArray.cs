@@ -17,9 +17,11 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Textures
 {
-    // 2d arrays do not interpolate between z pixels, unlike 3d textures
+    /// <summary>
+    /// 2 Dimensional array texture. 2d arrays do not interpolate between z pixels, unlike 3d textures
+    /// </summary>
 
     public class GLTexture2DArray : GLTextureBase          // load a 2D set of textures into open gl
     {
@@ -47,7 +49,7 @@ namespace GLOFC.GL4
         public void CreateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1,
                                     int multisample = 0, bool fixedmultisampleloc = false)
         {
-            if (Id < 0 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample )
+            if (Id < 0 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels || MultiSample != multisample)
             {
                 if (Id >= 0)
                     Dispose();
@@ -87,7 +89,7 @@ namespace GLOFC.GL4
 
                 SetMinMagFilter();
 
-                GLOFC.GLStatics.Check();
+                GLStatics.Check();
             }
         }
 
@@ -95,7 +97,7 @@ namespace GLOFC.GL4
         // Bitmaps array can be sparse will null entries if you don't want to use that level. 
         // texture size is either bmpsize or Level 0 size (which therefore must be there)
 
-        public void CreateLoadBitmaps(Bitmap[] bmps, SizedInternalFormat internalformat, int bitmapmipmaplevels = 1, int genmipmaplevel = 1, 
+        public void CreateLoadBitmaps(Bitmap[] bmps, SizedInternalFormat internalformat, int bitmapmipmaplevels = 1, int genmipmaplevel = 1,
                                                bool ownbitmaps = false, Size? bmpsize = null, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
             int width = bmpsize.HasValue ? bmpsize.Value.Width : bmps[0].Width;
@@ -106,14 +108,14 @@ namespace GLOFC.GL4
 
             for (int zorder = 0; zorder < bmps.Length; zorder++)      // for all bitmaps, we load the texture into zoffset of 2darray
             {
-                if ( bmps[zorder] != null )       // it can be sparse
+                if (bmps[zorder] != null)       // it can be sparse
                     LoadBitmap(bmps[zorder], zorder, ownbitmaps, bitmapmipmaplevels, alignment);   // load into bitmapnumber zoffset level
             }
 
             if (bitmapmipmaplevels == 1 && genmipmaplevel > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
 
-            GLOFC.GLStatics.Check();
+            GLStatics.Check();
         }
 
         // from the bound read framebuffer (from sx/sy) into this texture at x/y image z

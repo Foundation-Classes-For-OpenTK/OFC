@@ -11,13 +11,17 @@
  * ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
- 
+
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Textures
 {
+    /// <summary>
+    /// 3 Dimensional array texture. 3d arrays interpolate between z pixels
+    /// </summary>
+
     public class GLTexture3D : GLTextureBase         // load a texture into open gl
     {
         public GLTexture3D(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
@@ -57,12 +61,12 @@ namespace GLOFC.GL4
             GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, ty, ptr);
         }
 
-        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, Byte[] array, PixelFormat px = PixelFormat.Bgra)    
+        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, byte[] array, PixelFormat px = PixelFormat.Bgra)
         {
             GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, PixelType.UnsignedByte, array);
         }
 
-        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, float[] array, PixelFormat px = PixelFormat.Bgra)      
+        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, float[] array, PixelFormat px = PixelFormat.Bgra)
         {
             GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, PixelType.Float, array);
         }

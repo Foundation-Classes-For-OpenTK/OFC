@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using GLOFC.GL4.Textures;
 
 namespace GLOFC.GL4.Buffers
 {
