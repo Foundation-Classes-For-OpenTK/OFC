@@ -22,74 +22,89 @@ using System.Drawing;
 
 namespace GLOFC.GL4
 {
-    // This is a memory class in which you can register GL type items and it will manage them
-    // items have names to find them again
+    /// <summary>
+    /// This is a memory class in which you can register GL type items and it will manage them 
+    /// Items have names to find them again
+    /// </summary>
 
     public class GLItemsList : IDisposable
     {
-        public static bool StackTrace { get; set; } = false;        // global set for stack trace disposal tracking
+        /// <summary> Enable for stack tracing on disposal. A stack trace at every add/creation is kept </summary>
+        public static bool StackTrace { get; set; } = false;
 
-        // Get existing items
+        /// <summary> Get existing item by name</summary>
         public bool Contains(string name )
         {
             return items.ContainsKey(name);
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type </summary>
         public GLTextureBase Tex(string name)
         {
             return (GLTextureBase)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public IGLProgramShader Shader(string name)
         {
             return (IGLProgramShader)items[name];
         }
 
+        /// <summary>  Find by name this type, will except if not found or wrong type </summary>
         public IGLPipelineComponentShader PLShader(string name)
         {
             return (IGLPipelineComponentShader)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public GLVertexArray VA(string name)
         {
             return (GLVertexArray)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public GLUniformBlock UB(string name)
         {
             return (GLUniformBlock)items[name];
         }
 
+        /// <summary>  Find by name this type, will except if not found or wrong type </summary>
         public GLStorageBlock SB(string name)
         {
             return (GLStorageBlock)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public GLAtomicBlock AB(string name)
         {
             return (GLAtomicBlock)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public GLBuffer B(string name)
         {
             return (GLBuffer)items[name];
         }
 
+        /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public Bitmap Bitmap(string name)
         {
             return (Bitmap)items[name];
         }
 
+        /// <summary> Find last buffer, will except if no buffer exists </summary>
         public GLBuffer LastBuffer(int c = 1)
         {
             return (GLBuffer)items.Last(typeof(GLBuffer), c);
         }
 
+        /// <summary> Find last of type, will except if does not exist </summary>
         public T Last<T>(int c = 1) where T : class
         {
             return (T)items.Last(typeof(T), c);
         }
 
+        /// <summary> Get this type by name, will except if not found or wrong type </summary>
         public T Get<T>(string name)
         {
             return (T)items[name];
@@ -97,6 +112,7 @@ namespace GLOFC.GL4
 
         // Add existing items. Name can be null and will get a unique name
 
+        /// <summary> Add this type with an optional name </summary>
         public IGLTexture Add(IGLTexture disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -104,6 +120,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public IGLProgramShader Add(IGLProgramShader disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -111,6 +128,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public IGLPipelineComponentShader Add(IGLPipelineComponentShader disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -118,6 +136,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLVertexArray Add(GLVertexArray disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -125,6 +144,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLUniformBlock Add(GLUniformBlock disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -132,6 +152,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLStorageBlock Add(GLStorageBlock disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -139,6 +160,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLAtomicBlock Add( GLAtomicBlock disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -146,6 +168,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLBuffer Add(GLBuffer disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -153,6 +176,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public Bitmap Add(Bitmap disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -160,6 +184,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public GLBitmaps Add(GLBitmaps disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -167,6 +192,7 @@ namespace GLOFC.GL4
             return disp;
         }
 
+        /// <summary> Add this type with an optional name </summary>
         public void Add(IDisposable disp, string name = null)
         {
             System.Diagnostics.Debug.Assert(!items.ContainsValue(disp));
@@ -175,6 +201,7 @@ namespace GLOFC.GL4
 
         // New items
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLVertexArray NewArray(string name = null)
         {
             GLVertexArray b = new GLVertexArray();
@@ -182,6 +209,7 @@ namespace GLOFC.GL4
             return b;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLUniformBlock NewUniformBlock(int bindingindex, string name = null)
         {
             GLUniformBlock sb = new GLUniformBlock(bindingindex);
@@ -189,6 +217,7 @@ namespace GLOFC.GL4
             return sb;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLStorageBlock NewStorageBlock(int bindingindex, bool std430 = false, string name = null)
         {
             GLStorageBlock sb = new GLStorageBlock(bindingindex, std430);
@@ -196,6 +225,7 @@ namespace GLOFC.GL4
             return sb;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLAtomicBlock NewAtomicBlock(int bindingindex, string name = null)
         {
             GLAtomicBlock sb = new GLAtomicBlock(bindingindex);
@@ -204,18 +234,23 @@ namespace GLOFC.GL4
         }
 
         // a buffer returned
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLBuffer NewBuffer(bool std430 = true, string name = null)
         {
             GLBuffer b = new GLBuffer(std430);        
             items[EnsureName(name)] = b;
             return b;
         }
-        public GLBuffer NewBuffer(int size, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw, string name = null)
+        
+        /// <summary> Make a new entry of this type with an optional name </summary>
+        public GLBuffer NewBuffer(int size, bool std430 = false, BufferUsageHint hint = BufferUsageHint.StaticDraw, string name = null)
         {
-            GLBuffer b = new GLBuffer(size,std430,bh);        
+            GLBuffer b = new GLBuffer(size,std430,hint);        
             items[EnsureName(name)] = b;
             return b;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLVertexArray NewVertexArray(string name = null)
         {
             var b = new GLVertexArray();        // a standard buffer returned is not for uniforms do not suffer the std140 restrictions
@@ -223,18 +258,23 @@ namespace GLOFC.GL4
             return b;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLBindlessTextureHandleBlock NewBindlessTextureHandleBlock(int bindingpoint, string name = null)
         {
             var b = new GLBindlessTextureHandleBlock(bindingpoint);
             items[EnsureName(name)] = b;
             return b;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLBindlessTextureHandleBlock NewBindlessTextureHandleBlock(int bindingpoint, IGLTexture[] textures, string name = null)
         {
             var b = new GLBindlessTextureHandleBlock(bindingpoint,textures);
             items[EnsureName(name)] = b;
             return b;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLShaderPipeline NewShaderPipeline(string name, params Object[] cnst)
         {
             GLShaderPipeline s = (GLShaderPipeline)Activator.CreateInstance(typeof(GLShaderPipeline), cnst, null);
@@ -242,6 +282,7 @@ namespace GLOFC.GL4
             return s;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLShaderPipeline NewShaderPipeline(string name, IGLPipelineComponentShader vertex, IGLPipelineComponentShader fragment)
         {
             GLShaderPipeline s = new GLShaderPipeline(vertex, fragment);
@@ -249,12 +290,15 @@ namespace GLOFC.GL4
             return s;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLShaderStandard NewShaderStandard(string name, params Object[] cnst)
         {
             GLShaderStandard s = (GLShaderStandard)Activator.CreateInstance(typeof(GLShaderStandard), cnst, null);
             items[EnsureName(name)] = s;
             return s;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLShaderCompute NewShaderCompute(string name, params Object[] cnst)
         {
             var s = (GLShaderCompute)Activator.CreateInstance(typeof(GLShaderCompute), cnst, null);
@@ -262,18 +306,23 @@ namespace GLOFC.GL4
             return s;
         }
 
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLTexture1D NewTexture1D(string name, params Object[] cnst)
         {
             var s = (GLTexture1D)Activator.CreateInstance(typeof(GLTexture1D), cnst, null);
             items[EnsureName(name)] = s;
             return s;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLTexture2D NewTexture2D(string name)
         {
             var s = new GLTexture2D();
             items[EnsureName(name)] = s;
             return s;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLTexture2D NewTexture2D(string name, Bitmap bmp, SizedInternalFormat internalformat, int bitmipmaplevel = 1,
                             int genmipmaplevel = 1, bool ownbitmaps = false, ContentAlignment alignment = ContentAlignment.TopLeft)
         {
@@ -281,12 +330,16 @@ namespace GLOFC.GL4
             items[EnsureName(name)] = s;
             return s;
         }
+
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLTexture2DArray NewTexture2DArray(string name, params Object[] cnst)
         {
             var s = (GLTexture2DArray)Activator.CreateInstance(typeof(GLTexture2DArray), cnst, null);
             items[EnsureName(name)] = s;
             return s;
         }
+        
+        /// <summary> Make a new entry of this type with an optional name </summary>
         public GLTexture3D NewTexture3D(string name, params Object[] cnst)
         {
             var s = (GLTexture3D)Activator.CreateInstance(typeof(GLTexture3D), cnst, null);
@@ -294,11 +347,11 @@ namespace GLOFC.GL4
             return s;
         }
 
-        // remove
-        public void Dispose(Object obj)     // dispose of this now, and remove from list
+        /// <summary> Dispose of this object </summary>
+        public void Dispose(Object obj)     
         {
             string keytodelete = null;
-            foreach (var kvp in items.Keys) //TBD
+            foreach (var kvp in items.Keys) 
             {
                 if (items[kvp] == obj)
                 {
@@ -312,6 +365,7 @@ namespace GLOFC.GL4
                 items.Remove(keytodelete);
         }
 
+        /// <summary> Dispose of all objects </summary>
         public void Dispose()
         {
             if (StackTrace)
@@ -344,7 +398,5 @@ namespace GLOFC.GL4
         private Dictionary<string, string> stacktrace = new Dictionary<string, string>();
         private DisposableDictionary<string, IDisposable> items = new DisposableDictionary<string, IDisposable>();
         private int unnamed = 0;
-
-
     }
 }

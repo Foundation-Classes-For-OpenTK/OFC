@@ -29,6 +29,7 @@ using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -108,7 +109,7 @@ namespace TestOpenTk
             float h = 0;
             if ( h != -1)
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);

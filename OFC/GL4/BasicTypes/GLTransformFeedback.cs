@@ -22,20 +22,22 @@ namespace GLOFC.GL4
     /// Holds a transform feedback object and has statics for general TF operations
     /// </summary>
 
-    public class GLTransformFeedbackObject : IDisposable
+    public class GLTransformFeedback : IDisposable
     {
         /// <summary> GL ID </summary>
         public int Id { get; set; } = -1;
 
         /// <summary> Construct a Transform Feedback object </summary>
-        public GLTransformFeedbackObject()
+        public GLTransformFeedback()
         {
             Id = GL.GenTransformFeedback();
-            GLStatics.RegisterAllocation(typeof(GLTransformFeedbackObject));
+            GLStatics.RegisterAllocation(typeof(GLTransformFeedback));
             GLStatics.Check();
         }
 
-        /// <summary> Bind this object to the transform feeback binding point</summary>
+        /// <summary> Bind this object to the transform feeback binding point
+        /// Note you will also need to make a buffer, and bind it using GLBuffer.BindTransformFeedback so there is a buffer ready to receive the feedback
+        /// </summary>
         public void Bind()
         {
             GL.BindTransformFeedback(TransformFeedbackTarget.TransformFeedback, Id);    // bind this
@@ -53,7 +55,7 @@ namespace GLOFC.GL4
             if (Id != -1)
             {
                 GL.DeleteTransformFeedback(Id);
-                GLStatics.RegisterDeallocation(typeof(GLTransformFeedbackObject));
+                GLStatics.RegisterDeallocation(typeof(GLTransformFeedback));
                 GLStatics.Check();
                 Id = -1;
             }

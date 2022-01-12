@@ -29,10 +29,10 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      location 1 : modelpos
     /// </summary>
 
-    public class GLPLVertexShaderTextureWorldCoord : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderWorldTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderTextureWorldCoord()
+        public GLPLVertexShaderWorldTexture()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

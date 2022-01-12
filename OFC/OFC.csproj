@@ -182,7 +182,7 @@
     <Compile Include="GL4\ShapeFactory\FactoryPoints.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryShapes.cs" />
     <Compile Include="GL4\ShapeFactory\FactorySphere.cs" />
-    <Compile Include="GL4\ItemLists\GLItemsList.cs" />
+    <Compile Include="GL4\BasicTypes\GLItemsList.cs" />
     <Compile Include="GL4\IGLInterfaces.cs" />
     <Compile Include="GL4\Renderers\RenderItemData.cs" />
     <Compile Include="GL4\Renderers\RenderableItem.cs" />

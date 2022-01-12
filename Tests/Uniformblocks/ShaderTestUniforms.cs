@@ -24,6 +24,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -143,7 +144,7 @@ void main(void)
             {
                 GLRenderState lines = GLRenderState.Lines(1);
 
-                items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+                items.Add(new GLColorShaderWorld(), "COSW");
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,

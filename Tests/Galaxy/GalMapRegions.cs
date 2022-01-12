@@ -139,7 +139,7 @@ namespace TestOpenTk
 
             // regions
 
-            var vertregion = new GLPLVertexShaderFixedColorPalletWorldCoords(array.ToVector4(0.1f),true);
+            var vertregion = new GLPLVertexShaderWorldPalletColor(array.ToVector4(0.1f),true);
             var fragregion = new GLPLFragmentShaderVSColor();
 
             regionshader = new GLShaderPipeline(vertregion, fragregion, null, null);
@@ -179,7 +179,7 @@ namespace TestOpenTk
         {
             y = y.Clamp(-2000, 2000);
             outlineshader.GetShader<GLPLVertexShaderWorldCoord>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
-            regionshader.GetShader<GLPLVertexShaderFixedColorPalletWorldCoords>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            regionshader.GetShader<GLPLVertexShaderWorldPalletColor>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
             textrenderer.SetY(y);
         }
         private void UpdateEnables()

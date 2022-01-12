@@ -91,7 +91,7 @@ namespace GLOFC.GL4.Controls
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);             // note this limits top level controls number to 255/5.
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLShaderPipeline( new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderBindlessTexture(arbbufferid,true, discardiftransparent:true));
+            shader = new GLShaderPipeline( new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderBindlessTexture(arbbufferid,true, discardiftransparent:true));
             items.Add(shader);
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();

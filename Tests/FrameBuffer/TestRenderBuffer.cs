@@ -27,6 +27,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -72,10 +73,10 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
 
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOT");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEXOT");
 
             {
                 Bitmap bmp = new Bitmap(Properties.Resources.dotted2);      // demo argb copy
@@ -377,7 +378,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

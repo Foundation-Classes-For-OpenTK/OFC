@@ -13,14 +13,21 @@
  * governing permissions and limitations under the License.
  */
 
-
-using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Fragment;
 using System;
 
 namespace GLOFC.GL4.Shaders.Basic
 {
+    /// <summary>
+    /// This namespace contains complete basic shaders for:
+    /// * color.
+    /// * texture.
+    /// * model and world translations. 
+    /// * Sinewave tesselations.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
     /// <summary>
     /// Translation shader with vertex colours
     /// Requires:
@@ -30,12 +37,12 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
     /// </summary>
 
-    public class GLColorShaderWithObjectTranslation : GLShaderPipeline
+    public class GLColorShaderObjectTranslation : GLShaderPipeline
     {
         /// <summary> Constructor </summary>
-        public GLColorShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderVSColor());
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderVSColor());
         }
     }
 
@@ -47,12 +54,12 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
     /// </summary>
 
-    public class GLFixedColorShaderWithObjectTranslation : GLShaderPipeline
+    public class GLFixedColorShaderObjectTranslation : GLShaderPipeline
     {
         /// <summary> Constructor. Give color </summary>
-        public GLFixedColorShaderWithObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLFixedColorShaderObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
         }
     }
 
@@ -65,12 +72,12 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 25 colour of object
     /// </summary>
 
-    public class GLUniformColorShaderWithObjectTranslation : GLShaderPipeline
+    public class GLUniformColorShaderObjectTranslation : GLShaderPipeline
     {
         /// <summary> Constructor </summary>
-        public GLUniformColorShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLUniformColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderUniformColor());
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderUniformColor());
         }
     }
 
@@ -82,10 +89,10 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
     /// </summary>
 
-    public class GLColorShaderWithWorldCoord : GLShaderPipeline
+    public class GLColorShaderWorld : GLShaderPipeline
     {
         /// <summary> Constructor </summary>
-        public GLColorShaderWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLColorShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderColorWorldCoord(), new GLPLFragmentShaderVSColor());
         }
@@ -98,10 +105,10 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
     /// </summary>
 
-    public class GLFixedColorShaderWithWorldCoord : GLShaderPipeline
+    public class GLFixedColorShaderWorld : GLShaderPipeline
     {
         /// <summary> Constructor. Give color </summary>
-        public GLFixedColorShaderWithWorldCoord(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLFixedColorShaderWorld(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
         }

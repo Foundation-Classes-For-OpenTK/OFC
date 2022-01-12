@@ -19,6 +19,11 @@ using System.Collections.Generic;
 namespace GLOFC.GL4.Buffers
 {
     /// <summary>
+    /// This namespace contains various complex buffer objects which allow the GL buffers to the manipulated efficiently.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Class holds a Buffer, filled with Matrices. Used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
     /// [0,3] = image index, [1,3] = ctrl word ( less than 0 not shown, 0++ ctrl as per GLPL)
     /// You can delete by tag name or clear all

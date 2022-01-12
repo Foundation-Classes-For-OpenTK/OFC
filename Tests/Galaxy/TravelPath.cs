@@ -16,6 +16,7 @@ using GLOFC.GL4.Shaders.Geo;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
 using GLOFC.GL4.Bitmaps;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -119,7 +120,7 @@ namespace TestOpenTk
                 tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
                 tapefrag = new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0));
-                var vert = new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB();
+                var vert = new GLPLVertexShaderWorldTextureTriStrip();
                 tapeshader = new GLShaderPipeline(vert, tapefrag);
                 items.Add(tapeshader);
 
@@ -142,7 +143,7 @@ namespace TestOpenTk
                 starposbuf.AllocateFill(positionsv4);
                 //Vector4[] vectors = starposbuf.ReadVector4s(0, starposbuf.Length / 16);
 
-                sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
+                sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
                          autoscale: 30, autoscalemin: 1f, autoscalemax: 2f, useeyedistance:false); // below scale, 1f, above scale, scale up to x times (eyedist/scale)
                 sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
                 items.Add(sunshader);
@@ -293,7 +294,7 @@ namespace TestOpenTk
         private GLRenderableItem ritape;
 
         private GLShaderPipeline sunshader;
-        private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
+        private GLPLVertexShaderModelCoordWorldAutoscale sunvertex;
         private GLBuffer starposbuf;
         private GLRenderableItem renderersun;
 

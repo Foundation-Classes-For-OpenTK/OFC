@@ -15,39 +15,53 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Operations
 {
+    /// <summary>
+    /// Sync Operations
+    /// </summary>
     public class GLOperationFenceSync : GLOperationsBase       // must be in render queue after shader starts
     {
+        /// <summary> The fence sync class </summary>
         public GLFenceSync Sync { get; set; }
+        /// <summary> The sync condition to apply </summary>
         public SyncCondition Condition { get; set; }
+        /// <summary> </summary>
         public WaitSyncFlags Flags { get; set; }
 
-        public GLOperationFenceSync(SyncCondition c = SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags f = WaitSyncFlags.None)
+        /// <inheritdoc cref="GLOFC.GL4.GLFenceSync.GLFenceSync"/>
+        public GLOperationFenceSync(SyncCondition synccondition = SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags waitflags = WaitSyncFlags.None)
         {
-            Condition = c;
-            Flags = f;
+            Condition = synccondition;
+            Flags = waitflags;
         }
 
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             Sync = new GLFenceSync(Condition, Flags);
         }
 
+        /// <summary> Dispose of fence </summary>
         public override void Dispose()               // when dispose, delete query
         {
             Sync.Dispose();
         }
 
-        public int[] Get(SyncParameterName p = SyncParameterName.SyncStatus)
+        /// <inheritdoc cref="GLOFC.GL4.GLFenceSync.Get"/>
+        public int[] Get(SyncParameterName paraname = SyncParameterName.SyncStatus)
         {
-            return Sync.Get(p);
+            return Sync.Get(paraname);
         }
+
+        /// <inheritdoc cref="GLOFC.GL4.GLFenceSync.GLWait"/>
 
         public WaitSyncStatus ClientWait(ClientWaitSyncFlags flags, int timeout)
         {
             return Sync.ClientWait(flags, timeout);
         }
+        
+        /// <summary> </summary>
         public void GLWait(int timeout)
         {
             Sync.GLWait(timeout);

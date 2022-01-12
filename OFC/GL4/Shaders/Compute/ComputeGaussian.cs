@@ -19,6 +19,11 @@ using GLOFC.Utils;
 namespace GLOFC.GL4.Shaders.Compute
 {
     /// <summary>
+    /// This namespace contains compute shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Compute shader, 1D gaussian distribution, 8x8x8 multiple 
     /// Requires:
     ///      1D texture to write to, bound on binding point

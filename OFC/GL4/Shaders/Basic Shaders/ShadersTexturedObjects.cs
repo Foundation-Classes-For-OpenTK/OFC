@@ -29,14 +29,14 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 0 : GL MatrixCalc
     /// </summary>
 
-    public class GLTexturedShaderWithWorldCoord : GLShaderPipeline
+    public class GLTexturedShaderWorld : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
         /// </summary>
-        public GLTexturedShaderWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureWorldCoord(), new GLPLFragmentShaderTexture());
+            AddVertexFragment(new GLPLVertexShaderWorldTexture(), new GLPLFragmentShaderTexture());
         }
     }
 
@@ -50,14 +50,14 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 22 : objecttransform: mat4 transform
     /// </summary>
 
-    public class GLTexturedShaderWithObjectTranslation : GLShaderPipeline
+    public class GLTexturedShaderObjectTranslation : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
         /// </summary>
-        public GLTexturedShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture());
+            AddVertexFragment(new GLPLVertexShaderModelTextureTranslation(), new GLPLFragmentShaderTexture());
         }
     }
 
@@ -72,14 +72,14 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 23 : commontransform: mat4 transform
     /// </summary>
 
-    public class GLTexturedShaderWithObjectCommonTranslation : GLShaderPipeline
+    public class GLTexturedShaderObjectCommonTranslation : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
         /// </summary>
-        public GLTexturedShaderWithObjectCommonTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShaderObjectCommonTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(), new GLPLFragmentShaderTexture());
+            AddVertexFragment(new GLPLVertexShaderModelTranslationTexture(), new GLPLFragmentShaderTexture());
         }
     }
 
@@ -94,14 +94,14 @@ namespace GLOFC.GL4.Shaders.Basic
     ///      uniform 30 : uniform float blend between the two texture
     /// </summary>
 
-    public class GLTexturedShader2DBlendWithWorldCoord : GLShaderPipeline
+    public class GLTexturedShader2DBlendWorld : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
         /// </summary>
-        public GLTexturedShader2DBlendWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        public GLTexturedShader2DBlendWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureModelCoordWithObjectTranslation(), new GLPLFragmentShaderTexture2DBlend());
+            AddVertexFragment(new GLPLVertexShaderModelTextureTranslation(), new GLPLFragmentShaderTexture2DBlend());
         }
     }
 

@@ -18,6 +18,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Sprites
 {
     /// <summary>
+    /// This namespace contains sprite shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Point sprite shader based on eye position vs sprite position.  Needs point sprite on and program point size 
     /// </summary>
 

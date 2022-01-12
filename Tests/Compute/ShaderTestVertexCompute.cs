@@ -25,6 +25,7 @@ using GLOFC.Utils;
 using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -131,7 +132,7 @@ void main(void)
 
             // this bit is eye candy just to show its working
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl = GLRenderState.Lines(1);
 
             rObjects.Add(items.Shader("COSW"),
@@ -149,7 +150,7 @@ void main(void)
 
 
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
 
             GLRenderState rt = GLRenderState.Tri();
             rObjects.Add(items.Shader("TEX"), "sphere7",

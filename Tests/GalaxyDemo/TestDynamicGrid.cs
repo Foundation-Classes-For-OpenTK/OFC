@@ -22,6 +22,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -133,7 +134,7 @@ namespace TestOpenTk
             };
 
             {
-                items.Add( new GLFixedColorShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
+                items.Add( new GLFixedColorShaderWorld(System.Drawing.Color.Yellow), "LINEYELLOW");
                 GLRenderState rl = GLRenderState.Lines(1);
                 rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
@@ -141,7 +142,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8),"solmarker");
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 solmarker = new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, 0, 0));
                 rObjects.Add(items.Shader("TEX"),

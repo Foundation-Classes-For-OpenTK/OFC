@@ -20,6 +20,12 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Geo
 {
     /// <summary>
+    /// This namespace contains pipeline geo shaders.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+
+    /// <summary>
     /// Geo shader, find triangle under cursor. Combine with your chosen vertex shader feeding in ProjectionModelMatrix values
     /// using a RenderableItem. Call SetScreenCoords before render executes 
     /// Optional call SetGroup to pass in a group number for the results to pass it back out

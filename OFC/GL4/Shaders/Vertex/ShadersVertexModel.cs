@@ -20,6 +20,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
+    /// This namespace contains pipeline vertex shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Shader, Translation, Modelpos, transform
     /// Requires:
     ///      location 0 : position: vec4 vertex array of positions model coords, W is ignored
@@ -30,10 +35,10 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      location 1: modelpos
     /// </summary>
 
-    public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderModelCoordWithObjectTranslation()
+        public GLPLVertexShaderModelObjectTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

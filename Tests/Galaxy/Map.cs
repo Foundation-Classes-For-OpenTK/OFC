@@ -32,6 +32,8 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using GLOFC.GL4.Shaders.Sprites;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -141,7 +143,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("LINEYELLOW"),
                 GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
 
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 float h = 0;
 
@@ -540,7 +542,7 @@ namespace TestOpenTk
 
             if (false)          // enable for debug
             {
-                items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+                items.Add(new GLColorShaderObjectTranslation(), "COSOT");
                 GLRenderState rc = GLRenderState.Tri(cullface: false);
                 rc.DepthTest = false;
 

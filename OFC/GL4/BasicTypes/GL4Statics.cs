@@ -17,6 +17,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4
 {
     /// <summary>
+    /// This namespace contains the base GL4 classes which wrap the open GL elements.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// GL4 Statics functions are specific functions for GL4.  Some of these are used by the render state so you don't have to control them manually.
     /// </summary>
     public static class GL4Statics

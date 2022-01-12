@@ -13,20 +13,28 @@
  */
 
 using OpenTK;
-using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.ShapeFactory
 {
-    // Factory created Sphere Faces for use
+    /// <summary>
+    /// Shape factory for spheres
+    /// </summary>
 
     static public class GLSphereObjectFactory
     {
-        // sphere co-ords
-        public static Vector4[] CreateSphereFromTriangles(int recursion, float size, Vector3? pos = null, bool ccw = true)
+        /// <summary>
+        /// Sphere in triangles
+        /// </summary>
+        /// <param name="recursionlevel">Detail level, 3 provides a good sphere</param>
+        /// <param name="size">Size of sphere</param>
+        /// <param name="pos">Optional world position</param>
+        /// <param name="ccw">Winding of triangles</param>
+        /// <returns>Vertex with W=1</returns>
+        public static Vector4[] CreateSphereFromTriangles(int recursionlevel, float size, Vector3? pos = null, bool ccw = true)
         {
-            var faces = CreateSphereFaces(recursion,size);
+            var faces = CreateSphereFaces(recursionlevel, size);
             List<Vector4> vertices = new List<Vector4>();
 
             float zcorr = ccw ? -1 : 1;
@@ -45,10 +53,17 @@ namespace GLOFC.GL4
             return array;
         }
 
-        // Sphere co-ords and triangles
-        static public Tuple<Vector4[],Vector2[]> CreateTexturedSphereFromTriangles(int recursionLevel, float size, Vector3? pos = null, bool ccw = true)
+        /// <summary>
+        /// Sphere in triangles
+        /// </summary>
+        /// <param name="recursionlevel">Detail level, 3 provides a good sphere</param>
+        /// <param name="size">Size of sphere</param>
+        /// <param name="pos">Optional world position</param>
+        /// <param name="ccw">Winding of triangles</param>
+        /// <returns>Tuple of Vertex with W=1 and texcoords</returns>
+        static public Tuple<Vector4[], Vector2[]> CreateTexturedSphereFromTriangles(int recursionlevel, float size, Vector3? pos = null, bool ccw = true)
         {
-            var faces = CreateSphereFaces(recursionLevel, size);
+            var faces = CreateSphereFaces(recursionlevel, size);
             Vector4[] coords = new Vector4[faces.Count * 3];
             Vector2[] texcoords = new Vector2[faces.Count * 3];
 
@@ -182,7 +197,7 @@ namespace GLOFC.GL4
             var len = i.Length;
             Vector2 uv;
             uv.Y = (float)(Math.Acos(i.Y / len) / Math.PI);
-            uv.X = -(float)((Math.Atan2(i.Z, i.X) / Math.PI + 1.0f) * 0.5f);        
+            uv.X = -(float)((Math.Atan2(i.Z, i.X) / Math.PI + 1.0f) * 0.5f);
             return uv;
         }
 
@@ -227,18 +242,18 @@ namespace GLOFC.GL4
 
         static private void FixColorStrip(ref Vector2 uv1, ref Vector2 uv2, ref Vector2 uv3)
         {
-            if ((uv1.X - uv2.X) >= 0.8f)
+            if (uv1.X - uv2.X >= 0.8f)
                 uv1.X -= 1;
-            if ((uv2.X - uv3.X) >= 0.8f)
+            if (uv2.X - uv3.X >= 0.8f)
                 uv2.X -= 1;
-            if ((uv3.X - uv1.X) >= 0.8f)
+            if (uv3.X - uv1.X >= 0.8f)
                 uv3.X -= 1;
 
-            if ((uv1.X - uv2.X) >= 0.8f)
+            if (uv1.X - uv2.X >= 0.8f)
                 uv1.X -= 1;
-            if ((uv2.X - uv3.X) >= 0.8f)
+            if (uv2.X - uv3.X >= 0.8f)
                 uv2.X -= 1;
-            if ((uv3.X - uv1.X) >= 0.8f)
+            if (uv3.X - uv1.X >= 0.8f)
                 uv3.X -= 1;
         }
 

@@ -23,7 +23,7 @@ namespace GLOFC.GL4.Shaders.Basic
     /// <summary>
     /// Shader, with tesselation, and Y change in amp using sin, autoscale 
     /// </summary>
-    public class GLTesselationShaderSinewaveAutoscaleLookatInstanced : GLShaderPipeline
+    public class GLTesselationShaderSinewaveAutoscale : GLShaderPipeline
     {
         /// <summary>
         /// Constructor
@@ -38,7 +38,7 @@ namespace GLOFC.GL4.Shaders.Basic
         /// <param name="autoscalemin">Minimum to scale to</param>
         /// <param name="autoscalemax">Maximum to scale to</param>
         /// 
-        public GLTesselationShaderSinewaveAutoscaleLookatInstanced(float tesselation, float amplitude, float repeats, bool rotate = false, bool rotateelevation = true,
+        public GLTesselationShaderSinewaveAutoscale(float tesselation, float amplitude, float repeats, bool rotate = false, bool rotateelevation = true,
                                                     int commontransformuniform = 0, float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f)
         {
             var vert = new GLPLVertexScaleLookat(rotate, rotateelevation, commontransformuniform, false, false, autoscale, autoscalemin, autoscalemax);

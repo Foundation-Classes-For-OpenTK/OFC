@@ -25,10 +25,10 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
     /// </summary>
 
-    public class GLPLVertexShaderViewSpaceCoord : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderViewSpace : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderViewSpaceCoord()
+        public GLPLVertexShaderViewSpace()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

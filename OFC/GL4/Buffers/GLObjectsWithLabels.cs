@@ -152,7 +152,7 @@ namespace GLOFC.GL4.Buffers
                                 StringFormat textformat, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
         {
             var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, forecolor, backcolor, backscale, false, textformat);
-            var mats = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(worldpositions, textoffset, size, rotationradians, rotatetoviewer, rotateelevation,0,0,0,true);
+            var mats = GLPLVertexShaderMatrixQuadTexture.CreateMatrices(worldpositions, textoffset, size, rotationradians, rotatetoviewer, rotateelevation,0,0,0,true);
             int v = Add(worldpositions, mats, bmps, blocklist);
             GLOFC.Utils.BitMapHelpers.Dispose(bmps);
             return v;

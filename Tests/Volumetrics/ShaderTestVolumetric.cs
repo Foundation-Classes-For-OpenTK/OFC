@@ -27,6 +27,7 @@ using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box.
 
@@ -65,7 +66,7 @@ namespace TestOpenTk
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderViewSpaceCoord(), new GLPLFragmentShaderFixedColor(c));
+                AddVertexFragment(new GLPLVertexShaderViewSpace(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -85,7 +86,7 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {

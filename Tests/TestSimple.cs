@@ -17,6 +17,7 @@ using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
 using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
@@ -67,9 +68,9 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
 
             items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  , "dotted");
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");

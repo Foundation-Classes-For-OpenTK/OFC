@@ -94,14 +94,14 @@ void main(void)
     ///      gl_Position
     /// </summary>
 
-    public class GLPLVertexShaderFixedColorPalletWorldCoords : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderWorldPalletColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Contructor
         /// </summary>
         /// <param name="colourarray">Array of colours as vec4</param>
         /// <param name="yfromuniform">True to take Y from uniform 22</param>
-        public GLPLVertexShaderFixedColorPalletWorldCoords(Vector4[] colourarray, bool yfromuniform = false)
+        public GLPLVertexShaderWorldPalletColor(Vector4[] colourarray, bool yfromuniform = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", colourarray, "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }
@@ -111,7 +111,7 @@ void main(void)
         /// </summary>
         /// <param name="colourarray">Array of colours</param>
         /// <param name="yfromuniform">True to take Y from uniform 22</param>
-        public GLPLVertexShaderFixedColorPalletWorldCoords(System.Drawing.Color[] colourarray, bool yfromuniform) : this(colourarray.ToVector4(), yfromuniform)
+        public GLPLVertexShaderWorldPalletColor(System.Drawing.Color[] colourarray, bool yfromuniform) : this(colourarray.ToVector4(), yfromuniform)
         {
         }
 

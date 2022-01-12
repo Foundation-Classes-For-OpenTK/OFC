@@ -19,6 +19,16 @@ using System.Diagnostics;
 namespace GLOFC.Controller
 {
     /// <summary>
+    /// This namespace contains the controller 3D classes which allow the lookat and eyeposition to be manipulated efficiently by keyboard and mouse
+    /// * Controller3D (and the double version) are the top level 3D controller class and handles keyboard and mouse interactions
+    /// * Controller3DBase is common between the float and double versions of the controller.
+    /// * KeyboardMonitor remembers key presses.
+    /// * PositionCamera (and the double version) holds the lookat position, camera position and camera direction, the zoom, and has slew functions to move around the world space
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+
+    /// <summary>
     /// Class brings together keyboard, mouse, posdir, zoom to provide a means to move thru the playfield and zoom.
     /// Handles keyboard actions and mouse actions to provide a nice method of controlling the 3d playfield 
     /// Attaches to a GLWindowControl and hooks its events to provide control 

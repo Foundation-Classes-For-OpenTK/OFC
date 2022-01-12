@@ -27,6 +27,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using GLOFC.GL4.Shaders.Sprites;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -183,7 +184,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "solmarker");
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,

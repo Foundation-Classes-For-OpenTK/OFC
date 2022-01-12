@@ -15,10 +15,14 @@
 using System;
 using OpenTK.Graphics.OpenGL;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Operations
 {
+    /// <summary>
+    /// Clear depth buffer operation
+    /// </summary>
     public class GLOperationClearDepthBuffer : GLOperationsBase
     {
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             GLStatics.ClearDepthBuffer();
@@ -26,6 +30,7 @@ namespace GLOFC.GL4
     }
     public class GLOperationClearStencilBuffer : GLOperationsBase
     {
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             GLStatics.ClearStencilBuffer();
@@ -34,30 +39,39 @@ namespace GLOFC.GL4
     public class GLOperationClearBuffer : GLOperationsBase
     {
         private ClearBufferMask mask;
+
+        /// <summary> Constructor </summary>
+        /// <param name="mask">Which buffers to clear</param>
         public GLOperationClearBuffer(ClearBufferMask mask)
         {
             this.mask = mask;
         }
-        
+
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             GLStatics.ClearBuffer(mask);
         }
     }
 
-    // for this one,set StartAction to action you want to execute
-    public class GLOperationAction: GLOperationsBase
+    /// <summary>
+    /// Null operation, useful just to allow StartAction to be called at this point
+    /// </summary>
+    public class GLOperationNull: GLOperationsBase
     {
-        public GLOperationAction() : base()
+        /// <summary> Constructor </summary>
+        public GLOperationNull() : base()
         {
         }
-        public GLOperationAction(Action<IGLProgramShader, GLMatrixCalc> sa) : base()
+        /// <summary> Constructor taking the start action </summary>
+        public GLOperationNull(Action<IGLProgramShader, GLMatrixCalc> sa) : base()
         {
             StartAction = sa;
         }
+
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)        
         {
-            StartAction?.Invoke(this, c);
         }
     }
 

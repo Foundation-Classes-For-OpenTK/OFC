@@ -19,6 +19,15 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders
 {
     /// <summary>
+    /// This namespace contains the four types of shaders base classes:
+    /// * Compute shaders - all compute shaders inherit from this class
+    /// * Pipeline - all pipeline component shaders are attached to this class to form a pipeline shader
+    /// * ShaderPipelineComponentShaderBase - all pipeline shader components (vertex, fragment etc) inherit from this class so they can be inserted into the pipeline class
+    /// * ShaderStandard - all standard shaders inherit from this class. Standard shaders are unitary and have all the shaders types inside them and are compiled as a whole.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Compute Shader class. Inherit from this to make a compute shader 
     /// You can either run it directly, or you can add it to a RenderableList to mix it with renderable items
     /// </summary>

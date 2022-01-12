@@ -25,6 +25,7 @@ using System.Drawing;
 using System.Linq;
 using GLOFC.GL4.Shaders.Tesselation;
 using GLOFC.GL4.Bitmaps;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -98,7 +99,7 @@ namespace TestOpenTk
             const float objsize = 10.0f;        // size of object on screen
 
             ridisplay = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, rt,
-                                GLShapeObjectFactory.CreateQuad2(objsize, objsize),         // quad2 4 vertexts
+                                GLShapeObjectFactory.CreateQuadTriStrip(objsize, objsize),         // quad2 4 vertexts
                                 new Vector4[galmap.RenderableMapObjects.Length],        // world positions
                                 ic: 0, seconddivisor: 1);
 

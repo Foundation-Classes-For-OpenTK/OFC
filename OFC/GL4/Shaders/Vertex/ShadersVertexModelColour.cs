@@ -34,7 +34,7 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      location 1 : modelpos
     /// </summary>
 
-    public class GLPLVertexShaderColorModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderColorModelObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         ///  Constructor
@@ -42,7 +42,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
+        public GLPLVertexShaderColorModelObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), null, varyings, varymode, auxname: GetType().Name, saveable: saveable);
         }
@@ -50,7 +50,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <summary>
         /// Load from binary
         /// </summary>
-        public GLPLVertexShaderColorModelCoordWithObjectTranslation(byte[] bin, BinaryFormat bf)
+        public GLPLVertexShaderColorModelObjectTranslation(byte[] bin, BinaryFormat bf)
         {
             Load(bin, bf);
         }
@@ -104,7 +104,7 @@ void main(void)
     ///      location 4 drawid (4.6) for multidraws
     /// </summary>
 
-    public class GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelCoordWorldAutoscale : GLShaderPipelineComponentShadersBase
     {
         /// <summary>Translation matrix to rotate all models</summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
@@ -117,7 +117,7 @@ void main(void)
         /// <param name="autoscalemin">Minimum to scale to</param>
         /// <param name="autoscalemax">Maximum to scale to</param>
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
-        public GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null,
+        public GLPLVertexShaderModelCoordWorldAutoscale(System.Drawing.Color[] basecolours = null,
                                                                     float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             List<object> values = new List<object> { "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax, "useeyedistance", useeyedistance };
@@ -224,7 +224,7 @@ void main(void)
     /// </summary>
 
 
-    public class GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelMatrix : GLShaderPipelineComponentShadersBase
     {
         /// <summary>Translation matrix to rotate all models</summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
@@ -236,7 +236,7 @@ void main(void)
         /// Constructor
         /// </summary>
         /// <param name="basecolours">Optional, set of basecolours for fragment shader, Matrix[3,3] picks colour</param>
-        public GLPLVertexShaderModelCoordWithMatrixWorldTranslationCommonModelTranslation(System.Drawing.Color[] basecolours = null)
+        public GLPLVertexShaderModelMatrix(System.Drawing.Color[] basecolours = null)
         {
             object[] cvalues = null;
             if (basecolours != null)
@@ -319,10 +319,10 @@ void main(void)
     ///      location 1 : modelpos
     /// </summary>
 
-    public class GLPLVertexShaderModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelMatrixColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderModelCoordWithMatrixTranslation()
+        public GLPLVertexShaderModelMatrixColor()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
@@ -369,13 +369,13 @@ void main(void)
     /// </summary>
 
 
-    public class GLPLVertexShaderColorModelCoordWithObjectCommonTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelCommonObjectColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Common transform for rotation </summary>
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderColorModelCoordWithObjectCommonTranslation()
+        public GLPLVertexShaderModelCommonObjectColor()
         {
             Transform = new GLRenderDataTranslationRotation();
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
@@ -437,13 +437,13 @@ void main(void)
     ///      location 4 drawid (4.6) for multidraws
     /// </summary>
 
-    public class GLPLVertexShaderModelCoordWithWorldUniform : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelWorldUniform : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="basecolours">Optional, set of basecolours for fragment shader, worldpos.W picks colour</param>
-        public GLPLVertexShaderModelCoordWithWorldUniform(System.Drawing.Color[] basecolours = null)
+        public GLPLVertexShaderModelWorldUniform(System.Drawing.Color[] basecolours = null)
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] { "colours", basecolours }); //, completeoutfile:@"c:\code\code.out");
         }

@@ -33,13 +33,13 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      location 1: modelpos
     /// </summary>
 
-    public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelTextureTranslation : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="saveable">Is shader to be saveable</param>
-        public GLPLVertexShaderTextureModelCoordWithObjectTranslation(bool saveable = false)
+        public GLPLVertexShaderModelTextureTranslation(bool saveable = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, saveable: saveable);
         }
@@ -95,14 +95,14 @@ void main(void)
     ///      gl_Position
     /// </summary>
 
-    public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelMatrixTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
-        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation(float autoscale = 0, bool useeyedistance = true)
+        public GLPLVertexShaderModelMatrixTexture(float autoscale = 0, bool useeyedistance = true)
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
                                                                     "autoscale", autoscale,
@@ -198,7 +198,7 @@ void main(void)
     ///      gl_Position
     /// </summary>
 
-    public class GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelTranslationTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Rotation to apply </summary>
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
@@ -210,7 +210,7 @@ void main(void)
         /// <param name="autoscalemin">Minimum to scale to</param>
         /// <param name="autoscalemax">Maximum to scale to</param>
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
-        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
+        public GLPLVertexShaderModelTranslationTexture(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             Transform = new GLRenderDataTranslationRotation();
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
@@ -294,13 +294,13 @@ void main(void)
     ///      location 2 : instance id
     /// </summary>
 
-    public class GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelWorldTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Rotation to apply </summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation()
+        public GLPLVertexShaderModelWorldTexture()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

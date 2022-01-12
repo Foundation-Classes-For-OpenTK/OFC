@@ -26,6 +26,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -121,7 +122,7 @@ void main(void)
             };
 
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS");
+                items.Add(new GLColorShaderWorld(), "COS");
                 GLRenderState rl = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COS"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
@@ -130,7 +131,7 @@ void main(void)
             }
 
             {
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
 
                 using (var bmp = GLOFC.Utils.BitMapHelpers.DrawTextIntoAutoSizedBitmap("200,100", new Size(200, 100), new Font("Arial", 10.0f), System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Yellow, Color.Blue))
                 {

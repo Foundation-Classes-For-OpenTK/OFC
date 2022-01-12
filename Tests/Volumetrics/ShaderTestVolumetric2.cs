@@ -25,6 +25,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 
@@ -110,7 +111,7 @@ void main(void)
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderViewSpaceCoord(), new GLPLFragmentShaderFixedColor(c));
+                AddVertexFragment(new GLPLVertexShaderViewSpace(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -131,7 +132,7 @@ void main(void)
             };
 
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {

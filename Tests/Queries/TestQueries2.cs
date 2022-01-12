@@ -25,6 +25,8 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -69,12 +71,12 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEXOTNoRot");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add(new GLFixedColorShaderObjectTranslation(Color.Goldenrod), "FCOSOT");
+            items.Add(new GLTexturedShaderObjectCommonTranslation(), "TEXOCT");
 
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted");
             items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
@@ -102,7 +104,7 @@ namespace TestOpenTk
                 rc.CullFace = true;
 
                 var q1 = new GLOperationQuery(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0, true);
-                q1.QueryStart += (t) => { System.Diagnostics.Debug.WriteLine($"What is Query for Primities Gen? {GLOperationQuery.GetQueryName(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0)}"); };
+                q1.FinishAction += (t) => { System.Diagnostics.Debug.WriteLine($"What is Query for Primities Gen? {GLOperationQuery.GetQueryName(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0)}"); };
                 items.Add(q1);
                 rObjects.Add(q1);
 
@@ -134,7 +136,7 @@ namespace TestOpenTk
                                             new GLRenderDataTranslationRotation(new Vector3(-50, 3, 20))
                             ), atend: true);
 
-                rObjects.Add(items.Shader("COSOT"), new GLOperationEndConditional(), true);     // note the attach as a renderable item, to demo it works
+                rObjects.Add(items.Shader("COSOT"), new GLOperationEndConditionalRender(), true);     // note the attach as a renderable item, to demo it works
 
                 rObjects.Add(new GLOperationEndQuery(q1, querycomplete: (t) =>
                 {
@@ -270,7 +272,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

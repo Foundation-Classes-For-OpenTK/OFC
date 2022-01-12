@@ -34,10 +34,10 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///       location 3 : flat out w for fragshader.
     ///       </summary>
 
-    public class GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderScreenTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord()
+        public GLPLVertexShaderScreenTexture()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

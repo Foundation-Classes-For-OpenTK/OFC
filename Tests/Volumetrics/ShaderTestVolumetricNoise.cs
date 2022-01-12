@@ -25,6 +25,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -101,7 +102,7 @@ namespace TestOpenTk
             gl3dcontroller.Start(glwfc,new Vector3(0, 0, -35000), new Vector3(135f, 0, 0), 0.31622F);
 
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             float h = -1;
@@ -201,7 +202,7 @@ namespace TestOpenTk
 
                 GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
                 items.Add(array, "Nums");
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));

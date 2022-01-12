@@ -84,7 +84,7 @@ namespace GLOFC.GL4
         /// If you specify varyings, you must set up a buffer, and a start action of Gl.BindBuffer(GL.TRANSFORM_FEEDBACK_BUFFER,bufid) AND BeingTransformFeedback.
         /// </summary>
         /// <param name="separable">Set to true to allow for pipeline shaders</param>
-        /// <param name="varyings">List of varyings to report</param>
+        /// <param name="varyings">List of varyings to report. See <href>https://www.khronos.org/opengl/wiki/Transform_Feedback</href> for details on how you can send varying to various binding indexes</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="wantbinary">Set to true to allow GetBinary to work</param>
         /// <returns></returns>

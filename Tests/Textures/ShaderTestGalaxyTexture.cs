@@ -23,6 +23,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -108,7 +109,7 @@ void main(void)
             };
 
 
-            items.Add( new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add( new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {

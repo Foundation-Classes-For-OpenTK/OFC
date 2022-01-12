@@ -27,6 +27,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Compute;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -101,7 +102,7 @@ namespace TestOpenTk
 
             int front = -20000, back = front + 90000, left = -45000, right = left + 90000, vsize = 2000;
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             float h = -1;
@@ -143,7 +144,7 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
                 };
 
-                items.Add(new GLFixedColorShaderWithWorldCoord(System.Drawing.Color.Yellow), "LINEYELLOW");
+                items.Add(new GLFixedColorShaderWorld(System.Drawing.Color.Yellow), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
                 GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, displaylines));
             }
@@ -171,7 +172,7 @@ namespace TestOpenTk
                     numberposx[i] *= Matrix4.CreateTranslation(new Vector3(left + 1000 * i, 0, front));
                 }
 
-                GLShaderPipeline numshaderx = new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0));
+                GLShaderPipeline numshaderx = new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
                 items.Add(numshaderx, "IC-X");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
@@ -190,7 +191,7 @@ namespace TestOpenTk
                     numberposz[i] *= Matrix4.CreateTranslation(new Vector3(right + 1000, 0, front + 1000 * i));
                 }
 
-                GLShaderPipeline numshaderz = new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(25));
+                GLShaderPipeline numshaderz = new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(25));
                 items.Add(numshaderz, "IC-Z");
 
                 rObjects.Add(numshaderz, "ynum",
@@ -201,7 +202,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLTexture2D(numbitmaps[45], SizedInternalFormat.Rgba8), "solmarker");
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
 

@@ -25,6 +25,11 @@ using GLOFC.GL4.Buffers;
 namespace GLOFC.GL4.Bitmaps
 {
     /// <summary>
+    /// This namespace contains classes which help throw multiple bitmaps efficently onto the screen, and manage their lifecycles
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Class can hold varying number of bitmaps, all of the same size, each can be rotated/sized/lookat individually.
     /// can be alpha blended either by distance in or out. See GLPLVertexShaderQuadTextureWithMatrixTranslation
     /// You can delete by tag name or clear all
@@ -74,7 +79,7 @@ namespace GLOFC.GL4.Bitmaps
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
+            shader = new GLShaderPipeline(new GLPLVertexShaderMatrixQuadTexture(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
             renderstate = GLRenderState.Quads();      
@@ -162,7 +167,7 @@ namespace GLOFC.GL4.Bitmaps
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Bitmaps detected context incorrect");
 
-            Matrix4 mat = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
+            Matrix4 mat = GLPLVertexShaderMatrixQuadTexture.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
@@ -211,7 +216,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <summary>Set Y if using Y hold</summary>
         public void SetY(float y)
         {
-            shader.GetShader<GLPLVertexShaderQuadTextureWithMatrixTranslation>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            shader.GetShader<GLPLVertexShaderMatrixQuadTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
         }
         /// <summary>Dispose of the bitmaps</summary>
         public virtual void Dispose()           // you can double dispose.

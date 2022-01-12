@@ -26,6 +26,7 @@ using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -104,7 +105,7 @@ void main(void)
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderViewSpaceCoord(), new GLPLFragmentShaderFixedColor(c));
+                AddVertexFragment(new GLPLVertexShaderViewSpace(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -131,7 +132,7 @@ void main(void)
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3( 135, 0, 0), 1F);
 
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
@@ -170,7 +171,7 @@ void main(void)
 
                 GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
                 items.Add(array, "Nums");
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));

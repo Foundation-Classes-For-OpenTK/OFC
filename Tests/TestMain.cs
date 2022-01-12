@@ -28,6 +28,8 @@ using GLOFC.GL4.Shaders;
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -80,12 +82,12 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine($"Vertex attribs {GL4Statics.GetMaxVertexAttribs()} ");
             }
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEXOTNoRot");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add(new GLFixedColorShaderObjectTranslation(Color.Goldenrod), "FCOSOT");
+            items.Add(new GLTexturedShaderObjectCommonTranslation(), "TEXOCT");
 
             items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  ,           "dotted"    );
             items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
@@ -374,7 +376,7 @@ namespace TestOpenTk
             #region 2dArrays
             if( (ctrl & (1<<7)) != 0)
             {
-                items.Add( new GLTexturedShader2DBlendWithWorldCoord(), "TEX2DA");
+                items.Add( new GLTexturedShader2DBlendWorld(), "TEX2DA");
                 items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap2, Properties.Resources.mipmap3 }, SizedInternalFormat.Rgba8, 9), "2DArray2");
 
                 GLRenderState rq = GLRenderState.Quads();
@@ -400,7 +402,7 @@ namespace TestOpenTk
             #region Instancing
             if( (ctrl & (1<<8)) != 0)
             {
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelCoordWithMatrixTranslation(), new GLPLFragmentShaderVSColor()),"IC-1");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixColor(), new GLPLFragmentShaderVSColor()),"IC-1");
 
                 Matrix4[] pos1 = new Matrix4[3];
                 pos1[0] = Matrix4.CreateTranslation(new Vector3(10, 0, 10));
@@ -424,7 +426,7 @@ namespace TestOpenTk
                 pos2[2] = Matrix4.CreateRotationZ(-60f.Radians());
                 pos2[2] *= Matrix4.CreateTranslation(new Vector3(20, 10, 10));
 
-                items.Add( new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture()),"IC-2");
+                items.Add( new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture()),"IC-2");
 
                 GLRenderState rq = GLRenderState.Quads();
                 rq.CullFace = false;
@@ -449,7 +451,7 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("TESx1"), "O-TES1",
                     GLRenderableItem.CreateVector4(items, PrimitiveType.Patches, rp,
-                                        GLShapeObjectFactory.CreateQuad2(6.0f, 6.0f),
+                                        GLShapeObjectFactory.CreateQuadTriStrip(6.0f, 6.0f),
                                         new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(12, 0, 0), new Vector3( -90f.Radians(), 0, 0))
                                         ));
             }
@@ -474,7 +476,7 @@ namespace TestOpenTk
             #region Tape
 
             {
-                var pls = new GLShaderPipeline(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(),
+                var pls = new GLShaderPipeline(new GLPLVertexShaderWorldTextureTriStrip(),
                                     new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0)));
                 items.Add(pls, "tapeshader");
             }
@@ -726,7 +728,7 @@ namespace TestOpenTk
                     GLBuffer vert = new GLBuffer();
                     vert.AllocateFill(objlist[0].Vertices.Vertices.ToArray());
 
-                    var shader = new GLUniformColorShaderWithObjectTranslation();
+                    var shader = new GLUniformColorShaderObjectTranslation();
 
                     GLRenderState rts = GLRenderState.Tri();
 
@@ -757,7 +759,7 @@ namespace TestOpenTk
                     GLBuffer vert = new GLBuffer();
                     vert.AllocateFill(objlist[0].Vertices.Vertices.ToArray(), objlist[0].Vertices.TextureVertices2.ToArray());
 
-                    var shader = new GLTexturedShaderWithObjectTranslation();
+                    var shader = new GLTexturedShaderObjectTranslation();
 
                     GLRenderState rts = GLRenderState.Tri();
                     //rts.CullFace = false;
@@ -814,7 +816,7 @@ namespace TestOpenTk
                 var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted2, Properties.Resources.planetaryNebula, Properties.Resources.wooden }, SizedInternalFormat.Rgba8);
                 items.Add(texarray);
 
-                var shader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0));
+                var shader = new GLShaderPipeline(new GLPLVertexShaderMatrixQuadTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
                 items.Add(shader);
 
                 shader.StartAction += (s,m) => { texarray.Bind(1); };
@@ -850,7 +852,7 @@ namespace TestOpenTk
                 items.Add(texarray, "Sinewavetex");
                 GLRenderState rp = GLRenderState.Patches(4);
 
-                var shdrtesssine = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.2f, 1f, rotate: true, rotateelevation: false);
+                var shdrtesssine = new GLTesselationShaderSinewaveAutoscale(20, 0.2f, 1f, rotate: true, rotateelevation: false);
                 items.Add(shdrtesssine, "TESIx1");
 
                 Vector4[] pos = new Vector4[]       //w = image index
@@ -861,13 +863,13 @@ namespace TestOpenTk
 
 
                 var dt = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Patches, rp,
-                                        GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos,
+                                        GLShapeObjectFactory.CreateQuadTriStrip(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos,
                                         new GLRenderDataTexture(texarray),
                                         ic: 2, seconddivisor: 1);
 
                 rObjects.Add(shdrtesssine, "O-TESA1", dt);
 
-                var shdrtesssine2 = new GLTesselationShaderSinewaveAutoscaleLookatInstanced(20, 0.2f, 1f, rotate: true, rotateelevation: true);
+                var shdrtesssine2 = new GLTesselationShaderSinewaveAutoscale(20, 0.2f, 1f, rotate: true, rotateelevation: true);
                 items.Add(shdrtesssine2, "TESIx2");
 
                 Vector4[] pos2 = new Vector4[]       //w = image index
@@ -877,7 +879,7 @@ namespace TestOpenTk
                 };
 
                 var dt2 = GLRenderableItem.CreateVector4Vector4(items,PrimitiveType.Patches, rp,
-                                        GLShapeObjectFactory.CreateQuad2(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos2,
+                                        GLShapeObjectFactory.CreateQuadTriStrip(10.0f, 10.0f, new Vector3(-0f.Radians(), 0, 0)), pos2,
                                         new GLRenderDataTexture(texarray),
                                         ic: 2, seconddivisor: 1);
 
@@ -982,7 +984,7 @@ namespace TestOpenTk
                 (rObjects["sphere7"].RenderData as GLRenderDataTranslationRotation).YRotDegrees = degreesd4;
 
             if (items.Contains("TEXOCT"))
-                ((GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation)items.Shader("TEXOCT").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader)).Transform.YRotDegrees = degrees;
+                ((GLPLVertexShaderModelTranslationTexture)items.Shader("TEXOCT").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader)).Transform.YRotDegrees = degrees;
 
             if (items.Contains("TEX2DA"))
                 ((GLPLFragmentShaderTexture2DBlend)items.Shader("TEX2DA").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader)).Blend = zeroone;
@@ -996,9 +998,9 @@ namespace TestOpenTk
             if (items.Contains("TESx1"))
                 ((GLTesselationShaderSinewave)items.Shader("TESx1")).Phase = degrees / 360.0f;
             if (items.Contains("TESIx1"))
-                ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx1")).Phase = degrees / 360.0f;
+                ((GLTesselationShaderSinewaveAutoscale)items.Shader("TESIx1")).Phase = degrees / 360.0f;
             if (items.Contains("TESIx2"))
-                ((GLTesselationShaderSinewaveAutoscaleLookatInstanced)items.Shader("TESIx2")).Phase = degrees / 360.0f;
+                ((GLTesselationShaderSinewaveAutoscale)items.Shader("TESIx2")).Phase = degrees / 360.0f;
 
             GLStatics.Check();
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
@@ -1074,7 +1076,7 @@ namespace TestOpenTk
     {
         public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+            AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
         }
     }
 
@@ -1090,7 +1092,7 @@ namespace TestOpenTk
     {
         public GLBindlessTextureShaderWithWorldCoord(int arbbindingpoint, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB(), new GLPLFragmentShaderBindlessTexture(arbbindingpoint));
+            AddVertexFragment(new GLPLVertexShaderWorldTextureTriStrip(), new GLPLFragmentShaderBindlessTexture(arbbindingpoint));
         }
     }
 

@@ -147,8 +147,6 @@ namespace GLOFC
         /// <summary>Calculate the model matrix, which is the model translated to world space then to view space..</summary> 
         public void CalculateModelMatrix(Vector3 lookat, Vector3 eyeposition, Vector2 cameradirection, float camerarotation)  
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
-
             LookAt = lookat;      // record for shader use
             EyePosition = eyeposition;
             EyeDistance = (lookat - eyeposition).Length;
@@ -190,8 +188,6 @@ namespace GLOFC
         /// <summary>Calculate the Projection matrix - projects the 3d model space to the 2D screen</summary> 
         public void CalculateProjectionMatrix()           // calculate and return znear.
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
-
             Size scr = ViewPort.Size;
 
             if (InPerspectiveMode)
@@ -226,8 +222,6 @@ namespace GLOFC
         /// <summary>Calculate the Projection matrix - projects the 3d model space to the 2D screen</summary> 
         public void CalculateModelMatrix(Vector3d lookatd, Vector3d eyepositiond, Vector2d cameradirection, double camerarotation)
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
-
             LookAt = new Vector3((float)lookatd.X, (float)lookatd.Y, (float)lookatd.Z);      // record for shader use
             EyePosition = new Vector3((float)eyepositiond.X, (float)eyepositiond.Y, (float)eyepositiond.Z);
             EyeDistance = (float)((lookatd-eyepositiond).Length);

@@ -17,6 +17,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Volumetric
 {
     /// <summary>
+    /// This namespace contains pipeline volumentic shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Vertex shader for volumetric shading.  
     /// </summary>
 

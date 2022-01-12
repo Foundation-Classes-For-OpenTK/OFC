@@ -25,7 +25,8 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -83,12 +84,12 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
 
-            var vs1 = new GLPLVertexShaderColorModelCoordWithObjectTranslation(new string[] { "modelpos" }, TransformFeedbackMode.InterleavedAttribs);
+            var vs1 = new GLPLVertexShaderColorModelObjectTranslation(new string[] { "modelpos" }, TransformFeedbackMode.InterleavedAttribs);
             var vsbin = vs1.GetBinary(out BinaryFormat binformat);      // round trip example thru binary
 
-            var vs = new GLPLVertexShaderColorModelCoordWithObjectTranslation(vsbin,binformat);
+            var vs = new GLPLVertexShaderColorModelObjectTranslation(vsbin,binformat);
 
             var fs = new GLPLFragmentShaderVSColor(true);
             var cosot = new GLShaderPipeline(vs, fs);
@@ -253,7 +254,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

@@ -20,6 +20,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Fragment
 {
     /// <summary>
+    /// This namespace contains pipeline fragment shaders.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Pipeline shader, texture shader,
     /// renders an texture ARB dependent either on primitive number/2 (so to be used with a triangle strip) or image id in location 2
     /// with alphablending and discard if transparent

@@ -22,7 +22,7 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
-    ///  Pipeline shader, Texture, Modelpos, transform
+    ///  Pipeline shader, Texture, Worldpos, transform
     ///  Requires:
     ///       location 0 : position: vec4 vertex array of positions. W contains encoded red, next green, blue in 24 bit quantity
     ///       uniform buffer 0 : GL MatrixCalc
@@ -34,10 +34,10 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///       location 3 : flat out color carried in vertex as a packed RGB value from input location 0 w co-ord
     /// </summary>
 
-    public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderWorldTextureTriStrip : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Constructor </summary>
-        public GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB()
+        public GLPLVertexShaderWorldTextureTriStrip()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

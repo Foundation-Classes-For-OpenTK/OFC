@@ -21,6 +21,15 @@ using System.Windows.Forms;
 namespace GLOFC
 {
     /// <summary>
+    /// This namespace contains the base GL classes 
+    /// * The MatrixCalc, which can transform eye and lookat positions into projection and model transforms, and can handle screen co-ordinated, viewports.
+    /// * Classes to handle mouse and keyboard events
+    /// * Static classes to assist in using GL items such as vectors and matrices
+    /// * Static classes to wrap GL functions in more friendly wrappers
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Mouse Event Args to program
     /// </summary>
     public class GLMouseEventArgs

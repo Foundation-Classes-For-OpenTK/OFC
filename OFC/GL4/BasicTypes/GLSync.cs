@@ -26,21 +26,25 @@ namespace GLOFC.GL4
         /// <summary>GL ID </summary>
         public IntPtr Id { get; set; } = (IntPtr)0;
 
-        /// <summary>Make a new fence, with condition and wait flags </summary>
-        public GLFenceSync(SyncCondition c = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags f = WaitSyncFlags.None)
+        /// <summary>Make a new fence, with condition and wait flags 
+        /// see <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFenceSync.xhtml</href>
+        /// </summary>
+        /// <param name="synccondition">Must be SyncCondition.SyncGpuCommandsComplete</param>
+        /// <param name="waitflags">Must be 0</param>
+        public GLFenceSync(SyncCondition synccondition = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags waitflags = WaitSyncFlags.None)
         {
-            Id = GL.FenceSync(c, f);
+            Id = GL.FenceSync(synccondition, waitflags);
             GLStatics.RegisterAllocation(typeof(GLFenceSync));
         }
 
 
         /// <summary> Get the sync status of the fence. </summary>
-        /// <param name="p">Get SyncCondition, SyncStatus, SyncFlags or ObjectType. Default is to get sync status</param>
+        /// <param name="paraname">Get SyncCondition, SyncStatus, SyncFlags or ObjectType. Default is to get sync status</param>
         /// <returns>Returns an array of sync properties. Dependent on fence type</returns>
-        public int[] Get(SyncParameterName p = SyncParameterName.SyncStatus)
+        public int[] Get(SyncParameterName paraname = SyncParameterName.SyncStatus)
         {
             int[] array = new int[20];
-            GL.GetSync(Id, p, array.Length, out int len, array);
+            GL.GetSync(Id, paraname, array.Length, out int len, array);
             GLStatics.Check();
             int[] res = new int[len];
             Array.Copy(array, res, len);

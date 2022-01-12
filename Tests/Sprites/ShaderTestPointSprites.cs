@@ -23,6 +23,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -123,7 +124,7 @@ void main(void)
             //items.Add("lensflarewhite", new GLTexture2D(Properties.Resources.lensflare_white64));
             items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COS");
+            items.Add(new GLColorShaderWorld(), "COS");
 
             #region coloured lines
 

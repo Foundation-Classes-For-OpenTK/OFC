@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Operations;
 using GLOFC.GL4.Shaders;
 using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
@@ -37,7 +38,6 @@ namespace GLOFC.GL4
         private List<Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>>> renderables;
         private Dictionary<string,IGLRenderableItem> byname;
         private int unnamed = 0;
-        private IntPtr context = (IntPtr)0;
 
         /// <summary>Create a render program sorted list</summary>
         public GLRenderProgramSortedList()
@@ -148,7 +148,6 @@ namespace GLOFC.GL4
             if (verbose) System.Diagnostics.Trace.WriteLine("***Begin RList");
 
             GLStatics.Check();      // ensure clear before start
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context not correct for render list");     // double check context
 
             GLRenderState lastapplied = null;
             IGLProgramShader curshader = null;
@@ -245,11 +244,6 @@ namespace GLOFC.GL4
         // add a shader, under a name, indicate if at end, and if allowed to end join
         private void AddItem(IGLProgramShader prog, string name, IGLRenderableItem r, bool atend, bool allowendjoin)
         {
-            if (context == (IntPtr)0)           // on add, see which context we are in
-                context = GLStatics.GetContext();
-            else
-                System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context not correct for AddItem");     // double check cross windowing
-
             Tuple<IGLProgramShader, List<Tuple<string, IGLRenderableItem>>> shaderpos = null;
             if ( atend )        // must be at end
             {

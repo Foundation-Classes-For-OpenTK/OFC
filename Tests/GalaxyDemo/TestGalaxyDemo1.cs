@@ -29,6 +29,7 @@ using GLOFC.GL4.Shaders.Compute;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Sprites;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -167,7 +168,7 @@ namespace TestOpenTk
                     numberposx[i] *= Matrix4.CreateTranslation(new Vector3(left + 1000 * i, 0, front));
                 }
 
-                GLShaderPipeline numshaderx = new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0));
+                GLShaderPipeline numshaderx = new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
                 items.Add(numshaderx, "IC-X");
 
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
@@ -186,7 +187,7 @@ namespace TestOpenTk
                     numberposz[i] *= Matrix4.CreateTranslation(new Vector3(right + 1000, 0, front + 1000 * i));
                 }
 
-                GLShaderPipeline numshaderz = new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(25));
+                GLShaderPipeline numshaderz = new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(25));
                 items.Add(numshaderz, "IC-Z");
 
                 rObjects.Add(numshaderz, "ynum",
@@ -195,7 +196,7 @@ namespace TestOpenTk
                                                 rt, numberposz.Length));
             }
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
 
             float h = 50;
             if (h != -1)
@@ -221,7 +222,7 @@ namespace TestOpenTk
 
             {
                 items.Add( new GLTexture2D(numbitmaps[45], SizedInternalFormat.Rgba8), "solmarker");
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
                              GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,

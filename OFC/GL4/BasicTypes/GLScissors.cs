@@ -30,33 +30,43 @@ namespace GLOFC.GL4
             GL.Disable(IndexedEnableCap.ScissorTest, viewport);
         }
 
-        /// <summary> Enable scissor test on this viewport with this rectangle (0,0) is lower left</summary>
-        static public void Set(int viewport, Rectangle r)             
-        {
-            GL.ScissorIndexed(viewport, r.Left, r.Top, r.Width, r.Height);
-            GL.Enable(IndexedEnableCap.ScissorTest, viewport);
-        }
-
-        /// <summary> Enable scissor test on this viewport with this rectangle (0,0) is top left, GLMatrixCalc gives screen size</summary>
-        static public void Set(int viewport, Rectangle r, GLMatrixCalc c)  // 0,0 is top left
-        {
-            GL.ScissorIndexed(viewport, r.Left, c.ScreenSize.Height - r.Bottom, r.Width, r.Height);
-            GL.Enable(IndexedEnableCap.ScissorTest, viewport);
-        }
-
-        /// <summary> Calculate the area to scissor for the MatrixCalc screen coords.. 
-        /// Note scissor is defined by the openGL whole window, not its viewport.
+        /// <summary>
+        /// Setup scissors using open GL co-ords
         /// </summary>
-
-        static public void SetToScreenCoords(int viewport, GLMatrixCalc c)
+        /// <param name="viewport">Viewport to scissor</param>
+        /// <param name="rectangle">Rectangle in GL co-ords, 0,0 is lower left</param>
+        static public void Set(int viewport, Rectangle rectangle)             
         {
-            float leftoffset = c.ScreenCoordClipSpaceOffset.X - (-1);
-            float topoffset = 1 - c.ScreenCoordClipSpaceOffset.Y;
-            int left = (int)(leftoffset / 2.0f * c.ViewPort.Width) + c.ViewPort.Left;
-            int top = (int)(topoffset / 2.0f * c.ViewPort.Height) + c.ViewPort.Top;
-            int width = (int)(c.ScreenCoordClipSpaceSize.Width / 2.0f * c.ViewPort.Width);
-            int height = (int)(c.ScreenCoordClipSpaceSize.Height / 2.0f * c.ViewPort.Height);
-            GL.ScissorIndexed(viewport, left, c.ScreenSize.Height - (top+height), width, height);
+            GL.ScissorIndexed(viewport, rectangle.Left, rectangle.Top, rectangle.Width, rectangle.Height);
+            GL.Enable(IndexedEnableCap.ScissorTest, viewport);
+        }
+
+        /// <summary>
+        /// Setup scissors using MatrixCalc screen co-ords.
+        /// </summary>
+        /// <param name="viewport">Viewport to scissor</param>
+        /// <param name="rectangle">Rectangle in screen co-ords, 0,0 is top left</param>
+        /// <param name="matrixcalc">MatrixCalc with current screen setup</param>
+        static public void Set(int viewport, Rectangle rectangle, GLMatrixCalc matrixcalc)
+        {
+            GL.ScissorIndexed(viewport, rectangle.Left, matrixcalc.ScreenSize.Height - rectangle.Bottom, rectangle.Width, rectangle.Height);
+            GL.Enable(IndexedEnableCap.ScissorTest, viewport);
+        }
+
+        /// <summary>
+        /// Setup scissors to screen defined by MatrixCalc
+        /// </summary>
+        /// <param name="viewport">Viewport to scissor</param>
+        /// <param name="matrixcalc">MatrixCalc with current screen setup</param>
+        static public void SetToScreenCoords(int viewport, GLMatrixCalc matrixcalc)
+        {
+            float leftoffset = matrixcalc.ScreenCoordClipSpaceOffset.X - (-1);
+            float topoffset = 1 - matrixcalc.ScreenCoordClipSpaceOffset.Y;
+            int left = (int)(leftoffset / 2.0f * matrixcalc.ViewPort.Width) + matrixcalc.ViewPort.Left;
+            int top = (int)(topoffset / 2.0f * matrixcalc.ViewPort.Height) + matrixcalc.ViewPort.Top;
+            int width = (int)(matrixcalc.ScreenCoordClipSpaceSize.Width / 2.0f * matrixcalc.ViewPort.Width);
+            int height = (int)(matrixcalc.ScreenCoordClipSpaceSize.Height / 2.0f * matrixcalc.ViewPort.Height);
+            GL.ScissorIndexed(viewport, left, matrixcalc.ScreenSize.Height - (top+height), width, height);
             GL.Enable(IndexedEnableCap.ScissorTest, viewport);
         }
 

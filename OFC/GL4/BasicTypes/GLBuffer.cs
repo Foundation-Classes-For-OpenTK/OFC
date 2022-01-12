@@ -67,6 +67,7 @@ namespace GLOFC.GL4
         /// </summary>
         public void Resize(int newlength, BufferUsageHint hint = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             if (Length != newlength)
             {
                 GL.CreateBuffers(1, out int newid);
@@ -96,6 +97,7 @@ namespace GLOFC.GL4
         /// <param name="hint"></param>
         public void CopyTo(GLBuffer other, int startpos, int otherpos, int length, BufferUsageHint hint = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             int ourend = startpos + length;
             int otherend = otherpos + length;
             System.Diagnostics.Debug.Assert(Length >= ourend && other.Length >= otherend);
@@ -105,6 +107,7 @@ namespace GLOFC.GL4
         /// <summary>Zero the buffer from this position and length</summary>
         public void Zero(int pos, int length)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos + length <= Length);
             GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
             GLStatics.Check();
@@ -412,6 +415,7 @@ namespace GLOFC.GL4
                 datasize = Length - fillpos;
 
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bufferaccessmask);
 
@@ -429,6 +433,7 @@ namespace GLOFC.GL4
                 datasize = Length - fillpos;
 
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapReadBit);
 
@@ -440,6 +445,7 @@ namespace GLOFC.GL4
         /// <summary> Stop a read or write sequence, release buffer back to use </summary>
         public void StopReadWrite()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.UnmapNamedBuffer(Id);
             mapmode = MapMode.None;
             GLStatics.Check();
@@ -1054,15 +1060,22 @@ namespace GLOFC.GL4
             }
         }
 
-        ///<summary>Bind buffer to the default (xfb=0) or specific transform feedback buffer object</summary> 
-        public void BindTransformFeedback(int index, int xfb = 0, int offset = 0, int size = -1)
+        /// <summary>
+        /// Bind buffer to the specific transform feedback buffer object at binding index
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTransformFeedbackBufferBase.xhtml</href>
+        /// </summary>
+        /// <param name="bindingindex">Index of binding point within xfb</param>
+        /// <param name="xfb">Name of the transformation feeback buffer object. 0 means default transform</param>
+        /// <param name="offset">Offset into buffer if size != -1</param>
+        /// <param name="size">Buffer area allocated. If size == -1, all of buffer</param>
+        public void BindTransformFeedback(int bindingindex, int xfb = 0, int offset = 0, int size = -1)
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             if ( size == -1 )
-                GL.TransformFeedbackBufferBase(xfb, index, Id);
+                GL.TransformFeedbackBufferBase(xfb, bindingindex, Id);
             else
-                GL.TransformFeedbackBufferRange(xfb, index, Id, (IntPtr)offset, size);
+                GL.TransformFeedbackBufferRange(xfb, bindingindex, Id, (IntPtr)offset, size);
             GLStatics.Check();
         }
 

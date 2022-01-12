@@ -33,8 +33,8 @@ namespace GLOFC.GL4
 
         private GLItemsList items;
         private GLRenderProgramSortedList rlist;
-        private GLUniformColorShaderWithObjectTranslation shadercolor = null;
-        private GLTexturedShaderWithObjectTranslation shadertexture = null;
+        private GLUniformColorShaderObjectTranslation shadercolor = null;
+        private GLTexturedShaderObjectTranslation shadertexture = null;
 
         // give the item store and the render list to add to.
 
@@ -78,7 +78,7 @@ namespace GLOFC.GL4
 
                         if (shadertexture == null)
                         {
-                            shadertexture = new GLTexturedShaderWithObjectTranslation();
+                            shadertexture = new GLTexturedShaderObjectTranslation();
                             items.Add(shadertexture);
                         }
 
@@ -106,7 +106,7 @@ namespace GLOFC.GL4
 
                         if (shadercolor == null)
                         {
-                            shadercolor = new GLUniformColorShaderWithObjectTranslation();
+                            shadercolor = new GLUniformColorShaderObjectTranslation();
                             items.Add(shadercolor);
                         }
 

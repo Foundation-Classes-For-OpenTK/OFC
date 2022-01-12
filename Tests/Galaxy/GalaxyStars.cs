@@ -15,6 +15,7 @@ using GLOFC.GL4.Shaders.Geo;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
 using GLOFC.GL4.Buffers;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -32,7 +33,7 @@ namespace TestOpenTk
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, GLStorageBlock findbufferresults)
         {
-            sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
+            sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
                 autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
             var sunfrag = new GLPLStarSurfaceFragmentShader();
             sunshader = items.NewShaderPipeline(null,sunvertex, sunfrag);
@@ -50,7 +51,7 @@ namespace TestOpenTk
             textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
             int texunitspergroup = 16;
-            var textshader = items.NewShaderPipeline(null, new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0, 0, true, texunitspergroup));
+            var textshader = items.NewShaderPipeline(null, new GLPLVertexShaderMatrixQuadTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
  
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
@@ -198,7 +199,7 @@ namespace TestOpenTk
             d.stars = array;       
             d.text = text;
             d.bitmaps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f);
-            d.textpos = GLPLVertexShaderQuadTextureWithMatrixTranslation.CreateMatrices(array, new Vector3(0, -2f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+            d.textpos = GLPLVertexShaderMatrixQuadTexture.CreateMatrices(array, new Vector3(0, -2f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
 
             generatedsectors.Enqueue(d);       // d has been filled
             //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} {tno} end");
@@ -262,7 +263,7 @@ namespace TestOpenTk
         private GLSetOfObjectsWithLabels slset; // main class holding drawing
 
         private GLShaderPipeline sunshader;     // sun drawer
-        private GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation sunvertex;
+        private GLPLVertexShaderModelCoordWorldAutoscale sunvertex;
         private GLBuffer shapebuf;
 
         private GLShaderPipeline findshader;    // find shader for lookups

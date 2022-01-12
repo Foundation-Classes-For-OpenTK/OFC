@@ -201,7 +201,7 @@ void main(void)
     ///      tex binding [N..] : textureObject : 2D textures, multiple ones. select
     /// </summary>
 
-    public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineComponentShadersBase
+    public class GLPLFragmentShaderTexture2DIndexMulti : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor. 
@@ -210,7 +210,7 @@ void main(void)
         /// <param name="binding">Texture binding start for first of the 2D Textures bound</param>
         /// <param name="alphablend">Alpha blend enable, allow alpha to be passed from vertex shader to this shader</param>
         /// <param name="maxtextures">No of textures. Note 16 is the opengl minimum textures supported</param>
-        public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  
+        public GLPLFragmentShaderTexture2DIndexMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  
         {
             CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
         }

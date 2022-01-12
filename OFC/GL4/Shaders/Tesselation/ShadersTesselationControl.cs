@@ -19,6 +19,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Tesselation
 {
     /// <summary>
+    /// This namespace contains pipeline tesselation shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Shader, Tesselation , select tess level
     /// Requires:
     ///     gl_in

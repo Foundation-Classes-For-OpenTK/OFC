@@ -28,7 +28,10 @@ namespace GLOFC.GL4
     public static class GLStencil
     {
         /// <summary>
-        /// Quick setup of all stencil parameters for a StencilFunction.Always and enable
+        /// Setup and enable stencil
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glStencilFuncSeparate.xhtml</href>
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glStencilOpSeparate.xhtml</href>
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glStencilMask.xhtml</href>
         /// </summary>
         /// <param name="refvalue">Reference value</param>
         /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
@@ -46,7 +49,8 @@ namespace GLOFC.GL4
         }
 
         /// <summary>
-        /// Set up the stencil operation without enable. Full control
+        /// Use after drawing, to set up next draw with stencil conditions
+        /// Set up the stencil condition
         /// </summary>
         /// <param name="function">Stencil function</param>
         /// <param name="refvalue">Reference value</param>
@@ -62,7 +66,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary>
-        /// Quick setup for greater function
+        /// Use after drawing, setup for greater function
         /// </summary>
         /// <param name="refvalue">Reference value</param>
         /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
@@ -74,7 +78,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary>
-        /// Quick setup for less function
+        /// Use after drawing, setup for less function
         /// </summary>
         /// <param name="refvalue">Reference value</param>
         /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>
@@ -86,7 +90,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary>
-        /// Quick setup for equal function
+        /// Use after drawing, setup for equal function
         /// </summary>
         /// <param name="refvalue">Reference value</param>
         /// <param name="mask">Stencil test mask (ref AND mask) func (stencil AND mask)</param>

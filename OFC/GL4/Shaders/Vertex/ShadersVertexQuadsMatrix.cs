@@ -37,13 +37,13 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///      gL_Position
     /// </summary>
 
-    public class GLPLVertexShaderQuadTextureWithMatrixTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderMatrixQuadTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="yfromuniform">Take Y value from uniform, instead of transform </param>
-        public GLPLVertexShaderQuadTextureWithMatrixTranslation(bool yfromuniform = false)
+        public GLPLVertexShaderMatrixQuadTexture(bool yfromuniform = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "yfromuniform", yfromuniform }, auxname: GetType().Name);
         }

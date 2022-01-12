@@ -91,7 +91,7 @@ namespace GLOFC.GL4
         public IGLRenderItemData RenderData { get; set; }
 
         /// <summary>TF: if set, do drawtransformfeedback.  Do not use any of the A,E,IA,IE,ICA,ICE variables </summary>
-        public GLTransformFeedbackObject TFObj { get; set; }                
+        public GLTransformFeedback TFObj { get; set; }                
         /// <summary>TFStream associated with transform feedback </summary>
         public int TFStream { get; set; } = 0;
 

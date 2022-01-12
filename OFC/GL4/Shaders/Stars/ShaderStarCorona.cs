@@ -19,6 +19,11 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Stars
 {
     /// <summary>
+    /// This namespace contains shaders for star textures and corona
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Star Corona shader
     /// </summary>
     public class GLShaderStarCorona : GLShaderStandard
