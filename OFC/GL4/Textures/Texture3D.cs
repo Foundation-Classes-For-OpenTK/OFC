@@ -13,8 +13,6 @@
  */
 
 using OpenTK.Graphics.OpenGL4;
-using System;
-using System.Drawing;
 
 namespace GLOFC.GL4.Textures
 {
@@ -24,69 +22,66 @@ namespace GLOFC.GL4.Textures
 
     public class GLTexture3D : GLTextureBase         // load a texture into open gl
     {
-        public GLTexture3D(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
+        /// <summary>
+        /// Create a 3D texture
+        /// </summary>
+        /// <param name="width">Width of texture</param>
+        /// <param name="height">Height of texture</param>
+        /// <param name="depth">Number of levels of texture</param>
+        /// <param name="internalformat">Internal format, see InternalFormat in Texture base class</param>/// 
+        /// <param name="wantedmipmaplevels">Mip map levels wanted in texture</param>
+        public GLTexture3D(int width, int height, int depth, SizedInternalFormat internalformat, int wantedmipmaplevels = 1)
         {
-            CreateOrUpdateTexture(width, height, depth, internalformat, mipmaplevels);
+            CreateOrUpdateTexture(width, height, depth, internalformat, wantedmipmaplevels);
         }
 
-        public void CreateOrUpdateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int mipmaplevels = 1)
+        /// <summary>
+        /// Create of update the texture with a new size and format
+        /// You can call as many times to create textures. Only creates one if required
+        /// mipmaplevels does not apply if multisample > 0 
+        /// Rgba8 is the normal one to pick
+        /// </summary>
+        /// <param name="width">Width of texture</param>
+        /// <param name="height">Height of texture</param>
+        /// <param name="depth">Number of levels of texture</param>
+        /// <param name="internalformat">Internal format, see InternalFormat in Texture base class</param>/// 
+        /// <param name="wantedmipmaplevels">Mip map levels wanted in texture</param>
+        /// <param name="multisample">Multisample count, normally 0</param>
+        /// <param name="fixedmultisampleloc">Fix multisample positions in the same place for all texel in image</param>
+        public void CreateOrUpdateTexture(int width, int height, int depth, SizedInternalFormat internalformat, int wantedmipmaplevels = 1,
+                                            int multisample = 0, bool fixedmultisampleloc = false)
         {
-            if (Id < 0 || Width != width || Height != height || Depth != depth || mipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id < 0 || Width != width || Height != height || Depth != depth || wantedmipmaplevels != MipMapLevels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
                 if (Id >= 0)
                     Dispose();
 
                 InternalFormat = internalformat;
-                Width = width; Height = height; Depth = depth;
-                MipMapLevels = mipmaplevels;
+                Width = width; 
+                Height = height; 
+                Depth = depth;
+                MipMapLevels = wantedmipmaplevels;
+                MultiSample = multisample;
 
-                GL.CreateTextures(TextureTarget.Texture3D, 1, out int id);
+                GL.CreateTextures(MultiSample>0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture3D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture3D));
                 GLStatics.Check();
                 Id = id;
 
-                GL.TextureStorage3D(Id, mipmaplevels, InternalFormat, Width, Height, Depth);
+                if (MultiSample > 0)
+                {
+                    GL.TextureStorage3DMultisample(Id, MultiSample, InternalFormat, Width, Height, Depth, fixedmultisampleloc);
+                }
+                else
+                {
+                    GL.TextureStorage3D(Id, wantedmipmaplevels, InternalFormat, Width, Height, Depth);
+                }
 
                 SetMinMagFilter();
+
+                GLStatics.Check();
             }
         }
-
-        // Write to a Z plane the X/Y info.
-
-        // you can use PixelFormat = Red just to store a single float, and then use texture(tex,vec3(x,y,z)) to pick it up - only .x is applicable
-        // if you have an rgba, and you store to a single plane using PixelFormat, the other planes are wiped! beware.
-
-        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, PixelFormat px, PixelType ty, IntPtr ptr)
-        {
-            GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, ty, ptr);
-        }
-
-        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, byte[] array, PixelFormat px = PixelFormat.Bgra)
-        {
-            GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, PixelType.UnsignedByte, array);
-        }
-
-        public void StoreZPlane(int zcoord, int xoffset, int yoffset, int width, int height, float[] array, PixelFormat px = PixelFormat.Bgra)
-        {
-            GL.TextureSubImage3D(Id, 0, xoffset, yoffset, zcoord, width, height, 1, px, PixelType.Float, array);
-        }
-
-        // from the bound read framebuffer (from sx/sy) into this texture at x/y image z
-        public void CopyFromReadFramebuffer(int miplevel, int x, int y, int z, int sx, int sy, int width, int height)
-        {
-            GL.CopyTextureSubImage3D(Id, miplevel, x, y, z, sx, sy, width, height);
-            GLStatics.Check();
-        }
-
-        // from the any type of ImageTarget into this
-        public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz, int dmiplevel, int dx, int dy, int dz, int width, int height)
-        {
-            GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz,
-                                    Id, ImageTarget.Texture2DArray, dmiplevel, dx, dy, dz, width, height, 1);
-            GLStatics.Check();
-        }
-
     }
-
 }
 

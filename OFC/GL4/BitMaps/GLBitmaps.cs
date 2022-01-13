@@ -234,7 +234,7 @@ namespace GLOFC.GL4.Bitmaps
         {
             var texture = new GLTexture2DArray();
             items.Add(texture);
-            texture.CreateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.Matricesperbuffer, textureformat, texmipmaplevels);
+            texture.CreateOrUpdateTexture(bitmapsize.Width, bitmapsize.Height, matrixbuffers.Matricesperbuffer, textureformat, texmipmaplevels);
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);

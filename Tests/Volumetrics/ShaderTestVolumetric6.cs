@@ -162,7 +162,7 @@ namespace TestOpenTk
                     numberpos2[i] *= Matrix4.CreateTranslation(new Vector3(v, 0, -35500));
                 }
 
-                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
+                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbmp: true);
                 items.Add( array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 

@@ -17,6 +17,7 @@ using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
 using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {

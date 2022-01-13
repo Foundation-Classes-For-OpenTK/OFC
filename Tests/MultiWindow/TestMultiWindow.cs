@@ -32,6 +32,7 @@ using System.Threading;
 using GLOFC.Utils;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {

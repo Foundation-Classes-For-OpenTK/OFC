@@ -162,7 +162,7 @@ namespace TestOpenTk
                     GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbitmaps[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                 }
 
-                GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, SizedInternalFormat.Rgba8, ownbitmaps: true);
+                GLTexture2DArray numtextures = new GLTexture2DArray(numbitmaps, SizedInternalFormat.Rgba8, ownbmp: true);
                 items.Add(numtextures, "Nums");
 
                 Matrix4[] numberposx = new Matrix4[(right - left) / 1000 + 1];

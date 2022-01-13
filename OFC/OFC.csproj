@@ -14,6 +14,13 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <DefaultDocumentationGeneratedPages>Types</DefaultDocumentationGeneratedPages>
+    <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
+    <DefaultDocumentationFolder>bin\mddoc</DefaultDocumentationFolder>
+    <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
+    <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
+    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
+    <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,13 +42,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
-    <DefaultDocumentationGeneratedPages>Types</DefaultDocumentationGeneratedPages>
-    <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
-    <DefaultDocumentationFolder>bin\release\mddoc</DefaultDocumentationFolder>
-    <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
-    <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
-    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
-    <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -162,6 +162,7 @@
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexWorldColour.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
+    <Compile Include="GL4\Textures\Texture1DArray.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
     <Compile Include="GLOFC\FileHelpers.cs" />
     <Compile Include="GL\GLMatrixArray.cs" />

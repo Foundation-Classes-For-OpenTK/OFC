@@ -20,6 +20,7 @@ using GLOFC.GL4.Controls;
 using GLOFC.GL4.Operations;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;

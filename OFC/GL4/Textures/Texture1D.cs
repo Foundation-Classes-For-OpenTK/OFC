@@ -23,54 +23,48 @@ namespace GLOFC.GL4.Textures
     /// </summary>
     public class GLTexture1D : GLTextureBase
     {
+        /// <summary> Constructor </summary>
         public GLTexture1D()
         {
         }
 
-        public GLTexture1D(int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="width">Width</param>
+        /// <param name="internalformat">Internal format, see InternalFormat in Texture base class</param>
+        /// <param name="levels">Number of levels of this texture</param>
+        public GLTexture1D(int width, SizedInternalFormat internalformat, int levels = 1)
         {
-            CreateOrUpdateTexture(width, internalformat, mipmaplevel);
+            CreateOrUpdateTexture(width, internalformat, levels);
         }
 
-        public void CreateOrUpdateTexture(int width, SizedInternalFormat internalformat, int mipmaplevel = 1)
+        /// <summary>
+        /// Create or update the texture with a new size and format
+        /// </summary>
+        /// <param name="width">Width</param>
+        /// <param name="internalformat">Internal format, see InternalFormat in Texture base class</param>
+        /// <param name="levels">Number of levels of this texture</param>
+        public void CreateOrUpdateTexture(int width, SizedInternalFormat internalformat, int levels = 1)
         {
-            if (Id < 0 || Width != width || MipMapLevels != mipmaplevel)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
+            if (Id < 0 || Width != width || MipMapLevels != levels)    // if not there, or changed, we can't just replace it, size is fixed. Delete it
             {
                 if (Id >= 0)
                     Dispose();
 
                 InternalFormat = internalformat;
                 Width = width;
-                MipMapLevels = mipmaplevel;
+                Height = 1;
+                Depth = levels;
 
                 GL.CreateTextures(TextureTarget.Texture1D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture1D));
                 GLStatics.Check();
                 Id = id;
 
-                GL.TextureStorage1D(
-                    Id,
-                    mipmaplevel,    // levels of mipmapping.  If we supplied one, we use that, else we use genmipmaplevel
-                    InternalFormat,                       // format of texture - 4 floats is the normal, and is given in the constructor
-                    Width);
+                GL.TextureStorage1D( Id, levels,InternalFormat, Width);
             }
         }
-
-        public void Store(int xoffset, int width, PixelFormat px, PixelType ty, IntPtr ptr)
-        {
-            GL.TextureSubImage1D(Id, 0, xoffset, width, px, ty, ptr);
-        }
-
-        public void Store(int xoffset, int width, byte[] array, PixelFormat px = PixelFormat.Bgra)
-        {
-            GL.TextureSubImage1D(Id, 0, xoffset, width, px, PixelType.UnsignedByte, array);
-        }
-
-        public void Store(int xoffset, int width, float[] array, PixelFormat px = PixelFormat.Bgra)
-        {
-            GL.TextureSubImage1D(Id, 0, xoffset, width, px, PixelType.Float, array);
-        }
-
     }
 }
 
