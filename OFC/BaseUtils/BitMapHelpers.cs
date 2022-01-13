@@ -16,39 +16,56 @@
 using System;
 using System.Drawing;
 
-#pragma warning disable 1591
 
 namespace GLOFC.Utils
 {
+    /// <summary>
+    /// Static Class to help draw bitmaps
+    /// </summary>
     public static class BitMapHelpers
     {
-        public static void DrawTextCentreIntoBitmap(ref Bitmap img, string text, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b = null)
+        /// <summary>
+        /// Draw text centre into a bitmap already defined
+        /// </summary>
+        /// <param name="bitmap">Bitmap to draw into</param>
+        /// <param name="text">Text to draw</param>
+        /// <param name="font">Font to draw in</param>
+        /// <param name="hint">Text rendering hint to use</param>
+        /// <param name="forecolor">Fore colour</param>
+        /// <param name="backcolor">Back color. If not given, no backcolor is drawn</param>
+        public static void DrawTextCentreIntoBitmap(ref Bitmap bitmap, string text, Font font, System.Drawing.Text.TextRenderingHint hint, Color forecolor, Color? backcolor = null)
         {
-            using (Graphics bgr = Graphics.FromImage(img))
+            using (Graphics bgr = Graphics.FromImage(bitmap))
             {
                 bgr.TextRenderingHint = hint;
 
-                if ( b!=null)
+                if ( backcolor!=null)
                 {
-                    Rectangle backarea = new Rectangle(0, 0, img.Width, img.Height);
-                    using (Brush bb = new SolidBrush(b.Value))
+                    Rectangle backarea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                    using (Brush bb = new SolidBrush(backcolor.Value))
                         bgr.FillRectangle(bb, backarea);
                 }
 
-                SizeF sizef = bgr.MeasureString(text, dp);
+                SizeF sizef = bgr.MeasureString(text, font);
 
-                using (Brush textb = new SolidBrush(c))
-                    bgr.DrawString(text, dp, textb, img.Width / 2 - (int)((sizef.Width + 1) / 2), img.Height / 2 - (int)((sizef.Height + 1) / 2));
+                using (Brush textb = new SolidBrush(forecolor))
+                    bgr.DrawString(text, font, textb, bitmap.Width / 2 - (int)((sizef.Width + 1) / 2), bitmap.Height / 2 - (int)((sizef.Height + 1) / 2));
             }
         }
 
-        // if b != Transparent, a back box is drawn.
-        // bitmap never bigger than maxsize
-        // setting frmt allows you to word wrap etc into a bitmap, maximum of maxsize.  
-        // no frmt means a single line across the bitmap unless there are \n in it.
-
-        public static Bitmap DrawTextIntoAutoSizedBitmap(string text, Size maxsize, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color b,
-                                            float backscale = 1.0F, StringFormat frmt = null)
+        /// <summary>
+        /// Draw text centre into a autosized bitmap 
+        /// </summary>
+        /// <param name="text">Text to draw</param>
+        /// <param name="maxsize">Maximum size of bitmap to make</param>
+        /// <param name="font">Font to draw in</param>
+        /// <param name="hint">Text rendering hint to use</param>
+        /// <param name="forecolor">Fore colour</param>
+        /// <param name="backcolor">Back color. If transparent, no back is drawn</param>
+        /// <param name="backscale">Gradient of back</param>
+        /// <param name="textformat">Text format. Setting it allows you to word wrap etc into the bitmap. No format means a single line across the bitmap unless \n is in there </param>
+        public static Bitmap DrawTextIntoAutoSizedBitmap(string text, Size maxsize, Font font, System.Drawing.Text.TextRenderingHint hint, Color forecolor, Color backcolor,
+                                            float backscale = 1.0F, StringFormat textformat = null)
         {
             Bitmap t = new Bitmap(1, 1);
 
@@ -57,7 +74,7 @@ namespace GLOFC.Utils
                 bgr.TextRenderingHint = hint;
 
                 // if frmt, we measure the string within the maxsize bounding box.
-                SizeF sizef = (frmt != null) ? bgr.MeasureString(text, dp, maxsize, frmt) : bgr.MeasureString(text, dp);
+                SizeF sizef = (textformat != null) ? bgr.MeasureString(text, font, maxsize, textformat) : bgr.MeasureString(text, font);
                 //System.Diagnostics.Debug.WriteLine("Bit map auto size " + sizef);
 
                 int width = Math.Min((int)(sizef.Width + 1), maxsize.Width);
@@ -66,21 +83,21 @@ namespace GLOFC.Utils
 
                 using (Graphics dgr = Graphics.FromImage(img))
                 {
-                    if (!b.IsFullyTransparent() && text.Length > 0)
+                    if (!backcolor.IsFullyTransparent() && text.Length > 0)
                     {
                         Rectangle backarea = new Rectangle(0, 0, img.Width, img.Height);
-                        using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, b, b.Multiply(backscale), 90))
+                        using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, backcolor, backcolor.Multiply(backscale), 90))
                             dgr.FillRectangle(bb, backarea);
 
                         //dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;   // only worth doing this if we have filled it.. if transparent, antialias does not work
                     }
 
-                    using (Brush textb = new SolidBrush(c))
+                    using (Brush textb = new SolidBrush(forecolor))
                     {
-                        if (frmt != null)
-                            dgr.DrawString(text, dp, textb, new Rectangle(0, 0, width, height), frmt); // use the draw into rectangle with formatting function
+                        if (textformat != null)
+                            dgr.DrawString(text, font, textb, new Rectangle(0, 0, width, height), textformat); // use the draw into rectangle with formatting function
                         else
-                            dgr.DrawString(text, dp, textb, 0, 0);
+                            dgr.DrawString(text, font, textb, 0, 0);
                     }
 
                     return img;
@@ -88,37 +105,37 @@ namespace GLOFC.Utils
             }
         }
 
-        // draw into fixed sized bitmap. 
-        // centretext overrided frmt and just centres it
-        // frmt provides full options and draws text into bitmap
+        /// <summary>
+        /// Draw text centre into a bitmap 
+        /// </summary>
+        /// <param name="bitmap">Bitmap to draw into</param>
+        /// <param name="text">Text to draw</param>
+        /// <param name="font">Font to draw in</param>
+        /// <param name="hint">Text rendering hint to use</param>
+        /// <param name="forecolor">Fore colour</param>
+        /// <param name="backcolor">Back color. If transparent, no back is drawn</param>
+        /// <param name="backscale">Gradient of back</param>
+        /// <param name="centertext">If true, centre text in box. Ignore textformat</param>
+        /// <param name="textformat">Text format. Setting it allows you to word wrap etc into the bitmap. No format means a single line across the bitmap unless \n is in there </param>
+        /// <param name="angleback">Angle of gradient on back</param>
 
-        public static Bitmap DrawTextIntoFixedSizeBitmapC(string text, Size size, Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color b,
-                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null)
-        {
-            Bitmap img = new Bitmap(size.Width, size.Height);
-            Color? back = null;
-            if (!b.IsFullyTransparent())
-                back = b;
-            return DrawTextIntoFixedSizeBitmap(ref img, text, dp, hint, c, back, backscale, centertext, frmt);
-        }
-
-        public static Bitmap DrawTextIntoFixedSizeBitmap(ref Bitmap img, string text,Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
-                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90 )
+        public static Bitmap DrawTextIntoFixedSizeBitmap(ref Bitmap bitmap, string text,Font font, System.Drawing.Text.TextRenderingHint hint, Color forecolor, Color? backcolor,
+                                                    float backscale = 1.0F, bool centertext = false, StringFormat textformat = null, int angleback = 90 )
         { 
-            using (Graphics dgr = Graphics.FromImage(img))
+            using (Graphics dgr = Graphics.FromImage(bitmap))
             {
                 dgr.TextRenderingHint = hint;
 
-                if (b != null)           
+                if (backcolor != null)           
                 {
-                    if (b.Value.IsFullyTransparent())       // if transparent colour to paint in, need to fill clear it completely
+                    if (backcolor.Value.IsFullyTransparent())       // if transparent colour to paint in, need to fill clear it completely
                     {
                         dgr.Clear(Color.Transparent);
                     }
                     else
                     {
-                        Rectangle backarea = new Rectangle(0, 0, img.Width, img.Height);
-                        using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, b.Value, b.Value.Multiply(backscale), angleback))
+                        Rectangle backarea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                        using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, backcolor.Value, backcolor.Value.Multiply(backscale), angleback))
                             dgr.FillRectangle(bb, backarea);
 
                         //dgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias; // only if filled
@@ -126,28 +143,43 @@ namespace GLOFC.Utils
 
                 }
 
-                using (Brush textb = new SolidBrush(c))
+                using (Brush textb = new SolidBrush(forecolor))
                 {
                     if (centertext)
                     {
-                        SizeF sizef = dgr.MeasureString(text, dp);
+                        SizeF sizef = dgr.MeasureString(text, font);
                         int w = (int)(sizef.Width + 1);
                         int h = (int)(sizef.Height + 1);
-                        dgr.DrawString(text, dp, textb, img.Width / 2 - w / 2, img.Height / 2 - h / 2);
+                        dgr.DrawString(text, font, textb, bitmap.Width / 2 - w / 2, bitmap.Height / 2 - h / 2);
                     }
-                    else if (frmt != null)
-                        dgr.DrawString(text, dp, textb, new Rectangle(0, 0, img.Width, img.Height), frmt);
+                    else if (textformat != null)
+                        dgr.DrawString(text, font, textb, new Rectangle(0, 0, bitmap.Width, bitmap.Height), textformat);
                     else
-                        dgr.DrawString(text, dp, textb, 0, 0);
+                        dgr.DrawString(text, font, textb, 0, 0);
                 }
 
-                return img;
+                return bitmap;
             }
         }
 
+        /// <summary>
+        /// Draw text centre into a array of automatically made bitmaps
+        /// </summary>
+        /// <param name="size">Size of bitmaps</param>
+        /// <param name="text">Array with text to draw</param>
+        /// <param name="font">Font to draw in</param>
+        /// <param name="hint">Text rendering hint to use</param>
+        /// <param name="forecolor">Fore colour</param>
+        /// <param name="backcolor">Back color. If transparent, no back is drawn</param>
+        /// <param name="backscale">Gradient of back</param>
+        /// <param name="centertext">If true, centre text in box. Ignore textformat</param>
+        /// <param name="textformat">Text format. Setting it allows you to word wrap etc into the bitmap. No format means a single line across the bitmap unless \n is in there </param>
+        /// <param name="angleback">Angle of gradient on back</param>
+        /// <param name="pos">Start position in array to start from</param>
+        /// <param name="length">Number of items to take in array, or -1 means automatically work it out</param>
         public static Bitmap[] DrawTextIntoFixedSizeBitmaps(Size size, string[] text, 
-                                                    Font dp, System.Drawing.Text.TextRenderingHint hint, Color c, Color? b,
-                                                    float backscale = 1.0F, bool centertext = false, StringFormat frmt = null, int angleback = 90,
+                                                    Font font, System.Drawing.Text.TextRenderingHint hint, Color forecolor, Color? backcolor,
+                                                    float backscale = 1.0F, bool centertext = false, StringFormat textformat = null, int angleback = 90,
                                                     int pos = 0, int length = -1)
         {
             if (length == -1)
@@ -157,29 +189,35 @@ namespace GLOFC.Utils
             for( int i = 0; i < length; i++)
             {
                 bmp[i] = new Bitmap(size.Width,size.Height);
-                DrawTextIntoFixedSizeBitmap(ref bmp[i], text[i+pos], dp, hint, c, b, backscale, centertext, frmt, angleback);
+                DrawTextIntoFixedSizeBitmap(ref bmp[i], text[i+pos], font, hint, forecolor, backcolor, backscale, centertext, textformat, angleback);
             }
             return bmp;
         }
 
+        /// <summary> Dispose of an array of bitmaps </summary>
         public static void Dispose(Bitmap[] array)
         {
             foreach (var x in array)
                 x.Dispose();
         }
 
-        public static void FillBitmap(Bitmap img, Color c, float backscale = 1.0F)
+        /// <summary>
+        /// Fill a bitmap with a colour
+        /// </summary>
+        /// <param name="bitmap">Bitmap to fill</param>
+        /// <param name="color">Fore colour</param>
+        /// <param name="backscale">Gradient of back</param>
+        public static void FillBitmap(Bitmap bitmap, Color color, float backscale = 1.0F)
         {
-            using (Graphics dgr = Graphics.FromImage(img))
+            using (Graphics dgr = Graphics.FromImage(bitmap))
             {
-                Rectangle backarea = new Rectangle(0, 0, img.Width, img.Height);
-                using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, c, c.Multiply(backscale), 90))
+                Rectangle backarea = new Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                using (Brush bb = new System.Drawing.Drawing2D.LinearGradientBrush(backarea, color, color.Multiply(backscale), 90))
                     dgr.FillRectangle(bb, backarea);
             }
         }
 
-        // convert BMP to another format and return the bytes of that format
-
+        /// <summary> Convert BMP to another format and return the bytes of that format </summary> 
         public static byte[] ConvertTo(this Bitmap bmp, System.Drawing.Imaging.ImageFormat fmt)
         {
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
@@ -188,14 +226,29 @@ namespace GLOFC.Utils
             return f;
         }
 
-        // not the quickest way in the world, but not supposed to do this at run time
-        // can disable a channel, or get a brightness.  If avg granulatity set, you can average over a wider area than the granularity for more smoothing
-
+        /// <summary> Function select </summary>
         public enum BitmapFunction
         {
+            /// <summary> Average bitmap </summary>
             Average,
+            /// <summary> Heatmap of bitmap </summary>
             HeatMap,
         };
+        /// <summary>
+        /// Perform a function and return info on the bitmap
+        /// </summary>
+        /// <param name="bmp">Bitmap</param>
+        /// <param name="granularityx">X granularity</param>
+        /// <param name="granularityy">Y granularity</param>
+        /// <param name="avggranulatityx">Average X granularity. If avg granulatity set, you can average over a wider area than the granularity for more smoothing</param>
+        /// <param name="avggranulatityy">Average Y granularity</param>
+        /// <param name="mode">Function mode, see enum</param>
+        /// <param name="enablered">Enable red channel</param>
+        /// <param name="enablegreen">Enable green channel</param>
+        /// <param name="enableblue">Enable bule channel</param>
+        /// <param name="flipx">Flip X coord in results</param>
+        /// <param name="flipy">Flip y coord in results</param>
+        /// <returns>Bitmap with results of function</returns>
 
         public static Bitmap Function(this Bitmap bmp, int granularityx, int granularityy, int avggranulatityx = 0, int avggranulatityy = 0, BitmapFunction mode = BitmapFunction.Average, 
                         bool enablered = true, bool enablegreen = true, bool enableblue = true, 
@@ -272,7 +325,15 @@ namespace GLOFC.Utils
             return newbmp;
         }
 
-        public static SizeF MeasureStringInBitmap(string text, Font f, StringFormat fmt, Size? measurementbox = null)
+        /// <summary>
+        /// Measure string in bitmap
+        /// </summary>
+        /// <param name="text">Text</param>
+        /// <param name="font">Font</param>
+        /// <param name="textformat">String format</param>
+        /// <param name="measurementbox">If given, maximum size of text box</param>
+        /// <returns></returns>
+        public static SizeF MeasureStringInBitmap(string text, Font font, StringFormat textformat, Size? measurementbox = null)
         {
             using (Bitmap t = new Bitmap(1, 1))
             {
@@ -281,22 +342,34 @@ namespace GLOFC.Utils
                     if (measurementbox == null)
                         measurementbox = new Size(20000, 20000);
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-                    return g.MeasureString(text, f, measurementbox.Value, fmt);
+                    return g.MeasureString(text, font, measurementbox.Value, textformat);
                 }
             }
         }
 
-        public static SizeF MeasureStringInBitmap(string text, Font f, Size? measurementbox = null)      // standard format - near/near/nowrap
+        /// <summary>
+        /// Measure a string using standard string format (Near/NoWrap)
+        /// </summary>
+        /// <param name="text">Text</param>
+        /// <param name="font">Font</param>
+        /// <param name="measurementbox"></param>
+        /// <returns></returns>
+        public static SizeF MeasureStringInBitmap(string text, Font font, Size? measurementbox = null)      // standard format - near/near/nowrap
         {
             using (var pfmt = new StringFormat())
             {
                 pfmt.Alignment = StringAlignment.Near;
                 pfmt.LineAlignment = StringAlignment.Near;
                 pfmt.FormatFlags = StringFormatFlags.NoWrap;
-                return MeasureStringInBitmap(text, f, pfmt, measurementbox);
+                return MeasureStringInBitmap(text, font, pfmt, measurementbox);
             }
         }
 
+        /// <summary>
+        /// Get bitmap into byte array
+        /// </summary>
+        /// <param name="bmp">Bitmap</param>
+        /// <returns>byte array with ARGB bytes for each pixel. Stored in order blue,green,red,alpha</returns>
         public static byte[] GetARGBBytes(this Bitmap bmp)
         {
             System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),
@@ -310,6 +383,13 @@ namespace GLOFC.Utils
             return destbytes;
         }
 
+        /// <summary>
+        /// Create bitmap from ARGB Bytes
+        /// </summary>
+        /// <param name="width">Width</param>
+        /// <param name="height">Height</param>
+        /// <param name="argb">byte array with ARGB ordered bytes. Stored in order blue,green,red,alpha</param>
+        /// <returns>Bitmap</returns>
         public static Bitmap CreateBitmapFromARGBBytes(int width , int height, byte[] argb)
         {
             Bitmap b = new Bitmap(width,height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -325,6 +405,11 @@ namespace GLOFC.Utils
             return b;
         }
 
+        /// <summary>
+        /// Dump bitmap to debug stream
+        /// </summary>
+        /// <param name="bmp">Bitmap</param>
+        /// <param name="maxy">Maximum Y to go to</param>
         public static void DumpBitmap(this Bitmap bmp, int maxy = int.MaxValue)
         {
             System.Drawing.Imaging.BitmapData bmpdata = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height),

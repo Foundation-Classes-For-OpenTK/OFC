@@ -28,6 +28,10 @@ namespace GLOFC.GL4.Operations
             GLStatics.ClearDepthBuffer();
         }
     }
+
+    /// <summary>
+    /// Clear stencil buffer
+    /// </summary>
     public class GLOperationClearStencilBuffer : GLOperationsBase
     {
         /// <summary> Called by render list and executes the operation </summary>
@@ -36,6 +40,9 @@ namespace GLOFC.GL4.Operations
             GLStatics.ClearStencilBuffer();
         }
     }
+    /// <summary>
+    /// Clear one or more buffers
+    /// </summary>
     public class GLOperationClearBuffer : GLOperationsBase
     {
         private ClearBufferMask mask;

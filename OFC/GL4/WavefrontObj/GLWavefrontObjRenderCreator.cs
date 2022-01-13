@@ -22,31 +22,47 @@ using System.Drawing;
 
 #pragma warning disable 1591
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Wavefront
 {
-    // class takes a list of waveform objects, and creates shaders/renderable items to represent them, adding them
-    // to the GLItemsList and GLRenderProgramSortedList.
+    /// <summary>
+    /// These classes handle taking wavefront objects and generating GL4 renders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
+    /// This class takes a list of waveform objects, and creates shaders/renderable items to represent them, adding them
+    /// to the GLItemsList and GLRenderProgramSortedList.
+    /// </summary>
 
     public class GLWavefrontObjCreator
     {
+        /// <summary> Default colour to use </summary>
         public Color DefaultColor { get; set; } = Color.Transparent;
 
-        private GLItemsList items;
-        private GLRenderProgramSortedList rlist;
-        private GLUniformColorShaderObjectTranslation shadercolor = null;
-        private GLTexturedShaderObjectTranslation shadertexture = null;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="itemlist">Item list to store object onto</param>
+        /// <param name="renderlist">Render list to add renders to</param>
 
-        // give the item store and the render list to add to.
-
-        public GLWavefrontObjCreator(GLItemsList itemsp, GLRenderProgramSortedList rlistp)
+        public GLWavefrontObjCreator(GLItemsList itemlist, GLRenderProgramSortedList renderlist)
         {
-            items = itemsp;
-            rlist = rlistp;
+            items = itemlist;
+            rlist = renderlist;
         }
 
-        // may use multiple creates on the same GLWaveFormObjCreater object
+        /// <summary>
+        /// Create from waveform objects items to paint
+        /// May use multiple creates on the same GLWaveFormObject object
+        /// Ignore objects without materials or vertexes
+        /// </summary>
+        /// <param name="objects">List of waveform objects</param>
+        /// <param name="worldpos">World position to offset objects to </param>
+        /// <param name="rotationradians">Rotation to apply </param>
+        /// <param name="scale">Scaling of objects</param>
+        /// <returns>true if successfully created, else false if a material is not found</returns>
 
-        public bool Create(List<GLWaveformObject> objects, Vector3 worldpos, Vector3 rotp, float scale = 1.0f)      
+        public bool Create(List<GLWaveformObject> objects, Vector3 worldpos, Vector3 rotationradians, float scale = 1.0f)      
         {
             if (objects == null)
                 return false;
@@ -67,7 +83,7 @@ namespace GLOFC.GL4
 
                     bool textured = obj.Indices.TextureIndices.Count > 0;
 
-                    string name = obj.Objectname != null ? obj.Objectname : obj.Groupname;  // name to use for texture/colour
+                    string name = obj.ObjectName != null ? obj.ObjectName : obj.GroupName;  // name to use for texture/colour
 
                     if (textured)       // using textures need texture indicies
                     {
@@ -82,10 +98,10 @@ namespace GLOFC.GL4
                             items.Add(shadertexture);
                         }
 
-                        obj.Indices.RefactorVertexIndiciesIntoTriangles();
+                        obj.Indices.RefactorVertexIndicesIntoTriangles();
 
                         var ri = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rts, vert, vert.Positions[0], vert.Positions[1], 0,
-                                new GLRenderDataTranslationRotationTexture(tex, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
+                                new GLRenderDataTranslationRotationTexture(tex, worldpos, rotationradians, scale));           // renderable item pointing to vert for vertexes
 
                         ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
 
@@ -110,9 +126,9 @@ namespace GLOFC.GL4
                             items.Add(shadercolor);
                         }
 
-                        obj.Indices.RefactorVertexIndiciesIntoTriangles();
+                        obj.Indices.RefactorVertexIndicesIntoTriangles();
 
-                        var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.Triangles, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(c, worldpos, rotp, scale));           // renderable item pointing to vert for vertexes
+                        var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.Triangles, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(c, worldpos, rotationradians, scale));           // renderable item pointing to vert for vertexes
                         ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
 
                         rlist.Add(shadercolor, name, ri);
@@ -124,5 +140,11 @@ namespace GLOFC.GL4
 
             return okay;
         }
+
+        private GLItemsList items;
+        private GLRenderProgramSortedList rlist;
+        private GLUniformColorShaderObjectTranslation shadercolor = null;
+        private GLTexturedShaderObjectTranslation shadertexture = null;
+
     }
 }

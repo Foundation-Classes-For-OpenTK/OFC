@@ -164,7 +164,6 @@
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
     <Compile Include="GL4\Textures\Texture1DArray.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
-    <Compile Include="GLOFC\FileHelpers.cs" />
     <Compile Include="GL\GLMatrixArray.cs" />
     <Compile Include="GL\GLMatrixString.cs" />
     <Compile Include="GL\GLMatrix4Statics.cs" />

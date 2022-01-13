@@ -16,34 +16,42 @@ using OpenTK;
 using System.Collections.Generic;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace GLOFC
 {
+    /// <summary>
+    /// Class holds a mesh consisting of vertices, texture vertices, Normals
+    /// </summary>
     public class GLMeshVertices     // Vertex store for verts, normals, textures
     {
+        /// <summary> List of vertices</summary>
         public List<Vector4> Vertices { get; set; }
 
+        /// <summary> List of texture vertices </summary>
         public List<Vector3> TextureVertices { get; set; }
+        /// <summary> List of texture vertices Vector2 </summary>
         public List<Vector2> TextureVertices2 { get { return TextureVertices.Select(x => new Vector2(x.X, x.Y)).ToList(); } }
+        /// <summary> Array of texture vertices Vector2 </summary>
         public Vector2[] TextureVertices2Array { get { return TextureVertices.Select(x => new Vector2(x.X, x.Y)).ToArray(); } }
 
+        /// <summary> List of normals </summary>
         public List<Vector3> Normals { get; set; }
 
-        public GLMeshVertices(List<Vector4> verts, List<Vector3> texvert, List<Vector3> norms,
-                        List<uint> vertindex, List<uint> texindex, List<uint> normindex)
+        /// <summary>
+        /// Construct a vertices list from data
+        /// </summary>
+        /// <param name="verts">List of vertices</param>
+        /// <param name="texvert">List of textures Vertexes</param>
+        /// <param name="norms">List of normals</param>
+        public GLMeshVertices(List<Vector4> verts, List<Vector3> texvert, List<Vector3> norms)
+                        
         {
             Vertices = verts;
             TextureVertices = texvert;
             Normals = norms;
         }
 
+        /// <summary> Empty Constructor </summary>
         public GLMeshVertices()
-        {
-            Create();
-        }
-
-        public void Create()
         {
             Vertices = new List<Vector4>();
             TextureVertices = new List<Vector3>();
@@ -51,36 +59,44 @@ namespace GLOFC
         }
     }
 
+    /// <summary>
+    /// Class holds a list of Mesh Indices for Vertex, Textures and Normals
+    /// </summary>
+
     public class GLMeshIndices // indices store for vertex, normals, textures
     {
+        /// <summary> List of vertex indices </summary>
         public List<uint> VertexIndices { get; set; }
+        /// <summary> Vertex indices as an array </summary>
         public uint[] VertexIndicesArray { get { return VertexIndices.ToArray(); } }
+        /// <summary> List of texture indices </summary>
         public List<uint> TextureIndices { get; set; }
+        /// <summary> List of normal indices  </summary>
         public List<uint> NormalIndices { get; set; }
 
-        public GLMeshIndices(List<Vector4> verts, List<Vector3> texvert, List<Vector3> norms,
-                        List<uint> vertindex, List<uint> texindex, List<uint> normindex)
+        /// <summary>
+        /// Construct from a list of indices for vertex, texture and normals
+        /// </summary>
+        /// <param name="vertindex"></param>
+        /// <param name="texindex"></param>
+        /// <param name="normindex"></param>
+        public GLMeshIndices(List<uint> vertindex, List<uint> texindex, List<uint> normindex)
         {
             VertexIndices = vertindex;
             TextureIndices = texindex;
             NormalIndices = normindex;
         }
 
+        /// <summary> Empty Constructor </summary>
         public GLMeshIndices()
-        {
-            Create();
-        }
-
-        public void Create()
         {
             VertexIndices = new List<uint>();
             TextureIndices = new List<uint>();
             NormalIndices = new List<uint>();
         }
 
-        // adjust polygons into triangles
-
-        public void RefactorVertexIndiciesIntoTriangles(bool ccw = true)
+        /// <summary> Refactor the indices into triangles, wound either CCW or CW </summary>
+        public void RefactorVertexIndicesIntoTriangles(bool ccw = true)
         {
             var newVertexIndices = new List<uint>();
             var newTextureIndices = new List<uint>();
@@ -120,9 +136,14 @@ namespace GLOFC
 
     }
 
+    /// <summary>
+    /// Class holds a Mesh, consisting of vertices and indices
+    /// </summary>
     public class GLMesh
     {
+        /// <summary> Vertices of the mesh </summary>
         public GLMeshVertices Vertices;
+        /// <summary> Indices of the mesh </summary>
         public GLMeshIndices Indices;
     }
 }

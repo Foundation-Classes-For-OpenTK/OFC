@@ -20,7 +20,6 @@ namespace GLOFC
 {
     /// <summary>
     /// Matrix 4 helpers
-    /// 
     /// </summary>
     public static class GLStaticsMatrix4
     {

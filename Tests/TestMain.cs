@@ -31,6 +31,7 @@ using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Operations;
 using GLOFC.GL4.ShapeFactory;
 using GLOFC.GL4.Textures;
+using GLOFC.GL4.Wavefront;
 
 namespace TestOpenTk
 {
@@ -737,7 +738,7 @@ namespace TestOpenTk
                     {
                         if (obj.Indices.VertexIndices.Count > 0)
                         {
-                            obj.Indices.RefactorVertexIndiciesIntoTriangles();
+                            obj.Indices.RefactorVertexIndicesIntoTriangles();
 
                             var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.Triangles, rts, vert, 0, 0, new GLRenderDataTranslationRotationColor(Color.FromName(obj.Material), new Vector3(20, 0, -20), scale: 2f));           // renderable item pointing to vert for vertexes
                             ri.CreateElementIndex(items.NewBuffer(), obj.Indices.VertexIndices.ToArray(), 0);       // using the refactored indexes, create an index table and use
@@ -767,7 +768,7 @@ namespace TestOpenTk
 
                     foreach (var obj in objlist)
                     {
-                        obj.Indices.RefactorVertexIndiciesIntoTriangles();
+                        obj.Indices.RefactorVertexIndicesIntoTriangles();
 
                         IGLTexture tex = items.Tex(obj.Material);
 
