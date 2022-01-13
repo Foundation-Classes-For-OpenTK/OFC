@@ -178,7 +178,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private void TimeOut(Timers.Timer t, long timeout)
+        private void TimeOut(PolledTimer t, long timeout)
         {
             if (!Visible && mouseover != null )
             {
@@ -187,7 +187,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private GLOFC.Timers.Timer timer = new Timers.Timer();
+        private PolledTimer timer = new PolledTimer();
         private Point entryloc;
         private Point showloc;
         private GLBaseControl mouseover = null;

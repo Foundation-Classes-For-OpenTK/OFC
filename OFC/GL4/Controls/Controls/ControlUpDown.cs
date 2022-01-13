@@ -168,12 +168,12 @@ namespace GLOFC.GL4.Controls
             Clicked?.Invoke(this,dir);
         }
 
-        private void RepeatClick(Timers.Timer t, long timeout)
+        private void RepeatClick(PolledTimer t, long timeout)
         {
             OnClicked(repeatdir);
         }
 
-        private void AmiTick(Timers.Timer t, long timeout)
+        private void AmiTick(PolledTimer t, long timeout)
         {
             //System.Diagnostics.Debug.WriteLine("Ami stop");
             Invalidate();       // make it repaint without it being amimated
@@ -206,8 +206,8 @@ namespace GLOFC.GL4.Controls
 
 
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
-        private GLOFC.Timers.Timer repeattimer = new Timers.Timer();
-        private GLOFC.Timers.Timer amitimer = new Timers.Timer();
+        private PolledTimer repeattimer = new PolledTimer();
+        private PolledTimer amitimer = new PolledTimer();
         private int repeatdir;
         private bool mouseoverbottom;
     }

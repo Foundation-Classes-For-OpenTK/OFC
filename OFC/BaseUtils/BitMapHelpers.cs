@@ -20,6 +20,11 @@ using System.Drawing;
 namespace GLOFC.Utils
 {
     /// <summary>
+    /// Set of utilities for use by OFC and exposed for use by implementors
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
     /// Static Class to help draw bitmaps
     /// </summary>
     public static class BitMapHelpers

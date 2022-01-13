@@ -27,6 +27,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -295,7 +296,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            GLOFC.Timers.Timer.ProcessTimers();
+            PolledTimer.ProcessTimers();
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
@@ -304,7 +305,7 @@ namespace TestOpenTk
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 

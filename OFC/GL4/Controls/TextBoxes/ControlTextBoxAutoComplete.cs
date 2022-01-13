@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -101,7 +102,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private void InitialDelayOver(GLOFC.Timers.Timer t, long tick)
+        private void InitialDelayOver(PolledTimer t, long tick)
         {
             executingautocomplete = true;
             ThreadAutoComplete = new System.Threading.Thread(new System.Threading.ThreadStart(AutoComplete));
@@ -139,14 +140,14 @@ namespace GLOFC.GL4.Controls
             triggercomplete.FireNow();  // fire it immediately.  Next timer call around will trigger in correct thread.  This is thread safe.
         }
 
-        private void AutoCompleteInUI(GLOFC.Timers.Timer t, long tick)      // in UI thread, fired by autocompleteinui timer
+        private void AutoCompleteInUI(PolledTimer t, long tick)      // in UI thread, fired by autocompleteinui timer
         {
             System.Diagnostics.Debug.WriteLine("{0} Perform in UI ", tick);
             PerformAutoCompleteInUIThread.Invoke(string.Copy(autocompletestring), this, autocompletestrings);        // we know its not null
             AutocompleteUIDone.Set();
         }
             
-        private void AutoCompleteFinished(GLOFC.Timers.Timer t, long tick)        // in UI thread
+        private void AutoCompleteFinished(PolledTimer t, long tick)        // in UI thread
         {
             System.Diagnostics.Debug.WriteLine("{0} Auto Complete finished", tick);
 
@@ -220,10 +221,10 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private GLOFC.Timers.Timer waitforautotimer = new Timers.Timer();
-        private GLOFC.Timers.Timer autocompleteinuitimer = new Timers.Timer();
+        private PolledTimer waitforautotimer = new PolledTimer();
+        private PolledTimer autocompleteinuitimer = new PolledTimer();
         private AutoResetEvent AutocompleteUIDone = new AutoResetEvent(false);
-        private GLOFC.Timers.Timer triggercomplete = new Timers.Timer();
+        private PolledTimer triggercomplete = new PolledTimer();
         private string autocompletestring;
         private bool executingautocomplete = false;
         private bool restartautocomplete = false;

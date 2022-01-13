@@ -444,7 +444,7 @@ namespace GLOFC.GL4.Controls
             mousehovered = -1;
         }
 
-        public void Timeout(GLOFC.Timers.Timer t, long tick)
+        public void Timeout(PolledTimer t, long tick)
         {
             Select(mousehovered,FlowDirection==ControlFlowDirection.Right);        // if we are a flow right menu, focus changes to below
         }
@@ -522,7 +522,7 @@ namespace GLOFC.GL4.Controls
         private GLMenuStrip submenu = null;     // submenu which is opened
         private GLMenuStrip parentmenu = null;  // parent menu, null for top level menu
 
-        private GLOFC.Timers.Timer timer = new Timers.Timer();
+        private PolledTimer timer = new PolledTimer();
 
         private bool openedascontextmenu = false;
     }

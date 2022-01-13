@@ -181,11 +181,31 @@ namespace GLOFC
     /// </summary>
     public interface GLWindowControl
     {
+        // Gets
+
+        /// <summary> Get screen rectangle of gl window </summary>
+        Rectangle GLWindowControlScreenRectangle { get; }
+        /// <summary> Get mouse position in gl window </summary>
+        Point MousePosition { get; }
+        /// <summary> Get mouse screen position taking into consideration the viewport/scaling etc</summary>
+        Point MouseWindowPosition { get; }
+        /// <summary> Screen width </summary>
+        int Width { get; }
+        /// <summary> Screen height</summary>
+        int Height { get; }
+        /// <summary> Screen size</summary>
+        Size Size { get; }
+        /// <summary> Is GL window focused? </summary>
+        bool Focused { get; }
+        /// <summary> Is context current to opengl </summary>
+        bool IsCurrent();
+
+
         /// <summary> Resize call back </summary>
         Action<Object> Resize { get; set; }
-        /// <summary> Paint call back </summary>
+        /// <summary> Paint call back. ulong is elapsed time in ms </summary>
         Action<Object,ulong> Paint { get; set; }
-        /// <summary> Mouse down call back </summary>
+        /// <summary>Mouse down call back </summary>
         Action<Object, GLMouseEventArgs> MouseDown { get; set; }
         /// <summary>Mouse up call back </summary>
         Action<Object, GLMouseEventArgs> MouseUp { get; set; }
@@ -209,26 +229,11 @@ namespace GLOFC
         Action<Object, GLKeyEventArgs> KeyPress { get; set; }
         /// <summary> </summary>
 
+
         /// <summary> Make sure current context associated with this instance is selected by opengl </summary>
         void EnsureCurrentContext();
-        /// <summary> Is context current to opengl </summary>
-        bool IsCurrent();
         /// <summary> Invalidate window </summary>
         void Invalidate();
-        /// <summary> Get screen rectangle of gl window </summary>
-        Rectangle GLWindowControlScreenRectangle { get; }
-        /// <summary> Get mouse position in gl window </summary>
-        Point MousePosition { get; }
-        /// <summary> Get mouse screen position taking into consideration the viewport/scaling etc</summary>
-        Point MouseWindowPosition { get; }
-        /// <summary> Screen width </summary>
-        int Width { get; }
-        /// <summary> Screen height</summary>
-        int Height { get; }
-        /// <summary> Screen size</summary>
-        Size Size { get; }
-        /// <summary> Is GL window focused? </summary>
-        bool Focused { get; }
         /// <summary> Set the cursor type</summary>
         void SetCursor(GLCursorType t);
         /// <summary> Get elapsed time of run </summary>

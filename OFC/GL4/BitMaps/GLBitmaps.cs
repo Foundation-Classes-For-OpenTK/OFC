@@ -270,7 +270,7 @@ namespace GLOFC.GL4.Bitmaps
             private GLTexture2DArray texture;
         }
 
-        protected GLSetOfMatrixBufferWithGenerations matrixbuffers;
+        private GLSetOfMatrixBufferWithGenerations matrixbuffers;
 
         private Size bitmapsize;
         private int texmipmaplevels;

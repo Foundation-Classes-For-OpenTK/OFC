@@ -797,7 +797,7 @@ namespace GLOFC.GL4.Controls
             cursorshowing = true;
         }
 
-        private void CursorTick(GLOFC.Timers.Timer t, long tick)
+        private void CursorTick(PolledTimer t, long tick)
         {
             cursorshowing = !cursorshowing;
             Invalidate();
@@ -1339,7 +1339,7 @@ namespace GLOFC.GL4.Controls
 
         private bool cursorshowing = true;  // is cursor currently showing
 
-        private GLOFC.Timers.Timer cursortimer = new Timers.Timer();
+        private PolledTimer cursortimer = new PolledTimer();
 
         private GLScrollBar vertscroller;
         private GLScrollBar horzscroller;

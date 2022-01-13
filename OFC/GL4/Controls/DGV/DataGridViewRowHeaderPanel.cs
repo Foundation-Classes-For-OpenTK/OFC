@@ -12,7 +12,6 @@
  * governing permissions and limitations under the License.
  */
 
-using GLOFC.Timers;
 using GLOFC.Utils;
 using System;
 using System.Drawing;
@@ -291,7 +290,7 @@ namespace GLOFC.GL4.Controls
         private int dragging = -1;              // grid nos
         private int draggingstart = -1;         // Y start
 
-        Timer autoscroll = new Timer();
+        PolledTimer autoscroll = new PolledTimer();
         Point lastmousemove;
         private int selectionstart = -1;        // real row numbers
         private int lastselectionstart = -1; 

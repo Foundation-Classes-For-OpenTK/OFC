@@ -12,7 +12,6 @@
  * governing permissions and limitations under the License.
  */
 
-using GLOFC.Timers;
 using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
@@ -640,7 +639,7 @@ namespace GLOFC.GL4.Controls
 
         private GLDataGridViewRowHeaderPanel rowheaderpanel;
 
-        Timer autoscroll = new Timer();
+        PolledTimer autoscroll = new PolledTimer();
         private Point lastmousemove;
         private GLDataGridView.RowColPos selectionstart;                 // real row numbers
         private GLDataGridView.RowColPos lastselectionstart;
