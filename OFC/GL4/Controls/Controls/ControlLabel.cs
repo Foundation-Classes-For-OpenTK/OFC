@@ -75,7 +75,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected override void TextValueChanged()      // called by upper class to say i've changed the text.
+        private protected override void TextValueChanged()      // called by upper class to say i've changed the text.
         {
             Invalidate();
         }

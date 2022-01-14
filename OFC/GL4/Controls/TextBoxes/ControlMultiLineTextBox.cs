@@ -673,7 +673,7 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Max line length " + MaxLineLength);
         }
 
-        protected override void TextValueChanged()      // called by upper class to say i've changed the text.
+        private protected override void TextValueChanged()      // called by upper class to say i've changed the text.
         {
             displaystartx = 0;
             SetCursorPos(Text.Length);          // will set to end, cause Calculate and FInish

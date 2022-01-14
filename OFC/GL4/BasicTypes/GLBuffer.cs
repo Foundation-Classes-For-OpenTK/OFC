@@ -397,7 +397,7 @@ namespace GLOFC.GL4
 
         #region Map Read/Write Common
 
-        private enum MapMode { None, Write, Read};
+        private enum MapMode { None, Write, Read };
         private MapMode mapmode = MapMode.None;
         
         /// <summary> Allocate and start write on buffer </summary>

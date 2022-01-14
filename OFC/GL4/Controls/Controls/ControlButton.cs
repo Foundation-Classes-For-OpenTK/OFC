@@ -15,17 +15,19 @@
 using System;
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
-    // a button type control
-
+    /// <summary>
+    /// Button control
+    /// </summary>
     public class GLButton : GLButtonTextBase
     {
+        /// <summary> Callback when button is clicked </summary>
         public Action<GLBaseControl, GLMouseEventArgs> Click { get; set; } = null;
+        /// <summary> Callback when return is pressed </summary>
         public Action<GLBaseControl> Return { get; set; } = null;
 
+        /// <summary> Construct with name and bounds</summary>
         public GLButton(string name, Rectangle location) : base(name, location)
         {
             SetNI(padding: new Padding(1), borderwidth: 1);
@@ -35,11 +37,13 @@ namespace GLOFC.GL4.Controls
             InvalidateOnFocusChange = true;
         }
 
+        /// <summary> Construct with name, bounds and text </summary>
         public GLButton(string name, Rectangle location, string text) : this(name, location)
         {
             TextNI = text;
         }
 
+        /// <summary> Construct with name, bounds, image and stretch </summary>
         public GLButton(string name, Rectangle location, Image img, bool stretch) : this(name, location)
         {
             TextNI = "";
@@ -47,10 +51,12 @@ namespace GLOFC.GL4.Controls
             ImageStretch = stretch;
         }
 
+        /// <summary> Empty Constructor </summary>
         public GLButton() : this("But?", DefaultWindowRectangle, "")
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -58,6 +64,7 @@ namespace GLOFC.GL4.Controls
                 ButtonAutoSize(new Size(0,0));
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             if (ClientWidth < 1 || ClientHeight<1)
@@ -66,6 +73,7 @@ namespace GLOFC.GL4.Controls
             PaintButtonTextImageFocus(ClientRectangle, gr,true);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -73,11 +81,13 @@ namespace GLOFC.GL4.Controls
                 OnClick(e);
         }
 
+        /// <summary> Call to perform Click functionality  </summary>
         public virtual void OnClick(GLMouseEventArgs e)
         {
             Click?.Invoke(this, e);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyPress(GLKeyEventArgs)"/>
         protected override void OnKeyPress(GLKeyEventArgs e)
         {
             if ( e.KeyChar == 13 )
@@ -86,6 +96,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <summary> Call to perform Return functionality  </summary>
         public virtual void OnReturn()
         {
             Return?.Invoke(this);

@@ -16,23 +16,36 @@ using GLOFC.Utils;
 using System;
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Image Base class
+    /// </summary>
     public abstract class GLImageBase : GLBaseControl
     {
+        /// <summary> Image to display </summary>
         public Image Image { get { return image; } set { image = value; Invalidate(); } }
+        /// <summary> If to stretch the image to the control size </summary>
         public bool ImageStretch { get { return imagestretch; } set { imagestretch = value; Invalidate(); } }
+        /// <summary> Image align within control </summary>
         public System.Drawing.ContentAlignment ImageAlign { get { return imagealign; } set { imagealign = value; Invalidate(); } }
 
+        /// <summary> Create an image with this name and bounds </summary>
         public GLImageBase(string name, Rectangle window) : base(name, window)
         {
         }
 
+        /// <summary> What colour brightness scaling to apply to back color if the control is disabled </summary>
         public float BackDisabledScaling { get { return backDisabledScaling; } set { if (backDisabledScaling != value) { backDisabledScaling = value; Invalidate(); } } }
+        /// <summary> What colour brightness scaling to apply to fore color if the control is disabled</summary>
         public float ForeDisabledScaling { get { return foreDisabledScaling; } set { if (foreDisabledScaling != value) { foreDisabledScaling = value; Invalidate(); } } }
 
+        /// <summary>
+        /// Set up a remap of color
+        /// </summary>
+        /// <param name="remap">ColorMap structure for remapping</param>
+        /// <param name="colormatrix">Color remap matrix</param>
+        /// <param name="disabledscaling">Disabled scaling</param>
         public void SetDrawnBitmapRemapTable(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null, float disabledscaling = 0.5f)
         {
             if (remap == null)
@@ -51,10 +64,10 @@ namespace GLOFC.GL4.Controls
         private float backDisabledScaling = 0.75F;
         private float foreDisabledScaling = 0.50F;
 
-        protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesEnabled = null;         // Image override (colour etc) for background when using Image while Enabled.
-        protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesDisabled = null;        // Image override (colour etc) for background when using Image while !Enabled.
+        private protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesEnabled = null;         // Image override (colour etc) for background when using Image while Enabled.
+        private protected System.Drawing.Imaging.ImageAttributes drawnImageAttributesDisabled = null;        // Image override (colour etc) for background when using Image while !Enabled.
 
-        protected void DrawImage(Image image, Rectangle box, Graphics g, System.Drawing.Imaging.ImageAttributes imgattr )
+        private protected void DrawImage(Image image, Rectangle box, Graphics g, System.Drawing.Imaging.ImageAttributes imgattr )
         {
             Size isize = ImageStretch ? box.Size : image.Size;
             Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize, true, true);
@@ -65,6 +78,7 @@ namespace GLOFC.GL4.Controls
                 g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
         }
 
+        /// <summary> Dispose of control </summary>
         public override void Dispose()
         {
             base.Dispose();
@@ -73,18 +87,30 @@ namespace GLOFC.GL4.Controls
         }
     }
 
+    /// <summary>
+    /// A Image control
+    /// </summary>
     public class GLImage : GLImageBase
     {
-        public GLImage(string name, Rectangle location, Bitmap bmp, Color? backcolour = null) : base(name,location)
+        /// <summary>
+        /// Create an image control
+        /// </summary>
+        /// <param name="name">Control name</param>
+        /// <param name="location">Bounds of control</param>
+        /// <param name="img">The image</param>
+        /// <param name="backcolour">Optional Back colour for control</param>
+        public GLImage(string name, Rectangle location, Image img, Color? backcolour = null) : base(name,location)
         {
-            BackColor = backcolour.HasValue ? backcolour.Value: Color.Transparent;
-            Image = bmp;
+            BackColorNI = backcolour.HasValue ? backcolour.Value: Color.Transparent;
+            Image = img;
         }
 
+        /// <summary> Empty COnstructor </summary>
         public GLImage() : this("I?",DefaultWindowRectangle,null)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -95,6 +121,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             base.DrawImage(Image, ClientRectangle, gr, (Enabled) ? drawnImageAttributesEnabled : drawnImageAttributesDisabled);

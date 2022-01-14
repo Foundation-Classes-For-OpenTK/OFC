@@ -162,7 +162,7 @@ namespace GLOFC.GL4.Controls
         // overriden by display control to pick a better method to just relayout the relevant child
         // normally we don't care about which child caused it
         // go thru this function - don't every call invalidate then performlayout as it won't be properly overriden otherwise !
-        protected virtual void InvalidateLayout(GLBaseControl child)
+        private protected virtual void InvalidateLayout(GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
             Invalidate();

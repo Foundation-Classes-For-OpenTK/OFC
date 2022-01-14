@@ -15,57 +15,78 @@
 using GLOFC.Utils;
 using System;
 using System.Drawing;
-using System.Linq;
-
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Base class for buttons and checkboxes
+    /// </summary>
     public abstract class GLButtonBase : GLImageBase
     {
+        /// <summary> Fore color </summary>
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
+        /// <summary> Button face color </summary>
         public Color ButtonFaceColour { get { return buttonFaceColor; } set { buttonFaceColor = value; Invalidate(); } }    // of button
+        /// <summary> Mouse over color for face </summary>
         public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        /// <summary> Mouse down color for face </summary>
         public Color MouseDownColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
+        /// <summary> Face gradient scaling </summary>
         public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
+        /// <summary> Show focus box when focused </summary>
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
 
-        public GLButtonBase(string name, Rectangle window) : base(name, window)
+        private protected GLButtonBase(string name, Rectangle window) : base(name, window)
         {
             InvalidateOnEnterLeave = true;
             InvalidateOnMouseDownUp = true;
         }
 
-        protected Color buttonFaceColor { get; set; } = DefaultButtonFaceColor;
-        protected Color mouseOverColor { get; set; } = DefaultMouseOverButtonColor;
-        protected Color mouseDownColor { get; set; } = DefaultMouseDownButtonColor;
-        protected Color foreColor { get; set; } = DefaultButtonForeColor;
-        protected float faceColorScaling = 0.5F;
-        protected bool showfocusbox = true;
+        private protected Color buttonFaceColor { get; set; } = DefaultButtonFaceColor;
+        private protected Color mouseOverColor { get; set; } = DefaultMouseOverButtonColor;
+        private protected Color mouseDownColor { get; set; } = DefaultMouseDownButtonColor;
+        private protected Color foreColor { get; set; } = DefaultButtonForeColor;
+        private protected float faceColorScaling = 0.5F;
+        private protected bool showfocusbox = true;
 
     }
 
+    /// <summary>
+    /// Base class for text buttons and checkboxes
+    /// </summary>
+
     public abstract class GLButtonTextBase : GLButtonBase
     {
+        /// <summary> Text </summary>
         public string Text { get { return text; } set { text = value; Invalidate(); } }
+        /// <summary> Alignment of text </summary>
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
-        public enum SymbolType { None, LeftTriangle, RightTriangle };
+        /// <summary> Symbol types</summary>
+        public enum SymbolType {
+            /// <summary> No Symbol</summary>
+            None,
+            /// <summary> Left triangle</summary>
+            LeftTriangle,
+            /// <summary> Right triangle</summary>
+            RightTriangle
+        };
+        /// <summary> Symbol to display on button </summary>
         public SymbolType Symbol { get { return buttonsymbol; } set { buttonsymbol = value; Invalidate(); } }
+        /// <summary> Symbol size </summary>
         public float SymbolSize { get { return buttonsymbolsize; } set { buttonsymbolsize = value;Invalidate(); } }
 
-
-        public GLButtonTextBase(string name, Rectangle window) : base(name, window)
+        private protected GLButtonTextBase(string name, Rectangle window) : base(name, window)
         {
         }
 
-        protected string TextNI { set { text = value; } }
+        private protected string TextNI { set { text = value; } }
 
         private SymbolType buttonsymbol = SymbolType.None;
         private float buttonsymbolsize = 0.75f;
         private string text;
         private ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleCenter;
 
-        protected Color PaintButtonFaceColor(bool lockhighlight = false, bool disablehoverhighlight = false)
+        private protected Color PaintButtonFaceColor(bool lockhighlight = false, bool disablehoverhighlight = false)
         {
             Color colBack;
 
@@ -81,7 +102,7 @@ namespace GLOFC.GL4.Controls
             return colBack;
         }
 
-        protected void PaintButtonFace(Rectangle backarea, Graphics gr, Color facecolour)
+        private protected void PaintButtonFace(Rectangle backarea, Graphics gr, Color facecolour)
         {
             using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(new Rectangle(backarea.Left, backarea.Top - 1, backarea.Width, backarea.Height + 1),
                             facecolour, facecolour.Multiply(FaceColorScaling), 90))
@@ -90,7 +111,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void PaintButtonTextImageFocus(Rectangle buttonarea, Graphics gr, bool paintimage)
+        private protected void PaintButtonTextImageFocus(Rectangle buttonarea, Graphics gr, bool paintimage)
         {
             if (ShowFocusBox)
             {
@@ -140,7 +161,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void ButtonAutoSize(Size extra )     // call if autosize as button
+        private protected void ButtonAutoSize(Size extra )     // call if autosize as button
         {
             SizeF size = SizeF.Empty;
             if (Text.HasChars())

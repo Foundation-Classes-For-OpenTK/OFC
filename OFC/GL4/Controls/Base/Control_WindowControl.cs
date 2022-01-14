@@ -344,7 +344,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // overriden by GLControlDisplay. Translate WindowsLocation into ViewPortLocation and ScreenCoord
-        protected virtual void SetViewScreenCoord(ref GLMouseEventArgs e)       // overridden in control class to provide co-ords
+        private protected virtual void SetViewScreenCoord(ref GLMouseEventArgs e)       // overridden in control class to provide co-ords
         {
         }
 

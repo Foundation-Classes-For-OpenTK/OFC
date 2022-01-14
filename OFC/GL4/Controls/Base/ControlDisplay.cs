@@ -22,45 +22,69 @@ using System.Drawing;
 using System.Linq;
 using GLOFC.GL4.Textures;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
-    // This control display needs a GLWindowControl to get events from
-    // it in turn passes on those events as its a GLWindowControl, adjusted to the controls in the window
-    // It render the control display
+    /// <summary>
+    /// Control display implements a GLWindowControl interface to hook to GLWinFormControl
+    /// And implements the top level control which holds all other controls as children.
+    /// </summary>
 
     public class GLControlDisplay : GLBaseControl, GLWindowControl
     {
-        #region Public IF
+        #region Implement GLWindowControl interface
 
-        public bool RequestRender { get; set; } = false;                        // set whenever anything is invalidated by a control.
-        public void ReRender() { RequestRender = true; }
-
+        /// <inheritdoc cref="GLOFC.GLWindowControl.GLWindowControlScreenRectangle"/>
+        public Rectangle GLWindowControlScreenRectangle { get { return glwin.GLWindowControlScreenRectangle; } }
+        /// <inheritdoc cref="GLOFC.GLWindowControl.MousePosition"/>
         public Point MousePosition { get { return glwin.MousePosition; } }
+        /// <inheritdoc cref="GLOFC.GLWindowControl.MouseWindowPosition"/>
+        public Point MouseWindowPosition { get { return glwin.MouseWindowPosition; } }
 
-        public override bool Focused { get { return glwin.Focused; } }          // override focused to report if whole window is focused.
+        // Width,Height,Size,Focused implemented by GLBaseControl
 
+        /// <summary> Is context current to opengl </summary>
+        public bool IsCurrent()  {  return glwin.IsCurrent();  }
+
+        // Resize implemented by GLBaseControl, as is Key/Mouse events
+
+        /// <summary> Paint call back. ulong is elapsed time in ms </summary>
         public new Action<Object, ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
 
-        public GLMatrixCalc MatrixCalc { get; set; }
+        /// <summary> Invalidate the window </summary>
+        public override void Invalidate()   {base.Invalidate(); glwin.Invalidate(); }
 
-        public Rectangle GLWindowControlScreenRectangle { get { return glwin.GLWindowControlScreenRectangle; } }
+        /// <summary> Ensure this is the current context </summary>
+        public void EnsureCurrentContext() { glwin.EnsureCurrentContext();  }
 
-        public Point MouseWindowPosition {  get { return glwin.MouseWindowPosition; } }
-
+        /// <summary> Get elapsed time in ms </summary>
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
 
-        public void EnsureCurrentContext()
-        {
-            glwin.EnsureCurrentContext();
-        }
-        public bool IsCurrent()
-        {
-            return glwin.IsCurrent();
-        }
 
-        // need items, need a window to attach to, need a MC
+        #endregion
+
+        #region Public IF
+
+        /// <summary> Request a render.  Set whenever anything is invalidated by a control.</summary>
+        public bool RequestRender { get; private set; } = false;
+        /// <summary> Request a render.  Set whenever anything is invalidated by a control.</summary>
+        public void ReRender() { RequestRender = true; }
+
+        /// <summary> Is the control display gl window focused? </summary>
+        public override bool Focused { get { return glwin.Focused; } }
+
+        /// <summary> Matrix Calc for the system </summary>
+        public GLMatrixCalc MatrixCalc { get; set; }
+
+        /// <summary>
+        /// Construct a control display
+        /// </summary>
+        /// <param name="items">Items to store GL data to</param>
+        /// <param name="win">GLWindowControl to hook to</param>
+        /// <param name="mc">Matrix Calc to use</param>
+        /// <param name="depthtest">Enable depth test</param>
+        /// <param name="startz">Start Z for nearest top level window</param>
+        /// <param name="deltaz">Delta Z between each top level window</param>
+        /// <param name="arbbufferid">ARB buffer to use for texture bindless storage</param>
         public GLControlDisplay(GLItemsList items, GLWindowControl win, GLMatrixCalc mc,
                                     bool depthtest = true,          // do depth testing or not
                                     float startz = 0.001f,          // z for the deepest window (only will apply if depth testing
@@ -118,7 +142,11 @@ namespace GLOFC.GL4.Controls
             suspendLayoutCount = 0;     
         }
 
-        // call this during your Paint to render.
+        /// <summary>
+        /// Called by an override to GLWinFormControl Paint or other to render the controls
+        /// </summary>
+        /// <param name="currentstate">Render state</param>
+        /// <param name="ts">Time stamp from Paint</param>
         public void Render(GLRenderState currentstate, ulong ts)
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
@@ -181,8 +209,10 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Render Finished");
         }
 
-        // call this during system tick to run the animations
-
+        /// <summary>
+        /// Call during system tick to perform window animation
+        /// </summary>
+        /// <param name="ts">Timestamp, obtained from window control</param>
         public new void Animate(ulong ts)
         {
             var controls = new List<GLBaseControl>(ControlsIZ);     // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
@@ -197,19 +227,13 @@ namespace GLOFC.GL4.Controls
         #region Overrides
 
         // override base control invalidate, and call it, and also pass the invalidate to the gl window control
-        public override void Invalidate()           
-        {
-            base.Invalidate();
-            glwin.Invalidate();
-        }
-
         // override this, so that we see all invalidations layouts to us and what child required it.
         // then we just layout and size the child only, so the rest of them, unaffected by the way displaycontrol handles textures, do not get invalidated
         // unless we see there is compound docking on, in which case we need to use a full PerformLayout
         // may be called with null child, meaning its a remove/detach
         // it may be called due to a property in displaycontrol changing (Font),
         // and we check the vertex/positions/sizes to make sure everything is okay
-        protected override void InvalidateLayout(GLBaseControl dueto)
+        private protected override void InvalidateLayout(GLBaseControl dueto)
         {
             //System.Diagnostics.Debug.WriteLine($"Display control invalidate layout due to {dueto?.Name} {suspendLayoutCount}");
 
@@ -230,10 +254,12 @@ namespace GLOFC.GL4.Controls
             UpdateVertexPositionsTextures();        // need to at least update vertexes, maybe textures 
         }
 
-        // if we change the z order, we need to update vertex list, keyed to z order
-        // and the textures, since the bindless IDs are written in z order        
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.BringToFront(GLBaseControl)"/>
         public override bool BringToFront(GLBaseControl other)
         {
+            // if we change the z order, we need to update vertex list, keyed to z order
+            // and the textures, since the bindless IDs are written in z order        
+
             if (!base.BringToFront(other))                  // if not already at front
             {
                 UpdateVertexPositionsTextures(true);        // we changed z order, update, and force the texture rewrite since order has changed
@@ -243,10 +269,12 @@ namespace GLOFC.GL4.Controls
                 return true;
         }
 
-        // On control add, to display, we need to do more work to set textures up and note the bitmap size
-        // textures will be updated on invalidatelayout
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Add(GLBaseControl, bool)"/>
         public override void Add(GLBaseControl child, bool atback = false)
         {
+            // On control add, to display, we need to do more work to set textures up and note the bitmap size
+            // textures will be updated on invalidatelayout
             System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
 
             textures[child] = items.NewTexture2D(null);                // we make a texture per top level control to render with
@@ -258,7 +286,7 @@ namespace GLOFC.GL4.Controls
             base.Add(child, atback);
         }
 
-        // override remove control since we need to know if to remove texture, and refresh the texture list
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.RemoveControl(GLBaseControl, bool, bool)"/>
         protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {
             bool ourchild = ControlsZ.Contains(child);      // record before removecontrol updates controlz list
@@ -276,7 +304,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // override this to provide translation between form co-ords and viewport/screen coords
-        protected override void SetViewScreenCoord(ref GLMouseEventArgs e)
+        private protected override void SetViewScreenCoord(ref GLMouseEventArgs e)
         {
             e.ViewportLocation = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
             e.ScreenCoord = MatrixCalc.AdjustWindowCoordToScreenCoord(e.WindowLocation);
@@ -380,13 +408,16 @@ namespace GLOFC.GL4.Controls
             RequestRender = true;
         }
 
-        // these are not allowed at display control level so assert
+        /// <summary> Do not use on control display </summary>
         public new void SuspendLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        /// <summary> Do not use on control display </summary>
         public new void ResumeLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        /// <summary> Do not use on control display </summary>
         public override void Layout(ref Rectangle parentarea) { System.Diagnostics.Debug.Assert(false, "Should not happen - bug if it does"); }
+        /// <summary> Do not use on control display </summary>
         protected override void SetPos(int left, int top, int width, int height) { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
 
-        // use by these classes only, not by general code. General code does Cursor=N
+        /// <summary> Internal interface do not use </summary>
         public void SetCursor(GLCursorType t)
         {
             if (t != lastcursor)

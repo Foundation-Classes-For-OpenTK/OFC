@@ -14,36 +14,44 @@
 
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    ///  Base class for controls with Fore Color
+    /// </summary>
     public abstract class GLForeDisplayBase : GLBaseControl
     {
-        public GLForeDisplayBase(string name, Rectangle location) : base(name, location)
+        private protected GLForeDisplayBase(string name, Rectangle location) : base(name, location)
         {
         }
 
+        /// <summary> Fore color </summary>
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
+        /// <summary> Fore color disabled scaling </summary>
         public float ForeDisabledScaling { get { return foreDisabledScaling; } set { if (value != foreDisabledScaling) { foreDisabledScaling = value; Invalidate(); } } }
 
-        protected Color foreColor { get; set; } = Color.Red;
-        private float foreDisabledScaling = 0.5F;
+        private protected Color foreColor { get; set; } = Color.Red;
+        private protected float foreDisabledScaling = 0.5F;
     }
 
+    /// <summary>
+    /// Base class for controls with Fore Color and Text
+    /// </summary>
     public abstract class GLForeDisplayTextBase : GLForeDisplayBase
     {
-        public GLForeDisplayTextBase(string name, Rectangle location) : base(name, location)
+        private protected GLForeDisplayTextBase(string name, Rectangle location) : base(name, location)
         {
         }
 
+        /// <summary> Text </summary>
         public string Text { get { return text; } set { text = value; TextValueChanged(); } }
 
+        /// <summary> Text Alignment </summary>
         public ContentAlignment TextAlign { get { return textAlign; } set { textAlign = value; Invalidate(); } }
 
-        protected string text = "";
-        protected ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleLeft;
+        private protected string text = "";
+        private protected ContentAlignment textAlign { get; set; } = ContentAlignment.MiddleLeft;
 
-        protected abstract void TextValueChanged();                                   
+        private protected abstract void TextValueChanged();                                   
     }
 }

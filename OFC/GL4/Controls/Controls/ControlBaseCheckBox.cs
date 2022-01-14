@@ -17,37 +17,63 @@ using System;
 using System.Drawing;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary> Appearance of checkbox </summary>
     public enum CheckBoxAppearance
     {
+        /// <summary> Normal (Square)</summary>
         Normal = 0,
+        /// <summary> Look like a button </summary>
         Button = 1,
+        /// <summary> Radio button (Round)</summary>
         Radio = 2,
     }
 
-    public enum CheckState { Unchecked, Checked, Indeterminate };
+    /// <summary> Check state of checkbox </summary>
+    public enum CheckState {
+        /// <summary> Unchecked </summary>
+        Unchecked,
+        /// <summary> Checked </summary>
+        Checked,
+        /// <summary> Indeterminate </summary>
+        Indeterminate
+    };
 
+    /// <summary>
+    /// Base class for check boxes
+    /// </summary>
     public abstract class GLCheckBoxBase : GLButtonTextBase
     {
+        /// <summary> Callback on check changed </summary>
         public Action<GLBaseControl> CheckChanged { get; set; } = null;
+        /// <summary> Callback on click </summary>
         public Action<GLBaseControl> Click { get; set; } = null;
 
+        /// <summary> Current check state. Setting it causes the CheckChanged event </summary>
         public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
+        /// <summary> Current check state. Setting it does not cause the CheckChanged event </summary>
         public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
+        /// <summary> Is in Checked state?  Setting it causes the CheckChanged event</summary>
         public bool Checked { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, true); } }
+        /// <summary> Is in Checked state?  Setting it does not cause the CheckChanged event</summary>
+        /// <summary> </summary>
         public bool CheckedNoChangeEvent { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, false); } }
-        public bool CheckOnClick { get; set; } = false;            // if true, autocheck on click
-        public bool GroupRadioButton { get; set; } = false;     // if true, on check, turn off all other CheckBox of parents
-        public bool UserCanOnlyCheck { get; set; } = false;            // if true, user can only turn it on
+        /// <summary> Check set on click </summary>
+        public bool CheckOnClick { get; set; } = false;            
+        /// <summary> Is in a radio button group, grouped by the parent class</summary>
+        public bool GroupRadioButton { get; set; } = false;     
+        /// <summary> Can only check the control, and cannot uncheck it </summary>
+        public bool UserCanOnlyCheck { get; set; } = false;            
 
+        /// <summary> Check box border color around square/round </summary>
         public Color CheckBoxBorderColor { get { return checkBoxBorderColor; } set { checkBoxBorderColor = value; Invalidate(); } }
+        /// <summary> Check box color inside the square/round </summary>
         public Color CheckBoxInnerColor { get { return checkBoxInnerColor; } set { checkBoxInnerColor = value; Invalidate(); } }
+        /// <summary> Check colour (tick or dot) </summary>
         public Color CheckColor { get { return checkColor; } set { checkColor = value; Invalidate(); } }
 
-        public GLCheckBoxBase(string name, Rectangle window) : base(name, window)
+        private protected GLCheckBoxBase(string name, Rectangle window) : base(name, window)
         {
             buttonFaceColor = DefaultCheckBackColor;
             foreColor = DefaultCheckForeColor;
@@ -55,7 +81,7 @@ namespace GLOFC.GL4.Controls
             mouseDownColor = DefaultCheckMouseDownColor;
         }
 
-        protected void CheckBoxAutoSize()        // autosize for a check box display type
+        private protected void CheckBoxAutoSize()        // autosize for a check box display type
         {
             SizeF size = SizeF.Empty;
             using( var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
@@ -68,7 +94,7 @@ namespace GLOFC.GL4.Controls
             SetNI(clientsize: s);
         }
 
-        protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk, Graphics gr)
+        private protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk, Graphics gr)
         {
             gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
             if (chk == CheckState.Checked)
@@ -98,7 +124,7 @@ namespace GLOFC.GL4.Controls
             gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
         }
 
-        protected void SetCheckState(CheckState value, bool firechange)
+        private protected void SetCheckState(CheckState value, bool firechange)
         {
             if (checkstate != value)
             {
@@ -125,11 +151,14 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void OnCheckChanged()
+        private protected virtual void OnCheckChanged()
         {
             CheckChanged?.Invoke(this);
         }
 
+        // NOTE: if inherited document had no comment, it does not appear in output! Good!
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
         {
             base.OnMouseClick(e);
@@ -137,6 +166,7 @@ namespace GLOFC.GL4.Controls
                 OnClick();
         }
 
+        /// <summary> Call to perform Click functionality  </summary>
         public virtual void OnClick()
         {
             if ( CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
@@ -147,6 +177,7 @@ namespace GLOFC.GL4.Controls
             Click?.Invoke(this);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyPress"/>
         protected override void OnKeyPress(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);

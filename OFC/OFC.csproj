@@ -21,6 +21,7 @@
     <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
     <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
     <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
+    <DefaultDocumentationNestedTypeVisibilities>Namespace</DefaultDocumentationNestedTypeVisibilities>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,8 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>bin\Debug\GLOFC.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

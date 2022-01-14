@@ -108,6 +108,7 @@ namespace GLOFC.GL4.Textures
         /// <summary>Call to ensure this texture has an ARB texture ID</summary>
         public long AcquireArbId()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             if (arbid == -1)
             {
                 arbid = OpenTK.Graphics.OpenGL.GL.Arb.GetTextureHandle(Id);
@@ -319,6 +320,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="alpha">Alpha value, 0-1</param>
         public void ClearImage(int level, float red, float green, float blue, float alpha)  // confirmed
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             int size = Marshal.SizeOf<float>() * 4;
 
             IntPtr pnt = Marshal.AllocHGlobal(size);
@@ -341,6 +343,7 @@ namespace GLOFC.GL4.Textures
         public void CopyFromReadFrameBuffer1d(int miplevel, int xoffset, int x, int y, int width)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage1D(Id, miplevel, xoffset, x,y, width);
             GLStatics.Check();
         }
@@ -359,6 +362,7 @@ namespace GLOFC.GL4.Textures
         public void CopyFromReadFrameBuffer2d(int miplevel, int xoffset, int yoffset, int x, int y, int width, int height)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1DArray || this is GLTexture2D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage2D(Id, miplevel, xoffset, yoffset, x, y, width, height);
             GLStatics.Check();
         }
@@ -378,6 +382,7 @@ namespace GLOFC.GL4.Textures
         public void CopyFromReadFrameBuffer2da3d(int miplevel, int xoffset, int yoffset, int zoffset, int x, int y, int width, int height)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture2DArray || this is GLTexture3D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage3D(Id, miplevel, xoffset, yoffset, zoffset, x, y, width, height);
             GLStatics.Check();
         }
@@ -400,6 +405,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="height">Destination Height</param>
         public void CopyFrom(int srcid, ImageTarget srcTarget, int srcmiplevel, int sx, int sy, int sz, int dmiplevel, int dx, int dy, int dz, int width, int height)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             // not sure, according to spec, the dest target may just need to be a texture type..
             ImageTarget it = this is GLTexture2D ? ImageTarget.Texture2D : this is GLTexture2DArray ? ImageTarget.Texture2DArray : this is GLTexture1D ? ImageTarget.Texture1D : ImageTarget.Texture3D;
             GL.CopyImageSubData(srcid, srcTarget, srcmiplevel, sx, sy, sz,
@@ -420,6 +426,7 @@ namespace GLOFC.GL4.Textures
         public void Store1d(int level, int xoffset, int width, PixelFormat pixelformat, PixelType pixeltype, IntPtr ptr)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage1D(Id, level, xoffset, width, pixelformat, pixeltype, ptr);
         }
 
@@ -435,6 +442,7 @@ namespace GLOFC.GL4.Textures
         public void Store1d(int level, int xoffset, int width, float[] array, PixelFormat pixelformat = PixelFormat.Bgra)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage1D(Id, level, xoffset, width, pixelformat, PixelType.Float, array);
         }
 
@@ -453,6 +461,7 @@ namespace GLOFC.GL4.Textures
         public void Store2d(int level, int xoffset, int yoffset, int width, int height, PixelFormat pixelformat, PixelType pixeltype, IntPtr ptr)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1DArray || this is GLTexture2D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage2D(Id, level, xoffset, yoffset, width, height, pixelformat, pixeltype, ptr);
         }
 
@@ -470,6 +479,7 @@ namespace GLOFC.GL4.Textures
         public void Store2d(int level, int xoffset, int yoffset, int width, int height, float[] array, PixelFormat pixelformat = PixelFormat.Bgra)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture1DArray || this is GLTexture2D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage2D(Id, level, xoffset, yoffset, width, height, pixelformat,PixelType.Float, array);
         }
 
@@ -490,6 +500,7 @@ namespace GLOFC.GL4.Textures
         public void Store2da3d(int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, PixelFormat pixelformat, PixelType pixeltype, IntPtr ptr)
         {
             System.Diagnostics.Debug.Assert(this is GLTexture2DArray || this is GLTexture3D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage3D(Id, level, xoffset, yoffset, zoffset, width, height, depth, pixelformat, pixeltype, ptr);
         }
 
@@ -509,6 +520,7 @@ namespace GLOFC.GL4.Textures
         public void Store2da3d(int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth, float[] array, PixelFormat pixelformat = PixelFormat.Bgra )
         {
             System.Diagnostics.Debug.Assert(this is GLTexture2DArray || this is GLTexture3D);
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureSubImage3D(Id, level, xoffset, yoffset, zoffset, width, height, depth, pixelformat, PixelType.Float, array);
         }
 
@@ -529,6 +541,8 @@ namespace GLOFC.GL4.Textures
         /// <param name="alpha">Alpha value, 0-1</param>
         public void ClearSubImage(int level, int x, int y, int z, int width, int height, int depth, float red, float green, float blue, float alpha)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
+
             int size = Marshal.SizeOf<float>() * 4;
             IntPtr pnt = Marshal.AllocHGlobal(size);
             float[] a = new float[] { red, green, blue, alpha };
@@ -549,6 +563,8 @@ namespace GLOFC.GL4.Textures
         /// <returns>Array of selected type</returns>
         public T[] GetTextureImageAs<T>(PixelFormat pxformatback = PixelFormat.Rgba, int level = 0, bool inverty = false)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
+
             int elementsperpixel = GL4Statics.ElementsPerPixel(pxformatback);
 
             int totalelements = Width * Height * elementsperpixel;
@@ -627,6 +643,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="r">Texture wrap depth</param>
         public void SetSamplerMode(TextureWrapMode s, TextureWrapMode t, TextureWrapMode r)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             int st = (int)s;
             int tt = (int)t;
             int pt = (int)r;
@@ -643,6 +660,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="t">Texture wrap height</param>
         public void SetSamplerMode(TextureWrapMode s, TextureWrapMode t)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             int st = (int)s;
             int tt = (int)t;
             GL.TextureParameterI(Id, TextureParameterName.TextureWrapS, ref st);
@@ -655,6 +673,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="s">Texture wrap width</param>
         public void SetSamplerMode(TextureWrapMode s)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             int st = (int)s;
             GL.TextureParameterI(Id, TextureParameterName.TextureWrapS, ref st);
         }
@@ -666,6 +685,7 @@ namespace GLOFC.GL4.Textures
         /// <param name="maxfilter">Max filter (default Linear)</param>
         public void SetMinMagFilter(All minfilter = All.LinearMipmapLinear, All maxfilter = All.Linear)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             var textureMinFilter = (int)minfilter;
             GL.TextureParameterI(Id, TextureParameterName.TextureMinFilter, ref textureMinFilter);
             var textureMagFilter = (int)maxfilter;
@@ -675,6 +695,7 @@ namespace GLOFC.GL4.Textures
         /// <summary> Set Min Mag filter to linear </summary>
         public void SetMinMagLinear()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             var textureFilter = (int)All.Linear;
             GL.TextureParameterI(Id, TextureParameterName.TextureMinFilter, ref textureFilter);
             GL.TextureParameterI(Id, TextureParameterName.TextureMagFilter, ref textureFilter);
@@ -683,12 +704,14 @@ namespace GLOFC.GL4.Textures
         /// <summary> Generate mip map textures </summary>
         public void GenMipMapTextures()     // only call if mipmaplevels > 1 after you have loaded all z planes. Called automatically for 2d+2darrays
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.GenerateTextureMipmap(Id);
         }
 
         /// <summary> Control mip map level </summary>
         public void MipMapLevel(int basev, int max)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.TextureParameterI(Id, TextureParameterName.TextureBaseLevel, ref basev);
             GL.TextureParameterI(Id, TextureParameterName.TextureMaxLevel, ref max);
         }

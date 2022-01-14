@@ -13,27 +13,37 @@
  */
 
 using GLOFC.Utils;
-using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Check Box control
+    /// </summary>
     public class GLCheckBox : GLCheckBoxBase
     {
+        /// <summary> Check box appearance type </summary>
         public CheckBoxAppearance Appearance { get { return appearance; } set { appearance = value; Invalidate(); } }
 
         // Fore (text), ButtonBack, MouseOverBackColor, MouseDownBackColor from inherited class
 
+        /// <summary> Check Box Alignment </summary>
         public ContentAlignment CheckAlign { get { return checkalign; } set { checkalign = value; Invalidate(); } }     // appearance Normal only
+        /// <summary> Size of tick box relative to client area </summary>
         public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
 
+        /// <summary> Image when unchecked </summary>
         public Image ImageUnchecked { get { return imageUnchecked; } set { imageUnchecked = value; Invalidate(); } }        // apperance normal/button only.  
+        /// <summary> Image when indeterminate </summary>
         public Image ImageIndeterminate { get { return imageIndeterminate; } set { imageIndeterminate = value; Invalidate(); } }
 
+        /// <summary>
+        /// Set up a remap of color
+        /// </summary>
+        /// <param name="remap">ColorMap structure for remapping</param>
+        /// <param name="colormatrix">Color remap matrix</param>
+        /// <param name="disabledscaling">Disabled scaling</param>
         public void SetDrawnBitmapUnchecked(System.Drawing.Imaging.ColorMap[] remap, float[][] colormatrix = null, float disabledscaling = 0.5f)
         {
             //System.Diagnostics.Debug.WriteLine("Apply drawn bitmap scaling to " + Name);
@@ -43,6 +53,7 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
+        /// <summary> Construct with name, bounds, text </summary>
         public GLCheckBox(string name, Rectangle location, string text) : base(name, location)
         {
             BorderColorNI = Color.Transparent;
@@ -53,6 +64,7 @@ namespace GLOFC.GL4.Controls
             InvalidateOnFocusChange = true;
         }
 
+        /// <summary> Construct with name, bounds, image checked, image unchecked </summary>
         public GLCheckBox(string name, Rectangle location, Image chk, Image unchk) : this(name, location,"")
         {
             Image = chk;
@@ -60,10 +72,12 @@ namespace GLOFC.GL4.Controls
             Appearance = CheckBoxAppearance.Button;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLCheckBox() : this("CB?", DefaultWindowRectangle, "")
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -72,6 +86,7 @@ namespace GLOFC.GL4.Controls
                 CheckBoxAutoSize();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             bool hasimages = Image != null;
@@ -262,7 +277,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-
 
         private GL4.Controls.CheckBoxAppearance appearance { get; set; } = CheckBoxAppearance.Normal;
         private ContentAlignment checkalign { get; set; } = ContentAlignment.MiddleCenter;
