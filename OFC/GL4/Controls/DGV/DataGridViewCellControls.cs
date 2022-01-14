@@ -28,8 +28,8 @@ namespace GLOFC.GL4.Controls
         public Action<GLDataGridViewCell> SelectionChanged { get; set; }
         public bool Selectable { get; set; } = false;
 
-        public new Padding Padding { get { return Style.Padding; } set { Style.Padding = value; } }     // override padding back to style.padding
-        public new Margin Margin { get { return base.Margin; } set { throw new NotImplementedException(); } }     // prevent margin
+        public new PaddingType Padding { get { return Style.Padding; } set { Style.Padding = value; } }     // override padding back to style.padding
+        public new MarginType Margin { get { return base.Margin; } set { throw new NotImplementedException(); } }     // prevent margin
 
 
         public bool Selected { get { return selected; } set { if (value != selected && Selectable) { selected = value; SelectionChanged?.Invoke(this); } } }

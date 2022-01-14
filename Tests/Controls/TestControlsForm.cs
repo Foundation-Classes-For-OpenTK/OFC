@@ -30,6 +30,7 @@ using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -163,10 +164,10 @@ namespace TestOpenTk
                     pform.Add(lab1);
 
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Configuration Dialog");
-                    b1.Margin = new Margin(2);
+                    b1.Margin = new MarginType(2);
                     b1.AutoSize = true;
                     b1.TabOrder = taborder++;
-                    b1.Padding = new GLOFC.GL4.Controls.Padding(5);
+                    b1.Padding = new PaddingType(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
                     pform.Add(b1);
@@ -181,9 +182,9 @@ namespace TestOpenTk
                     pform.Add(b2);
 
                     GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Font");
-                    b3.Margin = new Margin(2);
+                    b3.Margin = new MarginType(2);
                     b3.TabOrder = taborder++;
-                    b3.Padding = new GLOFC.GL4.Controls.Padding(5);
+                    b3.Padding = new PaddingType(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
                     b3.Click += (c, ev) => {
                         displaycontrol.Font = new Font("Times", 12);
@@ -192,14 +193,14 @@ namespace TestOpenTk
 
                     GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
                     b4.TabOrder = taborder++;
-                    b4.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b4.Padding = new PaddingType(2);
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
                     pform.Add(b4);
 
                     GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Conf2");
                     b5.TabOrder = taborder++;
-                    b5.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b5.Padding = new PaddingType(2);
                     b5.ToolTipText = "Button 5 tip\r\nLine 2 of it";
                     b5.Click += (c, ev) => { ConfDialog2(); };
                     pform.Add(b5);
@@ -215,7 +216,7 @@ namespace TestOpenTk
                 if (true)
                 {
                     GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
-                    cb1.Margin = new Margin(16, 8, 16, 8);
+                    cb1.Margin = new MarginType(16, 8, 16, 8);
                     cb1.TabOrder = taborder++;
                     cb1.ToolTipText = "Combo Box";
                     pform.Add(cb1);
@@ -234,16 +235,16 @@ namespace TestOpenTk
                 {
 
                     GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "Normal");
-                    chk1.Margin = new Margin(16, 0, 0, 0);
+                    chk1.Margin = new MarginType(16, 0, 0, 0);
                     chk1.TabOrder = taborder++;
                     pform.Add(chk1);
                     GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "Radio");
-                    chk2.Appearance = CheckBoxAppearance.Radio;
+                    chk2.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk2.TabOrder = taborder++;
                     chk2.Checked = true;
                     pform.Add(chk2);
                     GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "Button");
-                    chk3.Appearance = CheckBoxAppearance.Button;
+                    chk3.Appearance = GLCheckBox.CheckBoxAppearance.Button;
                     chk3.TabOrder = taborder++;
                     chk3.BackColor = Color.FromArgb(200, 200, 200);
                     pform.Add(chk3);
@@ -251,12 +252,12 @@ namespace TestOpenTk
                     chk4.TabOrder = taborder++;
                     pform.Add(chk4);
                     GLCheckBox chk5 = new GLCheckBox("Checkbox5", new Rectangle(350, 150, 0, 0), "R1");
-                    chk5.Appearance = CheckBoxAppearance.Radio;
+                    chk5.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk5.GroupRadioButton = true;
                     chk5.TabOrder = taborder++;
                     pform.Add(chk5);
                     GLCheckBox chk6 = new GLCheckBox("Checkbox6", new Rectangle(400, 150, 0, 0), "R2");
-                    chk6.Appearance = CheckBoxAppearance.Radio;
+                    chk6.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk6.GroupRadioButton = true;
                     chk6.TabOrder = taborder++;
                     pform.Add(chk6);
@@ -265,7 +266,7 @@ namespace TestOpenTk
                     chk7.Enabled = false;
                     pform.Add(chk7);
                     GLCheckBox chk8 = new GLCheckBox("Checkbox8", new Rectangle(100, 175, 0, 0), "Disabled");
-                    chk8.Appearance = CheckBoxAppearance.Radio;
+                    chk8.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk8.TabOrder = taborder++;
                     chk8.Enabled = false;
                     pform.Add(chk8);
@@ -275,7 +276,7 @@ namespace TestOpenTk
                     chk9.Checked = true;
                     pform.Add(chk9);
                     GLCheckBox chk10 = new GLCheckBox("Checkbox10", new Rectangle(300, 175, 0, 0), "CDisabled");
-                    chk10.Appearance = CheckBoxAppearance.Radio;
+                    chk10.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk10.TabOrder = taborder++;
                     chk10.Enabled = false;
                     chk10.Checked = true;

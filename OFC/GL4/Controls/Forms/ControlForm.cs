@@ -63,7 +63,7 @@ namespace GLOFC.GL4.Controls
             text = title;
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
-            SetNI(padding: new Padding(FormPadding), margin: new Margin(FormMargins,TitleBarHeight ,FormMargins,FormMargins), borderwidth: FormBorderWidth);
+            SetNI(padding: new PaddingType(FormPadding), margin: new MarginType(FormMargins,TitleBarHeight ,FormMargins,FormMargins), borderwidth: FormBorderWidth);
             BorderColorNI = DefaultFormBorderColor;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
@@ -129,7 +129,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
-            Margin = new Margin(Margin.Left, TitleBarHeight, Margin.Right, Margin.Bottom);
+            Margin = new MarginType(Margin.Left, TitleBarHeight, Margin.Right, Margin.Bottom);
         }
 
         // Form autosizer, taking into consideration all objects without autoplacement

@@ -131,7 +131,7 @@ namespace GLOFC.GL4.Controls
             colheaderstyle.ContentAlignment = rowheaderstyle.ContentAlignment = defaultcellstyle.ContentAlignment = ContentAlignment.MiddleCenter;
             colheaderstyle.TextFormat = rowheaderstyle.TextFormat = defaultcellstyle.TextFormat = 0;
             colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
-            colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new Padding(0);
+            colheaderstyle.Padding = rowheaderstyle.Padding = defaultcellstyle.Padding = new PaddingType(0);
 
             defaultaltrowcellstyle.Parent = defaultcellstyle;       // all null, uses cell style until overridden
 
@@ -449,7 +449,7 @@ namespace GLOFC.GL4.Controls
 
             colheaderpanel.Height = columnheaderheight + cellborderwidth;        
             rowheaderpanel.Width = rowheaderwidth + cellborderwidth;
-            rowheaderpanel.DockingMargin = new Margin(0, ColumnHeaderEnable ? colheaderpanel.Height : 0, 0, 0);
+            rowheaderpanel.DockingMargin = new MarginType(0, ColumnHeaderEnable ? colheaderpanel.Height : 0, 0, 0);
             topleftpanel.Size = new Size(rowheaderwidth + cellborderwidth, columnheaderheight + cellborderwidth);
             colheaderpanel.BackColor = BackColor;
             rowheaderpanel.BackColor = BackColor;

@@ -31,7 +31,7 @@ namespace GLOFC.GL4.Controls
         public bool ClearOnFirstChar { get; set; } = false;                 // clear on first char
         public bool AllowControlChars { get; set; } = false;                // other controls chars allowed
         public bool ReadOnly { get; set; } = false;                         // can edit it
-        public Margin TextBoundary { get; set; } = new Margin(0);           // limit text area
+        public MarginType TextBoundary { get; set; } = new MarginType(0);           // limit text area
         public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }       // of text
         public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }       // lined text, default off
         public bool FlashingCursor { get; set; } = true;
@@ -1269,7 +1269,7 @@ namespace GLOFC.GL4.Controls
                     Remove(horzscroller);
                     horzscroller = null;
                     if (vertscroller != null)
-                        vertscroller.Padding = new Padding(0, 0, 0, 0);
+                        vertscroller.Padding = new PaddingType(0, 0, 0, 0);
                     Invalidate();
                 }
             }
@@ -1303,7 +1303,7 @@ namespace GLOFC.GL4.Controls
       //      if (horzscroller?.Visible ?? false)
          //       horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
             if (vertscroller?.Visible ?? false)
-                vertscroller.Padding = new Padding(0, 0, 0, horz ? ScrollBarWidth : 0);
+                vertscroller.Padding = new PaddingType(0, 0, 0, horz ? ScrollBarWidth : 0);
         }
 
         #endregion

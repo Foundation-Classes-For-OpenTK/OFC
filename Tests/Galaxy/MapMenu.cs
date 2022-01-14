@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -186,7 +187,7 @@ namespace TestOpenTk
                 galgb.ForeColor = Color.Orange;
                 pform.Add(galgb);
                 GLFlowLayoutPanel galfp = new GLFlowLayoutPanel("GALFP", DockingType.Fill, 0);
-                galfp.FlowPadding = new Padding(2, 2, 2, 2);
+                galfp.FlowPadding = new PaddingType(2, 2, 2, 2);
                 galfp.BackColor = pform.BackColor;
                 galgb.Add(galfp);
 

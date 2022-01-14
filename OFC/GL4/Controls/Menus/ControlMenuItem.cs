@@ -92,7 +92,7 @@ namespace GLOFC.GL4.Controls
                 int reduce = (int)(p.IconAreaWidth * TickBoxReductionRatio);
                 Rectangle tickarea = new Rectangle((p.IconAreaWidth - reduce) / 2, (ClientHeight - reduce) / 2, reduce, reduce);
 
-                if (CheckState != CheckState.Unchecked)
+                if (CheckState != CheckStateType.Unchecked)
                 {
                     float discaling = Enabled ? 1.0f : BackDisabledScaling;
 

@@ -57,7 +57,7 @@ namespace GLOFC.GL4.Controls
         public Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
         public bool VisibleNI { set { visible = value; } }
 
-        public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, Margin? margin = null, Padding? padding = null,
+        public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, MarginType? margin = null, PaddingType? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
         {
             Point oldloc = Location;
@@ -455,14 +455,14 @@ namespace GLOFC.GL4.Controls
                 Rectangle ccliparea = cliparea;     
                 Rectangle cbounds = bounds;
                 Graphics clientgr = backgr;
-                Margin cmargin;
+                MarginType cmargin;
                 Rectangle clientarea;
 
                 if (parentgr != null && levelbmp != null)      // if we have a sub bitmap, which is the bitmap for the client region only
                 {
                     // restate area in terms of client rectangle bitmap, this is the bounds and the clip area
                     clientarea = ccliparea = cbounds = new Rectangle(0, 0, levelbmp.Width, levelbmp.Height);      
-                    cmargin = new Margin(0);        // no margins around the bitmap - because its the client bitmap we are dealing with
+                    cmargin = new MarginType(0);        // no margins around the bitmap - because its the client bitmap we are dealing with
 
                     clientgr = Graphics.FromImage(levelbmp);              // get graphics for it
                     clientgr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
@@ -472,7 +472,7 @@ namespace GLOFC.GL4.Controls
                 {
                     // no new bitmap, so we work out the client area of this window (in bitmap co-ords)
                     clientarea = new Rectangle(bounds.Left + ClientLeftMargin, bounds.Top + ClientTopMargin, ClientWidth, ClientHeight);
-                    cmargin = new Margin(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
+                    cmargin = new MarginType(ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin);
                 }
 
                 foreach (var c in childreniz)       // in inverse Z order, last is top Z
@@ -868,8 +868,8 @@ namespace GLOFC.GL4.Controls
         private Size lastsize;       
 
         private Rectangle window;       // total area owned, in parent co-ords
-        private Padding padding;
-        private Margin margin;
+        private PaddingType padding;
+        private MarginType margin;
         protected Size minimumsize = new Size(0, 0);
         protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
 
@@ -881,7 +881,7 @@ namespace GLOFC.GL4.Controls
 
         private DockingType docktype = DockingType.None;
         private float dockpercent  = 0;
-        private Margin dockingmargin;
+        private MarginType dockingmargin;
         private AnchorType anchortype = AnchorType.None;
 
         private bool autosize;

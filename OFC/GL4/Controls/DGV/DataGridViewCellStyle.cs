@@ -27,7 +27,7 @@ namespace GLOFC.GL4.Controls
         public ContentAlignment ContentAlignment { get { return contentalignment.HasValue ? contentalignment.Value : Parent.ContentAlignment; } set { if (value != contentalignment) { contentalignment = value; Changed?.Invoke(this); } } }
         public StringFormatFlags TextFormat { get { return textformatflags.HasValue ? textformatflags.Value : Parent.TextFormat; } set { if (value != textformatflags) { textformatflags = value; Changed?.Invoke(this); } } }
         public Font Font { get { return font != null ? font : Parent.Font; } set { font = value; Changed?.Invoke(this); } }
-        public Padding Padding { get { return padding.HasValue ? padding.Value : Parent.Padding; } set { padding = value; Changed?.Invoke(this); } }
+        public GLBaseControl.PaddingType Padding { get { return padding.HasValue ? padding.Value : Parent.Padding; } set { padding = value; Changed?.Invoke(this); } }
 
         private Color? backcolor;
         private Color? forecolor;
@@ -36,7 +36,7 @@ namespace GLOFC.GL4.Controls
         private ContentAlignment? contentalignment;
         private StringFormatFlags? textformatflags;
         private Font font;
-        private Padding? padding;
+        private GLBaseControl.PaddingType? padding;
         public GLDataGridViewCellStyle Parent { get; set; }
         public Action<GLDataGridViewCellStyle> Changed { get; set; }
     }

@@ -28,6 +28,7 @@ using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
 using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -184,7 +185,7 @@ namespace TestOpenTk
 
                 var butcel = new GLDataGridViewCellButton(new Rectangle(0, 0, 80, 24), "Buttext");
                 butcel.MouseClick += (e2, e3) => { System.Diagnostics.Debug.WriteLine("Click on grid button"); };
-                butcel.Style.Padding = new Padding(3);
+                butcel.Style.Padding = new PaddingType(3);
                 butcel.Style.ContentAlignment = ContentAlignment.MiddleLeft;
                 dgv.Rows[0].AddCell(butcel);
 

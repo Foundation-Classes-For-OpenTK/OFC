@@ -96,7 +96,7 @@
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuStrip.cs" />
     <Compile Include="GL4\Controls\TextBoxes\ControlNumberBox.cs" />
-    <Compile Include="GL4\Controls\Base\ControlStructsEnums.cs" />
+    <Compile Include="GL4\Controls\Base\Control_StructsEnums.cs" />
     <Compile Include="GL4\Controls\TextBoxes\ControlTextBoxAutoComplete.cs" />
     <Compile Include="GL4\Controls\Controls\ControlToolTip.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridViewTopLeftPanel.cs" />

@@ -13,28 +13,34 @@
  */
 
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Panel control. Used to encapsulate other controls inside it.
+    /// </summary>
     public class GLPanel : GLBaseControl
     {
+        /// <summary> Construtor with name, bounds, and optional back color</summary>
         public GLPanel(string name, Rectangle location, Color? backcolour = null) : base(name, location)
         {
-            BackColor = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
+            BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
             BorderColorNI = DefaultPanelBorderColor;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLPanel() : this("P?", DefaultWindowRectangle)
         {
         }
 
+        /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
         public GLPanel(string name, DockingType type, float dockpercent, Color? backcolour = null) : this(name, DefaultWindowRectangle, backcolour)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
+        /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
         public GLPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null) : this(name, DefaultWindowRectangle, backcolour)
         {
             Dock = type;
@@ -42,6 +48,7 @@ namespace GLOFC.GL4.Controls
             SetNI(size: sizep);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControlPostChild(Size)"/>
         protected override void SizeControlPostChild(Size parentsize)
         {
             base.SizeControlPostChild(parentsize);

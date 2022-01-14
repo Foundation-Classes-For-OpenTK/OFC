@@ -30,7 +30,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Construct with name and bounds</summary>
         public GLButton(string name, Rectangle location) : base(name, location)
         {
-            SetNI(padding: new Padding(1), borderwidth: 1);
+            SetNI(padding: new PaddingType(1), borderwidth: 1);
             BorderColorNI = DefaultButtonBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultButtonBackColor;
             Focusable = true;

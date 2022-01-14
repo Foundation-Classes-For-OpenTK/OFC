@@ -39,7 +39,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> If set, keep flow within parent bounds, else it will flow without regard to parent bounds</summary>
         public bool KeepWithinParent { get; set; } = true;  
         /// <summary> Padding around flow positions to space out the flow</summary>
-        public GL4.Controls.Padding FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
+        public PaddingType FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
 
         /// <summary> Construct with name and bounds </summary>
         public GLFlowLayoutPanel(string name, Rectangle location) : base(name, location)
@@ -179,7 +179,7 @@ namespace GLOFC.GL4.Controls
             return max;
         }
 
-        private GL4.Controls.Padding flowPadding { get; set; } = new Padding(1);
+        private GL4.Controls.GLBaseControl.PaddingType flowPadding { get; set; } = new PaddingType(1);
         private ControlFlowDirection flowDirection = ControlFlowDirection.Right;
     }
 }

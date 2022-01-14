@@ -23,6 +23,17 @@ namespace GLOFC.GL4.Controls
     /// </summary>
     public class GLCheckBox : GLCheckBoxBase
     {
+        /// <summary> Appearance of checkbox </summary>
+        public enum CheckBoxAppearance
+        {
+            /// <summary> Normal (Square)</summary>
+            Normal = 0,
+            /// <summary> Look like a button </summary>
+            Button = 1,
+            /// <summary> Radio button (Round)</summary>
+            Radio = 2,
+        }
+
         /// <summary> Check box appearance type </summary>
         public CheckBoxAppearance Appearance { get { return appearance; } set { appearance = value; Invalidate(); } }
 
@@ -105,7 +116,7 @@ namespace GLOFC.GL4.Controls
                         using (var b = new LinearGradientBrush(marea, MouseOverColor, MouseOverColor.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
                     }
-                    else if (CheckState == CheckState.Checked)
+                    else if (CheckState == CheckStateType.Checked)
                     {
                         using (var b = new LinearGradientBrush(marea, ButtonFaceColour, ButtonFaceColour.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
@@ -244,7 +255,7 @@ namespace GLOFC.GL4.Controls
         {
             if (ImageUnchecked != null)     // if we have an alt image for unchecked
             {
-                Image image = CheckState == CheckState.Checked ? Image : ((CheckState == CheckState.Indeterminate && ImageIndeterminate != null) ? ImageIndeterminate : (ImageUnchecked != null ? ImageUnchecked : Image));
+                Image image = CheckState == CheckStateType.Checked ? Image : ((CheckState == CheckStateType.Indeterminate && ImageIndeterminate != null) ? ImageIndeterminate : (ImageUnchecked != null ? ImageUnchecked : Image));
                 base.DrawImage(image, box, g, (Enabled) ? drawnImageAttributesEnabled : drawnImageAttributesDisabled);
             }
             else
@@ -280,7 +291,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private GL4.Controls.CheckBoxAppearance appearance { get; set; } = CheckBoxAppearance.Normal;
+        private CheckBoxAppearance appearance { get; set; } = CheckBoxAppearance.Normal;
         private ContentAlignment checkalign { get; set; } = ContentAlignment.MiddleCenter;
 
         private Image imageUnchecked { get; set; } = null;               // set if using different images for unchecked

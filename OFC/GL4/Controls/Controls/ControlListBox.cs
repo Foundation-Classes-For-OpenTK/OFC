@@ -92,9 +92,9 @@ namespace GLOFC.GL4.Controls
         /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value; } }
         /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowUpDrawAngle { get { return scrollbar.ArrowDecreaseDrawAngle; } set { scrollbar.ArrowDecreaseDrawAngle = value; } }
+        public float ArrowUpDrawAngle { get { return scrollbar.ArrowUpDrawAngle; } set { scrollbar.ArrowUpDrawAngle = value; } }
         /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowDownDrawAngle { get { return scrollbar.ArrowIncreaseDrawAngle; } set { scrollbar.ArrowIncreaseDrawAngle = value; } }
+        public float ArrowDownDrawAngle { get { return scrollbar.ArrowDownDrawAngle; } set { scrollbar.ArrowDownDrawAngle = value; } }
         /// <summary> Scroll bar arrow color gradient scaling</summary>
         public float ArrowColorScaling { get { return scrollbar.ArrowColorScaling; } set { scrollbar.ArrowColorScaling = value; } }
         /// <summary> Scroll bar mouse over color</summary>
@@ -121,7 +121,7 @@ namespace GLOFC.GL4.Controls
             BackColorNI = BackColorGradientAltNI = DefaultListBoxBackColor;
             BorderColorNI = DefaultListBoxBorderColor;
             foreColor = DefaultListBoxForeColor;
-            SetNI(margin: new Margin(0), borderwidth: 1, padding: new Padding(1));
+            SetNI(margin: new MarginType(0), borderwidth: 1, padding: new PaddingType(1));
             InvalidateOnFocusChange = true;
             InvalidateOnEnterLeave = true;
             scrollbar = new GLScrollBar();

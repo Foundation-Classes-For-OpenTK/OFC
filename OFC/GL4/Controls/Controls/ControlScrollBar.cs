@@ -19,23 +19,23 @@ using System.Drawing;
 namespace GLOFC.GL4.Controls
 {
     /// <summary>
-    /// Scroll event argument
-    /// </summary>
-    public struct ScrollEventArgs
-    {
-        /// <summary> New value of scroll </summary>
-        public int NewValue { get; set; }
-        /// <summary> Old value of scroll </summary>
-        public int OldValue { get; }
-        /// <summary> Constructor </summary>
-        public ScrollEventArgs(int oldv, int newv) { NewValue = newv; OldValue = oldv; }
-    }
-
-    /// <summary>
     /// Scroll bar control, horizontal or vertical
     /// </summary>
     public class GLScrollBar : GLBaseControl
     {
+        /// <summary>
+        /// Scroll event argument
+        /// </summary>
+        public struct ScrollEventArgs
+        {
+            /// <summary> New value of scroll </summary>
+            public int NewValue { get; set; }
+            /// <summary> Old value of scroll </summary>
+            public int OldValue { get; }
+            /// <summary> Constructor </summary>
+            public ScrollEventArgs(int oldv, int newv) { NewValue = newv; OldValue = oldv; }
+        }
+
         /// <summary> Callback when scroll bar is moved </summary>
         public Action<GLScrollBar, ScrollEventArgs> Scroll { get; set; } = null;
 
@@ -62,15 +62,14 @@ namespace GLOFC.GL4.Controls
         public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }       // of text
         /// <summary> Scroll bar slider color </summary>
         public Color SliderColor { get { return slidercolor; } set { slidercolor = value; Invalidate(); } }
-
         /// <summary> Scroll bar arrow button color</summary>
         public Color ArrowButtonColor { get { return arrowButtonColor; } set { arrowButtonColor = value; Invalidate(); } }
         /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return arrowBorderColor; } set { arrowBorderColor = value; Invalidate(); } }
         /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowDecreaseDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
+        public float ArrowUpDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
         /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowIncreaseDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
+        public float ArrowDownDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
         /// <summary> Scroll bar arrow color gradient scaling</summary>
         public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
         /// <summary> Scroll bar mouse over color</summary>
@@ -136,7 +135,7 @@ namespace GLOFC.GL4.Controls
             {
                 c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ArrowButtonColor);
                 c2 = c1.Multiply(ArrowColorScaling);
-                angle = (but == MouseOver.MouseOverDecrease) ? ArrowDecreaseDrawAngle : ArrowIncreaseDrawAngle;
+                angle = (but == MouseOver.MouseOverDecrease) ? ArrowUpDrawAngle : ArrowDownDrawAngle;
                 if ( HorizontalScroll)
                     angle = (angle - 90) % 360;
             }

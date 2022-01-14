@@ -29,6 +29,7 @@ using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
 using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {

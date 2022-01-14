@@ -16,29 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace T1
-{
-    /// <summary>
-    /// Test2
-    /// </summary>
-    public class Test
-    {
-        /// <summary> </summary>
-        public enum Test1
-        {
-            /// <summary> </summary>
-            One,
-            /// <summary> </summary>
-            two
-        }
-    }
-
-
-}
-
 namespace GLOFC.GL4.Controls
 {
-
     /// <summary>
     /// Table layout panel, using the Row and Column properties of controls to assign them to cells
     /// </summary>
@@ -57,7 +36,8 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary>
-        /// Row and Column style
+        /// Row and Column style. Set up in table the Rows and Columns list with definitions on each row and column and 
+        /// how you want it to size. Size can be set absolute pixels, by weighting, or autosized to maximum item in cell
         /// </summary>
         public struct Style
         {
@@ -84,7 +64,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Styles for each column </summary>
         public List<Style> Columns { get { return columns; } set { columns = value; InvalidateLayout(); } }
         /// <summary> Padding around each cell </summary>
-        public Padding CellPadding { get { return cellPadding; } set { cellPadding = value; InvalidateLayout(); } }
+        public PaddingType CellPadding { get { return cellPadding; } set { cellPadding = value; InvalidateLayout(); } }
         
         /// <summary> Autosize is not supported </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
@@ -220,7 +200,7 @@ namespace GLOFC.GL4.Controls
 
         private List<Style> rows  = null;
         private List<Style> columns  = null;
-        private Padding cellPadding = new Padding(1);
+        private PaddingType cellPadding = new PaddingType(1);
     }
 }
 

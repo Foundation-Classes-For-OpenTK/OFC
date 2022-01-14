@@ -16,40 +16,61 @@ using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Panel with scroll bar
+    /// </summary>
     public class GLScrollPanelScrollBar : GLBaseControl
     {
+        /// <summary> Scroll panelback color</summary>
         public Color ScrollBackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
+        /// <summary> Scroll bar arrow color</summary>
 
         public Color ArrowColor { get { return vertscrollbar.ArrowColor; } set { horzscrollbar.ArrowColor = vertscrollbar.ArrowColor = value;  } }       // of text
+        /// <summary> Scroll bar slider color </summary>
         public Color SliderColor { get { return vertscrollbar.SliderColor; } set { horzscrollbar.SliderColor = vertscrollbar.SliderColor = value;  } }
-
+        /// <summary> Scroll bar arrow button color</summary>
         public Color ArrowButtonColor { get { return vertscrollbar.ArrowButtonColor; } set { horzscrollbar.ArrowButtonColor = vertscrollbar.ArrowButtonColor = value; } }
+        /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return vertscrollbar.ArrowBorderColor; } set { horzscrollbar.ArrowBorderColor = vertscrollbar.ArrowBorderColor = value;  } }
-        public float ArrowUpDrawAngle { get { return vertscrollbar.ArrowDecreaseDrawAngle; } set { horzscrollbar.ArrowDecreaseDrawAngle = vertscrollbar.ArrowDecreaseDrawAngle = value;  } }
-        public float ArrowDownDrawAngle { get { return vertscrollbar.ArrowIncreaseDrawAngle; } set { horzscrollbar.ArrowIncreaseDrawAngle = vertscrollbar.ArrowIncreaseDrawAngle = value;  } }
+        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
+        public float ArrowUpDrawAngle { get { return vertscrollbar.ArrowUpDrawAngle; } set { horzscrollbar.ArrowUpDrawAngle = vertscrollbar.ArrowUpDrawAngle = value;  } }
+        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
+        public float ArrowDownDrawAngle { get { return vertscrollbar.ArrowDownDrawAngle; } set { horzscrollbar.ArrowDownDrawAngle = vertscrollbar.ArrowDownDrawAngle = value;  } }
+        /// <summary> Scroll bar arrow color gradient scaling</summary>        
         public float ArrowColorScaling { get { return vertscrollbar.ArrowColorScaling; } set { horzscrollbar.ArrowColorScaling = vertscrollbar.ArrowColorScaling = value;  } }
-
+        /// <summary> Scroll bar mouse over color</summary>
         public Color MouseOverButtonColor { get { return vertscrollbar.MouseOverButtonColor; } set { horzscrollbar.MouseOverButtonColor = vertscrollbar.MouseOverButtonColor = value;  } }
+        /// <summary> Scroll bar mouse pressed color</summary>
         public Color MousePressedButtonColor { get { return vertscrollbar.MousePressedButtonColor; } set { horzscrollbar.MousePressedButtonColor = vertscrollbar.MousePressedButtonColor = value;  } }
+        /// <summary> Scroll bar thumb button color</summary>
         public Color ThumbButtonColor { get { return vertscrollbar.ThumbButtonColor; } set { horzscrollbar.ThumbButtonColor = vertscrollbar.ThumbButtonColor = value;  } }
+        /// <summary> Scroll bar thumb border color</summary>
         public Color ThumbBorderColor { get { return vertscrollbar.ThumbBorderColor; } set { horzscrollbar.ThumbBorderColor = vertscrollbar.ThumbBorderColor = value;  } }
+        /// <summary> Scroll bar thumb color gradient scaling</summary>
         public float ThumbColorScaling { get { return vertscrollbar.ThumbColorScaling; } set { horzscrollbar.ThumbColorScaling = vertscrollbar.ThumbColorScaling = value;  } }
+        /// <summary> Scroll bar thumb color gradient angle</summary>
         public float ThumbDrawAngle { get { return vertscrollbar.ThumbDrawAngle; } set { horzscrollbar.ThumbDrawAngle = vertscrollbar.ThumbDrawAngle = value;  } }
 
+        /// <summary> Controls of panel in Z order</summary>
         public override IList<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
+        /// <summary> Controls of panel in inverse Z order</summary>
         public override IList<GLBaseControl> ControlsIZ { get { return scrollpanel.ControlsIZ; } }      // read only
 
+        /// <summary> Scroll bar width </summary>
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
+        /// <summary> Enable horizontal scroll bar </summary>
         public bool EnableHorzScrolling { get { return horzscrollbar.Visible; } set { horzscrollbar.Visible = value; } }
+        /// <summary> Enable vertical scroll bar</summary>
         public bool EnableVertScrolling { get { return vertscrollbar.Visible; } set { vertscrollbar.Visible = value; } }
 
+        /// <summary> Disable autosize </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> Construct with name and location </summary>
         public GLScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
@@ -73,10 +94,12 @@ namespace GLOFC.GL4.Controls
             horzscrollbar.Scroll += HScrolled;
         }
 
+        /// <summary> Empty Construct</summary>
         public GLScrollPanelScrollBar(string name = "SPSB?") : this(name, DefaultWindowRectangle)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Add(GLBaseControl, bool)"/>
         public override void Add(GLBaseControl other, bool atback = false)           // we need to override, since we want controls added to the scroll panel not us
         {
             scrollpanel.Add(other, atback);
@@ -87,20 +110,21 @@ namespace GLOFC.GL4.Controls
         private GLHorizontalScrollBar horzscrollbar;
         private GLScrollPanel scrollpanel;
 
-        private void VScrolled(GLBaseControl c, ScrollEventArgs e)
+        private void VScrolled(GLBaseControl c, GLScrollBar.ScrollEventArgs e)
         {
             scrollpanel.VertScrollPos = vertscrollbar.Value;
         }
-        private void HScrolled(GLBaseControl c, ScrollEventArgs e)
+        private void HScrolled(GLBaseControl c, GLScrollBar.ScrollEventArgs e)
         {
             scrollpanel.HorzScrollPos = horzscrollbar.Value;
         }
-
+        
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             vertscrollbar.Width = ScrollBarWidth;
             horzscrollbar.Height = ScrollBarWidth;
-            horzscrollbar.DockingMargin = new Margin(0,0,vertscrollbar.Visible ? ScrollBarWidth : 0,0);
+            horzscrollbar.DockingMargin = new MarginType(0,0,vertscrollbar.Visible ? ScrollBarWidth : 0,0);
 
             base.PerformRecursiveLayout();   // the docking sorts out the positioning of the controls
 

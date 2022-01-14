@@ -29,6 +29,7 @@ using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
 using GLOFC.GL4.Textures;
 using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -198,15 +199,15 @@ namespace TestOpenTk
             if (true)
             {
                 GLPanel p1 = new GLPanel("P3", new Size(150, 150), DockingType.TopLeft, 0);
-                p1.SetMarginBorderWidth(new Margin(1), 1, Color.Black, new GLOFC.GL4.Controls.Padding(1));
+                p1.SetMarginBorderWidth(new MarginType(1), 1, Color.Black, new PaddingType(1));
                 pform.Add(p1);
             }
 
             if (true)
             {
                 GLTableLayoutPanel ptable = new GLTableLayoutPanel("tablelayout", new Rectangle(5, 200, 190, 190));
-                ptable.Margin = new Margin(2);
-                ptable.Padding = new GLOFC.GL4.Controls.Padding(2);
+                ptable.Margin = new MarginType(2);
+                ptable.Padding = new PaddingType(2);
                 ptable.BorderWidth = 1;
                 ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
                 ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
@@ -228,8 +229,8 @@ namespace TestOpenTk
             if (true)
             {
                 GLFlowLayoutPanel pflow1 = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190, 190));
-                pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
-                pflow1.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 0);
+                pflow1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
+                pflow1.FlowPadding = new PaddingType(10, 5, 0, 0);
                 pform.Add(pflow1);
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
                 pflow1.Add(pti1);
@@ -272,7 +273,7 @@ namespace TestOpenTk
             {
                 GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
                 spb1.ScrollBackColor = Color.Yellow;
-                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
@@ -295,7 +296,7 @@ namespace TestOpenTk
             {
                 GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan2", new Rectangle(col3, 5, 190, 190));
                 spb1.ScrollBackColor = Color.Blue;
-                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
@@ -353,16 +354,16 @@ namespace TestOpenTk
             if (true)
             {
                 GLPanel pouter = new GLPanel("outerflow", new Rectangle(col3, 200, 1300, 30));      // make it very wide, so the child has all the width it wants to flow into
-                pouter.SetMarginBorderWidth(new Margin(5), 1, Color.Blue, new Padding(5));
+                pouter.SetMarginBorderWidth(new MarginType(5), 1, Color.Blue, new PaddingType(5));
                 pouter.AutoSize = true;
 
                 GLFlowLayoutPanel pflow2;
                 pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(0,0,10,10));
                 pflow2.AutoSize = true;
-                pflow2.Margin = new Margin(2);
-                pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
+                pflow2.Margin = new MarginType(2);
+                pflow2.Padding = new PaddingType(2);
                 pflow2.BorderWidth = 1;
-                pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
+                pflow2.FlowPadding = new PaddingType(10, 5, 0, 5);
 
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
                 pflow2.Add(pti1);

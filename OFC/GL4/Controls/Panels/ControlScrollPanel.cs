@@ -18,34 +18,44 @@ using System.Drawing;
 
 namespace GLOFC.GL4.Controls
 {
-    // Scroll panel
-    // must not be a child of GLForm as it needs a bitmap to paint into
+    /// <summary>
+    /// Scroll panel control.
+    /// Must not be a child of GLControlDisplay
+    /// </summary>
 
     public class GLScrollPanel : GLPanel
     {
+        /// <summary> Vertical scroll range </summary>
+        public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
+        /// <summary> Vertical scroll position get and set </summary>
+        public int VertScrollPos { get { return ScrollOffset.Y; } set { SetScrollPos(ScrollOffset.X, value); } }
+        /// <summary> Horizontal scroll range </summary>
+        public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }
+        /// <summary> Horizontal scroll position get and set </summary>
+        public int HorzScrollPos { get { return ScrollOffset.X; } set { SetScrollPos(value, ScrollOffset.Y); } }
+
+        /// <summary> </summary>
+        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
+
+        /// <summary> Constructor with name and bounds </summary>
         public GLScrollPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
         }
 
+        /// <summary> Empty Constructor </summary>
         public GLScrollPanel(string name = "SP?") : this(name, DefaultWindowRectangle)
         {
         }
 
-        public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
-
-        public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
-        public int VertScrollPos { get { return ScrollOffset.Y; } set { SetScrollPos(ScrollOffset.X,value); } }
-        public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }
-        public int HorzScrollPos { get { return ScrollOffset.X; } set { SetScrollPos(value,ScrollOffset.Y); } }
-
-        // Width/Height is size of the control without scrolling
-        // we layout the children within that area.
-        // but if we have areas outside that, the bitmap is expanded to cover it
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
+            // Width/Height is size of the control without scrolling
+            // we layout the children within that area.
+            // but if we have areas outside that, the bitmap is expanded to cover it
+
             base.PerformRecursiveLayout();               // layout the children
 
             bool needbitmap = false;
@@ -75,10 +85,11 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // called to paint, with gr set to image to paint into
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
+            // called to paint, with gr set to image to paint into
+
             if ( LevelBitmap != null )
                 gr.DrawImage(LevelBitmap, 0,0, new Rectangle(ScrollOffset.X, ScrollOffset.Y, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
         }

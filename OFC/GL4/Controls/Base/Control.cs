@@ -73,11 +73,11 @@ namespace GLOFC.GL4.Controls
 
         // padding/margin and border control (Do not apply to display control)
         /// <summary> Padding: between the border line and client area </summary>
-        public Padding Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public PaddingType Padding { get { return padding; } set { if (padding != value) { padding = value; CalcClientRectangle(); InvalidateLayout(); } } }
         /// <summary> Margin: between the windows bounds and the border line</summary>
-        public Margin Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
+        public MarginType Margin { get { return margin; } set { if (margin != value) { margin = value; CalcClientRectangle(); InvalidateLayout(); } } }
         /// <summary> Set up margin, border width, and padding quickly </summary>
-        public void SetMarginBorderWidth(Margin m, int borderw, Color borderc, Padding p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
+        public void SetMarginBorderWidth(MarginType m, int borderw, Color borderc, PaddingType p) { margin = m; padding = p; bordercolor = borderc; borderwidth = borderw; CalcClientRectangle(); InvalidateLayout(); }
         /// <summary> Border color </summary>
         public Color BorderColor { get { return bordercolor; } set { if (bordercolor != value) { bordercolor = value; Invalidate(); } } }
         /// <summary> Border Width, 0 = off </summary>
@@ -111,7 +111,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Docking type</summary>
         public DockingType Dock { get { return docktype; } set { if (docktype != value) { docktype = value; ParentInvalidateLayout(); } } }
         /// <summary> Docking margin, allows docking to be offset from edge, for Left,Right,Bottom,Top  </summary>
-        public Margin DockingMargin { get { return dockingmargin; } set { if (dockingmargin != value) { dockingmargin = value; InvalidateLayout(); } } }
+        public MarginType DockingMargin { get { return dockingmargin; } set { if (dockingmargin != value) { dockingmargin = value; InvalidateLayout(); } } }
         /// <summary> Docking percent of window, allows docked window width or height to be set to a percentage of the parent bounds, for Left,Right,Bottom,Top </summary>
         public float DockPercent { get { return dockpercent; } set { if (value != dockpercent) { dockpercent = value; ParentInvalidateLayout(); } } }        // % in 0-1 terms used to dock on left,top,right,bottom.  0 means just use width/height
 

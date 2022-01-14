@@ -15,6 +15,7 @@
 
 using System;
 using System.Drawing;
+using static GLOFC.GL4.Controls.GLBaseControl;
 #pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls

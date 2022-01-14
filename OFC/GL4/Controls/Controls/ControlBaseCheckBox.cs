@@ -19,46 +19,37 @@ using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
-    /// <summary> Appearance of checkbox </summary>
-    public enum CheckBoxAppearance
-    {
-        /// <summary> Normal (Square)</summary>
-        Normal = 0,
-        /// <summary> Look like a button </summary>
-        Button = 1,
-        /// <summary> Radio button (Round)</summary>
-        Radio = 2,
-    }
-
-    /// <summary> Check state of checkbox </summary>
-    public enum CheckState {
-        /// <summary> Unchecked </summary>
-        Unchecked,
-        /// <summary> Checked </summary>
-        Checked,
-        /// <summary> Indeterminate </summary>
-        Indeterminate
-    };
 
     /// <summary>
     /// Base class for check boxes
     /// </summary>
     public abstract class GLCheckBoxBase : GLButtonTextBase
     {
+        /// <summary> Check state of checkbox </summary>
+        public enum CheckStateType
+        {
+            /// <summary> Unchecked </summary>
+            Unchecked,
+            /// <summary> Checked </summary>
+            Checked,
+            /// <summary> Indeterminate </summary>
+            Indeterminate
+        };
+
         /// <summary> Callback on check changed </summary>
         public Action<GLBaseControl> CheckChanged { get; set; } = null;
         /// <summary> Callback on click </summary>
         public Action<GLBaseControl> Click { get; set; } = null;
 
         /// <summary> Current check state. Setting it causes the CheckChanged event </summary>
-        public CheckState CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
+        public CheckStateType CheckState { get { return checkstate; } set { SetCheckState(value, true); } }
         /// <summary> Current check state. Setting it does not cause the CheckChanged event </summary>
-        public CheckState CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
+        public CheckStateType CheckStateNoChangeEvent { get { return checkstate; } set { SetCheckState(value, false); } }
         /// <summary> Is in Checked state?  Setting it causes the CheckChanged event</summary>
-        public bool Checked { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, true); } }
+        public bool Checked { get { return checkstate == CheckStateType.Checked; } set { SetCheckState(value ? CheckStateType.Checked : CheckStateType.Unchecked, true); } }
         /// <summary> Is in Checked state?  Setting it does not cause the CheckChanged event</summary>
         /// <summary> </summary>
-        public bool CheckedNoChangeEvent { get { return checkstate == CheckState.Checked; } set { SetCheckState(value ? CheckState.Checked : CheckState.Unchecked, false); } }
+        public bool CheckedNoChangeEvent { get { return checkstate == CheckStateType.Checked; } set { SetCheckState(value ? CheckStateType.Checked : CheckStateType.Unchecked, false); } }
         /// <summary> Check set on click </summary>
         public bool CheckOnClick { get; set; } = false;            
         /// <summary> Is in a radio button group, grouped by the parent class</summary>
@@ -94,10 +85,10 @@ namespace GLOFC.GL4.Controls
             SetNI(clientsize: s);
         }
 
-        private protected void DrawTick(Rectangle checkarea, Color c1, CheckState chk, Graphics gr)
+        private protected void DrawTick(Rectangle checkarea, Color c1, CheckStateType chk, Graphics gr)
         {
             gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            if (chk == CheckState.Checked)
+            if (chk == CheckStateType.Checked)
             {
                 Point pt1 = new Point(checkarea.X + 2, checkarea.Y + checkarea.Height / 2 - 1);
                 Point pt2 = new Point(checkarea.X + checkarea.Width / 2 - 1, checkarea.Bottom - 2);
@@ -109,7 +100,7 @@ namespace GLOFC.GL4.Controls
                     gr.DrawLine(pcheck, pt2, pt3);
                 }
             }
-            else if (chk == CheckState.Indeterminate)
+            else if (chk == CheckStateType.Indeterminate)
             {
                 Size cb = new Size(checkarea.Width - 5, checkarea.Height - 5);
                 if (cb.Width > 0 && cb.Height > 0)
@@ -124,19 +115,19 @@ namespace GLOFC.GL4.Controls
             gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
         }
 
-        private protected void SetCheckState(CheckState value, bool firechange)
+        private protected void SetCheckState(CheckStateType value, bool firechange)
         {
             if (checkstate != value)
             {
                 checkstate = value;
 
-                if (GroupRadioButton && Parent != null && checkstate == CheckState.Checked)
+                if (GroupRadioButton && Parent != null && checkstate == CheckStateType.Checked)
                 {
                     foreach (GLCheckBoxBase c in Parent.ControlsZ.OfType<GLCheckBoxBase>())
                     {
-                        if (c != this && c.GroupRadioButton == true && c.checkstate != CheckState.Unchecked)    // if not us, in a group, and not unchecked
+                        if (c != this && c.GroupRadioButton == true && c.checkstate != CheckStateType.Unchecked)    // if not us, in a group, and not unchecked
                         {
-                            c.checkstate = CheckState.Unchecked;        // set directly
+                            c.checkstate = CheckStateType.Unchecked;        // set directly
                             if (firechange)
                                 c.OnCheckChanged();                         // fire change
                             c.Invalidate();
@@ -169,9 +160,9 @@ namespace GLOFC.GL4.Controls
         /// <summary> Call to perform Click functionality  </summary>
         public virtual void OnClick()
         {
-            if ( CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckState.Checked))
+            if ( CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckStateType.Checked))
             {
-                SetCheckState(CheckState == CheckState.Unchecked ? CheckState.Checked : CheckState.Unchecked, true);
+                SetCheckState(CheckState == CheckStateType.Unchecked ? CheckStateType.Checked : CheckStateType.Unchecked, true);
             }
 
             Click?.Invoke(this);
@@ -187,7 +178,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private GL4.Controls.CheckState checkstate { get; set; } = CheckState.Unchecked;
+        private CheckStateType checkstate { get; set; } = CheckStateType.Unchecked;
         private Color checkBoxBorderColor { get; set; } = DefaultCheckBoxBorderColor;
         private Color checkBoxInnerColor { get; set; } = DefaultCheckBoxInnerColor;    // Normal only inner colour
         private Color checkColor { get; set; } = DefaultCheckColor;         // Button - back colour when checked, Normal - check colour

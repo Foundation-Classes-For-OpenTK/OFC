@@ -117,7 +117,7 @@ namespace GLOFC.GL4.Controls
             BorderColorNI = DefaultComboBoxBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultComboBoxBackColor;
             foreColor = DefaultComboBoxForeColor;
-            SetNI(padding: new Padding(1), borderwidth: 1);
+            SetNI(padding: new PaddingType(1), borderwidth: 1);
         }
 
         /// <summary> Construct with name, bounds</summary>

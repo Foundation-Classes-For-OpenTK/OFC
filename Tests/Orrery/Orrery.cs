@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.ShapeFactory;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {

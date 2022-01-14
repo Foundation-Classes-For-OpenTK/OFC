@@ -39,8 +39,8 @@ namespace GLOFC.GL4.Controls
         {
             var p = new Point((int)(Begin.Value.X + (double)(Target.X - Begin.Value.X) * delta), (int)(Begin.Value.Y + (double)(Target.Y - Begin.Value.Y) * delta));
             //System.Diagnostics.Debug.WriteLine("Animate {0} to pos {1}", cs.Name, p);
-            if (cs.Dock != DockingType.None)
-                cs.Dock = DockingType.None;
+            if (cs.Dock != GLBaseControl.DockingType.None)
+                cs.Dock = GLBaseControl.DockingType.None;
             cs.Location = p;
         }
 
@@ -71,8 +71,8 @@ namespace GLOFC.GL4.Controls
         {
             var s = new Size((int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta), (int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta));
             //System.Diagnostics.Debug.WriteLine("Animate {0} to size {1}", cs.Name, s);
-            if (cs.Dock != DockingType.None)
-                cs.Dock = DockingType.None;
+            if (cs.Dock != GLBaseControl.DockingType.None)
+                cs.Dock = GLBaseControl.DockingType.None;
             cs.Size = s;
         }
 

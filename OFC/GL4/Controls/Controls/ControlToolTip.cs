@@ -45,7 +45,7 @@ namespace GLOFC.GL4.Controls
         {
             BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultToolTipBackColor;
             foreColor = DefaultToolTipForeColor;
-            SetNI(padding: new Padding(3));
+            SetNI(padding: new PaddingType(3));
             VisibleNI = false;
             timer.Tick += TimeOut;
         }
