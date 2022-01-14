@@ -222,7 +222,7 @@ namespace GLOFC.GL4.Controls
         public bool EnableThemer { get; set; } = true;
 
         /// <summary> Cursor shape which is displayed when hovering over this control </summary>
-        public GLCursorType Cursor { get { return cursor; } set { if (value != cursor) { cursor = value; FindDisplay()?.Gc_CursorTo(this, value); } } }
+        public GLWindowControl.GLCursorType Cursor { get { return cursor; } set { if (value != cursor) { cursor = value; FindDisplay()?.Gc_CursorTo(this, value); } } }
 
         // children control list
 

@@ -165,18 +165,18 @@ namespace GLOFC.GL4.Controls
             {
                 if (dgv.AllowUserToResizeColumns && e.Location.X >= Width + leftmargin)
                 {
-                    Cursor = GLCursorType.EW;
+                    Cursor = GLWindowControl.GLCursorType.EW;
                     return;
                 }
 
                 GLDataGridView.RowColPos g;
                 if (dgv.AllowUserToResizeRows && (g = contentpanel.GridRowCol(e.Location)) != null && g.Location.Y >= dgv.Rows[g.Row].Height - bottommargin)
                 {
-                    Cursor = dgv.Rows[g.Row].AutoSize == false ? GLCursorType.NS : GLCursorType.Normal;
+                    Cursor = dgv.Rows[g.Row].AutoSize == false ? GLWindowControl.GLCursorType.NS : GLWindowControl.GLCursorType.Normal;
                     return;
                 }
 
-                Cursor = GLCursorType.Normal;
+                Cursor = GLWindowControl.GLCursorType.Normal;
             }
         }
 

@@ -14,26 +14,48 @@
 
 using System;
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Flow Layout panel
+    /// </summary>
     public class GLFlowLayoutPanel : GLPanel
     {
+        /// <summary> Flow direction if panel </summary>
+        public enum ControlFlowDirection {
+            /// <summary> Flow left to right </summary>
+            Right, 
+            /// <summary> Flow down </summary>
+            Down
+        };
+
+        /// <summary> Flow direction of panel</summary>
+        public ControlFlowDirection FlowDirection { get { return flowDirection; } set { flowDirection = value; InvalidateLayout(); } }
+        /// <summary> Flow in Z order if true, else flow in inverse Z order </summary>
+        public bool FlowInZOrder { get; set; } = true;
+        /// <summary> If set, autosizes both width and height, else just only one of its width/height dependent on flow direction. AutoSize must be set </summary>
+        public bool AutoSizeBoth { get; set; } = true;     
+        /// <summary> If set, keep flow within parent bounds, else it will flow without regard to parent bounds</summary>
+        public bool KeepWithinParent { get; set; } = true;  
+        /// <summary> Padding around flow positions to space out the flow</summary>
+        public GL4.Controls.Padding FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
+
+        /// <summary> Construct with name and bounds </summary>
         public GLFlowLayoutPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultFlowLayoutBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultFlowLayoutBackColor;
-
         }
 
+        /// <summary> Construct with name, docking type and docking percent </summary>
         public GLFlowLayoutPanel(string name, DockingType type, float dockpercent) : base(name, DefaultWindowRectangle)
         {
             Dock = type;
             DockPercent = dockpercent;
-
         }
 
+        /// <summary> Construct with name, size, docking type and docking percentage </summary>
         public GLFlowLayoutPanel(string name, Size sizep, DockingType type, float dockpercentage) : base(name, DefaultWindowRectangle)
         {
             Dock = type;
@@ -41,26 +63,19 @@ namespace GLOFC.GL4.Controls
             SetNI(size: sizep);
         }
 
+        /// <summary> Empty constructor</summary>
         public GLFlowLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {
         }
 
-        public enum ControlFlowDirection { Right, Down };
-        public ControlFlowDirection FlowDirection { get { return flowDirection; } set { flowDirection = value; InvalidateLayout(); } }
-
-        public bool FlowInZOrder { get; set; } = true;      // if set, flown in Z order, else flow in IZ order
-        public bool AutoSizeBoth { get; set; } = true;      // if set, autosizes both width and height, else just only one of its width/height dependent on flow direction
-        public bool KeepWithinParent { get; set; } = true;      // if set, keep within parent bounds
-
-        public GL4.Controls.Padding FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
-
-       
-        // Sizing has been recursively done for all children, now size us
-        // pick the PostChild hook
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControlPostChild(Size)"/>
         protected override void SizeControlPostChild(Size parentsize)
         {
             base.SizeControlPostChild(parentsize);
-    
+
+            // Sizing has been recursively done for all children, now size us
+            // pick the PostChild hook
+
             if (AutoSize)       // width stays the same, height changes, width based on what parent says we can have (either our width, or docked width)
             {
                 Size arealeft = new Size(parentsize.Width - Left, parentsize.Height - Top);
@@ -90,8 +105,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // now we are laying out from top down
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             //System.Diagnostics.Debug.WriteLine("Flow Laying out " + Name + " In client size " + ClientSize);

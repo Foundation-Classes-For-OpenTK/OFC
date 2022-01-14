@@ -14,14 +14,14 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <DefaultDocumentationGeneratedPages>Types</DefaultDocumentationGeneratedPages>
+    <DefaultDocumentationGeneratedPages>Classes,Delegates,Interfaces</DefaultDocumentationGeneratedPages>
     <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
     <DefaultDocumentationFolder>bin\mddoc</DefaultDocumentationFolder>
     <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
     <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
     <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
     <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
-    <DefaultDocumentationNestedTypeVisibilities>Namespace</DefaultDocumentationNestedTypeVisibilities>
+    <DefaultDocumentationNestedTypeVisibilities>DeclaringType</DefaultDocumentationNestedTypeVisibilities>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -164,6 +164,7 @@
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
     <Compile Include="GL4\Textures\Texture1DArray.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
+    <Compile Include="GL\GLEventArguments.cs" />
     <Compile Include="GL\GLMatrixArray.cs" />
     <Compile Include="GL\GLMatrixString.cs" />
     <Compile Include="GL\GLMatrix4Statics.cs" />
@@ -208,7 +209,7 @@
     <Compile Include="GL4\UniformStorageBlocks\MatrixCalcUniformBlock.cs" />
     <Compile Include="GL4\BasicTypes\GLUniformsStorageBlocks.cs" />
     <Compile Include="GL4\BasicTypes\GLVertexArray.cs" />
-    <Compile Include="GL\GLClasses.cs" />
+    <Compile Include="GL\GLWindowControl.cs" />
     <Compile Include="GL4\BasicTypes\GL4Statics.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

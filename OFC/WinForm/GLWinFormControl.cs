@@ -86,17 +86,17 @@ namespace GLOFC.WinForm
         public void Invalidate() { glControl.Invalidate(); }
 
         /// <summary> Set cursor type </summary>
-        public void SetCursor(GLCursorType t)
+        public void SetCursor(GLWindowControl.GLCursorType t)
         {
-            if (t == GLCursorType.Wait)
+            if (t == GLWindowControl.GLCursorType.Wait)
                 glControl.Cursor = Cursors.WaitCursor;
-            else if (t == GLCursorType.EW)
+            else if (t == GLWindowControl.GLCursorType.EW)
                 glControl.Cursor = Cursors.SizeWE;
-            else if (t == GLCursorType.NS)
+            else if (t == GLWindowControl.GLCursorType.NS)
                 glControl.Cursor = Cursors.SizeNS;
-            else if (t == GLCursorType.Move)
+            else if (t == GLWindowControl.GLCursorType.Move)
                 glControl.Cursor = Cursors.Hand;
-            else if (t == GLCursorType.NWSE)
+            else if (t == GLWindowControl.GLCursorType.NWSE)
                 glControl.Cursor = Cursors.SizeNWSE;
             else
                 glControl.Cursor = Cursors.Default;

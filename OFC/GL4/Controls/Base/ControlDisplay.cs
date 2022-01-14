@@ -418,7 +418,7 @@ namespace GLOFC.GL4.Controls
         protected override void SetPos(int left, int top, int width, int height) { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
 
         /// <summary> Internal interface do not use </summary>
-        public void SetCursor(GLCursorType t)
+        public void SetCursor(GLWindowControl.GLCursorType t)
         {
             if (t != lastcursor)
             {
@@ -457,7 +457,7 @@ namespace GLOFC.GL4.Controls
         private GLRenderableItem ri;
         private IGLProgramShader shader;
         private float startz, deltaz;
-        private GLCursorType lastcursor = GLCursorType.Normal;
+        private GLWindowControl.GLCursorType lastcursor = GLWindowControl.GLCursorType.Normal;
         private IntPtr context;
 
         #endregion

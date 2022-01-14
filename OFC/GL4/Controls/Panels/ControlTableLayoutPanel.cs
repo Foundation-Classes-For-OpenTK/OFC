@@ -15,50 +15,95 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-#pragma warning disable 1591
+
+namespace T1
+{
+    /// <summary>
+    /// Test2
+    /// </summary>
+    public class Test
+    {
+        /// <summary> </summary>
+        public enum Test1
+        {
+            /// <summary> </summary>
+            One,
+            /// <summary> </summary>
+            two
+        }
+    }
+
+
+}
 
 namespace GLOFC.GL4.Controls
 {
+
+    /// <summary>
+    /// Table layout panel, using the Row and Column properties of controls to assign them to cells
+    /// </summary>
     public class GLTableLayoutPanel : GLPanel
     {
+        /// <summary> Constructor with name and bounds </summary>
         public GLTableLayoutPanel(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultTableLayoutBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
         }
 
+        /// <summary> Empty Constructor </summary>
         public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {
         }
 
+        /// <summary>
+        /// Row and Column style
+        /// </summary>
         public struct Style
         {
-            public enum SizeTypeEnum { Absolute, Relative, Autosize };
+            /// <summary> Size Type </summary>
+            public enum SizeTypeEnum {
+                /// <summary> Size is set by Value in pixels </summary>
+                Absolute,
+                /// <summary> Size is determined by weight of Value against other columns </summary>
+                Weight,
+                /// <summary> Size is autosized</summary>
+                Autosize
+            };
+            /// <summary> Select the column or row sizing mode, Absolute, Weight or Autosize </summary>
             public SizeTypeEnum SizeType { get; set; }
+            /// <summary> Either pixel width (Absolute mode) or Weight (Weight mode)</summary>
             public int Value { get; set; }
 
+            /// <summary> Constructor </summary>
             public Style(SizeTypeEnum ste, int v) { SizeType = ste; Value = v; }
         }
 
+        /// <summary> Styles for each row </summary>
         public List<Style> Rows { get { return rows; } set { rows = value; InvalidateLayout(); } }
+        /// <summary> Styles for each column </summary>
         public List<Style> Columns { get { return columns; } set { columns = value; InvalidateLayout(); } }
-        public GL4.Controls.Padding CellPadding { get { return cellPadding; } set { cellPadding = value; InvalidateLayout(); } }
+        /// <summary> Padding around each cell </summary>
+        public Padding CellPadding { get { return cellPadding; } set { cellPadding = value; InvalidateLayout(); } }
+        
+        /// <summary> Autosize is not supported </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
-        // Sizing has been recursively done for all children
-        // now we are laying out from top down
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             bool okay = true;
 
             if (Columns != null && Rows != null)
             {
-                int[] maxcolsize = new int[Columns.Count];
-                int[] maxrowsize = new int[Rows.Count];
+                int[] maxcolsize = new int[Columns.Count];      // maximum column width of all items in this column
+                int[] maxrowsize = new int[Rows.Count];         // maximum row Height of all items in this row
                 Dictionary<Tuple<int, int>, List<GLBaseControl>> sortedbycell = new Dictionary<Tuple<int, int>, List<GLBaseControl>>();
 
-                foreach (var c in ControlsZ)         // first let all children autosize
+                // go thru all controls, and find out the maximum width/height of each row/column
+                // and assign to sortebycell the control into a list.
+
+                foreach (var c in ControlsZ) 
                 {
                     if (c.Column < maxcolsize.Length && c.Row < maxrowsize.Length)
                     {
@@ -71,19 +116,22 @@ namespace GLOFC.GL4.Controls
                         sortedbycell[ad].Add(c);
                     }
                     else
-                        okay = false;
+                        okay = false;       // column or row out of range of styles
                 }
 
                 if (okay)
                 {
                     Rectangle panelarea = ClientRectangle;      // in terms of our client area
 
-                    var cols = CalcPos(Columns, panelarea.Width, maxcolsize);       // calculate the positions
+                    // using the column/row styles, the width, and the max sizes, calculate the positions of each row/column boundary
+
+                    var cols = CalcPos(Columns, panelarea.Width, maxcolsize);    
                     var rows = CalcPos(Rows, panelarea.Height, maxrowsize);
 
+                    // if okay 
                     if (cols.Count > 0 && rows.Count > 0)
                     {
-                        foreach (var k in sortedbycell)
+                        foreach (var k in sortedbycell)     // position items
                         {
                             var col = k.Key.Item1;
                             var row = k.Key.Item2;
@@ -127,38 +175,44 @@ namespace GLOFC.GL4.Controls
                 base.PerformRecursiveLayout();      // default
         }
 
-        protected List<int> CalcPos(List<Style> cr, int available, int[] foundsizes)
+        // return a list of position of the col/row, given this list of styles, the overall size available, and the list of max sizes of each row/col
+        private List<int> CalcPos(List<Style> cr, int sizeavailable, int[] maxsizes)
         {
-            int cabs = 0;
-            int cweight = 0;
-            for (int c = 0; c < cr.Count; c++)
+            // go thru all and work out weight and absolute size
+            
+            int cabs = 0;           // for all absolute sizes, total pixels
+            int cweight = 0;        // for all weight sizes, total weight
+            
+            for (int c = 0; c < cr.Count; c++)          // total columns
             {
-                if (cr[c].SizeType == Style.SizeTypeEnum.Absolute)
+                if (cr[c].SizeType == Style.SizeTypeEnum.Absolute)      // absolute adds onto cabs
                     cabs += cr[c].Value;
-                else if (cr[c].SizeType == Style.SizeTypeEnum.Autosize)
-                    cabs += foundsizes[c];
+                else if (cr[c].SizeType == Style.SizeTypeEnum.Autosize) // autosize just uses the maxsize of each item
+                    cabs += maxsizes[c];
                 else
-                    cweight += cr[c].Value;
+                    cweight += cr[c].Value;                            // weight sum weights
             }
 
-            List<int> xpos = new List<int>();
+            List<int> xpos = new List<int>();       // positions//
 
-            int crelleft = available - cabs;
+            int cweightpixelsleft = sizeavailable - cabs;    // pixels left after absolute
 
-            if (cabs <= available && (cweight == 0 || crelleft > 0))
+            if (cabs <= sizeavailable && (cweight == 0 || cweightpixelsleft > 0))   // if enough size
             {
                 int x = 0;
-                for (int c = 0; c < cr.Count; c++)
+                for (int c = 0; c < cr.Count; c++)      // over columns
                 {
-                    xpos.Add(x);
-                    if (cr[c].SizeType == Style.SizeTypeEnum.Absolute)
+                    xpos.Add(x);                        // add position
+
+                    if (cr[c].SizeType == Style.SizeTypeEnum.Absolute)      //if absolute column, we move on by Value, which is pixel width 
                         x += cr[c].Value;
-                    else if (cr[c].SizeType == Style.SizeTypeEnum.Autosize)
-                        x += foundsizes[c];
+                    else if (cr[c].SizeType == Style.SizeTypeEnum.Autosize) //if autosize, we move on by column size
+                        x += maxsizes[c];
                     else
-                        x += cr[c].Value * crelleft / cweight;
+                        x += cr[c].Value * cweightpixelsleft / cweight;     // else we move on by weight
                 }
-                xpos.Add(x);
+
+                xpos.Add(x);        // add last end point
             }
 
             return xpos;
@@ -166,7 +220,7 @@ namespace GLOFC.GL4.Controls
 
         private List<Style> rows  = null;
         private List<Style> columns  = null;
-        private GL4.Controls.Padding cellPadding = new Padding(1);
+        private Padding cellPadding = new Padding(1);
     }
 }
 

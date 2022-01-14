@@ -905,7 +905,7 @@ namespace GLOFC.GL4.Controls
         private Font DefaultFont = new Font("Ms Sans Serif", 8.25f);
         private float opacity = 1.0f;
 
-        private GLCursorType cursor = GLCursorType.Normal;
+        private GLWindowControl.GLCursorType cursor = GLWindowControl.GLCursorType.Normal;
 
         private GLBaseControl parent  = null;       // its parent, or null if not connected or GLDisplayControl
 

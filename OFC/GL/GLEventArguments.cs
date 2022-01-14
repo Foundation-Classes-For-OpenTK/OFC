@@ -19,15 +19,6 @@ using System.Windows.Forms;
 namespace GLOFC
 {
     /// <summary>
-    /// This namespace contains the base GL classes 
-    /// * The MatrixCalc, which can transform eye and lookat positions into projection and model transforms, and can handle screen co-ordinated, viewports.
-    /// * Classes to handle mouse and keyboard events
-    /// * Static classes to assist in using GL items such as vectors and matrices
-    /// * Static classes to wrap GL functions in more friendly wrappers
-    /// </summary>
-    internal static class NamespaceDoc { } // just for documentation purposes
-
-    /// <summary>
     /// Mouse Event Args to program
     /// </summary>
     public class GLMouseEventArgs
@@ -157,87 +148,4 @@ namespace GLOFC
         }
     }
 
-    /// <summary> Cursor type</summary>
-    public enum GLCursorType {
-        /// <summary> Normal </summary>
-        Normal,
-        /// <summary> Wait </summary>
-        Wait,
-        /// <summary> NS </summary>
-        NS,
-        /// <summary> EW </summary>
-        EW,
-        /// <summary> Move</summary>
-        Move,
-        /// <summary> NWSE</summary>
-        NWSE
-    };
-
-
-    /// <summary>
-    /// This is the base interface which feed thru events from the window driving to consumers
-    /// GLWinFormControl is based on it, and uses OpenTk.GLControl as the winforms control to receive all key/mouse events from
-    /// GLControlDisplay is a class based on it so that it can dispatch events in the same way
-    /// </summary>
-    public interface GLWindowControl
-    {
-        // Gets
-
-        /// <summary> Get screen rectangle of gl window </summary>
-        Rectangle GLWindowControlScreenRectangle { get; }
-        /// <summary> Get mouse position in gl window </summary>
-        Point MousePosition { get; }
-        /// <summary> Get mouse screen position taking into consideration the viewport/scaling etc</summary>
-        Point MouseWindowPosition { get; }
-        /// <summary> Screen width </summary>
-        int Width { get; }
-        /// <summary> Screen height</summary>
-        int Height { get; }
-        /// <summary> Screen size</summary>
-        Size Size { get; }
-        /// <summary> Is GL window focused? </summary>
-        bool Focused { get; }
-        /// <summary> Is context current to opengl </summary>
-        bool IsCurrent();
-
-
-        /// <summary> Resize call back </summary>
-        Action<Object> Resize { get; set; }
-        /// <summary> Paint call back. ulong is elapsed time in ms </summary>
-        Action<Object,ulong> Paint { get; set; }
-        /// <summary>Mouse down call back </summary>
-        Action<Object, GLMouseEventArgs> MouseDown { get; set; }
-        /// <summary>Mouse up call back </summary>
-        Action<Object, GLMouseEventArgs> MouseUp { get; set; }
-        /// <summary> Mouse move call back</summary>
-        Action<Object, GLMouseEventArgs> MouseMove { get; set; }
-        /// <summary> Mouse enter call back</summary>
-        Action<Object, GLMouseEventArgs> MouseEnter { get; set; }
-        /// <summary>Mouse leave call back </summary>
-        Action<Object, GLMouseEventArgs> MouseLeave { get; set; }
-        /// <summary> Mouse click call back</summary>
-        Action<Object, GLMouseEventArgs> MouseClick { get; set; }
-        /// <summary> Mouse double click call back</summary>
-        Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; }
-        /// <summary> Mouse wheel call back</summary>
-        Action<Object, GLMouseEventArgs> MouseWheel { get; set; }
-        /// <summary> Key down call back</summary>
-        Action<Object, GLKeyEventArgs> KeyDown { get; set; }
-        /// <summary> Key up call back</summary>
-        Action<Object, GLKeyEventArgs> KeyUp { get; set; }
-        /// <summary> Key press call back</summary>
-        Action<Object, GLKeyEventArgs> KeyPress { get; set; }
-        /// <summary> </summary>
-
-
-        /// <summary> Make sure current context associated with this instance is selected by opengl </summary>
-        void EnsureCurrentContext();
-        /// <summary> Invalidate window </summary>
-        void Invalidate();
-        /// <summary> Set the cursor type</summary>
-        void SetCursor(GLCursorType t);
-        /// <summary> Get elapsed time of run </summary>
-        ulong ElapsedTimems { get; }      
-       
-    }
 }

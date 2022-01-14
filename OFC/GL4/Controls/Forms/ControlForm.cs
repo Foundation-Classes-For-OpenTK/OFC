@@ -272,23 +272,23 @@ namespace GLOFC.GL4.Controls
                     }
                     else if ((e.Area == GLMouseEventArgs.AreaType.Left && Moveable && Resizeable) || (e.Area == GLMouseEventArgs.AreaType.Right && Resizeable))
                     {
-                        Cursor = GLCursorType.EW;
+                        Cursor = GLWindowControl.GLCursorType.EW;
                     }
                     else if (Moveable && e.Area == GLMouseEventArgs.AreaType.Top )
                     {
-                        Cursor = GLCursorType.Move;
+                        Cursor = GLWindowControl.GLCursorType.Move;
                     }
                     else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.Bottom)
                     {
-                        Cursor = GLCursorType.NS;
+                        Cursor = GLWindowControl.GLCursorType.NS;
                     }
                     else if (Resizeable && e.Area == GLMouseEventArgs.AreaType.NWSE)
                     {
-                        Cursor = GLCursorType.NWSE;
+                        Cursor = GLWindowControl.GLCursorType.NWSE;
                     }
                     else 
                     {
-                        Cursor = GLCursorType.Normal;
+                        Cursor = GLWindowControl.GLCursorType.Normal;
                     }
                 }
             }
@@ -301,7 +301,7 @@ namespace GLOFC.GL4.Controls
 
             if (captured != GLMouseEventArgs.AreaType.Client)
             {
-                Cursor = GLCursorType.Normal;
+                Cursor = GLWindowControl.GLCursorType.Normal;
                 captured = GLMouseEventArgs.AreaType.Client;
             }
         }

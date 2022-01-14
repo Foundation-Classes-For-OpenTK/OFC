@@ -91,9 +91,9 @@ namespace GLOFC.GL4.Controls
             else
             {
                 var over = Over(e.Location);
-                Cursor = (over != null && over.Item1 == ClickOn.Divider) ? GLCursorType.EW :
-                         (over != null && over.Item1 == ClickOn.Height) ? GLCursorType.NS :
-                          GLCursorType.Normal;
+                Cursor = (over != null && over.Item1 == ClickOn.Divider) ? GLWindowControl.GLCursorType.EW :
+                         (over != null && over.Item1 == ClickOn.Height) ? GLWindowControl.GLCursorType.NS :
+                          GLWindowControl.GLCursorType.Normal;
             }
             return;
         }
@@ -101,7 +101,7 @@ namespace GLOFC.GL4.Controls
         {
             base.OnMouseLeave(e);
             dragging = -1;
-            Cursor = GLCursorType.Normal;
+            Cursor = GLWindowControl.GLCursorType.Normal;
         }
 
         protected override void OnMouseDown(GLMouseEventArgs e)

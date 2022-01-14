@@ -128,7 +128,7 @@ namespace GLOFC.GL4.Controls
 
                 currentmouseover = null;
 
-                ((GLControlDisplay)this).SetCursor(GLCursorType.Normal);
+                ((GLControlDisplay)this).SetCursor(GLWindowControl.GLCursorType.Normal);
             }
         }
 
@@ -184,7 +184,7 @@ namespace GLOFC.GL4.Controls
                 {
                     GlobalMouseMove?.Invoke(e);     // we move, with no mouse over
 
-                    ((GLControlDisplay)this).SetCursor(GLCursorType.Normal);
+                    ((GLControlDisplay)this).SetCursor(GLWindowControl.GLCursorType.Normal);
 
                     if (this.Enabled)               // not over any control (due to screen coord clip space), so send thru the displaycontrol
                         this.OnMouseMove(e);
@@ -426,7 +426,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // we are in control display, and if control change the cursor is the current control mouse over, set it
-        protected void Gc_CursorTo(GLBaseControl c, GLCursorType ct)       
+        protected void Gc_CursorTo(GLBaseControl c, GLWindowControl.GLCursorType ct)       
         {
             if (currentmouseover == c)                              
                 ((GLControlDisplay)this).SetCursor(ct);
