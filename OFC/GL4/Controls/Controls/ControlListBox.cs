@@ -18,78 +18,102 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
-    // its a vertical scrollable list. Adding elements to it adds it to the 
+    /// <summary>
+    /// List box control
+    /// </summary>
     public class GLListBox : GLForeDisplayBase
     {
-        public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     // not fired by programatically 
-        public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     
+        /// <summary> Callback when selected index is changed </summary>
+        public Action<GLBaseControl, int> SelectedIndexChanged { get; set; } = null;     
+        /// <summary> Callback when another key is pressed </summary>
+        public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;
 
+        /// <summary> List of items </summary>
         public List<string> Items { get { return items; } set { items = value; focusindex = -1; firstindex = 0; ParentInvalidateLayout(); } }
+        /// <summary> List of images. May be shorted then Items </summary>
         public List<Image> ImageItems { get { return images; } set { images = value; ParentInvalidateLayout(); } }
+        /// <summary> List of indexes where item separators should be placed after specific item number</summary>
         public int[] ItemSeperators { get { return itemSeperators; } set { itemSeperators = value; ParentInvalidateLayout(); } }
 
-        public int SelectedIndex { get { return selectedIndex; } set { setSelectedIndex(value,false); } }       // does not fire SelectedIndexChanged
-        public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { setSelectedItem(value); } }     // does not fire SelectedIndexChanged
-        public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { setSelectedItem(value); } } // does not fire SelectedIndexChanged
+        /// <summary> Selected index. -1 if none selected. On set, calls SelectedIndexChanged </summary>
+        public int SelectedIndex { get { return selectedIndex; } set { setSelectedIndex(value, true); } }
+        /// <summary> Selected index. -1 if none selected. On set, does not fire SelectedIndexChanged </summary>
+        public int SelectedIndexNoChange { get { return selectedIndex; } set { setSelectedIndex(value, false); } }
 
-        public int FocusIndex { get { return focusindex; } set { if (items != null) focusindex = Math.Min(value, items.Count - 1); Invalidate(); } }        // -1 turns off focus
+        /// <summary> Selected item, null if none. On set, calls SelectedIndexChanged. Set is case sensitive</summary>
+        public string SelectedItem { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { setSelectedItem(value,true); } }
+        /// <summary> Selected item, null if none. On set, does not call SelectedIndexChanged. Set is case sensitive</summary>
+        public string SelectedItemNoChange { get { return selectedIndex >= 0 ? Items[selectedIndex] : null; } set { setSelectedItem(value,false); } }
 
-        // if set, no half lines shown
+        /// <summary> Return selected item text or null if not selected. On set, does not call SelectedIndexChanged. Set is case sensitive </summary>
+        public string Text { get { return (items != null && selectedIndex >= 0) ? items[selectedIndex] : null; } set { setSelectedItem(value,false); } } 
+
+        /// <summary> The item focused, or -1. Set to -1 to turn off focus</summary>
+        public int FocusIndex { get { return focusindex; } set { if (items != null) focusindex = Math.Min(value, items.Count - 1); Invalidate(); } }      
+
+        /// <summary> If set, the box is sized to show exactly the right number of lines. No half lines are shown </summary>
         public bool FitToItemsHeight { get { return fitToItemsHeight; } set { fitToItemsHeight = value; Invalidate(); } }
 
-        // if set, images fit to items
+        /// <summary> If set, images are scaled to ItemHeight. Else image size determines item height</summary>
         public bool FitImagesToItemHeight { get { return fitImagesToItemHeight; } set { fitImagesToItemHeight = value; Invalidate(); } }
 
-        public int DisplayableItems { get { return displayableitems; } }            // not valid until first layout
+        /// <summary> Number of items that can fit within box. Not valid until layout has occurred</summary>
+        public int DisplayableItems { get { return displayableitems; } }            
 
+        /// <summary> Maximum height of list box allowed when autosizing </summary>
         public int DropDownHeightMaximum { get { return dropDownHeightMaximum; } set { System.Diagnostics.Debug.WriteLine("DDH Set"); dropDownHeightMaximum = value; ParentInvalidateLayout(); } }
 
+        /// <summary> Selected item background color</summary>
         public Color SelectedItemBackColor { get { return selectedItemBackColor; } set { selectedItemBackColor = value; Invalidate(); } }
+        /// <summary> Mouse over color </summary>
         public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        /// <summary> Item line seperator color</summary>
         public Color ItemSeperatorColor { get { return itemSeperatorColor; } set { itemSeperatorColor = value; Invalidate(); } }
 
         // normal behaviour is a dotted focus box following the keystrokes/hover, A hover over box, plus a solid highlight on the selected item. These allow change of mode
 
-        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }       // normal focus dotted box, 
-        public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }    // SelectedItem is highlighted
-        public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }            // if set, focus is a dotted area, no selecteditem shown
+        /// <summary> Show focus box around control </summary>
+        public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }     
+        /// <summary> Show highlight on selected item </summary>
+        public bool HighlightSelectedItem { get { return highlightSelectedItem; } set { highlightSelectedItem = value; Invalidate(); } }   
+        /// <summary> Show focus box around item instead of highlight </summary>
+        public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }
 
         // scroll bar
+        /// <summary> Scroll bar arrow color</summary>
         public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
+        /// <summary> Scroll bar slider color</summary>
         public Color SliderColor { get { return scrollbar.SliderColor; } set { scrollbar.SliderColor = value; } }
+        /// <summary> Scroll bar arrow button color</summary>
         public Color ArrowButtonColor { get { return scrollbar.ArrowButtonColor; } set { scrollbar.ArrowButtonColor = value; } }
+        /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value; } }
+        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
         public float ArrowUpDrawAngle { get { return scrollbar.ArrowDecreaseDrawAngle; } set { scrollbar.ArrowDecreaseDrawAngle = value; } }
+        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
         public float ArrowDownDrawAngle { get { return scrollbar.ArrowIncreaseDrawAngle; } set { scrollbar.ArrowIncreaseDrawAngle = value; } }
+        /// <summary> Scroll bar arrow color gradient scaling</summary>
         public float ArrowColorScaling { get { return scrollbar.ArrowColorScaling; } set { scrollbar.ArrowColorScaling = value; } }
+        /// <summary> Scroll bar mouse over color</summary>
         public Color MouseOverButtonColor { get { return scrollbar.MouseOverButtonColor; } set { scrollbar.MouseOverButtonColor = value; } }
+        /// <summary> Scroll bar mouse pressed color</summary>
         public Color MousePressedButtonColor { get { return scrollbar.MousePressedButtonColor; } set { scrollbar.MousePressedButtonColor = value; } }
+        /// <summary> Scroll bar thumb button color</summary>
         public Color ThumbButtonColor { get { return scrollbar.ThumbButtonColor; } set { scrollbar.ThumbButtonColor = value; } }
+        /// <summary> Scroll bar thumb border color</summary>
         public Color ThumbBorderColor { get { return scrollbar.ThumbBorderColor; } set { scrollbar.ThumbBorderColor = value; } }
+        /// <summary> Scroll bar thumb color gradient scaling</summary>
         public float ThumbColorScaling { get { return scrollbar.ThumbColorScaling; } set { scrollbar.ThumbColorScaling = value; } }
+        /// <summary> Scroll bar thumb color gradient angle</summary>
         public float ThumbDrawAngle { get { return scrollbar.ThumbDrawAngle; } set { scrollbar.ThumbDrawAngle = value; } }
 
+        /// <summary> Get scroll bar width </summary>
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
-        public float GradientColorScaling
-        {
-            get { return gradientColorScaling; }
-            set
-            {
-                if (float.IsNaN(value) || float.IsInfinity(value))
-                    return;
-                else if (gradientColorScaling != value)
-                {
-                    gradientColorScaling = value;
-                    Invalidate();
-                }
-            }
-        }
-
+        /// <summary> Construct with name, bounds and items </summary>
         public GLListBox(string n, Rectangle pos, List<string> texts) : base(n,pos)
         {
             items = texts;
@@ -111,10 +135,12 @@ namespace GLOFC.GL4.Controls
             Add(scrollbar);
         }
 
+        /// <summary> Empty constructor </summary>
         public GLListBox() : this("LB?", DefaultWindowRectangle, null)
         {
         }
 
+        /// <summary> Move focus up this amount </summary>
         public bool FocusUp(int count = 1)
         {
             count = Math.Min(focusindex, count);
@@ -130,6 +156,7 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
+        /// <summary> Move focus down this amount </summary>
         public bool FocusDown(int count = 1)
         {
             if (Items != null)
@@ -147,18 +174,22 @@ namespace GLOFC.GL4.Controls
 
             return false;
         }
-        public void SelectCurrentFocus()            // does fire selectedindexchange, no action if focusindex is not set
+
+        /// <summary> Select current focus. Calls SelectedIndexChange if focus index is set</summary>
+        public void SelectCurrentFocus()            
         {
             setSelectedIndex(focusindex,true);
         }
 
         #region Implementation;
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
         protected override void OnFontChanged()
         {
             InvalidateLayout();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -187,7 +218,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             if (scrollbar != null)  
@@ -221,6 +252,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>
         protected override void Paint(Graphics gr)
         {
             if (itemheight < 1)     // can't paint yet
@@ -344,14 +376,14 @@ namespace GLOFC.GL4.Controls
        
         }
 
-        private bool setSelectedItem(string v, StringComparison c = StringComparison.InvariantCultureIgnoreCase)
+        private bool setSelectedItem(string v, bool firechange) // case sensitive
         {
             if (items != null)
             {
-                int i = items.FindIndex((x) => x.Equals(v, c));
+                int i = items.FindIndex((x) => x.Equals(v));
                 if (i >= 0 && i < items.Count)
                 {
-                    setSelectedIndex(i, false);
+                    setSelectedIndex(i, firechange);
                     return true;
                 }
             }
@@ -366,13 +398,14 @@ namespace GLOFC.GL4.Controls
                 {
                     focusindex = selectedIndex = i;             // selecting it moves the sel and focus to this point
                     showfocusindex = true;
-                    if ( firechange)
+                    if (firechange)
                         OnSelectedIndexChanged();
                     Invalidate();
                 }
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -385,6 +418,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
@@ -398,6 +432,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -420,6 +455,8 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
 
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
@@ -449,12 +486,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void OnSelectedIndexChanged()
+        private void OnSelectedIndexChanged()
         {
-            SelectedIndexChanged?.Invoke(this, SelectedIndex);
+            SelectedIndexChanged?.Invoke(this, SelectedIndexNoChange);
         }
 
-        protected virtual void OnOtherKeyPressed(GLKeyEventArgs e)
+        private void OnOtherKeyPressed(GLKeyEventArgs e)
         {
             OtherKeyPressed?.Invoke(this, e);
         }
@@ -463,7 +500,7 @@ namespace GLOFC.GL4.Controls
 
         private bool fitToItemsHeight { get; set; } = true;              // if set, move the border to integer of item height.
         private bool fitImagesToItemHeight { get; set; } = false;        // if set images scaled to fit within item height
-        private float gradientColorScaling = 0.5F;
+
         private Color selectedItemBackColor { get; set; } = DefaultListBoxSelectedItemColor;
         private Color mouseOverColor { get; set; } = DefaultListBoxMouseOverColor;
         private Color itemSeperatorColor { get; set; } = DefaultListBoxLineSeparColor;

@@ -16,53 +16,80 @@ using GLOFC.Utils;
 using System;
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Scroll event argument
+    /// </summary>
     public struct ScrollEventArgs
     {
+        /// <summary> New value of scroll </summary>
         public int NewValue { get; set; }
+        /// <summary> Old value of scroll </summary>
         public int OldValue { get; }
+        /// <summary> Constructor </summary>
         public ScrollEventArgs(int oldv, int newv) { NewValue = newv; OldValue = oldv; }
     }
 
+    /// <summary>
+    /// Scroll bar control, horizontal or vertical
+    /// </summary>
     public class GLScrollBar : GLBaseControl
     {
+        /// <summary> Callback when scroll bar is moved </summary>
         public Action<GLScrollBar, ScrollEventArgs> Scroll { get; set; } = null;
 
+        /// <summary> Return of set the scroll value </summary>
         public int Value { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange); } }
+        /// <summary> Return or set the scroll value, limited to user range</summary>
         public int ValueLimited { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange, true); } }
+        /// <summary> Maximum </summary>
         public int Maximum { get { return maximum; } set { SetValues(thumbvalue, value, minimum, largechange, smallchange); } }
+        /// <summary> Minimum </summary>
         public int Minimum { get { return minimum; } set { SetValues(thumbvalue, maximum, value, largechange, smallchange); } }
+        /// <summary> Amount clicking on the slider moves up or down, and defines the size of the page in effect.  </summary>
         public int LargeChange { get { return largechange; } set { SetValues(thumbvalue, maximum, minimum, value, smallchange); } }
+        /// <summary> Amount the up or down buttons apply </summary>
         public int SmallChange { get { return smallchange; } set { SetValues(thumbvalue, maximum, minimum, largechange, value); } }
-        public void SetValueMaximum(int v, int m) { SetValues(v, m, minimum, largechange, smallchange); }
+        /// <summary> Set values for value, maximum and large change in one call</summary>
         public void SetValueMaximumLargeChange(int v, int m, int lc) { SetValues(v, m, minimum, lc, smallchange); }
-        public void SetValueMaximumMinimum(int v, int max, int min) { SetValues(v, max, min, largechange, smallchange); }
-        public bool HideScrollBar { get; set; } = false;                   // hide if no scroll needed
-        public bool IsScrollBarOn { get { return thumbenable; } }           // is it on?
+         /// <summary> Show if scroll bar is on </summary>
+        public bool IsScrollBarOn { get { return thumbenable; } }           
+        /// <summary> Is the scroll bar in horizonal mode? </summary>
+        public bool HorizontalScroll { get; set; } = false;
 
-        public bool HorizontalScroll { get; set; } = false;             // set for horizonal orientation
-
+        /// <summary> Scroll bar arrow color</summary>
         public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }       // of text
+        /// <summary> Scroll bar slider color </summary>
         public Color SliderColor { get { return slidercolor; } set { slidercolor = value; Invalidate(); } }
 
+        /// <summary> Scroll bar arrow button color</summary>
         public Color ArrowButtonColor { get { return arrowButtonColor; } set { arrowButtonColor = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return arrowBorderColor; } set { arrowBorderColor = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
         public float ArrowDecreaseDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
         public float ArrowIncreaseDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow color gradient scaling</summary>
         public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
-
+        /// <summary> Scroll bar mouse over color</summary>
         public Color MouseOverButtonColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        /// <summary> Scroll bar mouse pressed color</summary>
         public Color MousePressedButtonColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb button color</summary>
         public Color ThumbButtonColor { get { return thumbButtonColor; } set { thumbButtonColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb border color</summary>
         public Color ThumbBorderColor { get { return thumbBorderColor; } set { thumbBorderColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb color gradient scaling</summary>
         public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb color gradient angle</summary>
         public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
 
+        /// <summary> Disable autosize </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> Constructor with name, bounds, scroll bar min and max</summary>
         public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos)
         {
             thumbvalue = minimum = min;
@@ -71,10 +98,12 @@ namespace GLOFC.GL4.Controls
             BackColorGradientAltNI = BackColorNI = DefaultScrollbarBackColor;
         }
 
+        /// <summary> Empty constructor</summary>
         public GLScrollBar(string name = "SB?") : this(name, DefaultWindowRectangle, 0, 100)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>
         protected override void Paint(Graphics gr)
         {
             using (Brush br = new SolidBrush(this.SliderColor))
@@ -171,6 +200,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -236,7 +266,8 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
             }
         }
-
+        
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -271,6 +302,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseUp(GLMouseEventArgs)"/>
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             if (mousepressed != MouseOver.MouseOverNone)
@@ -290,7 +322,7 @@ namespace GLOFC.GL4.Controls
             base.OnMouseUp(e);
         }
 
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseLeave(GLMouseEventArgs)"/>
         protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
@@ -300,7 +332,8 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
             }
         }
-
+        
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
@@ -310,6 +343,7 @@ namespace GLOFC.GL4.Controls
                 MoveThumb(-smallchange);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()       // do this in recursive layout, better than Layout as it gets called by an update to any parameters
         {
             base.PerformRecursiveLayout();
@@ -411,7 +445,7 @@ namespace GLOFC.GL4.Controls
         }
 
 
-        private void SetValues(int v, int max, int min, int lc, int sc, bool limittousermax = false)   // this allows it to be set to maximum..
+        private void SetValues(int v, int max, int min, int lc, int sc, bool limittousermax = false)   
         {
             //System.Diagnostics.Debug.WriteLine("Set Scroll " + v + " min " + min + " max " + max + " lc "+ lc + " sc "+ sc + " Usermax "+ UserMaximum);
             smallchange = sc;                                   // has no effect on display of control
@@ -445,11 +479,10 @@ namespace GLOFC.GL4.Controls
 
         private int UserMaximum { get { return Math.Max(maximum - largechange + 1, minimum); } }    // make sure it does not go below minimum whatever largechange is set to.
 
-        protected virtual void OnScroll(ScrollEventArgs se)
+        private void OnScroll(ScrollEventArgs se)
         {
             Scroll?.Invoke(this, se);
         }
-
 
         private Color slidercolor { get; set; } = DefaultScrollbarSliderColor;
         private Color arrowcolor { get; set; } = DefaultScrollbarArrowColor;
@@ -485,26 +518,37 @@ namespace GLOFC.GL4.Controls
         private int thumbmovecaptureoffset = 0;     // px down the thumb when captured..
     }
 
+    /// <summary>
+    /// Horizontal scroll bar
+    /// </summary>
     public class GLHorizontalScrollBar : GLScrollBar
     {
+        /// <summary> Construct with name, bounds, scroll bar min and max </summary>
         public GLHorizontalScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos, min, max)
         {
             HorizontalScroll = true;
         }
 
+        /// <summary> Default constructor </summary>
         public GLHorizontalScrollBar(string name = "SBH?") : base(name)
         {
             HorizontalScroll = true;
         }
 
     }
+
+    /// <summary>
+    /// Vertical scroll bar
+    /// </summary>
     public class GLVerticalScrollBar : GLScrollBar
     {
+        /// <summary> Construct with name, bounds, scroll bar min and max </summary>
         public GLVerticalScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos, min, max)
         {
             HorizontalScroll = false;
         }
 
+        /// <summary> Default constructor </summary>
         public GLVerticalScrollBar(string name = "SBV?") : base(name)
         {
             HorizontalScroll = false;

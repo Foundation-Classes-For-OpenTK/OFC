@@ -19,57 +19,92 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Combo Box control
+    /// </summary>
     public class GLComboBox : GLForeDisplayBase
     {
+        /// <summary> Callback when selected item changes </summary>
         public Action<GLBaseControl> SelectedIndexChanged { get; set; } = null;     // not fired by programatically changing CheckState
+        /// <summary> Callback when drop down is shown (true) or rolled up (false)</summary>
         public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
+        /// <summary> Current selected text </summary>
         public string Text { get { return dropdownbox.Text; } }
 
+        /// <summary> Item list to select from</summary>
         public List<string> Items { get { return dropdownbox.Items; } set { dropdownbox.Items = value; } }
+        /// <summary> Image items to show next to text </summary>
         public List<Image> ImageItems { get { return dropdownbox.ImageItems; } set { dropdownbox.ImageItems = value; } }
+        /// <summary> List of image seperator indexes </summary>
         public int[] ItemSeperators { get { return dropdownbox.ItemSeperators; } set { dropdownbox.ItemSeperators = value;  } }
 
-        public int SelectedIndex { get { return dropdownbox.SelectedIndex; } set { if (value != dropdownbox.SelectedIndex) { dropdownbox.SelectedIndex = value; OnSelectedIndexChanged(); Invalidate(); } } }
-        public string SelectedItem { get { return dropdownbox.SelectedItem; } set { dropdownbox.SelectedItem = value; OnSelectedIndexChanged(); Invalidate(); } }
+        /// <summary> Current selected index.  Causes OnSelectedIndexChanged on set </summary>
+        public int SelectedIndex { get { return dropdownbox.SelectedIndexNoChange; } set { if (value != dropdownbox.SelectedIndexNoChange) { dropdownbox.SelectedIndexNoChange = value; OnSelectedIndexChanged(); Invalidate(); } } }
+        /// <summary> Current selected index.  Does not cause OnSelectedIndexChanged on set </summary>
+        public int SelectedIndexNoChange { get { return dropdownbox.SelectedIndexNoChange; } set { if (value != dropdownbox.SelectedIndexNoChange) { dropdownbox.SelectedIndexNoChange = value; Invalidate(); } } }
+        /// <summary> Selected item.  Causes OnSelectedIndexChanged on set </summary>
+        public string SelectedItem { get { return dropdownbox.SelectedItem; } set { dropdownbox.SelectedItemNoChange = value; OnSelectedIndexChanged(); Invalidate(); } }
 
+        /// <summary> Maximum drop down height</summary>
         public int DropDownHeightMaximum { get { return dropdownbox.DropDownHeightMaximum; } set { dropdownbox.DropDownHeightMaximum = value; } }
 
         // ForeColor for text, BackColor for background
+        /// <summary> Face color of combobox </summary>
         public Color FaceColor { get { return comboboxFaceColor; } set { comboboxFaceColor = value; Invalidate(); } }
+        /// <summary> Face color scaling </summary>
         public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
-        
+
+        /// <summary> Face color mouse over color </summary>
         public Color MouseOverColor { get { return dropdownbox.MouseOverColor; } set { dropdownbox.MouseOverColor = value; } }
 
         // dropdown colour
+        /// <summary> Drop down background color </summary>
         public Color DropDownBackgroundColor { get { return dropdownbox.BackColor; } set { dropdownbox.BackColor = value; } }
+        /// <summary> Drop down fore color </summary>
         public Color DropDownForeColor { get { return dropdownbox.ForeColor; } set { dropdownbox.ForeColor = value; } }
+        /// <summary> Drop down seperator line color </summary>
         public Color DropDownItemSeperatorColor { get { return dropdownbox.ItemSeperatorColor; } set { dropdownbox.ItemSeperatorColor = value; } }
+        /// <summary> Drop selected item hightlight back color </summary>
         public Color DropDownSelectedItemBackColor { get { return dropdownbox.SelectedItemBackColor; } set { dropdownbox.SelectedItemBackColor = value; Invalidate(); } }
 
+        /// <summary> Are we in a dop down? </summary>
         public bool InDropDown { get { return dropdownbox.Visible; } }
 
-        public bool DisableChangeKeys { get; set; } = false;            // stop responding to up/down/left/right directly. Return still works
+        /// <summary> Stop responding to up/down/left/right directly. Return will still work</summary>
+        public bool DisableChangeKeys { get; set; } = false;
 
         // scroll bar
+        /// <summary> Scroll bar arrow color</summary>
         public Color ArrowColor { get { return dropdownbox.ArrowColor; } set { dropdownbox.ArrowColor = value; } }       // of text
+        /// <summary> Scroll bar slider color</summary>
         public Color SliderColor { get { return dropdownbox.SliderColor; } set { dropdownbox.SliderColor = value; } }
+        /// <summary> Scroll bar arrow button color</summary>
         public Color ArrowButtonColor { get { return dropdownbox.ArrowButtonColor; } set { dropdownbox.ArrowButtonColor = value; } }
+        /// <summary> Scroll bar arrow button border color</summary>
         public Color ArrowBorderColor { get { return dropdownbox.ArrowBorderColor; } set { dropdownbox.ArrowBorderColor = value; } }
+        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
         public float ArrowUpDrawAngle { get { return dropdownbox.ArrowUpDrawAngle; } set { dropdownbox.ArrowUpDrawAngle = value; } }
+        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
         public float ArrowDownDrawAngle { get { return dropdownbox.ArrowDownDrawAngle; } set { dropdownbox.ArrowDownDrawAngle = value; } }
+        /// <summary> Scroll bar arrow color gradient scaling</summary>
         public float ArrowColorScaling { get { return dropdownbox.ArrowColorScaling; } set { dropdownbox.ArrowColorScaling = value; } }
+        /// <summary> Scroll bar mouse over color</summary>
         public Color MouseOverButtonColor { get { return dropdownbox.MouseOverButtonColor; } set { dropdownbox.MouseOverButtonColor = value; } }
+        /// <summary> Scroll bar mouse pressed color</summary>
         public Color MousePressedButtonColor { get { return dropdownbox.MousePressedButtonColor; } set { dropdownbox.MousePressedButtonColor = value; } }
+        /// <summary> Scroll bar button color</summary>
         public Color ThumbButtonColor { get { return dropdownbox.ThumbButtonColor; } set { dropdownbox.ThumbButtonColor = value; } }
+        /// <summary> Scroll bar thumb border color</summary>
         public Color ThumbBorderColor { get { return dropdownbox.ThumbBorderColor; } set { dropdownbox.ThumbBorderColor = value; } }
+        /// <summary> Scroll bar thumb color gradient scaling</summary>
         public float ThumbColorScaling { get { return dropdownbox.ThumbColorScaling; } set { dropdownbox.ThumbColorScaling = value; } }
+        /// <summary> Scroll bar thumb color gradient angle</summary>
         public float ThumbDrawAngle { get { return dropdownbox.ThumbDrawAngle; } set { dropdownbox.ThumbDrawAngle = value; } }
 
+        /// <summary> Construct with name, bounds and list of items</summary>
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)
         {
             Items = itms;
@@ -85,14 +120,17 @@ namespace GLOFC.GL4.Controls
             SetNI(padding: new Padding(1), borderwidth: 1);
         }
 
+        /// <summary> Construct with name, bounds</summary>
         public GLComboBox(string name, Rectangle location) : this(name, location, new List<string>())
         {
         }
 
+        /// <summary> Empty constructor </summary>
         public GLComboBox() : this("Combo?", DefaultWindowRectangle)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlRemove(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             if (child == this && InDropDown)        // if its dropped, it need removing
@@ -100,6 +138,7 @@ namespace GLOFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -124,6 +163,7 @@ namespace GLOFC.GL4.Controls
 
         const int textspacing = 2;
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             bool enabled = Enabled && Items.Count > 0;
@@ -188,6 +228,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -200,6 +241,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -227,6 +269,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnGlobalMouseClick(GLBaseControl, GLMouseEventArgs)"/>
         protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirarchy before we mess with it
@@ -235,6 +278,7 @@ namespace GLOFC.GL4.Controls
                 Deactivate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsThisOrChildOf(GLBaseControl)"/>
         public override bool IsThisOrChildOf(GLBaseControl ctrl)         // override, and make the DropDown one of us - important for some checks
         {
             if (base.IsThisOrChildOf(ctrl))
@@ -295,7 +339,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void OnSelectedIndexChanged()
+        private void OnSelectedIndexChanged()
         {
             SelectedIndexChanged?.Invoke(this);
         }

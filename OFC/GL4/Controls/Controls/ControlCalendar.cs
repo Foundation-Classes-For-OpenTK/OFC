@@ -17,24 +17,32 @@ using System;
 using System.Drawing;
 using System.Globalization;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
-    // a calendar control, single date selection
+    /// <summary>
+    /// A calendar control, single date selection
+    /// </summary>
 
     public class GLCalendar : GLButtonBase
     {
+        /// <summary> Callback when value has changed </summary>
         public Action<GLBaseControl> ValueChanged { get; set; } = null;   // Not fired by programatic Value
+
+        /// <summary> Callback when an unrecognised key is pressed</summary>
         public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
 
+        /// <summary> Date value selected. Default is local date </summary>
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
 
+        /// <summary> The left calendar button, for theming purposes </summary>
         public GLButton ButLeft { get; set; } = new GLButton();
+        /// <summary> The right calendar button, for theming purposes </summary>
         public GLButton ButRight { get; set; } = new GLButton();
 
+        /// <summary> Culture of calendar. Default is CurrentCulture </summary>
         public CultureInfo Culture { get { return culture; } set { culture = value; Invalidate(); } }
 
+        /// <summary> Construct with name and bounds </summary>
         public GLCalendar(string name, Rectangle location) : base(name, location)
         {
             Focusable = true;
@@ -61,12 +69,14 @@ namespace GLOFC.GL4.Controls
             datetimecursor = datetimevalue = DateTime.Now;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLCalendar() : this("But?", DefaultWindowRectangle)
         {
         }
 
         #region Implementation
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -79,6 +89,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             string titletext = "";
@@ -237,6 +248,7 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -257,6 +269,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -278,6 +291,7 @@ namespace GLOFC.GL4.Controls
 
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseLeave(GLMouseEventArgs)"/>
         protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
@@ -288,6 +302,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
@@ -300,6 +315,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -373,7 +389,7 @@ namespace GLOFC.GL4.Controls
             System.Diagnostics.Debug.WriteLine("Date time now " + datetimecursor.ToLongDateString());
         }
 
-        protected virtual void OnOtherKeyPressed(GLKeyEventArgs e)
+        private void OnOtherKeyPressed(GLKeyEventArgs e)
         {
             OtherKeyPressed?.Invoke(this, e);
         }
@@ -408,7 +424,7 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
-        protected virtual void OnValueChanged()
+        private void OnValueChanged()
         {
             ValueChanged?.Invoke(this);
         }

@@ -239,7 +239,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private void DrawImage(Rectangle box, Graphics g)
+        /// <summary> Image draw helper </summary>
+        protected void DrawImage(Rectangle box, Graphics g)
         {
             if (ImageUnchecked != null)     // if we have an alt image for unchecked
             {
@@ -255,7 +256,8 @@ namespace GLOFC.GL4.Controls
 
         private Font FontToUse;
 
-        private void DrawText(Rectangle box, Graphics g, StringFormat fmt)
+        /// <summary> Text draw helper </summary>
+        protected void DrawText(Rectangle box, Graphics g, StringFormat fmt)
         {
             if (Focused && ShowFocusBox)
             {

@@ -18,19 +18,25 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Up down control
+    /// </summary>
     public class GLUpDownControl: GLButtonBase
     {
-        public Action<GLBaseControl, int> Clicked { get; set; } = null;           // int holds the direction
-
+        /// <summary> Callback when clicked on. Int is direction, -1 or +1 down/up </summary>
+        public Action<GLBaseControl, int> Clicked { get; set; } = null;
+        /// <summary> Fore color scaling when held down to show its held </summary>
         public float MouseSelectedColorScaling { get { return mouseSelectedColorScaling; } set { mouseSelectedColorScaling = value; Invalidate(); } }
+        /// <summary> Initial delay in ms before auto repeat </summary>
         public int UpDownInitialDelay { get; set; } = 500;
+        /// <summary> Repeat rate in ms when held down </summary>
         public int UpDownRepeatRate { get; set; } = 200;
+        /// <summary> Autosize is disabled on this control </summary>
         public new bool AutoSize { get { return false; } set { throw new System.NotImplementedException(); } }
 
+        /// <summary> Constructor with name and bounds</summary>
         public GLUpDownControl(string name, Rectangle location) : base(name, location)
         {
             Focusable = true;
@@ -45,10 +51,12 @@ namespace GLOFC.GL4.Controls
             BackColor = DefaultButtonBackColor;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLUpDownControl() : this("UD?", DefaultWindowRectangle)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>
         protected override void Paint(Graphics gr)
         {
             Rectangle area = ClientRectangle;
@@ -132,9 +140,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // change how it works.. looking at mouse pos during paint is bad
-
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -151,19 +157,21 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
             mouseoverbottom = (e.Location.Y >= Height / 2);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseUp(GLMouseEventArgs)"/>
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
             repeattimer.Stop();
         }
 
-        protected virtual void OnClicked(int dir)
+        private void OnClicked(int dir)
         {
             Clicked?.Invoke(this,dir);
         }
@@ -179,6 +187,7 @@ namespace GLOFC.GL4.Controls
             Invalidate();       // make it repaint without it being amimated
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -202,8 +211,6 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
             }
         }
-
-
 
         private float mouseSelectedColorScaling { get; set; } = 1.5F;
         private PolledTimer repeattimer = new PolledTimer();

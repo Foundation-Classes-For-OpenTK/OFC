@@ -14,34 +14,38 @@
 
 using GLOFC.Utils;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
-
+    /// <summary>
+    /// Label control
+    /// </summary>
     public class GLLabel : GLForeDisplayTextBase
     {
+        /// <summary> Construct giving name, bounds, text </summary>
         public GLLabel(string name, Rectangle location, string text) : base(name, location)
         {
             this.text = text;
-            ForeColor = DefaultLabelForeColor;
-            BackColor = Color.Transparent;
+            foreColor = DefaultLabelForeColor;
+            BackColorNI = Color.Transparent;
             BorderColorNI = DefaultLabelBorderColor;
         }
 
-        public GLLabel(string name, Rectangle location, string text, Color fore, Color? back = null) : this(name, location,text)
+        /// <summary> Construct giving name, bounds, text, forecolor, optional backcolor </summary>
+
+        public GLLabel(string name, Rectangle location, string text, Color forecolor, Color? backcolor = null) : this(name, location,text)
         {
-            this.ForeColor = fore;
-            if ( back.HasValue)
-                this.BackColor = back.Value;
+            foreColor = forecolor;
+            if ( backcolor.HasValue)
+                this.BackColorNI = backcolor.Value;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLLabel() : this("LB?", DefaultWindowRectangle, "")
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -61,6 +65,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             if (Text.HasChars())

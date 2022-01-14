@@ -12,7 +12,6 @@
  * governing permissions and limitations under the License.
  */
 
-using GLOFC;
 using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
@@ -20,50 +19,78 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// A date time picker
+    /// </summary>
     public class GLDateTimePicker: GLForeDisplayBase
     {
+        /// <summary> Callback on check selection changed </summary>
         public Action<GLBaseControl> CheckChanged { get; set; } = null;   // not fired by programatic Checked  
+        /// <summary> Callback when value changed </summary>
         public Action<GLBaseControl> ValueChanged { get; set; } = null;   // Not fired by programatic Value
+        /// <summary> Callback when drop down state changed </summary>
         public Action<GLBaseControl, bool> DropDownStateChanged { get; set; } = null;
 
+        /// <summary> Date time value </summary>
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
+
+        /// <summary> Culture of calendar. Default is CurrentCulture </summary>
         public CultureInfo Culture { get { return culture; } set { culture = value; ParentInvalidateLayout(); } }
 
+        /// <summary> Picker format</summary>
         public enum DateTimePickerFormat
         {
+            /// <summary> Long date and time </summary>
             Long = 1,
+            /// <summary> Short date and time</summary>
             Short = 2,
+            /// <summary> Time </summary>
             Time = 4,
+            /// <summary> In Custom mode</summary>
             Custom = 8
         }
+
+        /// <summary> Set format to enumeration </summary>
         public DateTimePickerFormat Format { get { return format; } set { SetFormat(value); InvalidateLayout(); } }     // format control, primary
 
-        // returns current format, or sets a custom format
+        /// <summary> Set custom format, or returns current format 
+        /// See <href>https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings</href> for formats of date, time etc</summary>
         public string CustomFormat { get { return customformat; } set { customformat = value; format = DateTimePickerFormat.Custom;  ParentInvalidateLayout(); } }
 
+        /// <summary> Show up/down button </summary>
         public bool ShowUpDown { get { return UpDown.Visible; } set { UpDown.Visible = value; InvalidateLayout(); } }
+        /// <summary> Show check box </summary>
         public bool ShowCheckBox { get { return CheckBox.Visible; } set { CheckBox.Visible = value; InvalidateLayout(); } }
+        /// <summary> Show calendar and allow calendar to pop out</summary>
         public bool ShowCalendar { get { return CalendarSelect.Visible; } set { CalendarSelect.Visible = value; InvalidateLayout(); } }
 
+        /// <summary> Is checked? </summary>
         public bool Checked { get { return CheckBox.Checked; } set { CheckBox.Checked = value; } }
 
+        /// <summary> Selected back color of item being edited</summary>
         public Color SelectedColor { get { return selectedColor; } set { selectedColor = value; Invalidate(); } }
 
+        /// <summary> Checkbox control, for theming </summary>
         public GLCheckBox CheckBox { get; set; } = new GLCheckBox();              // access for setting colours
+        /// <summary> Up down control, for theming </summary>
         public GLUpDownControl UpDown { get; set; } = new GLUpDownControl();
+        /// <summary> Calendar select button control, for theming </summary>
         public GLButton CalendarSelect { get; set; } = new GLButton();
+        /// <summary> Calendar control, control, for theming </summary>
         public GLCalendar Calendar { get; set; } = new GLCalendar();
 
+        /// <summary> In Calandar? </summary>
         public bool InCalendar { get { return Calendar.Visible; } }
 
-        public GLDateTimePicker(string name, Rectangle location, DateTime t) : base(name, location)
+        /// <summary> Construct using name, bounds, date time</summary>
+        public GLDateTimePicker(string name, Rectangle location, DateTime datetime) : base(name, location)
         {
             foreColor = DefaultDTPForeColor;
             BackColorNI = DefaultDTPBackColor;
+
+            datetimevalue = datetime;
 
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
@@ -95,10 +122,12 @@ namespace GLOFC.GL4.Controls
             InvalidateOnFocusChange = true;
         }
 
+        /// <summary> Empty constructor </summary>
         public GLDateTimePicker() : this("DTP?", DefaultWindowRectangle, DateTime.Now)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlRemove(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)     // ensure calendar is removed, since its not directly attached
         {
             if (child == this && InCalendar)
@@ -106,6 +135,7 @@ namespace GLOFC.GL4.Controls
             base.OnControlRemove(parent, child);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
@@ -116,6 +146,7 @@ namespace GLOFC.GL4.Controls
 
         const int borderoffset = 2;
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -140,7 +171,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();
@@ -162,6 +193,7 @@ namespace GLOFC.GL4.Controls
 
         // called after the background of the panel has been drawn - so it will be clear to write.
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             using (var fmt = new StringFormat() { Alignment = StringAlignment.Center })
@@ -192,6 +224,7 @@ namespace GLOFC.GL4.Controls
 
         #region UI
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -220,6 +253,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
@@ -237,6 +271,7 @@ namespace GLOFC.GL4.Controls
             OnKeyDown(e);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -310,12 +345,11 @@ namespace GLOFC.GL4.Controls
                 ProcessUpDown(-1);
         }
 
-        protected virtual void OnCheckBoxChanged()
+        private void OnCheckBoxChanged()
         {
             CheckChanged?.Invoke(this);
         }
-
-        protected virtual void OnValueChanged()
+        private void OnValueChanged()
         {
             ValueChanged?.Invoke(this);
         }
@@ -343,6 +377,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.GlobalMouseClick"/>
         protected override void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseClick(ctrl, e);   // do heirachy before we mess with it
@@ -351,6 +386,7 @@ namespace GLOFC.GL4.Controls
                 Deactivate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsThisOrChildOf(GLBaseControl)"/>
         public override bool IsThisOrChildOf(GLBaseControl ctrl)         // override, and make the Calendar one of us
         {
             if (base.IsThisOrChildOf(ctrl))
