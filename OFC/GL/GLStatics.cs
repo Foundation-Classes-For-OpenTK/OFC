@@ -204,14 +204,14 @@ namespace GLOFC
         /// <summary>
         /// Enable GL debug proc and vector to this function
         /// </summary>
-        public static bool EnableDebug(DebugProc p)
+        public static bool EnableDebug(DebugProc callback)
         {
             if (HasExtensions("GL_KHR_debug"))
             {
                 GL.Enable(EnableCap.DebugOutput);
                 GL.Enable(EnableCap.DebugOutputSynchronous);
 
-                GL.DebugMessageCallback(p, IntPtr.Zero);
+                GL.DebugMessageCallback(callback, IntPtr.Zero);
                 GL.DebugMessageControl(DebugSourceControl.DontCare, DebugTypeControl.DontCare, DebugSeverityControl.DontCare, 0, new int[0], true);
 
                 GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeMarker, 0, DebugSeverity.DebugSeverityNotification, -1, "Debug output enabled");

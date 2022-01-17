@@ -19,7 +19,6 @@
     <DefaultDocumentationFolder>bin\mddoc</DefaultDocumentationFolder>
     <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
     <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
-    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
     <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
     <DefaultDocumentationNestedTypeVisibilities>DeclaringType</DefaultDocumentationNestedTypeVisibilities>
   </PropertyGroup>
@@ -32,7 +31,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
-    <DocumentationFile>bin\Debug\GLOFC.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -42,6 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -268,7 +267,9 @@
     <None Include="Readme.txt" />
     <None Include="Resources\Calendar.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="docexternlinks.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets" Condition="Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
