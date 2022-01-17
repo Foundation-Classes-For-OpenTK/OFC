@@ -16,24 +16,37 @@ using GLOFC.Utils;
 using System;
 using System.Drawing;
 using System.Linq;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Tab Control
+    /// </summary>
     public class GLTabControl : GLForeDisplayBase
     {
+        /// <summary> The selected tab index. -1 means no page is selected </summary>
         public int SelectedTab { get { return seltab; } set { if (seltab != value) { seltab = value; ReselectTab(); } } }
+        /// <summary> The tab style to use. Default is TabStyleSquare. Also available are TabStyleRoundedEdge and TabStyleAngled </summary>
         public TabStyleCustom TabStyle { get { return tabstyle; } set { tabstyle = value;InvalidateLayout();; } }
 
+        /// <summary> Tab selected back color (ForeColor is selected fore color)</summary>
         public Color TabSelectedColor { get { return tabSelectedColor; } set { tabSelectedColor = value; Invalidate(); } }
+        /// <summary> Tab not selected back color</summary>
         public Color TabNotSelectedColor { get { return tabNotSelectedColor; } set { tabNotSelectedColor = value; Invalidate(); } }
+        /// <summary> Text not selected fore color</summary>
         public Color TextNotSelectedColor { get { return textNotSelectedColor; } set { textNotSelectedColor = value; Invalidate(); } }
+        /// <summary> Mouse over tab color </summary>
         public Color TabMouseOverColor { get { return tabMouseOverColor; } set { tabMouseOverColor = value; Invalidate(); } }
+        /// <summary> Tab edges border color </summary>
         public Color TabControlBorderColor { get { return tabControlBorderColor; } set { tabControlBorderColor = value; Invalidate(); } }
+        /// <summary> Gradient scaling factor to tabs</summary>
         public float TabColorScaling { get { return tabColorScaling; } set { tabColorScaling = value; Invalidate(); } }
+        /// <summary> Gradient scaling for background of control (color is BackColor) </summary>
         public float BackDisabledScaling { get { return backDisabledScaling; } set { if (backDisabledScaling != value) { backDisabledScaling = value; Invalidate(); } } }
+        /// <summary> Disable autosize, not supported</summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> Construct with name and bounds </summary>
         public GLTabControl(string name, Rectangle location) : base(name, location)
         {
             BorderColorNI = DefaultTabControlBorderColor;
@@ -41,10 +54,12 @@ namespace GLOFC.GL4.Controls
             foreColor = DefaultTabControlForeColor;
         }
 
+        /// <summary> Default Constructor </summary>
         public GLTabControl() : this("TBC?", DefaultWindowRectangle)
         {
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Add(GLBaseControl, bool)"/>
         public override void Add(GLBaseControl other, bool atback = false)
         {
             System.Diagnostics.Debug.Assert(other is GLTabPage);
@@ -52,9 +67,6 @@ namespace GLOFC.GL4.Controls
             other.Visible = false;
             base.Add(other,atback);
         }
-
-        const int botmargin = 4;
-        const int sidemargin = 8;
 
         private int CalcRectangles()            // calculate all tab rectangles and populate list, return max height
         {
@@ -96,10 +108,11 @@ namespace GLOFC.GL4.Controls
             return maxheight;
         }
 
-        // override the base layout for this control
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
+            // override the base layout for this control
+
             int tabuse = CalcRectangles();
 
             foreach (var c in ControlsZ)                // all tab controls even if invisible
@@ -115,12 +128,13 @@ namespace GLOFC.GL4.Controls
             ClearLayoutFlags();
         }
 
-        // called after the background of the panel has been drawn - so it will be clear to write.
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
+            // called after the background of the panel has been drawn - so it will be clear to write.
+
             int i = 0;
-            foreach( var c in ControlsIZ.OfType<GLTabPage>())
+            foreach( var c in ControlsIZ.OfType<GLTabPage>())       // draw all but selected
             {
                 if (i != seltab)
                 {
@@ -130,7 +144,7 @@ namespace GLOFC.GL4.Controls
                 i++;
             }
 
-            if (seltab >= 0 && seltab < ControlsIZ.Count)
+            if (seltab >= 0 && seltab < ControlsIZ.Count)       // and draw selected
             {
                 var c = ControlsIZ[seltab] as GLTabPage;
                 DrawTab(gr, new Rectangle(tabrectangles[seltab].Left, tabrectangles[seltab].Top, tabrectangles[seltab].Width, tabrectangles[seltab].Height),
@@ -138,7 +152,6 @@ namespace GLOFC.GL4.Controls
             }
 
         }
-
 
         private void DrawTab(Graphics gr, Rectangle area, string text, Image img, bool selected, bool mouseover)
         {
@@ -169,6 +182,7 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -192,6 +206,7 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseLeave(GLMouseEventArgs)"/>
         protected override void OnMouseLeave(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
@@ -201,6 +216,7 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseLeave(e);
@@ -223,34 +239,35 @@ namespace GLOFC.GL4.Controls
         private float tabColorScaling = 0.5f;
         private float backDisabledScaling = 0.75F;
 
+        const int botmargin = 4;
+        const int sidemargin = 8;
     }
 
     /////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Tab page Control
+    /// </summary>
     public class GLTabPage : GLPanel
     {
-        public string Text
-        {
-            get { return text; }
-            set
-            {
-                text = value;
-                Parent?.Invalidate();
-            }
-        }
+        /// <summary> Name of Tab </summary>
+        public string Text {  get { return text; }   set {  text = value;  Parent?.Invalidate(); } }
 
+        /// <summary> Constructor with name and title </summary>
         public GLTabPage(string name, string title) : base(name, DefaultWindowRectangle)
         {
-            BackColor = DefaultPanelBackColor;
+            BackColorNI = DefaultPanelBackColor;
             text = title;
         }
 
+        /// <summary> Constructor with name, title of tab, and back color</summary>
         public GLTabPage(string name, string title, Color back) : base(name, DefaultWindowRectangle)
         {
-            BackColor = back;
+            BackColorNI = back;
             text = title;
         }
 
+        /// <summary> Default Constructor </summary>
         public GLTabPage() : this("TPC?", "")
         {
         }

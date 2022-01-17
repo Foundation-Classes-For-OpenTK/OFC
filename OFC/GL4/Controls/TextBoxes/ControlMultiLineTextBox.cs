@@ -17,46 +17,77 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Multi line text box control
+    /// </summary>
+    /// 
     public class GLMultiLineTextBox : GLForeDisplayTextBase
     {
-        public Action<GLBaseControl> TextChanged { get; set; } = null;      // not fired by programatically changing Text
-        public Action<GLBaseControl> ReturnPressed { get; set; } = null;    // not fired by programatically changing Text, only if AllowLF = false
+        /// <summary> Callback when text changed. Not fired programatically when changing Text </summary>
+        public Action<GLBaseControl> TextChanged { get; set; } = null;
+        /// <summary> Callback when return pressed, and only if MultiLineMode = false. Not fired programatically when changing Text </summary>
+        public Action<GLBaseControl> ReturnPressed { get; set; } = null;
 
-        public bool CRLF { get; set; } = true;                              // set to determine CRLF or LF is used
-        public bool MultiLineMode { get; set; } = true;                     // clear to prevent multiline, TextAlign then determines alignment in box (vert only)
-        public bool ClearOnFirstChar { get; set; } = false;                 // clear on first char
-        public bool AllowControlChars { get; set; } = false;                // other controls chars allowed
-        public bool ReadOnly { get; set; } = false;                         // can edit it
-        public MarginType TextBoundary { get; set; } = new MarginType(0);           // limit text area
-        public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }       // of text
-        public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }       // lined text, default off
+        /// <summary> Set to determine CRLF or LF is used</summary>
+        public bool CRLF { get; set; } = true;
+        /// <summary> Set true to enable multiline text box. 
+        /// Set false for a single line text box, in which case TextAlign then determines alignment in box (vert only)</summary>
+        public bool MultiLineMode { get; set; } = true;                      
+        /// <summary> Set true so when first character is types the text box is cleared </summary>
+        public bool ClearOnFirstChar { get; set; } = false;                 
+        /// <summary> Allow control character in text </summary>
+        public bool AllowControlChars { get; set; } = false;                
+        /// <summary> Set to make read only. No user editing is allowed, and editing commands will not work </summary>
+        public bool ReadOnly { get; set; } = false;                         
+        /// <summary> Controls where text is painted within control </summary>
+        public MarginType TextBoundary { get; set; } = new MarginType(0);         
+        /// <summary> Highlight back color for selection </summary>
+        public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }      
+        /// <summary> Line separator color, default is line separator is off (Color.Transparent) </summary>
+        public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }      
+        /// <summary> Set to enable a flashing cursor </summary>
         public bool FlashingCursor { get; set; } = true;
 
-        public bool IsSelectionSet { get { return startpos != cursorpos; } }
+        /// <summary> Is selection active </summary>
+        public bool IsSelectionActive { get { return startpos != cursorpos; } }
+        /// <summary> Selection start index </summary>
         public int SelectionStart { get { return Math.Min(startpos, cursorpos); } }
+        /// <summary> Selection end index </summary>
         public int SelectionEnd { get { return Math.Max(startpos, cursorpos); } }
 
+        /// <summary> Error condition enable or disable </summary>
         public bool InErrorCondition { get { return inerror; } set { inerror = value; Invalidate(); } }
+        /// <summary> Error back color</summary>
         public Color BackErrorColor { get { return backerrorcolor; } set { backerrorcolor = value; Invalidate(); } }
+
+        /// <summary> Number of lines in text</summary>
         public int NumberOfLines { get { return linelengths.Count(); } }
 
+        /// <summary> First displayed line on screen (0 onwards)</summary>
         public int FirstDisplayedLine { get { return firstline; } set { firstline = Math.Max(0, Math.Min(value, NumberOfLines - CurrentDisplayableLines)); Invalidate(); } }
+        /// <summary> First displayed character index </summary>
         public int FirstDisplayedCharacter { get { return displaystartx; } set { displaystartx = Math.Max(0, Math.Min(value, MaxLineLength)); Invalidate(); } }
 
+        /// <summary> Maximum line length found (not including line termination characters)</summary>
         public int MaxLineLength { get; private set; } = 0;
 
+        /// <summary> Enable vertical scroll bar</summary>
         public bool EnableVerticalScrollBar { get { return vertscroller != null; } set { ScrollBars(value, horzscroller != null); } }
+        /// <summary> Enable horizontal scroll bar </summary>
         public bool EnableHorizontalScrollBar { get { return horzscroller != null; } set { ScrollBars(vertscroller != null, value); } }
+        /// <summary> Scroll bar width </summary>
         public int ScrollBarWidth { get { return scrollbarwidth; } set { scrollbarwidth = value; Finish(true, true, true); } }
 
-        public Font RightClickMenuFont { get; set; } = null;        // if null, use Font for control
+        /// <summary> Font for right click menu. If null, use Font for this control </summary>
+        public Font RightClickMenuFont { get; set; } = null;
 
+        /// <summary> Disable autosize, not supported. See CalculateTextArea for a method for external auto sizing </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> Construct with name, bounds and text contents </summary>
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
         {
             Focusable = true;
@@ -92,12 +123,14 @@ namespace GLOFC.GL4.Controls
                     );
         }
 
+        /// <summary> Default Constructor </summary>
         public GLMultiLineTextBox() : this("TBML?", DefaultWindowRectangle, "")
         {
         }
 
         #region Public Interface
 
+        /// <summary> Set cursor position to this index </summary>
         public void SetCursorPos(int p)
         {
             if (p >= 0 && p <= Text.Length)
@@ -107,11 +140,12 @@ namespace GLOFC.GL4.Controls
                     cursorpos--;
 
                 CalculateTextParameters();      // reset text paras
-                Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+                Finish(invalidate: true, clearselection: false, restarttimer: true);
             }
         }
 
-        public void CursorLeft(bool clearmarkers = false, int count = 1)
+        /// <summary> Cursor move left, by count, back up over lines if required. If clearselection is true, selection is cleared </summary>
+        public void CursorLeft(bool clearselection = false, int count = 1)
         {
             while (count > 0 && cursorpos>0)
             {
@@ -127,15 +161,16 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void CursorRight(bool clearmarkers = false, int count = 1)
+        /// <summary> Cursor move right, by count, over line ends. If clearselection is true, selection is cleared </summary>
+        public void CursorRight(bool clearselection = false, int count = 1)
         {
             int nextlinecpos = cursorlinecpos + linelengths[cursorlineno];      // end of line, including any /r/n
             int nextmarkerpos = nextlinecpos - lineendlengths[cursorlineno];
 
-            while (count > 0 && cursorpos < nextlinecpos )                    // will only occur if nextlinecpos has no /r/n, i.e., end of text
+            while (count > 0 && cursorpos < nextlinecpos )                    // nextlinecpos is moved on below when end of line, so that will only occur if nextlinecpos has no /r/n, i.e., end of text
             {
                 int goforwardby = Math.Min(count, nextmarkerpos - cursorpos + 1);   // go forward maximum..
                 count -= goforwardby;
@@ -150,10 +185,11 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void CursorDown(bool clearmarkers = false, int count = 1)
+        /// <summary> Cursor move down, by count. If clearselection is true, selection is cleared </summary>
+        public void CursorDown(bool clearselection = false, int count = 1)
         {
             while(count-- > 0 && cursorlineno < linelengths.Count() - 1)
             {
@@ -162,10 +198,11 @@ namespace GLOFC.GL4.Controls
                 cursorpos = cursorlinecpos + Math.Min(offsetin, linelengths[cursorlineno] - lineendlengths[cursorlineno]);
             }
 
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void CursorUp(bool clearmarkers = false, int count = 1)
+        /// <summary> Cursor move up, by count. If clearselection is true, selection is cleared </summary>
+        public void CursorUp(bool clearselection = false, int count = 1)
         {
             while (count-- > 0 && cursorlineno > 0)
             {
@@ -174,22 +211,28 @@ namespace GLOFC.GL4.Controls
                 cursorpos = cursorlinecpos + Math.Min(offsetin, linelengths[cursorlineno] - lineendlengths[cursorlineno]);
             }
 
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void Home(bool clearmarkers = false)
+        /// <summary> Cursor move to home position (Start of line). If clearselection is true, selection is cleared </summary>
+        public void Home(bool clearselection = false)
         {
             cursorpos = cursorlinecpos;
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void End(bool clearmarkers = false)
+        /// <summary> Cursor move to end position (End of line). If clearselection is true, selection is cleared </summary>
+        public void End(bool clearselection = false)
         {
             cursorpos = cursorlinecpos + linelengths[cursorlineno] - lineendlengths[cursorlineno];
-            Finish(invalidate: true, clearmarkers: clearmarkers, restarttimer: true);
+            Finish(invalidate: true, clearselection: clearselection, restarttimer: true);
         }
 
-        public void InsertTextWithCRLF(string str, bool insertinplace = false)        // any type of lf/cr combo, replaced by selected combo
+        /// <summary> Insert text at cursor position, with LF/CR or LF or CR allowed in text.
+        /// Any current selection is removed.
+        /// Note the type of end of line inserted is determined by the CRLF state, not by the form in the text
+        /// </summary>
+        public void InsertTextWithCRLF(string text, bool insertinplace = false)        // any type of lf/cr combo, replaced by selected combo
         {
             if (!ReadOnly)
             {
@@ -198,48 +241,55 @@ namespace GLOFC.GL4.Controls
                 int cpos = 0;
                 while (true)
                 {
-                    if (cpos < str.Length)
+                    if (cpos < text.Length)
                     {
-                        int nextlf = str.IndexOfAny(new char[] { '\r', '\n' }, cpos);
+                        int nextlf = text.IndexOfAny(new char[] { '\r', '\n' }, cpos);
 
                         if (nextlf >= 0)
                         {
-                            InsertTextIntoLineInt(str.Substring(cpos, nextlf - cpos), insertinplace);
+                            InsertTextIntoLineInt(text.Substring(cpos, nextlf - cpos), insertinplace);
                             InsertCRLFInt();
 
-                            if (str[nextlf] == '\r')
+                            if (text[nextlf] == '\r')
                             {
                                 nextlf++;
                             }
 
-                            if (nextlf < str.Length && str[nextlf] == '\n')
+                            if (nextlf < text.Length && text[nextlf] == '\n')
                                 nextlf++;
 
                             cpos = nextlf;
                         }
                         else
                         {
-                            InsertTextIntoLineInt(str.Substring(cpos), insertinplace);
+                            InsertTextIntoLineInt(text.Substring(cpos), insertinplace);
                             break;
                         }
                     }
                 }
 
-                Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                Finish(invalidate: true, clearselection: true, restarttimer: true);
                 OnTextChanged();
             }
         }
 
-        public void InsertText(string t, bool insertinplace = false)        // no lf in text
+        /// <summary> Insert text at cursor position. No CR/LF is allowed in text.
+        /// Any current selection is removed.
+        /// </summary>
+        public void InsertText(string text, bool insertinplace = false)     
         {
             if (!ReadOnly)
             {
                 DeleteSelectionClearInt();
-                InsertTextIntoLineInt(t, insertinplace);
-                Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                InsertTextIntoLineInt(text, insertinplace);
+                Finish(invalidate: true, clearselection: true, restarttimer: true);
                 OnTextChanged();
             }
         }
+
+        /// <summary> Insert a line break (CR+LF or LF dependent on CRLF state) at cursor position. 
+        /// Any current selection is removed.
+        /// </summary>
 
         public void InsertCRLF()        // insert the selected cr/lf pattern
         {
@@ -247,11 +297,13 @@ namespace GLOFC.GL4.Controls
             {
                 DeleteSelectionClearInt();
                 InsertCRLFInt();
-                Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                Finish(invalidate: true, clearselection: true, restarttimer: true);
                 OnTextChanged();
             }
         }
 
+        /// <summary> Delete the character to the left, or delete the selection.
+        /// </summary>
         public void Backspace()
         {
             if (!ReadOnly)
@@ -267,7 +319,7 @@ namespace GLOFC.GL4.Controls
                         linelengths[cursorlineno]--;
                         cursorpos--;
                         MaxLineLength = -1;     // we don't know if this is the maximum any more, need to recalc
-                        Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                        Finish(invalidate: true, clearselection: true, restarttimer: true);
                         OnTextChanged();
                     }
                     else if (cursorlinecpos > 0)    // not at start of text
@@ -281,13 +333,15 @@ namespace GLOFC.GL4.Controls
                         linelengths.RemoveAt(cursorlineno + 1);
                         lineendlengths.RemoveAt(cursorlineno + 1);
                         MaxLineLength = Math.Max(MaxLineLength, linelengths[cursorlineno] - lineendlengths[cursorlineno]);  // we made a bigger, line, see if its max
-                        Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                        Finish(invalidate: true, clearselection: true, restarttimer: true);
                         OnTextChanged();
                     }
                 }
             }
         }
 
+        /// <summary> Delete the character to the right, or delete the selection.
+        /// </summary>
         public void Delete()
         {
             if (!ReadOnly)
@@ -303,7 +357,7 @@ namespace GLOFC.GL4.Controls
                         linelengths[cursorlineno]--;
                         MaxLineLength = -1;     // we don't know if its the max anymore
 
-                        Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                        Finish(invalidate: true, clearselection: true, restarttimer: true);
                         OnTextChanged();
                     }
                     else if (cursorpos < Text.Length) // not at end of text
@@ -315,47 +369,53 @@ namespace GLOFC.GL4.Controls
 
                         MaxLineLength = Math.Max(MaxLineLength, linelengths[cursorlineno] - lineendlengths[cursorlineno]);  // we made a bigger, line, see if its max
 
-                        Finish(invalidate: true, clearmarkers: true, restarttimer: true);
+                        Finish(invalidate: true, clearselection: true, restarttimer: true);
                         OnTextChanged();
                     }
                 }
             }
         }
 
+        /// <summary> Cursor to start of text </summary>
         public void CursorToTop()
         {
             startpos = firstline = cursorpos = 0;
             CalculateTextParameters();                      // will correct for out of range start/cursor pos
-            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+            Finish(invalidate: true, clearselection: false, restarttimer: true);
         }
+
+        /// <summary> Cursor to end of text </summary>
         public void CursorToEnd()
         {
             firstline = 0;
             startpos = cursorpos = Text.Length;
             CalculateTextParameters();                      // will correct for out of range start/cursor pos
-            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+            Finish(invalidate: true, clearselection: false, restarttimer: true);
         }
 
+        /// <summary> Set the selection area to these values.  If start=end selection is cancelled </summary>
         public void SetSelection(int start, int end)        // set equal to cancel, else set start/end pos
         {
             startpos = Math.Min(start, end);
             cursorpos = Math.Max(start, end);
             CalculateTextParameters();                      // will correct for out of range start/cursor pos
-            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+            Finish(invalidate: true, clearselection: false, restarttimer: true);
         }
 
+        /// <summary> Clear the selection </summary>
         public void ClearSelection()
         {
             startpos = cursorpos;
             CalculateTextParameters();
-            Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+            Finish(invalidate: true, clearselection: false, restarttimer: true);
         }
 
+        /// <summary> Delete the selection. Return true if selection was present </summary>
         public bool DeleteSelection()
         {
             if (!ReadOnly && DeleteSelectionClearInt())
             {
-                Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+                Finish(invalidate: true, clearselection: false, restarttimer: true);
                 OnTextChanged();
                 return true;
             }
@@ -363,11 +423,12 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
+        /// <summary> Return the selected text, including any LF/CR characters within it. Null if no text is selected</summary>
         public string SelectedText
         {
             get
             {
-                if (IsSelectionSet)
+                if (IsSelectionActive)
                 {
                     int min = Math.Min(startpos, cursorpos);
                     int max = Math.Max(startpos, cursorpos);
@@ -378,36 +439,64 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public void Copy()
+
+        /// <summary> Copy selected text to clipboard. True if copied to clipboard </summary>
+        public bool Copy()
         {
             string sel = SelectedText;
             if (sel != null)
-                System.Windows.Forms.Clipboard.SetText(sel);
+            {
+                try
+                {
+                    System.Windows.Forms.Clipboard.SetText(sel);
+                    return true;
+                }
+                catch { }       // external reason, don't care
+            }
+            return false;
         }
 
-        public void Cut()
+        /// <summary> Cut selected text to clipboard. True if copied to clipboard </summary>
+        public bool Cut()
         {
             if (!ReadOnly)
             {
                 string sel = SelectedText;
                 if (sel != null)
                 {
-                    System.Windows.Forms.Clipboard.SetText(sel);
-                    DeleteSelection();
+                    try
+                    {
+                        System.Windows.Forms.Clipboard.SetText(sel);
+                        DeleteSelection();
+                        return true;
+                    }
+                    catch { }
                 }
             }
+
+            return false;
         }
 
-        public void Paste()
+        /// <summary> Paste the clipboard text to the cursor position. True if pasted </summary>
+        public bool Paste()
         {
             if (!ReadOnly)
             {
-                string s = System.Windows.Forms.Clipboard.GetText(System.Windows.Forms.TextDataFormat.UnicodeText);
-                if (!s.IsEmpty())
-                    InsertTextWithCRLF(s);
+                try
+                {
+                    string s = System.Windows.Forms.Clipboard.GetText(System.Windows.Forms.TextDataFormat.UnicodeText);
+                    if (!s.IsEmpty())
+                        InsertTextWithCRLF(s);
+
+                    return true;
+                }
+                catch { }
             }
+
+            return false;
         }
 
+        /// <summary> Clear all text</summary>
         public void Clear()
         {
             if (!ReadOnly)
@@ -416,7 +505,7 @@ namespace GLOFC.GL4.Controls
                 cursorpos = startpos = 0;
                 MaxLineLength = 0;
                 CalculateTextParameters();
-                Finish(invalidate: true, clearmarkers: false, restarttimer: true);
+                Finish(invalidate: true, clearselection: false, restarttimer: true);
             }
         }
 
@@ -424,9 +513,13 @@ namespace GLOFC.GL4.Controls
 
         #region Estimation
 
-        // this needs the font set up and TextBoundary
-        // estimate size needed.  Set min and max sizes
-        // return size available and horz scroll state
+        /// <summary>
+        /// Estimate size of bitmap needed for this text
+        /// This needs the font set up and TextBoundary
+        /// </summary>
+        /// <param name="min">Minimum size of box</param>
+        /// <param name="max">Maximum size of box</param>
+        /// <returns>Tuple with estimated width and height, and indicate if horizonal scroll needed</returns>
         public Tuple<Size, bool> CalculateTextArea(Size min, Size max)
         {
             bool horzscroll = false;
@@ -458,7 +551,7 @@ namespace GLOFC.GL4.Controls
 
         #region Text Changing and cursor movement helpers
 
-        protected void CalculateTextParameters()        // recalc all the text parameters and arrays
+        private void CalculateTextParameters()        // recalc all the text parameters and arrays
         {
             linelengths.Clear();
             lineendlengths.Clear();
@@ -558,8 +651,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // Called at the end of all active moves and edits, ensure area is showing the cursorlineno, vert/horz scroll bar, etc
-
-        private void Finish(bool invalidate, bool clearmarkers, bool restarttimer)   
+        private void Finish(bool invalidate, bool clearselection, bool restarttimer)   
         {
             if (MaxLineLength < 0)
                 CalcMaxLineLengths();
@@ -653,8 +745,8 @@ namespace GLOFC.GL4.Controls
                 horzscroller.SetValueMaximumLargeChange(displaystartx, MaxLineLength, 1);
             }
             
-            if (clearmarkers)
-                ClearMarkers();
+            if (clearselection)
+                ClearSelection();
 
             if (restarttimer)
                 CursorTimerRestart();
@@ -679,7 +771,7 @@ namespace GLOFC.GL4.Controls
             SetCursorPos(Text.Length);          // will set to end, cause Calculate and FInish
         }
 
-        private void ClearMarkers()
+        private void clearselection()
         {
             startlinecpos = cursorlinecpos;
             startpos = cursorpos;
@@ -754,6 +846,7 @@ namespace GLOFC.GL4.Controls
 
         #region Other implementation
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlAdd(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)    
         {
             base.OnControlAdd(parent, child);
@@ -761,12 +854,14 @@ namespace GLOFC.GL4.Controls
                 Finish(true, false, false);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
-            Finish(invalidate: false, clearmarkers: false, restarttimer: false);        // no need to invalidate again, it will
+            Finish(invalidate: false, clearselection: false, restarttimer: false);        // no need to invalidate again, it will
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFocusChanged(FocusEvent, GLBaseControl)"/>
         protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
             base.OnFocusChanged(evt, fromto);
@@ -783,10 +878,11 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnResize"/>
         protected override void OnResize()
         {
             base.OnResize();
-            Finish(invalidate: false, clearmarkers: false, restarttimer: false);        // no need to invalidate again, it will
+            Finish(invalidate: false, clearselection: false, restarttimer: false);        // no need to invalidate again, it will
         }
 
         private void CursorTimerRestart()
@@ -805,6 +901,7 @@ namespace GLOFC.GL4.Controls
 
         // override the draw back for error conditions
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.DrawBack(Rectangle, Graphics, Color, Color, int)"/>
         protected override void DrawBack(Rectangle bounds, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
         {
             if (InErrorCondition)       // override colour for error condition, so much easier in this scheme than winforms
@@ -833,6 +930,7 @@ namespace GLOFC.GL4.Controls
             return usablearea;
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             if (displaystartx < 0)      // no paint if not set up - checking for race conditions
@@ -1017,6 +1115,7 @@ namespace GLOFC.GL4.Controls
 
         #region UI
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -1060,6 +1159,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyPress(GLKeyEventArgs)"/>
         protected override void OnKeyPress(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);
@@ -1095,12 +1195,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected virtual void OnTextChanged()
+        private protected virtual void OnTextChanged()
         {
             TextChanged?.Invoke(this);
         }
 
-        protected virtual void OnReturnPressed()
+        private void OnReturnPressed()
         {
             ReturnPressed?.Invoke(this);
         }
@@ -1177,6 +1277,7 @@ namespace GLOFC.GL4.Controls
             return cpos + displaystartx+ s.Length;
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -1189,11 +1290,12 @@ namespace GLOFC.GL4.Controls
                     cursorlinecpos = xlinecpos;
                     cursorlineno = xlineno;
                     cursorpos = xcursorpos;
-                    Finish(invalidate: true, clearmarkers: !e.Shift, restarttimer: true);
+                    Finish(invalidate: true, clearselection: !e.Shift, restarttimer: true);
                 }
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -1211,6 +1313,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -1222,6 +1325,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);

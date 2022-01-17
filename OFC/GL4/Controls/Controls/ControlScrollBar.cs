@@ -97,7 +97,7 @@ namespace GLOFC.GL4.Controls
             BackColorGradientAltNI = BackColorNI = DefaultScrollbarBackColor;
         }
 
-        /// <summary> Empty constructor</summary>
+        /// <summary> Default Constructor</summary>
         public GLScrollBar(string name = "SB?") : this(name, DefaultWindowRectangle, 0, 100)
         {
         }

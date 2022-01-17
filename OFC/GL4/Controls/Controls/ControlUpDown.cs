@@ -51,7 +51,7 @@ namespace GLOFC.GL4.Controls
             BackColor = DefaultButtonBackColor;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLUpDownControl() : this("UD?", DefaultWindowRectangle)
         {
         }

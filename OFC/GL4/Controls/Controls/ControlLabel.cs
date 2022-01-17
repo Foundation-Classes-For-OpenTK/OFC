@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Controls
                 this.BackColorNI = backcolor.Value;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLLabel() : this("LB?", DefaultWindowRectangle, "")
         {
         }

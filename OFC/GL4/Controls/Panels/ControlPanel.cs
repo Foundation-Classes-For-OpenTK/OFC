@@ -28,7 +28,7 @@ namespace GLOFC.GL4.Controls
             BorderColorNI = DefaultPanelBorderColor;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLPanel() : this("P?", DefaultWindowRectangle)
         {
         }

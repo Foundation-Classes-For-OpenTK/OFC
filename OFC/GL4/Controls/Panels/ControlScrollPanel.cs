@@ -14,7 +14,6 @@
 
 using System;
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
@@ -34,7 +33,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Horizontal scroll position get and set </summary>
         public int HorzScrollPos { get { return ScrollOffset.X; } set { SetScrollPos(value, ScrollOffset.Y); } }
 
-        /// <summary> </summary>
+        /// <summary> Disable autosize. Not supported </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         /// <summary> Constructor with name and bounds </summary>
@@ -44,7 +43,7 @@ namespace GLOFC.GL4.Controls
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
         }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLScrollPanel(string name = "SP?") : this(name, DefaultWindowRectangle)
         {
         }

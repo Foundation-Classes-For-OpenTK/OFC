@@ -32,7 +32,7 @@ namespace GLOFC.GL4
         /// <summary> Sample depth for multisample buffers</summary>
         public int Samples { get; protected set; } = 0;
 
-        /// <summary> Make a buffer </summary>
+        /// <summary> Construct a buffer </summary>
         public GLRenderBuffer() 
         {
             Id = GL.GenRenderbuffer();

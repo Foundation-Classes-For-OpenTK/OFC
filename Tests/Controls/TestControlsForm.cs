@@ -31,6 +31,7 @@ using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.ShapeFactory;
 using static GLOFC.GL4.Controls.GLBaseControl;
+using static GLOFC.GL4.Controls.GLForm;
 
 namespace TestOpenTk
 {
@@ -376,11 +377,18 @@ namespace TestOpenTk
                 if (true)
                 { 
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
+                    glf.BackColor = Color.AliceBlue;
                     glf.TabOrder = taborder++;
                     glf.Font = new Font("Ms Sans Serif", 12);
                     glf.Minimum = -1000;
                     glf.Maximum = 1000;
+                    glf.ValueChanged += (a) => { System.Diagnostics.Debug.WriteLine("GLF value changed"); };
+                    glf.ValidityChanged += (a,b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
                     pform.Add(glf);
+
+                    GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(610, 250, 40, 15), "Value");
+                    glfbut.Click += (e1, b1) => { glf.Value = 20.22f; };
+                    pform.Add(glfbut);
 
                     GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
                     gla.TabOrder = taborder++;
@@ -491,8 +499,9 @@ namespace TestOpenTk
             GLFormConfigurable cform = new GLFormConfigurable("test");
             cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
             cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
+            cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new string[] { "one", "two", "three" }));
             cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
+            cform.Add(new GLFormConfigurable.Entry("Double", typeof(GLNumberBoxDouble), "10.2", new Point(10, 100), new Size(200, 24), "TT"));
             cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { Anchor = AnchorType.Right | AnchorType.Bottom });
             cform.InitCentered("Config Form Test");
             cform.Trigger += (cb, en, ctrlname, args) =>
@@ -540,7 +549,7 @@ namespace TestOpenTk
             for (int i = 0; i < 100; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(int.MinValue, 500), t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel, callback:MsgReturn);
         }
 
         private void MsgDialog2()
@@ -551,10 +560,10 @@ namespace TestOpenTk
 
             //            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message\r\nShorter than\r\nThe other" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
             //GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, "Longer message message\r\nShorter than\r\nThe other", "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore, callback: MsgReturn);
         }
 
-        private void MsgReturn(GLMessageBox msg, GLOFC.GL4.Controls.DialogResult res)
+        private void MsgReturn(GLMessageBox msg, DialogResultEnum res)
         {
             System.Diagnostics.Debug.WriteLine("!!! Message box " + res);
         }

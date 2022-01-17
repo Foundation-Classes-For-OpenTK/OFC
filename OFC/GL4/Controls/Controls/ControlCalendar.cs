@@ -69,7 +69,7 @@ namespace GLOFC.GL4.Controls
             datetimecursor = datetimevalue = DateTime.Now;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLCalendar() : this("But?", DefaultWindowRectangle)
         {
         }

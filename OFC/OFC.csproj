@@ -120,7 +120,7 @@
     <Compile Include="GL4\Controls\Controls\ControlUpDown.cs" />
     <Compile Include="GL4\Controls\Controls\ControlLabel.cs" />
     <Compile Include="GL4\Controls\Controls\ControlListBox.cs" />
-    <Compile Include="GL4\Controls\Forms\ControlForm.cs" />
+    <Compile Include="GL4\Controls\Forms\Form.cs" />
     <Compile Include="GL4\Controls\Controls\ControlScrollBar.cs" />
     <Compile Include="GL4\Controls\Panels\ControlScrollPanelScrollBar.cs" />
     <Compile Include="GL4\Controls\Panels\ControlScrollPanel.cs" />

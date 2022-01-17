@@ -105,7 +105,7 @@ namespace GLOFC.GL4.Controls
             Image = img;
         }
 
-        /// <summary> Empty COnstructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLImage() : this("I?",DefaultWindowRectangle,null)
         {
         }

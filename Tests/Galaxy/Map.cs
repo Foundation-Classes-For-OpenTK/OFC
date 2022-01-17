@@ -403,7 +403,7 @@ namespace TestOpenTk
                         var nl = NameLocationDescription(rightclickmenu.Tag);
                         System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
                             // logical name is important as menu uses it to close down
-                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation,null, 
+                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation, 
                                 nl.Item3, $"{nl.Item1} @ {nl.Item2.X:#.#},{nl.Item2.Y:#.#},{nl.Item2.Z:#.#}", GLMessageBox.MessageBoxButtons.OK, null , 
                                         Color.FromArgb(220, 60, 60, 70), Color.DarkOrange);
                         }

@@ -30,7 +30,7 @@ namespace GLOFC.GL4.Controls
             BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
         }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {
         }

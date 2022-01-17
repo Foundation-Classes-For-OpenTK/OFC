@@ -16,34 +16,49 @@ using GLOFC.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// A Horizonal or vertical menu strip
+    /// </summary>
     public class GLMenuStrip : GLFlowLayoutPanel
     {
         #region Init
 
-        // all Menu Items
-
+        /// <summary> Callback when a top level menu is opening. Passes this and the caller opentag given in the Show function
+        /// You can set menu items visibility and enable state in the callback.
+        /// </summary>
         public Action<GLMenuStrip,Object> Opening = null;         // Menu opening due to Show
+        /// <summary> Callback, all submenus are requesting to close.  Called on top level menu only. Return true to allow the close to happen. </summary>
+        public Func<GLMenuStrip, bool> Closing = null;      
 
-        // Called on top level menu item only.
-        public Func<GLMenuStrip, bool> Closing = null;      // All Submenus closing (and if context menu, the top level is detaching), return true to allow the close to happen
-        public Action<GLMenuItem, GLMenuStrip> SubmenuOpened = null;        // from GLMenuItem the GLMenuStrip submenu is opening
-        public Action<GLMenuItem, GLMenuStrip> SubmenuClosing = null;       // from GLMenuItem the GLMenuStrip submenu is closing
+        /// <summary> Callback, called when a submenu is opening </summary>
+        public Action<GLMenuItem, GLMenuStrip> SubmenuOpened = null;        
+        /// <summary> Callback, called per submenu when it closes</summary>
+        public Action<GLMenuItem, GLMenuStrip> SubmenuClosing = null;       
 
         // Inherited FlowInZOrder, FlowDirection, FlowPadding, BackColor
+
+        /// <summary> Icon strip back color </summary>
         public Color IconStripBackColor { get { return iconStripBackColor; } set { iconStripBackColor = value; Invalidate(); } }
 
+        /// <summary> Icon strip width </summary>
         public int IconAreaWidth { get { return Font.ScalePixels(24); } }
 
+        /// <summary> Sub menu border width</summary>
         public int SubMenuBorderWidth { get; set; } = 0;
 
-        public int AutoOpenDelay { get; set; } = 250;     // open after a delay, 0 for off
+        /// <summary> Auto open delay in ms on hover over a submenu. 0 for off </summary>
+        public int AutoOpenDelay { get; set; } = 250;
 
-        // if you specify items, make sure the direction is right also.
-
+        /// <summary>
+        /// Construct a menu strip
+        /// </summary>
+        /// <param name="name">Name of strip</param>
+        /// <param name="location">location of strip</param>
+        /// <param name="direction">Direction (Right or Down) </param>
+        /// <param name="items">List of menu items</param>
         public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : base(name, location)
         {
             BackColorGradientAltNI = BackColorNI = DefaultMenuBackColor;
@@ -56,37 +71,42 @@ namespace GLOFC.GL4.Controls
                 Add(e);
         }
 
-        public GLMenuStrip(string name = "Menu?") : this(name, DefaultWindowRectangle)
+        /// <summary> Default constructor </summary>
+        public GLMenuStrip() : this("Menu?", DefaultWindowRectangle)
         {
         }
 
-        public GLMenuStrip(string name, DockingType type, float dockpercent, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : 
+        /// <summary>
+        /// Construct a docking menu strip
+        /// </summary>
+        /// <param name="name">name</param>
+        /// <param name="dock">Docking mode</param>
+        /// <param name="dockpercent">Docking percent</param>
+        /// <param name="direction">Direction (Right or Down) </param>
+        /// <param name="items">List of menu items</param>
+        public GLMenuStrip(string name, DockingType dock, float dockpercent, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : 
                             this(name, DefaultWindowRectangle, direction, items)
         {
-            Dock = type;
+            Dock = dock;
             DockPercent = dockpercent;
         }
 
-        public GLMenuStrip(string name, Size sizep, DockingType type, float dockpercentage, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) 
-                        : this(name, DefaultWindowRectangle, direction, items)
-        {
-            Dock = type;
-            DockPercent = dockpercentage;
-            SetNI(size: sizep);
-        }
-
-        // call to pop up the context menu, parent is normally displaycontrol
-        // you can double call and the previous one is closed
-        // if changewidthifrequired, it will reflow to not exceed parent, making the window wider if required
-        // It always makes sure right/bottom is within parent
-        // the opentag is passed to the Opening function, allowing you to pass critical info to it
-        public void Show(GLBaseControl parent, Point coord, bool changewidthifrequired = false, Object opentag = null)        
+        /// <summary>
+        /// Show to pop up a new context menu. Parent is normally displaycontrol.
+        /// You can double call and the previous one is closed.
+        /// It always makes sure right/bottom is within parent.
+        /// </summary>
+        /// <param name="parent">Parent of menu to attach to. Normally its the control display top level control</param>
+        /// <param name="location">Location to place the menu at</param>
+        /// <param name="changewidthifrequired">If set, it will reflow the menu to not exceed parent, making the window wider if required, </param>
+        /// <param name="opentag">Tag to pass to Opening callback</param>
+        public void Show(GLBaseControl parent, Point location, bool changewidthifrequired = false, Object opentag = null)        
         {
             //System.Diagnostics.Debug.WriteLine("Open as context menu " + Name);
             Detach(this);
             openedascontextmenu = true;
             Visible = true;     
-            Location = coord;
+            Location = location;
             AutoSize = true;
             TopMost = true;
             KeepWithinParent = changewidthifrequired;
@@ -105,7 +125,12 @@ namespace GLOFC.GL4.Controls
 
         #region Menu Openers
 
-        // select this item, optionally transfer focus to it
+        /// <summary>
+        /// Select an item at index
+        /// </summary>
+        /// <param name="index">Index of item</param>
+        /// <param name="focusto">If true, change focus to item</param>
+        /// <returns>true if changed to item</returns>
         public bool Select(int index, bool focusto)     
         {
             if ( submenu != null )      // if submenu is activated..
@@ -180,13 +205,13 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
-        // move highlight left/up or right/down
-        public bool Move(int dir)                           
+        /// <summary> Move selected item up/left (negative count) or right/down (positive count) </summary>
+        public bool Move(int count)                           
         {
             int pos = selected;
             while (true)
             {
-                pos += dir;
+                pos += count;
                 if (pos < 0 || pos >= ControlsIZ.Count)     // out of range, can't move
                     return false;
 
@@ -195,12 +220,12 @@ namespace GLOFC.GL4.Controls
                     Select(pos, FlowDirection == ControlFlowDirection.Right);   // set focus on if left-right menu
                     return true;
                 }
-                else if (dir == 0)
+                else if (count == 0)
                     return false;
             }
         }
 
-        // activate, either selected or hoverover item
+        /// <summary> Activate the selected item. Opens a submenu, or clicks on a normal item</summary>
         public void ActivateSelected()                  
         {
             if (submenu != null)                        // if a submenu is up, activate always transfers to it
@@ -236,6 +261,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <summary> Find top level menu of this tree </summary>
         public GLMenuStrip GetTopLevelMenu()
         {
             GLMenuStrip m = this;
@@ -244,7 +270,9 @@ namespace GLOFC.GL4.Controls
             return m;
         }
 
-        public void CloseMenus()        // all menus close down
+        /// <summary> Close all menus, checking on Closing callback for permission
+        /// If its a context menu, the menu will be detached from the parent </summary>
+        public void CloseMenus()        
         {
             //System.Diagnostics.Debug.WriteLine($"{Name} Close menus");
 
@@ -261,7 +289,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public void CloseSubMenus()     // all submenus shut down
+        /// <summary> Close submenus of this menu </summary>
+        public void CloseSubMenus()     
         {
             if (submenu != null)
             {
@@ -278,6 +307,7 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlAdd(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control add {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
@@ -314,6 +344,7 @@ namespace GLOFC.GL4.Controls
             base.OnControlAdd(parent, child);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlRemove(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine("On control remove {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
@@ -335,6 +366,7 @@ namespace GLOFC.GL4.Controls
 
         // intercept mouse clicks, and if not clicked on us, close us
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnGlobalMouseDown(GLBaseControl, GLMouseEventArgs)"/>
         protected override void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             base.OnGlobalMouseDown(ctrl, e);
@@ -351,6 +383,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsThisOrChildOf(GLBaseControl)"/>
         public override bool IsThisOrChildOf(GLBaseControl ctrl)        // submenus are us, so its a child
         {
             if (base.IsThisOrChildOf(ctrl))
@@ -361,6 +394,7 @@ namespace GLOFC.GL4.Controls
                 return false;
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.DrawBack(Rectangle, Graphics, Color, Color, int)"/>
         protected override void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradient)
         {
             //base.DrawBack(area, gr, Focused ? Color.Green : Color.White , bcgradientalt, bcgradient); // for debugging
@@ -427,7 +461,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public void MenuItemEnter(object c, GLMouseEventArgs e)     
+        private void MenuItemEnter(object c, GLMouseEventArgs e)     
         {
             GLBaseControl b = c as GLBaseControl;
             mousehovered = ControlsIZ.IndexOf(b);       // when we move the mouse, the selected is discarded, and mousehover takes over
@@ -438,17 +472,18 @@ namespace GLOFC.GL4.Controls
                 timer.Start(AutoOpenDelay);
         }
 
-        public void MenuItemLeave(object c, GLMouseEventArgs e)
+        private void MenuItemLeave(object c, GLMouseEventArgs e)
         {
             timer.Stop();
             mousehovered = -1;
         }
 
-        public void Timeout(PolledTimer t, long tick)
+        private void Timeout(PolledTimer t, long tick)
         {
             Select(mousehovered,FlowDirection==ControlFlowDirection.Right);        // if we are a flow right menu, focus changes to below
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyPress(e);
@@ -499,7 +534,7 @@ namespace GLOFC.GL4.Controls
 
         }
 
-        public void NonMIKeyDown(object o, GLKeyEventArgs e)
+        private void NonMIKeyDown(object o, GLKeyEventArgs e)
         {
             if (e.KeyCode == System.Windows.Forms.Keys.Up)
             {
@@ -527,9 +562,13 @@ namespace GLOFC.GL4.Controls
         private bool openedascontextmenu = false;
     }
 
-    // Helper class - use Show() to make it visible. Do not attach to anything at creation. 
+    /// <summary>
+    /// Context Menu instance of GLMenuStrip
+    /// Use Show() to make it visible and attach to parent.
+    /// </summary>
     public class GLContextMenu : GLMenuStrip
     {
+        /// <summary> Constructor with name and menu items </summary>
         public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, items)
         {
         }

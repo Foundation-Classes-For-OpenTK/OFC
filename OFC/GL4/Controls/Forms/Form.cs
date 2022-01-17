@@ -15,48 +15,74 @@
 using GLOFC.Utils;
 using System;
 using System.Drawing;
-#pragma warning disable 1591
+
+
 namespace GLOFC.GL4.Controls
 {
-    // Forms are usually placed below DisplayControl, but can act as movable controls inside other controls
-
-    public enum DialogResult
-    {
-        None = 0,
-        OK = 1,
-        Cancel = 2,
-        Abort = 3,
-        Retry = 4,
-        Ignore = 5,
-        Yes = 6,
-        No = 7
-    }
+    /// <summary>
+    /// A Form control
+    /// Forms are usually placed below DisplayControl, but can act as movable controls inside other controls
+    /// </summary>
 
     public class GLForm : GLForeDisplayTextBase
     {
-        public const int FormMargins = 2;
-        public const int FormPadding = 2;
-        public const int FormBorderWidth = 1;
-
+        /// <summary> Is from shown? </summary>
         public bool FormShown { get; set; } = false;        // only applies to top level forms
+        /// <summary> Tab will change focus of controls on form </summary>
         public bool TabChangesFocus { get; set; } = true;   // tab works
+        /// <summary> Show close symbol</summary>
         public bool ShowClose { get; set; } = true;         // show close symbol
+        /// <summary> Is Resizeable by user </summary>
         public bool Resizeable { get; set; } = true;        // resize works
+        /// <summary> Is Movable by user </summary>
         public bool Moveable { get; set; } = true;          // move window works
 
+        /// <summary> Callback when form shown </summary>
         public Action<GLForm> Shown;
+        /// <summary> Callback when user asks to close it. Set Handled = true to stop close</summary>
         public Action<GLForm,GLHandledArgs> FormClosing;
+        /// <summary> Form has closed </summary>
         public Action<GLForm> FormClosed;
 
-        public DialogResult DialogResult { get { return dialogResult; } set { SetDialogResult(value); }  }
-        public Action<GLForm, DialogResult> DialogCallback { get; set; } // if a form sets a dialog result, this callback gets called
+        /// <summary> Dialog result when form is a dilaog </summary>
+        public enum DialogResultEnum
+        {
+            /// <summary> No result </summary>
+            None = 0,
+            /// <summary> OK </summary>
+            OK = 1,
+            /// <summary> Cancel </summary>
+            Cancel = 2,
+            /// <summary> Abort </summary>
+            Abort = 3,
+            /// <summary> Retry </summary>
+            Retry = 4,
+            /// <summary> Ignore </summary>
+            Ignore = 5,
+            /// <summary> Yes </summary>
+            Yes = 6,
+            /// <summary> No </summary>
+            No = 7
+        }
+
+        /// <summary> Dialog result from form </summary>
+        public DialogResultEnum DialogResult { get { return dialogResult; } set { SetDialogResult(value); }  }
+        /// <summary> Callback saying dialog result changed</summary>
+        public Action<GLForm, DialogResultEnum> DialogResultChanged { get; set; } 
 
         // Form can AutoSize to client content. 
-        public Size AutoSizeClientMargin { get; set; } = new Size(10, 10);         // extra space left/bottom to add if autosizing
-        public bool AutoSizeToTitle { get; set; } = false;                         // if set, title is accounted for in autosize
+        /// <summary> Autosize left/bottom client margin. Extra space to add left/bottom when autosizing </summary>
+        public Size AutoSizeClientMargin { get; set; } = new Size(10, 10);         
+        /// <summary> Autosize should take account of the title length </summary>
+        public bool AutoSizeToTitle { get; set; } = false;             
 
-        public bool SetMinimumSizeOnAutoSize { get; set; } = false;                // if true, on Auto size, set the MinimumSize value. Set before turning off AutoSize
+        /// <summary> When set, Autosize should set MinimumSize to this on autosize, so the form can't be sized below this </summary>
+        public bool SetMinimumSizeOnAutoSize { get; set; } = false;                
+        /// <summary> Title bar height computed</summary>
+        public int TitleBarHeight { get { return (Font?.ScalePixels(20) ?? 20) + FormMargins * 2; } }
 
+
+        /// <summary> Constructor with name, title and bounds</summary>
         public GLForm(string name, string title, Rectangle location) : base(name, location)
         {
             minimumsize = new Size(32, 32);
@@ -68,12 +94,12 @@ namespace GLOFC.GL4.Controls
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
         }
 
+        /// <summary> Default constructor </summary>
         public GLForm() : this("F?", "", DefaultWindowRectangle)
         {
         }
 
-        public int TitleBarHeight { get { return (Font?.ScalePixels(20) ?? 20) + FormMargins * 2; } }
-        
+        /// <summary> Close form. May not close if FormClosing denies it </summary>
         public void Close()
         {
             GLHandledArgs e = new GLHandledArgs();
@@ -85,7 +111,8 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public void ForceClose()        // ignore the OnClose and force close
+        /// <summary> Force a close </summary>
+        public void ForceClose()    
         {
             OnClosed();
             Remove(this);
@@ -93,6 +120,7 @@ namespace GLOFC.GL4.Controls
 
         #region For inheritors
 
+        /// <summary> Called on shown. Override if required in derived classes </summary>
         public virtual void OnShown()   // only called if top level form
         {
             lastchildfocus = FindNextTabChild(-1);      // try the tab order
@@ -101,11 +129,13 @@ namespace GLOFC.GL4.Controls
             Shown?.Invoke(this);
         }
 
+        /// <summary> Called on close request. Override if required in derived classes </summary>
         public virtual void OnClose(GLHandledArgs e)   
         {
             FormClosing?.Invoke(this, e);
         }
 
+        /// <summary> Called on closed. Override if required in derived classes </summary>
         public virtual void OnClosed()   
         {
             FormClosed?.Invoke(this);
@@ -115,10 +145,10 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        private void SetDialogResult(DialogResult v)
+        private void SetDialogResult(DialogResultEnum v)
         {
             dialogResult = v;
-            DialogCallback?.Invoke(this, dialogResult);
+            DialogResultChanged?.Invoke(this, dialogResult);
         }
 
         private protected override void TextValueChanged()      // called by upper class to say i've changed the text.
@@ -126,16 +156,19 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
             Margin = new MarginType(Margin.Left, TitleBarHeight, Margin.Right, Margin.Bottom);
         }
 
-        // Form autosizer, taking into consideration all objects without autoplacement
-        // and optionally the title text size
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
+            // Form autosizer, taking into consideration all objects without autoplacement
+            // and optionally the title text size
+
             base.SizeControl(parentsize);
             if (AutoSize)
             {
@@ -159,6 +192,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.DrawBorder(Graphics, Color, float)"/>
         protected override void DrawBorder(Graphics gr, Color bc, float bw)     
         {
             base.DrawBorder(gr, bc, bw);    // draw basic border
@@ -191,6 +225,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
             base.OnMouseDown(e);
@@ -206,6 +241,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseMove(GLMouseEventArgs)"/>
         protected override void OnMouseMove(GLMouseEventArgs e)
         {
             base.OnMouseMove(e);
@@ -295,6 +331,7 @@ namespace GLOFC.GL4.Controls
         }
 
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseUp(GLMouseEventArgs)"/>
         protected override void OnMouseUp(GLMouseEventArgs e)
         {
             base.OnMouseUp(e);
@@ -306,6 +343,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
             base.OnMouseClick(e);
@@ -319,6 +357,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyDown(e);
@@ -339,6 +378,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFocusChanged(FocusEvent, GLBaseControl)"/>
         protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto) // called if we get focus (focused=true) or if child gets focused (focused=false)
         {
             if (evt == FocusEvent.ChildFocused)     // need to take a note
@@ -368,8 +408,12 @@ namespace GLOFC.GL4.Controls
         private GLMouseEventArgs.AreaType captured = GLMouseEventArgs.AreaType.Client;  // meaning none
         private Point capturelocation;
         private Rectangle originalwindow;
-        private DialogResult dialogResult = DialogResult.None;
+        private DialogResultEnum dialogResult = DialogResultEnum.None;
         private GLBaseControl lastchildfocus = null;
+
+        private const int FormMargins = 2;
+        private const int FormPadding = 2;
+        private const int FormBorderWidth = 1;
 
         #endregion
     }

@@ -53,7 +53,6 @@ namespace TestOpenTk
         GLForm pform;
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
@@ -166,7 +165,7 @@ namespace TestOpenTk
                 dgv.AddColumn(col2);
                 dgv.AddColumn(col3);
 
-                col2.SortCompare = GLDataGridViewSorts.SortCompareDouble;
+                col2.SortCompare = GLDataGridViewSorts.SortCompareNumeric;
 
                 for (int i = 0; i < 200; i++)
                 {
@@ -455,7 +454,22 @@ namespace TestOpenTk
 
         private void buttonDumpSelection_Click(object sender, EventArgs e)
         {
-            dgv.DumpSelectedCells();
+            foreach( var c in dgv.GetSelectedCells())
+            {
+                System.Diagnostics.Debug.WriteLine($"Selected {c.RowParent.Index} {c.Index}");
+            }
+
+        }
+
+        private void buttonColHeader_Click(object sender, EventArgs e)
+        {
+            dgv.ColumnHeaderEnable = !dgv.ColumnHeaderEnable;
+
+        }
+
+        private void buttonRowHeader_Click(object sender, EventArgs e)
+        {
+            dgv.RowHeaderEnable = !dgv.RowHeaderEnable;
         }
     }
 }

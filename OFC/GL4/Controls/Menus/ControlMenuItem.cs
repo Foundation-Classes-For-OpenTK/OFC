@@ -16,12 +16,15 @@ using GLOFC.Utils;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Menu item for Menu strip control
+    /// </summary>
     public class GLMenuItem : GLCheckBoxBase        // its a mash up of a button and a check box
     {
+        /// <summary> Constructor with name and optional text </summary>
         public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
             // don't need to set back colour etc, the menu strip does this on an OnControlAdd
@@ -34,15 +37,25 @@ namespace GLOFC.GL4.Controls
             Focusable = false;
         }
 
+        /// <summary> Default Constructor </summary>
+        public GLMenuItem() : this("MI", "")
+        {
+        }
+
+        /// <summary> To enable the icon area on left. Used for sub menu items</summary>
         public bool IconAreaEnable { get; set; } = false;
-
-        public float TickBoxReductionRatio { get; set; } = 0.75f;       // Normal - size reduction
-
-        public bool Highlighted { get { return highlighted; } set { highlighted = value; Invalidate(); } } // if set, lock as highlighted
-        public bool DisableHoverHighlight { get { return disablehoverhighlighted; } set { disablehoverhighlighted = value; Invalidate(); } } // if set, lock as highlighted
-
+        /// <summary> Ratio to reduce the tick relative to client area </summary>
+        public float TickBoxReductionRatio { get; set; } = 0.75f;      
+        /// <summary> If the item is highlighted </summary>
+        public bool Highlighted { get { return highlighted; } set { highlighted = value; Invalidate(); } } 
+        /// <summary> If to disable the hover over highlight </summary>
+        public bool DisableHoverHighlight { get { return disablehoverhighlighted; } set { disablehoverhighlighted = value; Invalidate(); } } 
+        /// <summary> List of sub menu items associated with this this item </summary>
         public List<GLBaseControl> SubMenuItems { get; set; } = null;
 
+        #region Implementation
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             base.SizeControl(parentsize);
@@ -53,6 +66,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
             Rectangle butarea = ClientRectangle;
@@ -122,22 +136,34 @@ namespace GLOFC.GL4.Controls
 
         private bool highlighted { get; set; } = false;
         private bool disablehoverhighlighted { get; set; } = false;
+
+        #endregion
     }
 
+    /// <summary>
+    /// Auto check menu item for menu strips
+    /// </summary>
     public class GLAutoCheckBoxMenuItem : GLMenuItem
     {
-        public GLAutoCheckBoxMenuItem(string name, string text, bool state) : base(name, text)        // these are autosized
+        /// <summary> Constructor with name, text and check state </summary>
+        public GLAutoCheckBoxMenuItem(string name, string text, bool checkstate) : base(name, text)        // these are autosized
         {
-            Checked = state;
+            Checked = checkstate;
             CheckOnClick = true;
         }
     }
+
+    /// <summary>
+    /// Sub Menu item for menu strips
+    /// </summary>
     public class GLSubmenuMenuItem: GLMenuItem
     {
+        /// <summary> Constructor with name, text and submenu items </summary>
         public GLSubmenuMenuItem(string name, string text, params GLBaseControl[] subitems) : base(name, text) 
         {
             SubMenuItems = subitems.ToList();
         }
     }
+
 }
 

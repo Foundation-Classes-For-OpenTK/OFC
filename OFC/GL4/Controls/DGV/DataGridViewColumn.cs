@@ -15,38 +15,52 @@
 using GLOFC.Utils;
 using System;
 using System.Drawing;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Data Grid View column
+    /// </summary>
 
     public class GLDataGridViewColumn
     {
+        /// <summary> Column Index </summary>
         public int Index { get { return colno; } }
+        /// <summary> Parent data grid view </summary>
         public GLDataGridView Parent { get; set; }
+        /// <summary> Header Text </summary>
         public string Text { get { return text; } set { text = value; Changed?.Invoke(this,false); } }
+        /// <summary> Column width in pixels</summary>
         public int Width { get { return width; } set { if (value != width) { width = Math.Max(minwidth, value); Changed?.Invoke(this, true); } } }
+        /// <summary> Column fill weight, for column fill FillWidth mode</summary>
         public float FillWidth { get { return fillwidth; } set { if (value != fillwidth) { fillwidth = value; Changed?.Invoke(this, true); } } }
+        /// <summary> Minimum width in pixels </summary>
         public int MinimumWidth { get { return minwidth; } set { if (value != minwidth) { minwidth = value; Changed?.Invoke(this, true); } } }
+        /// <summary> Header style. If not set, uses GLDataGridView.DefaultColumnHeaderStyle</summary>
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
-        public bool? SortGlyphAscending { get; set; } = null;                               // for displaying sort glyph
+        /// <summary> Sort Glyph mode, Ascending (true) or Decending (false)</summary>
+        public bool? SortGlyphAscending { get; set; } = null;               
+        /// <summary> Show Glyph </summary>
         public bool ShowGlyph { get { return showglyph; } set { showglyph = value; Changed?.Invoke(this, true); } }
+        /// <summary> Show Header text enable</summary>
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this, true); } }
 
-        public Func<GLDataGridViewCell, GLDataGridViewCell, int> SortCompare = null;        // override this on a column to do a custom sort
+        /// <summary> Call back to custom sort this column. 
+        /// Get the two cells and custom compare, return -1 first less than second, 0 equal, 1 first is greater than second </summary>
+        public Func<GLDataGridViewCell, GLDataGridViewCell, int> SortCompare = null;
 
+        /// <summary> Default constructor. Note DO NOT construct, use GLDataGridView.CreateColumn</summary>
         public GLDataGridViewColumn() { }
-        public GLDataGridViewColumn(string t) { text = t; }
 
         #region Implementation
-        public Action<GLDataGridViewColumn, bool> Changed { get; set; }
-        public void SetColNo(int i)
+        internal Action<GLDataGridViewColumn, bool> Changed { get; set; }
+        internal void SetColNo(int i)
         {
             colno = i;
         }
-        public int WidthNI { get { return width; } set { width = Math.Max(minwidth, value); } }
+        internal int WidthNI { get { return width; } set { width = Math.Max(minwidth, value); } }
 
-        public void Paint(Graphics gr, Rectangle area)
+        internal void Paint(Graphics gr, Rectangle area)
         {
             area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, area.Width - HeaderStyle.Padding.TotalWidth, area.Height - HeaderStyle.Padding.TotalHeight);
 

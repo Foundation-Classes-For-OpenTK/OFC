@@ -13,16 +13,21 @@
  */
 
 using System.Drawing;
-#pragma warning disable 1591
+
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Text Box, a MultiLineTextBox with MultiLineMode turned off
+    /// </summary>
     public class GLTextBox : GLMultiLineTextBox
     {
+        /// <summary> Constructor with name, bounds and optional text</summary>
         public GLTextBox(string name, Rectangle pos, string text = "") : base(name, pos, text)
         {
             MultiLineMode = false;
         }
 
+        /// <summary> Default constructor </summary>
         public GLTextBox() : this("TB?", DefaultWindowRectangle, "")
         {
         }

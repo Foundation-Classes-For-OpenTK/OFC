@@ -16,79 +16,145 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Data Grid View control
+    /// Control does not support editing - viewing only.
+    /// </summary>
+
     public class GLDataGridView : GLBaseControl
     {
-        public List<GLDataGridViewColumn> Columns { get { return columns; } }
-        public List<GLDataGridViewRow> Rows { get { return rows; } }
+        /// <summary> List of columns.</summary>
+        public IList<GLDataGridViewColumn> Columns { get { return columns.AsReadOnly(); } }
+        /// <summary> List of rows </summary>
+        public IList<GLDataGridViewRow> Rows { get { return rows.AsReadOnly(); } }
 
-        public int SortColumn { get; set; } = 1;
+        /// <summary> Sort column, -1 means not sorted. Note adding new rows causes the sort to be incorrect, but this value will maintain its value </summary>
+        public int SortColumn { get; set; } = -1;
+        /// <summary> Sort ascending (true) or decending (false)</summary>
         public bool SortAscending { get; set; } = true;
-        public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; } }
 
+        /// <summary> Scroll bar width </summary>
+        public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; ContentInvalidateLayout(); } }
+
+        /// <summary> Default cell style. Applied unless overridden by an individual row DefaultCellStyle or by a cell's cell style. </summary>
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
+        /// <summary> Default alternate row cell style. The DefaultCellStyle will be applied if this is not changed.
+        /// Applied unless overridden by an individual row DefaultCellStyle or by a cell's cell style. </summary>
         public GLDataGridViewCellStyle DefaultAltRowCellStyle { get { return defaultaltrowcellstyle; } set { defaultaltrowcellstyle = value; ContentInvalidateLayout(); } }
 
-        public enum ColFillMode { FillWidth, Width };
+        /// <summary> Column Fill Mode Types</summary>
+        public enum ColFillMode {
+            /// <summary> Use the FillWidth weighting value on columns to set the pixel width</summary>
+            FillWidth,
+            /// <summary> Use the Width value on columns to set the pixel width </summary>
+            Width
+        };
+        /// <summary> Column Fill Mode </summary>
         public ColFillMode ColumnFillMode { get { return colfillmode; } set { if (value != colfillmode) { colfillmode = value; ContentInvalidateLayout(); } } }
+        /// <summary> Default style for column headers </summary>
         public GLDataGridViewCellStyle DefaultColumnHeaderStyle { get { return colheaderstyle; } set { colheaderstyle = value; colheaderpanel.Invalidate(); } }
+        /// <summary> Column Header show/no show</summary>
         public bool ColumnHeaderEnable { get { return columnheaderenable; } set { columnheaderenable = value; colheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible; InvalidateLayout(); } }
+        /// <summary> Column Header height</summary>
         public int ColumnHeaderHeight { get { return columnheaderheight; } set { columnheaderheight = value; InvalidateLayout(); } }
+        /// <summary> Allow users to resize columns</summary>
         public bool AllowUserToResizeColumns { get; set; } = true;
+        /// <summary> Allow user to resize column height</summary>
         public bool AllowUserToResizeColumnHeight { get; set; } = true;
+        /// <summary> Allow user to click on column to sort </summary>
         public bool AllowUserToSortColumns { get; set; } = true;
 
+        /// <summary> Default style for row headers. A Row header can override this with its own HeaderStyle </summary>
         public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
-        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
+        /// <summary> Row header show/no show</summary>
         public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
+        /// <summary> Row header width </summary>
+        public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
+        /// <summary> Allow user to resize rows (if row is not autosized) </summary>
         public bool AllowUserToResizeRows { get; set; } = true;
+        /// <summary> Allow user to select rows by clicking on header</summary>
         public bool AllowUserToSelectRows { get; set; } = true;
+        /// <summary> Allow user to select multiple rows</summary>
         public bool AllowUserToSelectMultipleRows { get; set; } = true;
+        /// <summary> Allow user to select cells individually </summary>
         public bool AllowUserToSelectCells { get; set; } = true;
+        /// <summary> Allow user to drag cell selection to create a selection area</summary>
         public bool AllowUserToDragSelectCells { get; set; } = true;
+        /// <summary> Clicking on a cell in a row selects the whole row </summary>
         public bool SelectCellSelectsRow { get; set; } = false;
-        public Action<GLDataGridViewRow, bool> SelectedRow { get; set; } = null;        // called on user selecting or unselecting a row set
-        public Action<GLDataGridViewCell, bool> SelectedCell { get; set; } = null;      // called on user selecting or unselecting cells
-        public Action SelectionCleared { get; set; } = null;                            // called on Clear selection
 
+        /// <summary> Callback when a row is selected or unselected (bool indicates)</summary>
+        public Action<GLDataGridViewRow, bool> SelectedRow { get; set; } = null;
+        /// <summary> Callback when a cell is selected or unselected (bool indicates)</summary>
+        public Action<GLDataGridViewCell, bool> SelectedCell { get; set; } = null;      
+        /// <summary> Callback when selection is cleared</summary>
+        public Action SelectionCleared { get; set; } = null;                            
+
+        /// <summary> First row on screen</summary>
         public int FirstDisplayIndex { get { return contentpanel.FirstDisplayIndex; } set { contentpanel.FirstDisplayIndex = value; UpdateScrollBar(); } }
+        /// <summary> Last complete line on screen</summary>
         public int LastCompleteLine() {return contentpanel.LastCompleteLine(); }
 
+        /// <summary> Class to hold a row, column, location and celllocation</summary>
         public class RowColPos
         {
+            /// <summary> Row</summary>
             public int Row { get; set; }
+            /// <summary> Column</summary>
             public int Column { get; set; }
+            /// <summary> Location of click within cell </summary>
             public Point Location { get; set; }
+            /// <summary> Cell location (top left) on screen </summary>
             public Point CellLocation { get; set; }
         }
-        public RowColPos FindCellAt(Point p) { return contentpanel.GridRowCol(p); }        // null if not a cell.
+        /// <summary> Call to find a cell at position. Returns null if no cell is present at that location</summary>
+        public RowColPos FindCellAt(Point position) { return contentpanel.GridRowCol(position); }        
 
+        /// <summary> Set cell border color </summary>
         public Color CellBorderColor { get { return cellbordercolor; } set { cellbordercolor = value; ContentInvalidate(); } }
-        public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
+        /// <summary> Set cell border width</summary>
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
+        /// <summary> Set upper left cell back color</summary>
+        public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
 
         // pixel positions
-        public int ColumnPixelLeft(int c) { return columns.Where(x => x.Index < c).Select(y => y.Width).Sum() + cellborderwidth * c + cellborderwidth; }
-        public int ColumnPixelRight(int c) { return ColumnPixelLeft(c) + columns[c].Width; }
+        /// <summary> Find pixel left position of column</summary>
+        public int ColumnPixelLeft(int column) { return columns.Where(x => x.Index < column).Select(y => y.Width).Sum() + cellborderwidth * column + cellborderwidth; }
+        /// <summary> Find pixel right position of column</summary>
+        public int ColumnPixelRight(int column) { return ColumnPixelLeft(column) + columns[column].Width; }
+        /// <summary> Find pixel width of all columns, plus borders. Does not include row area. </summary>
         public int ColumnPixelWidth { get { return columns.Select(y=>y.Width).Sum() + cellborderwidth * (columns.Count+1); } }
 
 
+        /// <summary> Callback, set to user paint column headers. Passed column, graphics and rectangle to draw in</summary>
         public Action<GLDataGridViewColumn, Graphics, Rectangle> UserPaintColumnHeaders { get; set; } = null;
+        /// <summary> Callback, set to user paint row headers. Passed row, graphics and rectangle to draw in</summary>
         public Action<GLDataGridViewRow, Graphics, Rectangle> UserPaintRowHeaders { get; set; } = null;
+        /// <summary> Callback, set to user paint top left header. Passed graphics and rectangle to draw in</summary>
         public Action<Graphics, Rectangle> UserPaintTopLeftHeader { get; set; } = null;
 
-        // return row,col,mouse event.
-        // row = -1 for column headers. col = -1 for row headers. -1,-1 for invalid area in content area, -2 -2 for top left
-        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;       
+        /// <summary> Callback, user clicked on grid
+        /// * row = -1 for column headers. 
+        /// * col = -1 for row headers. 
+        /// * -1,-1 for invalid area in content area, 
+        /// * -2 -2 for top left  
+        /// </summary>
+        public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;
 
-        // Context panel Opening function is fed with tag RowColPos.        
-        public GLContextMenu ContextPanelContent;           // row=col=-1 if not on cell
-        public GLContextMenu ContextPanelColumnHeaders;     // row=-1,col>=0 column, -1 top left
-        public GLContextMenu ContextPanelRowHeaders;        // row=N, col = -1
+        /// <summary> Context menu for content panel.
+        /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what cell and location has been clicked on (row=col=-1 if none)</summary>
+        public GLContextMenu ContextPanelContent;
+        /// <summary> Context menu for column headers
+        /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what column and location has been clicked on. (col=-1 for top left)</summary>
+        public GLContextMenu ContextPanelColumnHeaders;     
+        /// <summary> Context menu for row headers.
+        /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what row and location has been clicked on. </summary>
+        public GLContextMenu ContextPanelRowHeaders;      
 
+        /// <summary> Construct with name and bounds</summary>
         public GLDataGridView(string name, Rectangle location) : base(name, location)
         {
 
@@ -163,7 +229,13 @@ namespace GLOFC.GL4.Controls
 
         }
 
-        // rows must be created via this call
+        /// <summary> Default constructor </summary>
+        public GLDataGridView() : this("DGV",DefaultWindowRectangle)
+        {
+
+        }
+
+        /// <summary>  Create a row.  Rows must be created via this call</summary>
         public GLDataGridViewRow CreateRow()
         {
             GLDataGridViewRow row = new GLDataGridViewRow();
@@ -174,7 +246,11 @@ namespace GLOFC.GL4.Controls
             return row;
         }
 
-        // columns must be created via this call
+        /// <summary> Create a column. Columns must be created via this call. </summary>
+        /// <param name="width">Column width in pixels</param>
+        /// <param name="fillwidth">Column fill width</param>
+        /// <param name="minwidth">Column minimum width in pixels</param>
+        /// <param name="title">Column title</param>
         public GLDataGridViewColumn CreateColumn(int width = 50, int fillwidth = 100, int minwidth = 10, string title = "")
         {
             GLDataGridViewColumn col = new GLDataGridViewColumn();
@@ -187,6 +263,7 @@ namespace GLOFC.GL4.Controls
             return col;
         }
 
+        /// <summary> Add a Column (at the end) to the grid </summary>
         public void AddColumn(GLDataGridViewColumn col)
         {
             System.Diagnostics.Debug.Assert(col.Parent == this && col.HeaderStyle.Parent != null);      // ensure created by us
@@ -195,7 +272,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (ci)         // if set, it means width has changed in some way
                 {
-                    AutoSizeGeneration++;           // force autosize as we changed width
+                    autosizegeneration++;           // force autosize as we changed width
                     ContentInvalidateLayout();
                 }
                 else
@@ -203,33 +280,35 @@ namespace GLOFC.GL4.Controls
             };
             col.SetColNo(columns.Count);
             columns.Add(col);
-            AutoSizeGeneration++;           // force autosize as we changed columns
+            autosizegeneration++;           // force autosize as we changed columns
             ContentInvalidateLayout();
         }
 
-        public void RemoveColumn(int index)
+        /// <summary> Remove a column</summary>
+        public void RemoveColumn(int column)
         {
-            foreach (var r in Rows)
-                r.RemoveCellAt(index);      // this will cause lots of row changed cells, causing an Invalidate.
+            foreach (var r in rows)
+                r.RemoveCellAt(column);      // this will cause lots of row changed cells, causing an Invalidate.
 
-            GLDataGridViewColumn col = columns[index];
+            GLDataGridViewColumn col = columns[column];
             col.Parent = null;
             col.HeaderStyle.Parent = null;
             col.HeaderStyle.Changed = null;
             col.Changed = null;
-            columns.RemoveAt(index);
+            columns.RemoveAt(column);
 
-            if (SortColumn == index)
+            if (SortColumn == column)
                 SortColumn = -1;
 
             for (int i = 0; i < columns.Count; i++)
                 columns[i].SetColNo(i);
 
-            AutoSizeGeneration++;           // force autosize as we changed columns
+            autosizegeneration++;           // force autosize as we changed columns
             ContentInvalidateLayout();
         }
 
-        public void AddRow(GLDataGridViewRow row, int insertat = -1)
+        /// <summary> Add a row. If insertatrow=-1, add to end. Else inserted before index</summary>
+        public void AddRow(GLDataGridViewRow row, int insertatrow = -1)
         {
             System.Diagnostics.Debug.Assert(row.Parent == this && row.HeaderStyle.Parent != null);      // ensure created by us
             row.HeaderStyle.Changed += (e1) => { ContentInvalidateLayout(); };       // header style changed, need a complete refresh
@@ -291,7 +370,7 @@ namespace GLOFC.GL4.Controls
                 contentpanel.RowChanged(row.Index);     // inform CP
             };
 
-            if (insertat == -1)
+            if (insertatrow == -1)
             {
                 row.SetRowNo(rows.Count, (rows.Count & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
                 rows.Add(row);
@@ -299,8 +378,8 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                rows.Insert(insertat, row);
-                for (int i = insertat; i < rows.Count; i++)
+                rows.Insert(insertatrow, row);
+                for (int i = insertatrow; i < rows.Count; i++)
                     rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
                 contentpanel.InsertRow(row.Index);       // see if content panel needs redrawing
             }
@@ -308,26 +387,27 @@ namespace GLOFC.GL4.Controls
             UpdateScrollBar();
         }
 
-        public void RemoveRow(int index)
+        /// <summary> remove a row at row </summary>
+        public void RemoveRow(int row)
         {
-            GLDataGridViewRow row = rows[index];
-            row.Parent = null;
-            row.DefaultCellStyle.Parent = null;
-            row.HeaderStyle.Parent = null;
-            row.HeaderStyle.Changed = null;
-            row.Changed = null;
-            contentpanel.RemoveRow(index);
-            rows.RemoveAt(index);
-            for (int i = index; i < rows.Count; i++)
+            GLDataGridViewRow rw = rows[row];
+            rw.Parent = null;
+            rw.DefaultCellStyle.Parent = null;
+            rw.HeaderStyle.Parent = null;
+            rw.HeaderStyle.Changed = null;
+            rw.Changed = null;
+            contentpanel.RemoveRow(row);
+            rows.RemoveAt(row);
+            for (int i = row; i < rows.Count; i++)
                 rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
             UpdateScrollBar();
         }
 
-        // adjust column width to newwidth in pixels
-        public void SetColumnWidth(int index,int newwidth)
+        /// <summary> Adjust the column width to newwidth (in pixels). Will update FillWidth if required. </summary>
+        public void SetColumnWidth(int column,int newwidth)
         {
            // System.Diagnostics.Debug.WriteLine($"Col {index} delta {newwidth}");
-            var col = columns[index];
+            var col = columns[column];
             if ( colfillmode == ColFillMode.Width)
             {
                 col.Width = newwidth;
@@ -336,8 +416,8 @@ namespace GLOFC.GL4.Controls
             {
                 // only change this and columns to the right, as per winform DGV
 
-                int cellpixels = columns.Where(x => x.Index >= index).Sum(x => x.Width);       // pixels for columns to resize
-                float totalfill = columns.Where(x => x.Index >= index).Sum(x => x.FillWidth);               // fills for columns to resize
+                int cellpixels = columns.Where(x => x.Index >= column).Sum(x => x.Width);       // pixels for columns to resize
+                float totalfill = columns.Where(x => x.Index >= column).Sum(x => x.FillWidth);               // fills for columns to resize
 
                 float newfillwidth = newwidth * totalfill / cellpixels;     // compute out fill width from newwidth pixels
 
@@ -349,52 +429,55 @@ namespace GLOFC.GL4.Controls
 
                 col.FillWidth = newfillwidth;
 
-                for( int i = index+1; i < columns.Count; i++)
+                for( int i = column+1; i < columns.Count; i++)
                 {
                     columns[i].FillWidth *= proportion;
                 }
             }
         }
 
-        // perform column sort
-        public void Sort(int colno, bool sortascending)
+        /// <summary> Sort on column, indicate if sort ascending (true) or decending 
+        /// Glyph will be shown on column. SortColumn and SortAscending will be updated
+        /// </summary>
+        public void Sort(int column, bool sortascending)
         {
-            if (colno < columns.Count)
+            if (column < columns.Count)
             {
                 //System.Diagnostics.Debug.WriteLine($"Sort col {colno} by ascending {sortascending}");
                 rows.Sort(delegate (GLDataGridViewRow l, GLDataGridViewRow r) 
                     {
-                        if (colno < l.Cells.Count)
+                        if (column < l.Cells.Count)
                         {
-                            if (colno < r.Cells.Count)
+                            if (column < r.Cells.Count)
                             {
-                                if (columns[colno].SortCompare != null)
-                                    return columns[colno].SortCompare(l.Cells[colno], r.Cells[colno]) * (sortascending ? +1 : -1);      // sort override on a per column basis
+                                if (columns[column].SortCompare != null)
+                                    return columns[column].SortCompare(l.Cells[column], r.Cells[column]) * (sortascending ? +1 : -1);      // sort override on a per column basis
                                 else
-                                    return l.Cells[colno].CompareTo(r.Cells[colno]) * (sortascending ? +1 : -1);
+                                    return l.Cells[column].CompareTo(r.Cells[column]) * (sortascending ? +1 : -1);
                             }
                             else
                                 return 1;
                         }
                         else 
-                            return (colno < r.Cells.Count) ? -1 : 0;
+                            return (column < r.Cells.Count) ? -1 : 0;
                     });
 
                 if (SortColumn >= 0)
                     columns[SortColumn].SortGlyphAscending = null;
 
-                SortColumn = colno;
+                SortColumn = column;
                 SortAscending = sortascending;
 
                 for (int i = 0; i < rows.Count; i++)
                     rows[i].SetRowNo(i, (i & 1) != 0 ? DefaultAltRowCellStyle : DefaultCellStyle);
 
-                columns[colno].SortGlyphAscending = sortascending;
+                columns[column].SortGlyphAscending = sortascending;
 
                 ContentInvalidateLayout();
             }
         }
 
+        /// <summary> Clear all selections </summary>
         public void ClearSelection()
         {
             foreach (var kvp in selectedcells)
@@ -412,6 +495,7 @@ namespace GLOFC.GL4.Controls
             SelectionCleared?.Invoke();
         }
 
+        /// <summary> Get list of selected rows </summary>
         public List<GLDataGridViewRow> GetSelectedRows()
         {
             List<GLDataGridViewRow> set = new List<GLDataGridViewRow>();
@@ -422,6 +506,8 @@ namespace GLOFC.GL4.Controls
             }
             return set;
         }
+
+        /// <summary> Get list of selected cells </summary>
         public List<GLDataGridViewCell> GetSelectedCells()
         {
             List<GLDataGridViewCell> set = new List<GLDataGridViewCell>();
@@ -433,16 +519,18 @@ namespace GLOFC.GL4.Controls
             return set;
         }
 
+        /// <summary> Scroll the grid up or down one line </summary>
         public void Scroll(int delta)
         {
             if (delta > 0)
                 FirstDisplayIndex--;
-            else if (LastCompleteLine() < Rows.Count - 1)
+            else if (LastCompleteLine() < rows.Count - 1)
                 FirstDisplayIndex++;
         }
 
         #region Implementation
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()     
         {
             // set before children layout set up some basic parameters of the children
@@ -487,7 +575,7 @@ namespace GLOFC.GL4.Controls
             }
             else
             {       // no scroll
-                vertscroll.SetValueMaximumLargeChange(0, rows.Count - 1, Rows.Count);
+                vertscroll.SetValueMaximumLargeChange(0, rows.Count - 1, rows.Count);
             }
 
             int columnwidth = ColumnPixelWidth;
@@ -518,7 +606,7 @@ namespace GLOFC.GL4.Controls
             {
                 var row = rows[start];
 
-                if (row.AutoSize && row.AutoSizeGeneration != AutoSizeGeneration)
+                if (row.AutoSize)
                     PerformAutoSize(row);
 
                 vpos += row.Height + cellborderwidth;
@@ -532,50 +620,41 @@ namespace GLOFC.GL4.Controls
             return new Tuple<int, int>(lastcompleterow, vpos);
         }
 
-        public void PerformAutoSize(GLDataGridViewRow r)
+        internal void PerformAutoSize(GLDataGridViewRow r)
         {
-            //  System.Diagnostics.Debug.WriteLine($"Perform autosize {r.Index}");
-
-            int maxh = 0;
-
-            for (int i = 0; i < columns.Count; i++)     // each column cell gets a chance to autosize against the col width
+            if (r.AutoSizeGeneration != autosizegeneration)
             {
-                if (i < r.Cells.Count)
-                {
-                    Size s = r.Cells[i].PerformAutoSize(Math.Max(columns[i].Width, columns[i].MinimumWidth));     // max of these just in case we have not performed layout
-                    maxh = Math.Max(maxh, s.Height);
-                }
-            }
+                //  System.Diagnostics.Debug.WriteLine($"Perform autosize {r.Index}");
 
-            r.SetAutoSizeHeight(AutoSizeGeneration,maxh);
+                int maxh = 0;
+
+                for (int i = 0; i < columns.Count; i++)     // each column cell gets a chance to autosize against the col width
+                {
+                    if (i < r.Cells.Count)
+                    {
+                        Size s = r.Cells[i].PerformAutoSize(Math.Max(columns[i].Width, columns[i].MinimumWidth));     // max of these just in case we have not performed layout
+                        maxh = Math.Max(maxh, s.Height);
+                    }
+                }
+
+                r.SetAutoSizeHeight(autosizegeneration, maxh);
+            }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void OnResize()
         {
-            AutoSizeGeneration++;           // we will be doing a content realignment, perform autosize
+            autosizegeneration++;           // we will be doing a content realignment, perform autosize
             base.OnResize();    // do after
         }
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnGlobalFocusChanged(GLBaseControl, GLBaseControl)"/>
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
             colheaderstyle.Font = rowheaderstyle.Font = defaultcellstyle.Font = Font;
-            AutoSizeGeneration++;
+            autosizegeneration++;
             ContentInvalidateLayout();
-        }
-        public void DumpSelectedCells()
-        {
-            foreach (var kvp in selectedcells)
-            {
-                System.Diagnostics.Debug.Write($"Current Sel State Row {kvp.Key} {rows[kvp.Key].Selected} : ");
-                foreach (var cell in kvp.Value)
-                {
-                    System.Diagnostics.Debug.Write($"{cell} ");
-                }
-                System.Diagnostics.Debug.WriteLine("");
-            }
-
-            if (selectedcells.Count == 0)
-                System.Diagnostics.Debug.WriteLine($"Current Sel EMPTY");
         }
 
         private List<GLDataGridViewColumn> columns = new List<GLDataGridViewColumn>();
@@ -606,7 +685,7 @@ namespace GLOFC.GL4.Controls
 
         private Dictionary<int, HashSet<int>> selectedcells = new Dictionary<int, HashSet<int>>();
 
-        public uint AutoSizeGeneration { get; set; } = 1;       // needs to be able to be changed by externals
+        private uint autosizegeneration = 1;  
 
         #endregion
     }

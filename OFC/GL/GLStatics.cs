@@ -120,7 +120,7 @@ namespace GLOFC
         /// <summary>
         /// Clear depth buffer
         /// </summary>
-        public static void ClearDepthBuffer()       // nicer name
+        public static void ClearDepthBuffer()    
         {
             GL.Clear(ClearBufferMask.DepthBufferBit);
         }
@@ -137,7 +137,7 @@ namespace GLOFC
         /// <summary>
         /// Clear stencil buffer
         /// </summary>
-        public static void ClearStencilBuffer()       // nicer name
+        public static void ClearStencilBuffer()      
         {
             GL.Clear(ClearBufferMask.StencilBufferBit);
         }
@@ -145,7 +145,7 @@ namespace GLOFC
         /// <summary>
         /// Clear depth buffer to value
         /// </summary>
-        public static void ClearStencilBuffer(int s)       // clear to S
+        public static void ClearStencilBuffer(int s)      
         {
             GL.ClearStencil(s);
             GL.Clear(ClearBufferMask.StencilBufferBit);
@@ -154,7 +154,7 @@ namespace GLOFC
         /// <summary>
         /// Clear buffer set using ClearBufferMask
         /// </summary>
-        public static void ClearBuffer(ClearBufferMask mask)       // nicer name
+        public static void ClearBuffer(ClearBufferMask mask)     
         {
             GL.Clear(mask);
         }

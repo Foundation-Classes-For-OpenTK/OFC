@@ -20,8 +20,6 @@ using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.Drawing;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Wavefront
 {
     /// <summary>

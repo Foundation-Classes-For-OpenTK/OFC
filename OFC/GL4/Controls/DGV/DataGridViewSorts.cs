@@ -13,13 +13,21 @@
  */
 
 using GLOFC.Utils;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Custom Sorts for data grid view
+    /// </summary>
     public static class GLDataGridViewSorts
     {
-        public static int SortCompareDouble(GLDataGridViewCell l, GLDataGridViewCell r)
+        /// <summary>
+        /// Sort as Numeric
+        /// </summary>
+        /// <param name="l">Left Cell</param>
+        /// <param name="r">Rigth Cell</param>
+        /// <returns>-1 left is less than right, 0 equal, 1 left is greater than right</returns>
+        public static int SortCompareNumeric(GLDataGridViewCell l, GLDataGridViewCell r)
         {
             var lt = l as GLDataGridViewCellText;
             var rt = r as GLDataGridViewCellText;
@@ -30,6 +38,13 @@ namespace GLOFC.GL4.Controls
             else
                 return 0;
         }
+
+        /// <summary>
+        /// Sort as Dates
+        /// </summary>
+        /// <param name="l">Left Cell</param>
+        /// <param name="r">Rigth Cell</param>
+        /// <returns>-1 left is less than right, 0 equal, 1 left is greater than right</returns>
         public static int SortCompareDate(GLDataGridViewCell l, GLDataGridViewCell r)
         {
             var lt = l as GLDataGridViewCellText;

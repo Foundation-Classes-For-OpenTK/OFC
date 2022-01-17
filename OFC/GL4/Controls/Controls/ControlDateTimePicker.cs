@@ -122,7 +122,7 @@ namespace GLOFC.GL4.Controls
             InvalidateOnFocusChange = true;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLDateTimePicker() : this("DTP?", DefaultWindowRectangle, DateTime.Now)
         {
         }

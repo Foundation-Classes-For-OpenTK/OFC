@@ -324,8 +324,8 @@ namespace TestOpenTk
                 tc.TabNotSelectedColor = Color.Yellow;
                 tc.TabSelectedColor = Color.Red;
                 tc.TabStyle = new TabStyleRoundedEdge();
-                tc.TabStyle = new TabStyleSquare();
-                tc.TabStyle = new TabStyleAngled();
+                //tc.TabStyle = new TabStyleSquare();
+                //tc.TabStyle = new TabStyleAngled();
                 tc.Font = new Font("Ms Sans Serif", 9);
 
                 GLTabPage tabp1 = new GLTabPage("tabp1", "TAB 1", Color.Blue);
@@ -347,7 +347,11 @@ namespace TestOpenTk
                 tc.Add(tabp4);
 
                 pform.Add(tc);
-                tc.SelectedTab = 0;
+                //     tc.SelectedTab = 0;
+
+                GLButton tabselnone = new GLButton("BTSN", new Rectangle(col2+200+5, 400, 40, 15), "None");
+                tabselnone.Click += ( c12, ev2) => { tc.SelectedTab = -1; };
+                pform.Add(tabselnone);
             }
 
 

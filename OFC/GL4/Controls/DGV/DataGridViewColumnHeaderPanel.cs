@@ -14,6 +14,8 @@
 
 using System;
 using System.Drawing;
+
+// Internal class for DGV, no documentation needed
 #pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls

@@ -18,29 +18,44 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Data Grid View Row
+    /// </summary>
     public class GLDataGridViewRow
     {
-        public GLDataGridView Parent { get; set; }
+        /// <summary> Row index </summary>
         public int Index { get { return rowno; } }
+        /// <summary> Parent data grid view </summary>
+        public GLDataGridView Parent { get; set; }
+        /// <summary> Height in pixels</summary>
         public int Height { get { return height; } set { if (value != height) { height = Math.Max(value,MinimumHeight); autosizegeneration = 0; Changed?.Invoke(this); } } }
+        /// <summary> Minimum height in pixels</summary>
         public int MinimumHeight { get { return minheight; } set { if (value != minheight) { minheight = value; autosizegeneration = 0; Changed?.Invoke(this); } } }
+        /// <summary> Autosize row to content</summary>
         public bool AutoSize { get { return autosize; } set { if (autosize != value) { autosize = value;  } }  }
+        /// <summary> Cells assigned to row. Use AddCell to add.</summary>
         public List<GLDataGridViewCell> Cells { get { return cells; } }
+        /// <summary> Cell count. Note cell count can be less than number of columns</summary>
         public int CellCount { get { return cells.Count; } }
+        /// <summary> Default Cell Style. If not set, the default cell style will be from GLDataGridView.DefaultCellStyle </summary>
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } }
+        /// <summary> Header style. If not set, the default header style will be from GLDataGridView.DefaultRowHeaderStyle </summary>
         public GLDataGridViewCellStyle HeaderStyle { get { return headerstyle; } }
-        public GLDataGridViewCell this[int cell] { get { return cell < cells.Count ? cells[cell] : null; } }
+        /// <summary> Return cell at column index.  Null if cell does not exist</summary>
+        public GLDataGridViewCell this[int index] { get { return index < cells.Count ? cells[index] : null; } }
+        /// <summary> Show header text enable </summary>
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this); } }
+        /// <summary> Whole row selected </summary>
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; foreach (var c in cells) c.SelectedNI = value; SelectionChanged(this, -1); } } }
 
+        /// <summary> Default constructor. Note DO NOT construct, use GLDataGridView.CreateRow</summary>
         public GLDataGridViewRow()
         {
         }
 
+        /// <summary> Insert cells(s). Inserted after all previous cells.</summary>
         public void AddCell(params GLDataGridViewCell[] celllist)
         {
             foreach (var cell in celllist)
@@ -84,15 +99,20 @@ namespace GLOFC.GL4.Controls
             Changed?.Invoke(this);
         }
 
-        public void RemoveCellAt(int index)
+        /// <summary> Remove cell at index. True if a cell existed at that index </summary>
+        public bool RemoveCellAt(int index)
         {
             if (cells.Count > index)
             {
                 cells.RemoveAt(index);
                 Changed?.Invoke(this);
+                return true;
             }
+            else
+                return false;
         }
 
+        /// <summary> Remove all cells on row </summary>
         public void Clear()
         {
             cells.Clear();
@@ -100,25 +120,29 @@ namespace GLOFC.GL4.Controls
         }
 
         #region Implementation
-        public Action<GLDataGridViewRow> Changed { get; set; }     // Changed
-        public Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
-        public uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }   // for autosize tracking
-        public bool SelectedNI { get { return selected; } set { selected = value; } }
 
-        public void SetAutoSizeHeight(uint gen, int h)
+        /// <summary> </summary>
+        internal Action<GLDataGridViewRow> Changed { get; set; }     // Changed
+        /// <summary> </summary>
+        internal Action<GLDataGridViewRow, int> SelectionChanged { get; set; }     // Selection changed, of cell, or -1 of row
+        /// <summary> Internal call to set the autosize generation number for this row. Do not use.</summary>
+        internal uint AutoSizeGeneration { get { return autosizegeneration; } set { autosizegeneration = value; } }   // for autosize tracking
+        /// <summary> Internal call to set selection flag. Do not use. </summary>
+        internal bool SelectedNI { get { return selected; } set { selected = value; } }
+
+        internal void SetAutoSizeHeight(uint gen, int h)
         {
             autosizegeneration = gen;
             height = Math.Max(minheight,h);
         }
 
-        public void SetRowNo(int i, GLDataGridViewCellStyle defcellstyle)
+        internal void SetRowNo(int i, GLDataGridViewCellStyle defcellstyle)
         {
             rowno= i;
             defaultcellstyle.Parent = defcellstyle;
         }
 
-        // row header area
-        public void Paint(Graphics gr, Rectangle area)      
+        internal void Paint(Graphics gr, Rectangle area)      
         {
             area = new Rectangle(area.Left + HeaderStyle.Padding.Left, area.Top + HeaderStyle.Padding.Top, area.Width - HeaderStyle.Padding.TotalWidth, area.Height - HeaderStyle.Padding.TotalHeight);
 

@@ -14,36 +14,60 @@
 using GLOFC.Utils;
 using System;
 using System.Drawing;
-#pragma warning disable 1591
+
+
 namespace GLOFC.GL4.Controls
 {
-    // beware using interfaces GLButton exposes - most of them won't work
+    // 
+
+    /// <summary>
+    /// Data grid view cell with a button.
+    /// Inherited from GLButton. Note most of the GLBaseControl functionality GLButton inherits is not applicable and should not be used.
+    /// The mouse call backs are implemented (MouseClick etc)
+    /// </summary>
 
     public class GLDataGridViewCellButton : GLButton, GLDataGridViewCell
     {
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.RowParent"/>
         public GLDataGridViewRow RowParent { get; set; }
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Index"/>
         public int Index { get; set; }
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Style"/>
         public GLDataGridViewCellStyle Style { get { return style; } }
-        public Action<GLDataGridViewCell, bool> Changed { get; set; }        // changed, and it affects the size if bool = true
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Changed"/>
+        public Action<GLDataGridViewCell, bool> Changed { get; set; }
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.SelectionChanged"/>
         public Action<GLDataGridViewCell> SelectionChanged { get; set; }
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Selectable"/>
         public bool Selectable { get; set; } = false;
 
+        /// <summary> Padding, assign to Style.Padding </summary>
         public new PaddingType Padding { get { return Style.Padding; } set { Style.Padding = value; } }     // override padding back to style.padding
+        /// <summary> Margin, assign to Style.Margin </summary>
         public new MarginType Margin { get { return base.Margin; } set { throw new NotImplementedException(); } }     // prevent margin
 
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Selected"/>
         public bool Selected { get { return selected; } set { if (value != selected && Selectable) { selected = value; SelectionChanged?.Invoke(this); } } }
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.SelectedNI"/>
         public bool SelectedNI { get { return selected; } set { if ( Selectable) selected = value; } }
 
-        public GLDataGridViewCellButton(Rectangle location, string text) : base("DGVBut",location,text)
+        /// <summary> Constructor with location and text </summary>
+        public GLDataGridViewCellButton(Rectangle location, string text) : base("DGVBut", location, text)
         {
         }
 
+        /// <summary> Default Constructor</summary>
+        public GLDataGridViewCellButton() : base("DGVBut", DefaultWindowRectangle,"")
+        {
+        }
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.CompareTo(GLDataGridViewCell)"/>
         public int CompareTo(GLDataGridViewCell other)
         {
             return -1;
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.Paint(Graphics, Rectangle)"/>
         public void Paint(Graphics gr, Rectangle area)
         {
             PaintBack(gr, area);
@@ -56,12 +80,13 @@ namespace GLOFC.GL4.Controls
             gr.ResetTransform();
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.PerformAutoSize(int)"/>
         public Size PerformAutoSize(int width)
         {
             return Size;
         }
 
-        protected void PaintBack(Graphics gr, Rectangle area)
+        private protected void PaintBack(Graphics gr, Rectangle area)
         {
             if (selected)
             {
@@ -79,28 +104,34 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        public virtual void OnMouseDownCell(GLMouseEventArgs e)
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellDown(GLMouseEventArgs)"/>
+        public virtual void OnMouseCellDown(GLMouseEventArgs e)
         {
            // System.Diagnostics.Debug.WriteLine($"Mouse down cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
             if (IsOver(e))
             {
                 MouseButtonsDown = e.Button;
                 Changed?.Invoke(this, false);
+                OnMouseDown(e);
             }
             e.Handled = true;
         }
-        public virtual void OnMouseUpCell(GLMouseEventArgs e)
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellUp(GLMouseEventArgs)"/>
+        public virtual void OnMouseCellUp(GLMouseEventArgs e)
         {
            // System.Diagnostics.Debug.WriteLine($"Mouse up cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
             if (MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)
             {
                 MouseButtonsDown = GLMouseEventArgs.MouseButtons.None;
                 Changed?.Invoke(this, false);
+                OnMouseUp(e);
             }
             e.Handled = true;
         }
 
-        public virtual void OnMouseEnterCell(GLMouseEventArgs e)
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellEnter(GLMouseEventArgs)"/>
+        public virtual void OnMouseCellEnter(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine($"Enter cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
             bool newhover = IsOver(e);
@@ -108,18 +139,25 @@ namespace GLOFC.GL4.Controls
             {
                 Hover = newhover;
                 Changed?.Invoke(this, false);
+                OnMouseEnter(e);
             }
         }
-        public virtual void OnMouseLeaveCell(GLMouseEventArgs e)
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellLeave(GLMouseEventArgs)"/>
+        public virtual void OnMouseCellLeave(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine($"Leave cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
             if ( Hover )
             {
                 Hover = false;
                 Changed?.Invoke(this, false);
+                OnMouseLeave(e);
             }
         }
-        public virtual void OnMouseMoveCell(GLMouseEventArgs e)
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellMove(GLMouseEventArgs)"/>
+
+        public virtual void OnMouseCellMove(GLMouseEventArgs e)
         {
            // System.Diagnostics.Debug.WriteLine($"Move in cell {RowParent.Index} {Index} {e.WindowLocation} {e.ScreenCoord} {e.Bounds} {e.BoundsLocation} {e.Location}");
             bool newhover = IsOver(e);
@@ -127,9 +165,12 @@ namespace GLOFC.GL4.Controls
             {
                 Hover = newhover;
                 Changed?.Invoke(this, false);
+                OnMouseMove(e);
             }
         }
-        public virtual void OnMouseClickCell(GLMouseEventArgs e)
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLDataGridViewCell.OnMouseCellClick(GLMouseEventArgs)"/>
+        public virtual void OnMouseCellClick(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine($"Click in cell {RowParent.Index} {Index} {e.Bounds} {e.BoundsLocation} {e.Location}");
 
@@ -137,7 +178,6 @@ namespace GLOFC.GL4.Controls
             {
                 e.Handled = true;
                 OnMouseClick(e);
-
             }
         }
 
@@ -157,7 +197,7 @@ namespace GLOFC.GL4.Controls
             return drawarea;
         }
 
-        protected GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
-        protected bool selected;
+        private GLDataGridViewCellStyle style = new GLDataGridViewCellStyle();
+        private bool selected;
     }
 }

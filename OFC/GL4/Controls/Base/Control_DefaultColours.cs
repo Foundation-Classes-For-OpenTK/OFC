@@ -17,13 +17,13 @@
 using System;
 using System.Drawing;
 
+// Purposely not documented - no need
 #pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
     public abstract partial class GLBaseControl : IDisposable
     {
-
         #region Colours
 
         // default color schemes and sizes

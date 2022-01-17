@@ -51,7 +51,7 @@ namespace GLOFC.GL4.Controls
             ImageStretch = stretch;
         }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLButton() : this("But?", DefaultWindowRectangle, "")
         {
         }

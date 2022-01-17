@@ -50,7 +50,7 @@ namespace GLOFC.GL4.Controls
             timer.Tick += TimeOut;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLToolTip() : this("TT?", null)
         {
         }

@@ -50,7 +50,7 @@ namespace GLOFC.GL4.Controls
             DockPercent = dockpercentage;
         }
 
-        /// <summary> Empty Constructor</summary>
+        /// <summary> Default Constructor</summary>
         public GLGroupBox() : this("GB?", "", DefaultWindowRectangle)
         {
         }

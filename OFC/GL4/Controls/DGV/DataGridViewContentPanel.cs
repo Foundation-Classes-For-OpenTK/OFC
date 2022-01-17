@@ -17,6 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+
+// Internal class for DGV, no documentation needed
 #pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
@@ -286,7 +288,7 @@ namespace GLOFC.GL4.Controls
                             {
                                 var row = dgv.Rows[rowno];
 
-                                if ( row.AutoSize && row.AutoSizeGeneration != dgv.AutoSizeGeneration)
+                                if ( row.AutoSize)
                                 {
                                     dgv.PerformAutoSize(row);
                                 }
@@ -391,7 +393,7 @@ namespace GLOFC.GL4.Controls
             base.OnMouseLeave(e);
             if (currentcell != null)
             {
-                currentcell.OnMouseLeaveCell(e);
+                currentcell.OnMouseCellLeave(e);
                 currentcell = null;
             }
         }
@@ -438,7 +440,7 @@ namespace GLOFC.GL4.Controls
                 if (g != null)
                 {
                     var newcell = CellPara(g, e);       // may return null if cell not there
-                    newcell?.OnMouseDownCell(e);
+                    newcell?.OnMouseCellDown(e);
 
                     if (!e.Handled && dgv.AllowUserToSelectCells && g.Column < dgv.Rows[g.Row].CellCount)
                     {
@@ -464,7 +466,7 @@ namespace GLOFC.GL4.Controls
                 if (g != null)
                 {
                     var newcell = CellPara(g, e);       // may return null if cell not there
-                    newcell?.OnMouseUpCell(e);
+                    newcell?.OnMouseCellUp(e);
                 }
             }
         }
@@ -487,7 +489,7 @@ namespace GLOFC.GL4.Controls
                         var orgloc = e.Location;
 
                         var newcell = CellPara(g,e);        // may return null if cell not there
-                        newcell?.OnMouseClickCell(e);
+                        newcell?.OnMouseCellClick(e);
 
                         if (e.Handled == false) // and if it did not, call global click
                         {
@@ -523,33 +525,37 @@ namespace GLOFC.GL4.Controls
         public void MoveToCell(GLMouseEventArgs e)
         {
             GLDataGridView dgv = Parent as GLDataGridView;
-            var g = GridRowCol(e.Location);
+            var g = GridRowCol(e.Location);         // find row/col
             if (g != null)
             {
-                if (g.Column < dgv.Rows[g.Row].CellCount)
+                if (g.Column < dgv.Rows[g.Row].CellCount)   // if within the range of cells of the current row
                 {
-                    var newcell = CellPara(g, e);
-                    if (newcell == currentcell)
+                    var newcell = CellPara(g, e);           // get cell and set up mouse event args
+                    
+                    if (newcell == currentcell)             
                     {
-                        currentcell.OnMouseMoveCell(e);
+                        currentcell.OnMouseCellMove(e);     // same cell, its a move
                     }
                     else
                     {
-                        if (currentcell != null)
-                            currentcell.OnMouseLeaveCell(e);
+                        if (currentcell != null)            // different cell, its a leave on last 
+                            currentcell.OnMouseCellLeave(e);
                         currentcell = newcell;
-                        currentcell.OnMouseEnterCell(e);
+                        currentcell?.OnMouseCellEnter(e);   // if we have a new cell, enter.
                     }
-                    return;
+
+                    return;     // stop
                 }
             }
-            if (currentcell != null)
+
+            if (currentcell != null)                        // did not get a cell, but if we have a current cell, we need to leave
             {
-                currentcell.OnMouseLeaveCell(e);
+                currentcell.OnMouseCellLeave(e);
                 currentcell = null;
             }
         }
 
+        // Get the cell from the rowcolpos, and set event args
         private GLDataGridViewCell CellPara(GLDataGridView.RowColPos g, GLMouseEventArgs e)
         {
             GLDataGridView dgv = Parent as GLDataGridView;

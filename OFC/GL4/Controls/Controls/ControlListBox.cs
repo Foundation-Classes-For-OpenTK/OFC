@@ -135,7 +135,7 @@ namespace GLOFC.GL4.Controls
             Add(scrollbar);
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLListBox() : this("LB?", DefaultWindowRectangle, null)
         {
         }

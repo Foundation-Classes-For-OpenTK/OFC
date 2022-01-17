@@ -63,7 +63,7 @@ namespace GLOFC.GL4.Controls
             SetNI(size: sizep);
         }
 
-        /// <summary> Empty constructor</summary>
+        /// <summary> Default Constructor</summary>
         public GLFlowLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {
         }

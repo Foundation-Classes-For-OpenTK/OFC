@@ -54,6 +54,8 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.buttonDumpSelection = new System.Windows.Forms.Button();
+            this.buttonRowHeader = new System.Windows.Forms.Button();
+            this.buttonColHeader = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -96,7 +98,7 @@
             // 
             // buttonRemoveCol0
             // 
-            this.buttonRemoveCol0.Location = new System.Drawing.Point(854, 100);
+            this.buttonRemoveCol0.Location = new System.Drawing.Point(959, 71);
             this.buttonRemoveCol0.Name = "buttonRemoveCol0";
             this.buttonRemoveCol0.Size = new System.Drawing.Size(99, 23);
             this.buttonRemoveCol0.TabIndex = 1;
@@ -116,7 +118,7 @@
             // 
             // buttonAddCell
             // 
-            this.buttonAddCell.Location = new System.Drawing.Point(856, 158);
+            this.buttonAddCell.Location = new System.Drawing.Point(961, 129);
             this.buttonAddCell.Name = "buttonAddCell";
             this.buttonAddCell.Size = new System.Drawing.Size(99, 23);
             this.buttonAddCell.TabIndex = 1;
@@ -312,6 +314,26 @@
             this.buttonDumpSelection.UseVisualStyleBackColor = true;
             this.buttonDumpSelection.Click += new System.EventHandler(this.buttonDumpSelection_Click);
             // 
+            // buttonRowHeader
+            // 
+            this.buttonRowHeader.Location = new System.Drawing.Point(856, 168);
+            this.buttonRowHeader.Name = "buttonRowHeader";
+            this.buttonRowHeader.Size = new System.Drawing.Size(99, 23);
+            this.buttonRowHeader.TabIndex = 1;
+            this.buttonRowHeader.Text = "Tog row header";
+            this.buttonRowHeader.UseVisualStyleBackColor = true;
+            this.buttonRowHeader.Click += new System.EventHandler(this.buttonRowHeader_Click);
+            // 
+            // buttonColHeader
+            // 
+            this.buttonColHeader.Location = new System.Drawing.Point(961, 168);
+            this.buttonColHeader.Name = "buttonColHeader";
+            this.buttonColHeader.Size = new System.Drawing.Size(99, 23);
+            this.buttonColHeader.TabIndex = 1;
+            this.buttonColHeader.Text = "Tog Col header";
+            this.buttonColHeader.UseVisualStyleBackColor = true;
+            this.buttonColHeader.Click += new System.EventHandler(this.buttonColHeader_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -319,6 +341,8 @@
             this.ClientSize = new System.Drawing.Size(1555, 1005);
             this.Controls.Add(this.buttonToggleFillMode);
             this.Controls.Add(this.button4);
+            this.Controls.Add(this.buttonColHeader);
+            this.Controls.Add(this.buttonRowHeader);
             this.Controls.Add(this.buttonDumpSelection);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.buttonToggleSort);
@@ -377,6 +401,8 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button buttonDumpSelection;
+        private System.Windows.Forms.Button buttonRowHeader;
+        private System.Windows.Forms.Button buttonColHeader;
     }
 }
 

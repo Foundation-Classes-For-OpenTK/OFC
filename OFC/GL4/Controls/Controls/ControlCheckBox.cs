@@ -83,7 +83,7 @@ namespace GLOFC.GL4.Controls
             Appearance = CheckBoxAppearance.Button;
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLCheckBox() : this("CB?", DefaultWindowRectangle, "")
         {
         }

@@ -18,30 +18,34 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-#pragma warning disable 1591
+
 
 namespace GLOFC.GL4.Controls
 {
-    // Autocomplete text box
-    // PerformAutoCompleteInThread runs in a thread - not the main UI
-    // PerformAutoCompleteInUIThread runs in the UI thread
-    // you can have both
-    // SelectedEntry is run when use hits return or clicks on an autocompleted item in drop down, runs in the UI thread
-    // Set InErrorCondition if required, next text will clear it
 
+    /// <summary>
+    /// A single line text box control with autocomplete
+    /// Set InErrorCondition if required, next text entry will clear text box.
+    /// </summary>
     public class GLTextBoxAutoComplete : GLMultiLineTextBox
     {
-        // fired in thread (first, before UI)
+        /// <summary> Callback to collect a list, into the sorted set, of autocomplete texts guided by string
+        /// Fired in a thread, first before UI perform</summary>
         public Action<string, GLTextBoxAutoComplete, SortedSet<string>> PerformAutoCompleteInThread { get; set; } = null;
-        // using a GLTimer, fire in UI
+        /// <summary> Callback to collect a list, into the sorted set, of autocomplete texts guided by string
+        /// Fired in the UI thread, after the thread perform</summary>
         public Action<string, GLTextBoxAutoComplete, SortedSet<string>> PerformAutoCompleteInUIThread { get; set; } = null;
 
-        public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        // called on return, or autocomplete entry selected.
+        /// <summary> Callback. Run when use hits return or clicks on an autocompleted item in drop down, runs in the UI thread</summary>
+        public Action<GLTextBoxAutoComplete> SelectedEntry { get; set; } = null;        
 
+        /// <summary> Delay in ms before autocomplete starts</summary>
         public int AutoCompleteInitialDelay { get; set; } = 250;
 
-        public GLListBox ListBox { get; set; } = new GLListBox();           // if you want to set its visual properties, do it via this
+        /// <summary> List box for autocomplete. For Themeing</summary>
+        public GLListBox ListBox { get; set; } = new GLListBox();
 
+        /// <summary> Constructor with name, bounds and optional text </summary>
         public GLTextBoxAutoComplete(string name, Rectangle pos, string text = "") : base(name, pos, text)
         {
             MultiLineMode = false;
@@ -60,25 +64,32 @@ namespace GLOFC.GL4.Controls
             ListBox.ShowFocusHighlight = true;
         }
 
+        /// <summary> Default constructor </summary>
         public GLTextBoxAutoComplete() : this("TBAC?", DefaultWindowRectangle, "")
         {
         }
 
+        /// <summary> Ask for autocomplete on this string </summary>
         public void AutoComplete(string autocomplete)           // call to autocomplete this
         {
             autocompletestring = autocomplete;
             InitialDelayOver(null, 0);
         }
 
-        public void CancelAutoComplete()        // Sometimes, the user is quicker than the timer, and has commited to a selection before the results even come back.
+        /// <summary> Cancel the autocomplete.  </summary>
+        public void CancelAutoComplete()       
         {
+            // Sometimes, the user is quicker than the timer, and has commited to a selection before the results even come back.
             waitforautotimer.Stop();
             triggercomplete.Stop();
             Remove(ListBox);
             this.SetFocus();
         }
 
-        protected override void OnTextChanged()
+
+        #region Implementation
+
+        private protected override void OnTextChanged()
         {
             System.Diagnostics.Debug.WriteLine("{0} text change event", Environment.TickCount % 10000);
 
@@ -109,7 +120,6 @@ namespace GLOFC.GL4.Controls
             ThreadAutoComplete.Name = "AutoComplete";
             ThreadAutoComplete.Start();
         }
-
         private void AutoComplete()     // in a thread..
         {
             do
@@ -168,6 +178,7 @@ namespace GLOFC.GL4.Controls
                 Remove(ListBox);
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
         protected override void OnKeyDown(GLKeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -208,6 +219,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseWheel(GLMouseEventArgs)"/>
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);
@@ -231,5 +243,6 @@ namespace GLOFC.GL4.Controls
         private SortedSet<string> autocompletestrings = null;
         private System.Threading.Thread ThreadAutoComplete;
 
+        #endregion
     }
 }

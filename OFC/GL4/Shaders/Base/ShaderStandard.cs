@@ -50,7 +50,7 @@ namespace GLOFC.GL4.Shaders
         /// <summary> Finish Action callback </summary>
         public Action<IGLProgramShader> FinishAction { get; set; }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLShaderStandard()
         {
         }

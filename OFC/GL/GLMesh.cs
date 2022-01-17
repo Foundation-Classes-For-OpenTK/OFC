@@ -50,7 +50,7 @@ namespace GLOFC
             Normals = norms;
         }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLMeshVertices()
         {
             Vertices = new List<Vector4>();
@@ -87,7 +87,7 @@ namespace GLOFC
             NormalIndices = normindex;
         }
 
-        /// <summary> Empty Constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLMeshIndices()
         {
             VertexIndices = new List<uint>();

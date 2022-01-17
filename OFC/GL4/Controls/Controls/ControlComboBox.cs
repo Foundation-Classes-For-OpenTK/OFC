@@ -125,7 +125,7 @@ namespace GLOFC.GL4.Controls
         {
         }
 
-        /// <summary> Empty constructor </summary>
+        /// <summary> Default Constructor </summary>
         public GLComboBox() : this("Combo?", DefaultWindowRectangle)
         {
         }

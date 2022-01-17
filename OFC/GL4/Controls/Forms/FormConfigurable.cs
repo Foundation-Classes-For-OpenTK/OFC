@@ -18,92 +18,139 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
+    /// <summary>
+    /// Configurable Form, allowing simple setup of a forms content.
+    /// Forms are autosized to content. 
+    /// They default to not being resizable. For resizable forms, turn off AutoSize after adding the form to the parent, and set Resizable or Movable properties.
+    /// They can have a entries with AnchorType=DialogButtonLine, which autoarranges the items along a dialog line at the bottom of all other content
+    /// </summary>
+
     public class GLFormConfigurable : GLForm
     {
-        // Trigger returns GLformConfiguratble, Entry (or null) actioning, logical string action, callertag
-        // logical string action:
-        // GLButton,GLCheckBox: control name is returned when clicked or return is pressed
-        // GLComboBox : control name is returned when selection made
-        // GLNumberBox: "Return" if return is pressed, or "Validity:true/false" when validity changes. Entry can give you the name
-        // GLMultiLineTextBox: "Return" if return is pressed
-
+        /// <summary>
+        /// Callback, called when the user interacts with the form.
+        /// Trigger passes: GLformConfiguratble, Entry (or null) actioning, string action, callertag 
+        /// The string action is:
+        /// * GLButton, GLCheckBox: control name is returned when clicked or return is pressed
+        /// * GLComboBox : control name is returned when selection made
+        /// * GLNumberBox: "Return" if return is pressed, or "Validity:true/false" when validity changes. Entry can give you the number using Get
+        /// * GLMultiLineTextBox: "Return" if return is pressed
+        /// * "Escape" is the escape key is pressed
+        /// * "Close" is the close button pressed
+        /// </summary>
         public event Action<GLFormConfigurable, Entry, string, Object> Trigger;
 
-        // you must turn off autosize if you want it resizable.  Do this AFTER adding to displaycontrol etc.
-        // if you want it resizable, set Resizable=true AFTER adding to displaycontrol etc.
-        // if you want it moveable, set Moveable=true AFTER adding to displaycontrol etc.
+        /// <summary> For entries marked with AnchorType == DialogButtonLine, spacing between items on line</summary>
+        public int AnchorDialogButtonLineSpacing { get; set; } = 8;
 
-        // You give an array of Entries describing the controls
-        // either added programatically by Add(entry) 
-        // Directly Supported Types 
-        //      "button" ButtonExt, "textbox" TextBoxBorder, "checkbox" CheckBoxCustom, 
-        //      "label" Label, "datetime" CustomDateTimePicker, 
-        //      "numberboxdouble" NumberBoxDouble, "numberboxlong" NumberBoxLong, 
-        //      "combobox" ComboBoxCustom
-        // Or any type if you set controltype=null and set control field directly.
-        // Set controlname, text,pos,size, tooltip
-        // for specific type, set the other fields.
-        // Tab order is in order added, unless the entry specifically overrides it.  If it does, next autotab follows on from this value.
-
-        // if the item has AnchorType == DialogButtonLine, they are auto arranged in add order right to left along a line below all other items
+        /// <summary>
+        /// This is an entry, descripting one visual element on the form. These are added to the form by the Add function before Init is called
+        /// ControlTypes supported are GLMultiLineTextBox, GLNumberBoxLong, GLNumberBoxDouble, GLNumberBoxFloat, GLCheckBox, GLLabel, GLDateTimePicker, GLComboBox
+        /// Any other type may be added by setting the ControlType=null and setting Control manually.
+        /// You always set Name, ControlType, Location, Size
+        /// Other fields are specific to certain types and are set for them
+        /// Tab order is in order added, unless the entry specifically overrides it.  If it does, next autotab follows on from this value. 
+        /// </summary>
 
         public class Entry
         {
-            public string Name;                 // logical name of control
-            public Type ControlType;            // if non null, activate this type.  Else if null, control should be filled up with your specific type
-            public int TabOrder = -1;           // tab order
-            public Object Tag;                  // for use by caller
+            /// <summary> Control Name </summary>
+            public string Name;      
+            /// <summary> Control Type, or null to indicate Control is set</summary>
+            public Type ControlType; 
+            /// <summary> Tab order </summary>
+            public int TabOrder = -1;
+            /// <summary> User Tag</summary>
+            public Object Tag;    
+            /// <summary> Location </summary>
             public Point Location;
+            /// <summary>Size  </summary>
             public Size Size;
-            public string ToolTip;              // can be null.
+            /// <summary> Tooltip text, can be null</summary>
+            public string ToolTip;
 
             // properties applied if this control makes it
 
+            /// <summary> Anchor type. If the entry has AnchorType == DialogButtonLine, they are auto arranged in add order right to left along a line below all other items</summary>
             public AnchorType Anchor = AnchorType.None;
-            public string Text;                 // for certain types, the text
-            public bool Checked;                // fill in for checkbox
-            public bool ClearOnFirstChar;       // fill in for textbox
-            public string ComboBoxItems;        // fill in for combobox. comma separ list.
-            public string CustomDateFormat;     // fill in for datetimepicker
+            /// <summary> Text of control, GLButton, GLComboBox, GLMultiLineTextBox (+derivates), GLLabel, GLDateTimePicker </summary>
+            public string Text;                 
+            /// <summary> Check state for checkbox</summary>
+            public bool Checked;                
+            /// <summary> For textbox's, clear on first character</summary>
+            public bool ClearOnFirstChar;       
+            /// <summary> For combobox, item list </summary>
+            public string[] ComboBoxItems;        
+            /// <summary> For DateTimePicker, date format </summary>
+            public string CustomDateFormat;
+            /// <summary> For GLNumberBoxDouble/Float, minimum value</summary>
             public double NumberBoxDoubleMinimum = double.MinValue;   // for double box
+            /// <summary> For GLNumberBoxDouble/Float, maximum value</summary>
             public double NumberBoxDoubleMaximum = double.MaxValue;
+            /// <summary> For GLNumberBoxLong, minimum value</summary>
             public long NumberBoxLongMinimum = long.MinValue;   // for long box
+            /// <summary> For GLNumberBoxLong, maximum value</summary>
             public long NumberBoxLongMaximum = long.MaxValue;
-            public string NumberBoxFormat;      // for both number boxes
-            public ContentAlignment? TextAlign;  // label,button. nominal not applied
-            public bool ReadOnly = false;       // text box
-            public bool AutoSize = false;       // all
+            /// <summary> For GLNumberBox.. , number format</summary>
+            public string NumberBoxFormat;      
+            /// <summary> For GLLabel, GLButton, GLComboBox: text alignment</summary>
+            public ContentAlignment? TextAlign;  
+            /// <summary> For GLMultiLineTextBox (+derivates) read only state </summary>
+            public bool ReadOnly = false;     
+            /// <summary> Autosize the entry </summary>
+            public bool AutoSize = false;     
 
-            public GLBaseControl Control; // if controltype is set, don't set.  If contrDaveoltype=null, pass your control type.
+            /// <summary> Control for entry. Normally null, as ControlType describes entry, but can be set for custom control types 
+            /// If set, properties not applied are Name, Location, Size, Anchor and Autosize.
+            /// </summary>
+            public GLBaseControl Control; 
 
-            // normal ones, by type
-            public Entry(string name, Type c, string t, System.Drawing.Point p, System.Drawing.Size s, string tt = null, Object tag = null)
+            /// <summary> Create an entry by type. </summary>
+            /// <param name="name">Name of control</param>
+            /// <param name="typeofcontrol">Control type</param>
+            /// <param name="text">Value of control</param>
+            /// <param name="location">Location</param>
+            /// <param name="size">Size</param>
+            /// <param name="tooltip">Tooltip, may be null</param>
+            /// <param name="tag">User tag</param>
+            public Entry(string name, Type typeofcontrol, string text, Point location, Size size, string tooltip = null, Object tag = null)
             {
-                ControlType = c; Text = t; Location = p; Size = s; ToolTip = tt; Name = name; CustomDateFormat = "long"; this.Tag = tag;
+                ControlType = typeofcontrol; Text = text; Location = location; Size = size; ToolTip = tooltip; Name = name; CustomDateFormat = "long"; this.Tag = tag;
             }
 
-            // direct control
-            public Entry( string name, GLBaseControl ctrl, string tt = null, Object tag = null)
+            /// <summary> Create an entry by giving control </summary>
+            /// <param name="name">Name</param>
+            /// <param name="control">Control, already made</param>
+            /// <param name="tooltip">Tooltip, may be null</param>
+            /// <param name="tag">User tag</param>
+            public Entry( string name, GLBaseControl control, string tooltip = null, Object tag = null)
             {
-                Control = ctrl; Name = name; ToolTip = tt; this.Tag = tag;
+                Control = control; Name = name; ToolTip = tooltip; this.Tag = tag;
             }
 
-            // ComboBox
-            public Entry(string nam, string t, System.Drawing.Point p, System.Drawing.Size s, string tt, List<string> comboitems, Object tag = null)
+            /// <summary> Create a combo box entry </summary>
+            /// <param name="name">Name of control</param>
+            /// <param name="text">Value of control</param>
+            /// <param name="location">Location</param>
+            /// <param name="size">Size</param>
+            /// <param name="tooltip">Tooltip, may be null</param>
+            /// <param name="comboitems">Array of combo box items</param>
+            /// <param name="tag">User tag</param>
+            public Entry(string name, string text, Point location, Size size, string tooltip, string[] comboitems, Object tag = null)
             {
-                ControlType = typeof(GLComboBox); Text = t; Location = p; Size = s; ToolTip = tt; Name = nam; this.Tag = tag;
-                ComboBoxItems = string.Join(",", comboitems);
+                ControlType = typeof(GLComboBox); Text = text; Location = location; Size = size; ToolTip = tooltip; Name = name; this.Tag = tag;
+                ComboBoxItems = comboitems;
             }
 
         }
 
         #region Public interface
 
-        public GLFormConfigurable(string name) : base(name, "TitleConfigDefault",DefaultWindowRectangle)     // title changed on Init
+        /// <summary> Construct with name </summary>
+        public GLFormConfigurable(string name) : base(name, "TitleConfigDefault", DefaultWindowRectangle)     // title changed on Init
         {
             entries = new List<Entry>();
             Moveable = Resizeable = false;
@@ -112,7 +159,13 @@ namespace GLOFC.GL4.Controls
             tabnumber = 0;
         }
 
-        public void Add(Entry e)               // add an entry..
+        /// <summary> Default constructor </summary>
+        public GLFormConfigurable() : base("CF", "TitleConfigDefault", DefaultWindowRectangle)     // title changed on Init
+        {
+        }
+
+        /// <summary> Add entry  </summary>
+        public void Add(Entry e) 
         {
             if (e.TabOrder == -1)
                 e.TabOrder = tabnumber++;
@@ -122,206 +175,95 @@ namespace GLOFC.GL4.Controls
             entries.Add(e);
         }
 
-        public void Add(string name, GLBaseControl ctrl, string tt = null, Object tag = null)   // add a previously made ctrl
+        /// <summary> Add an entry with a pre-made control </summary>
+        /// <param name="name">Name of control</param>
+        /// <param name="control">Control, pre-made</param>
+        /// <param name="tooltiptext">Tool tip text, may be null</param>
+        /// <param name="tag">User tag, may be null</param>
+        public void Add(string name, GLBaseControl control, string tooltiptext = null, Object tag = null)   // add a previously made ctrl
         {
-            Add(new Entry(name, ctrl, tt, tag) { TabOrder = tabnumber++ });
+            Add(new Entry(name, control, tooltiptext, tag) { TabOrder = tabnumber++ });
         }
 
-        public void AddButton(string ctrlname, string text, Point p, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.None)
+        /// <summary> Add a button </summary>
+        /// <param name="name">Name of control</param>
+        /// <param name="text">Text for button</param>
+        /// <param name="location">Location </param>
+        /// <param name="tooltiptext">Tool tip text, may be null</param>
+        /// <param name="size">Size, may be null, if so 80x24</param>
+        /// <param name="anchor">Anchor.  If its DialogButtonLine, the button is auto arranged in add order right to left along a line below all other items</param>
+        /// <param name="tag">User tag, may be null</param>
+        public void AddButton(string name, string text, Point location, string tooltiptext = null, Size? size = null, AnchorType anchor = AnchorType.None, Object tag = null)
         {
-            if (sz == null)
-                sz = new Size(80, 24);
-            Add(new Entry(ctrlname, typeof(GLButton), text, p, sz.Value, tooltip) {Anchor = ac});
+            if (size == null)
+                size = new Size(80, 24);
+            Add(new Entry(name, typeof(GLButton), text, location, size.Value, tooltiptext, tag) {Anchor = anchor});
         }
 
-        public void AddOK(string text, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.AutoPlacement)
+        /// <summary> Add a button, name of OK </summary>
+        /// <param name="text">Text for button</param>
+        /// <param name="tooltiptext">Tool tip text, may be null</param>
+        /// <param name="size">Size, may be null, if so 80x24</param>
+        /// <param name="anchor">Anchor.  If its DialogButtonLine, the button is auto arranged in add order right to left along a line below all other items</param>
+        public void AddOK(string text, string tooltiptext = null, Size? size = null, AnchorType anchor = AnchorType.AutoPlacement)
         {
-            AddButton("OK", text, new Point(0, 0), tooltip, sz,ac);
-        }
-        public void AddCancel(string text, string tooltip = null, Size? sz = null, AnchorType ac = AnchorType.AutoPlacement)
-        {
-            AddButton("Cancel", text, new Point(0, 0), tooltip, sz, ac);
+            AddButton("OK", text, new Point(0, 0), tooltiptext, size,anchor);
         }
 
+        /// <summary> Add a button, name of Cancel </summary>
+        /// <param name="text">Text for button</param>
+        /// <param name="tooltiptext">Tool tip text, may be null</param>
+        /// <param name="size">Size, may be null, if so 80x24</param>
+        /// <param name="anchor">Anchor.  If its DialogButtonLine, the button is auto arranged in add order right to left along a line below all other items</param>
+        public void AddCancel(string text, string tooltiptext = null, Size? size = null, AnchorType anchor = AnchorType.AutoPlacement)
+        {
+            AddButton("Cancel", text, new Point(0, 0), tooltiptext, size, anchor);
+        }
+
+        /// <summary> Install standard trigger handlers for "OK" (Close, DialogResult=OK) and "Close","Escape","Cancel" (Close, DialogResult=Cancel)</summary>
         public void InstallStandardTriggers()
         {
             Trigger += (cfg, en, controlname, args) =>
             {
                 if (controlname == "OK")
                 {
-                    cfg.DialogResult = DialogResult.OK;
+                    cfg.DialogResult = DialogResultEnum.OK;
                     Close();
                 }
                 else if (controlname == "Close" || controlname == "Escape" || controlname == "Cancel")
                 {
-                    cfg.DialogResult = DialogResult.Cancel;
+                    cfg.DialogResult = DialogResultEnum.Cancel;
                     Close();
                 }
             };
         }
 
+        /// <summary> Get last entry </summary>
         public Entry Last { get { return entries.Last(); } }
 
+        /// <summary> Initialise form, with position, caption and callertag (passed back in Trigger)</summary>
         public void Init(Point pos, string caption, Object callertag = null)
         {
             location = pos;
             InitInt(caption, callertag);
         }
 
+        /// <summary> Initialise form to centre of screen, with caption and callertag (passed back in Trigger)</summary>
         public void InitCentered(string caption, Object callertag = null)
         {
             centred = true;
             InitInt(caption, callertag);
         }
 
-        public T GetControl<T>(string controlname) where T : GLBaseControl      // return value of dialog control
+        /// <summary> Get control of name, as type T. If name not found, return null</summary>
+        public T GetControl<T>(string name) where T : GLBaseControl      
         {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
+            Entry t = entries.Find(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
             if (t != null)
                 return (T)t.Control;
             else
                 return null;
         }
-
-        public string Get(string controlname)      // return value of dialog control
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                GLBaseControl c = t.Control;
-                if (c is GLMultiLineTextBox)
-                    return (c as GLMultiLineTextBox).Text;
-                else if (c is GLCheckBox)
-                    return (c as GLCheckBox).Checked ? "1" : "0";
-                else if (c is GLDateTimePicker)
-                    return (c as GLDateTimePicker).Value.ToString("yyyy/dd/MM HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                else if (c is GLNumberBoxDouble)
-                {
-                    var cn = c as GLNumberBoxDouble;
-                    return cn.IsValid ? cn.Value.ToStringInvariant() : "INVALID";
-                }
-                else if (c is GLNumberBoxLong)
-                {
-                    var cn = c as GLNumberBoxLong;
-                    return cn.IsValid ? cn.Value.ToStringInvariant() : "INVALID";
-                }
-                else if (c is GLComboBox)
-                {
-                    GLComboBox cb = c as GLComboBox;
-                    return (cb.SelectedIndex != -1) ? cb.Text : "";
-                }
-            }
-
-            return null;
-        }
-
-        public double? GetDouble(string controlname)     // Null if not valid
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                var cn = t.Control as GLNumberBoxDouble;
-                if (cn.IsValid)
-                    return cn.Value;
-            }
-            return null;
-        }
-
-        public long? GetLong(string controlname)     // Null if not valid
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                var cn = t.Control as GLNumberBoxLong;
-                if (cn.IsValid)
-                    return cn.Value;
-            }
-            return null;
-        }
-
-        public DateTime? GetDateTime(string controlname)
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                GLDateTimePicker c = t.Control as GLDateTimePicker;
-                if (c != null)
-                    return c.Value;
-            }
-
-            return null;
-        }
-
-        public bool Set(string controlname, string value)      // set value of dialog control
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                GLBaseControl c = t.Control;
-                if (c is GLTextBox)
-                {
-                    (c as GLTextBox).Text = value;
-                    return true;
-                }
-                else if (c is GLMultiLineTextBox)
-                {
-                    (c as GLMultiLineTextBox).Text = value;
-                    return true;
-                }
-                else if (c is GLCheckBox)
-                {
-                    (c as GLCheckBox).Checked = !value.Equals("0");
-                    return true;
-                }
-                else if (c is GLComboBox)
-                {
-                    GLComboBox cb = c as GLComboBox;
-                    if (cb.Items.Contains(value))
-                    {
-                        cb.Enabled = false;
-                        cb.SelectedItem = value;
-                        cb.Enabled = true;
-                        return true;
-                    }
-                }
-                else if (c is GLNumberBoxDouble)
-                {
-                    var cn = c as GLNumberBoxDouble;
-                    double? v = value.InvariantParseDoubleNull();
-                    if (v.HasValue)
-                    {
-                        cn.Value = v.Value;
-                        return true;
-                    }
-                }
-                else if (c is GLNumberBoxLong)
-                {
-                    var cn = c as GLNumberBoxLong;
-                    long? v = value.InvariantParseLongNull();
-                    if (v.HasValue)
-                    {
-                        cn.Value = v.Value;
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        public bool SetEnabled(string controlname, bool state)      // set enable state of dialog control
-        {
-            Entry t = entries.Find(x => x.Name.Equals(controlname, StringComparison.InvariantCultureIgnoreCase));
-            if (t != null)
-            {
-                var cn = t.Control as GLBaseControl;
-                cn.Enabled = state;
-                return true;
-            }
-            else
-                return false;
-        }
-
 
         #endregion
 
@@ -331,6 +273,9 @@ namespace GLOFC.GL4.Controls
         {
             this.callertag = callertag;      // passed back to caller via trigger
             this.Text = caption;
+            this.FormClosed += (a) => {
+                Trigger?.Invoke(this, null, "Close", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+            };
 
             SuspendLayout();
 
@@ -349,22 +294,97 @@ namespace GLOFC.GL4.Controls
                     ent.Control.AutoSize = ent.AutoSize;
                 }
 
-                GLBaseControl c = ent.Control;
-                c.Tag = ent;     // point control tag at ent structure
-                c.TabOrder = ent.TabOrder;
+                GLBaseControl control = ent.Control;
+                control.Tag = ent;     // point control tag at ent structure
+                control.TabOrder = ent.TabOrder;
 
-                if ( c is GLLabel)
+                if ( control is GLLabel)
                 {
-                    var l = c as GLLabel;
+                    var l = control as GLLabel;
                     if (oursmade)
                         l.Text = ent.Text;
 
                     if (ent.TextAlign.HasValue)
                         l.TextAlign = ent.TextAlign.Value;
                 }
-                else if ( c is GLMultiLineTextBox ) // also TextBox as its inherited
+                else if (control is GLNumberBoxFloat)      // must be before MLTB
                 {
-                    GLMultiLineTextBox tb = c as GLMultiLineTextBox;
+                    GLNumberBoxFloat cb = control as GLNumberBoxFloat;
+
+                    if (oursmade)
+                    {
+                        cb.Minimum = (float)ent.NumberBoxDoubleMinimum;
+                        cb.Maximum = (float)ent.NumberBoxDoubleMaximum;
+                        float? v = ent.Text.InvariantParseFloatNull();
+                        cb.Value = v.HasValue ? v.Value : cb.Minimum;
+                        if (ent.NumberBoxFormat != null)
+                            cb.Format = ent.NumberBoxFormat;
+                    }
+
+                    cb.ReturnPressed += (box) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, ":Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                    cb.ValidityChanged += (box, b) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, "Validity:" + b.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                }
+                else if (control is GLNumberBoxDouble)      // must be before MLTB
+                {
+                    GLNumberBoxDouble cb = control as GLNumberBoxDouble;
+
+                    if (oursmade)
+                    {
+                        cb.Minimum = ent.NumberBoxDoubleMinimum;
+                        cb.Maximum = ent.NumberBoxDoubleMaximum;
+                        double? v = ent.Text.InvariantParseDoubleNull();
+                        cb.Value = v.HasValue ? v.Value : cb.Minimum;
+                        if (ent.NumberBoxFormat != null)
+                            cb.Format = ent.NumberBoxFormat;
+                    }
+
+                    cb.ReturnPressed += (box) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, ":Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                    cb.ValidityChanged += (box, b) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, "Validity:" + b.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                }
+                else if (control is GLNumberBoxLong)        // must be before MLTB
+                {
+                    GLNumberBoxLong cb = control as GLNumberBoxLong;
+                    if (oursmade)
+                    {
+                        cb.Minimum = ent.NumberBoxLongMinimum;
+                        cb.Maximum = ent.NumberBoxLongMaximum;
+                        long? v = ent.Text.InvariantParseLongNull();
+                        cb.Value = v.HasValue ? v.Value : cb.Minimum;
+                        if (ent.NumberBoxFormat != null)
+                            cb.Format = ent.NumberBoxFormat;
+                    }
+
+                    cb.ReturnPressed += (box) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, "Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                    cb.ValidityChanged += (box, s) =>
+                    {
+                        Entry en = (Entry)(box.Tag);
+                        Trigger?.Invoke(this, en, "Validity:" + s.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
+                    };
+                }
+
+                else if ( control is GLMultiLineTextBox ) // also TextBox as its inherited
+                {
+                    GLMultiLineTextBox tb = control as GLMultiLineTextBox;
 
                     if (oursmade)
                     {
@@ -380,9 +400,9 @@ namespace GLOFC.GL4.Controls
                     };
 
                 }
-                else if ( c is GLButton )
+                else if ( control is GLButton )
                 { 
-                    GLButton b = c as GLButton;
+                    GLButton b = control as GLButton;
                     if (oursmade)
                         b.Text = ent.Text;
                     
@@ -401,9 +421,9 @@ namespace GLOFC.GL4.Controls
                         Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
                 }
-                else if (c is GLCheckBox)
+                else if (control is GLCheckBox)
                 {
-                    GLCheckBox cb = c as GLCheckBox;
+                    GLCheckBox cb = control as GLCheckBox;
                     if (oursmade)
                         cb.Checked = ent.Checked;
                     cb.CheckChanged = (sender) =>
@@ -412,9 +432,9 @@ namespace GLOFC.GL4.Controls
                         Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
                 }
-                else if (c is GLDateTimePicker)
+                else if (control is GLDateTimePicker)
                 {
-                    GLDateTimePicker dt = c as GLDateTimePicker;
+                    GLDateTimePicker dt = control as GLDateTimePicker;
                     if (oursmade)
                     {
                         DateTime t;
@@ -438,13 +458,13 @@ namespace GLOFC.GL4.Controls
                             break;
                     }
                 }
-                else if (c is GLComboBox)
+                else if (control is GLComboBox)
                 {
-                    GLComboBox cb = c as GLComboBox;
+                    GLComboBox cb = control as GLComboBox;
 
                     if (oursmade)
                     {
-                        cb.Items.AddRange(ent.ComboBoxItems.Split(','));
+                        cb.Items.AddRange(ent.ComboBoxItems);
                         if (cb.Items.Contains(ent.Text))
                             cb.SelectedItem = ent.Text;
                     }
@@ -458,66 +478,16 @@ namespace GLOFC.GL4.Controls
                             Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                         }
                     };
-
-                }
-                else if (c is GLNumberBoxDouble)
-                {
-                    GLNumberBoxDouble cb = c as GLNumberBoxDouble;
-
-                    if (oursmade)
-                    {
-                        cb.Minimum = ent.NumberBoxDoubleMinimum;
-                        cb.Maximum = ent.NumberBoxDoubleMaximum;
-                        double? v = ent.Text.InvariantParseDoubleNull();
-                        cb.Value = v.HasValue ? v.Value : cb.Minimum;
-                        if (ent.NumberBoxFormat != null)
-                            cb.Format = ent.NumberBoxFormat;
-                    }
-
-                    cb.ReturnPressed += (box) =>
-                    {
-                        Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, ":Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
-                    };
-                    cb.ValidityChanged += (box, b) =>
-                    {
-                        Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, "Validity:" + b.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
-                    };
-                }
-                else if (c is GLNumberBoxLong)
-                {
-                    GLNumberBoxLong cb = c as GLNumberBoxLong;
-                    if (oursmade)
-                    {
-                        cb.Minimum = ent.NumberBoxLongMinimum;
-                        cb.Maximum = ent.NumberBoxLongMaximum;
-                        long? v = ent.Text.InvariantParseLongNull();
-                        cb.Value = v.HasValue ? v.Value : cb.Minimum;
-                        if (ent.NumberBoxFormat != null)
-                            cb.Format = ent.NumberBoxFormat;
-                    }
-
-                    cb.ReturnPressed += (box) =>
-                    {
-                        Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, "Return", this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
-                    };
-                    cb.ValidityChanged += (box, s) =>
-                    {
-                        Entry en = (Entry)(box.Tag);
-                        Trigger?.Invoke(this, en, "Validity:" + s.ToString(), this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
-                    };
                 }
 
-                Add(c);
+
+                Add(control);
             }
 
             ResumeLayout();
         }
 
-        private const int butspacing = 8;
-
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControl(Size)"/>
         protected override void SizeControl(Size parentsize)
         {
             if (ControlsIZ.Count > 0 && Parent != null)       // if not resizable, and we have stuff
@@ -530,8 +500,8 @@ namespace GLOFC.GL4.Controls
 
                     Rectangle area = VisibleChildArea(x => (x.Anchor & AnchorType.AutoPlacement) == 0);   // get the clients area , ignoring anchor buttons
 
-                    int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(x => x.Height + butspacing).DefaultIfEmpty(0).Max() + AutoSizeClientMargin.Height;
-                    int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(y => y.Width + butspacing).DefaultIfEmpty(0).Sum() + AutoSizeClientMargin.Width;
+                    int buttonsmaxh = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(x => x.Height + AnchorDialogButtonLineSpacing).DefaultIfEmpty(0).Max() + AutoSizeClientMargin.Height;
+                    int buttonswidth = ControlsIZ.Where(x => (x.Anchor & AnchorType.AutoPlacement) != 0).Select(y => y.Width + AnchorDialogButtonLineSpacing).DefaultIfEmpty(0).Sum() + AutoSizeClientMargin.Width;
 
                     if (ClientWidth < buttonswidth || ClientHeight < area.Top + area.Height + buttonsmaxh)
                     {
@@ -569,7 +539,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // layout any anchor line buttons
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {
             base.PerformRecursiveLayout();      // do normal layout on children
@@ -586,11 +556,12 @@ namespace GLOFC.GL4.Controls
                     var pos = new Point(buttonright, buttonline);
                     //System.Diagnostics.Debug.WriteLine($"{control.Name} {control.Size} to {pos}");
                     control.SetNI(location: pos);
-                    buttonright -= butspacing;
+                    buttonright -= AnchorDialogButtonLineSpacing;
                 }
             }
         }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyPress(GLKeyEventArgs)"/>
         protected override void OnKeyPress(GLKeyEventArgs e)       // forms gets first dibs at keys of children
         {
             base.OnKeyPress(e);
