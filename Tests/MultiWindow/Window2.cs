@@ -146,19 +146,19 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("TEXOT"),
                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(2,0,0))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
                     GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(4,0,0))
                             ));
 
@@ -166,13 +166,13 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("TEXOT"), "EDDFlat",
                     GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuad,
+                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(6, 0, 0))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
                     GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( 90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( 90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("smile"), new Vector3(8, 0, 0))
                            ));
 

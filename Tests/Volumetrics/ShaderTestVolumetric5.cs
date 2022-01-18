@@ -174,7 +174,7 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
                                         GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuad, numberpos, rt,
+                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos, rt,
                                                 numberpos.Length));
             }
 

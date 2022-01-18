@@ -102,7 +102,7 @@ namespace TestOpenTk
 
                 rObjects.Add(s, "Quad",
                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 3, -6))
                             ));
 

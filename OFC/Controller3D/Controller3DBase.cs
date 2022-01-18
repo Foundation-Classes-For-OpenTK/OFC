@@ -102,7 +102,7 @@ namespace GLOFC.Controller
                     int dy = mousepos.Y - mouseDeltaPos.Y;
                     var vec = new Vector2((float)(dy * MouseRotateAmountPerPixel), (float)(dx * MouseRotateAmountPerPixel));
 
-                  //  System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mousepos} {e.WindowLocation} {dx} {dy} {vec}");
+                    //  System.Diagnostics.Debug.WriteLine($"3dcontroller Mouse move left {mousepos} {e.WindowLocation} {dx} {dy} {vec}");
 
                     KillSlew();    // all slews
 
@@ -112,20 +112,6 @@ namespace GLOFC.Controller
                 }
             }
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
-            {
-                KillSlew();
-
-                int dy = mousepos.Y - mouseDeltaPos.Y;
-
-                mouseDeltaPos = mousepos;
-
-                var tx = new Vector3(0, -dy * (1.0f / ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0);
-
-                //System.Diagnostics.Trace.WriteLine($"Controller3d right click translate {e.WindowLocation} -> {mousepos} prev {mouseDownPos} dy {dy} Button {e.Button.ToString()} {tx}");
-
-                Translate(tx);
-            }
-            else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
             {
                 //System.Diagnostics.Debug.WriteLine($"Mouse {MouseDownPos}");
                 KillSlew();
@@ -149,7 +135,23 @@ namespace GLOFC.Controller
                 else
                     Translate(new Vector3(translation.X, 0, translation.Y));
             }
+            else if (e.Button == (GLMouseEventArgs.MouseButtons.Left | GLMouseEventArgs.MouseButtons.Right))
+            {
+                if ( MatrixCalc.InPerspectiveMode)
+                {
+                    KillSlew();
 
+                    int dy = mousepos.Y - mouseDeltaPos.Y;
+
+                    mouseDeltaPos = mousepos;
+
+                    var tx = new Vector3(0, -dy * (1.0f / ZoomFactor) * MouseUpDownAmountAtZoom1PerPixel, 0);
+
+                    //System.Diagnostics.Trace.WriteLine($"Controller3d right click translate {e.WindowLocation} -> {mousepos} prev {mouseDownPos} dy {dy} Button {e.Button.ToString()} {tx}");
+
+                    Translate(tx);
+                }
+            }
         }
 
         /// <summary> Mouse Wheel handler - hook to GLWindowControl</summary>

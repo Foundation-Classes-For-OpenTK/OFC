@@ -74,7 +74,7 @@ namespace GLOFC.GL4.ShapeFactory
         }
 
         /// <summary>
-        /// Create Quad for bitmaps, scaling height to bitmap height/width ratio
+        /// Create Quad for bitmaps, scaling height to bitmap height/width ratio. (--,+-,++,-+) winding anticlockwise
         /// </summary>
         /// <param name="width">Width required</param>
         /// <param name="bitmapwidth">Width of bitmap</param>
@@ -82,49 +82,68 @@ namespace GLOFC.GL4.ShapeFactory
         /// <param name="rotationradians">Any rotation</param>
         /// <param name="pos">World position</param>
         /// <param name="scale">Any sizing for both axis</param>
+        /// <param name="ccw">Counter clock wise winding</param>
         /// <returns>Quad</returns>
 
-        public static Vector4[] CreateQuad(float width, int bitmapwidth, int bitmapheight, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f)
+        public static Vector4[] CreateQuad(float width, int bitmapwidth, int bitmapheight, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f, bool ccw = true)
         {
-            return CreateQuad(width, width * bitmapheight / bitmapwidth, rotationradians, pos, scale);
+            return CreateQuad(width, width * bitmapheight / bitmapwidth, rotationradians, pos, scale, ccw);
         }
 
         /// <summary>
-        /// Create Square Quad 
+        /// Create Square Quad (--,+-,++,-+) winding anticlockwise
         /// </summary>
         /// <param name="widthheight">Width and Height required</param>
         /// <param name="rotationradians">Any rotation</param>
         /// <param name="pos">World position</param>
         /// <param name="scale">Any sizing for both axis</param>
+        /// <param name="ccw">Counter clock wise winding</param>
         /// <returns>Quad</returns>
 
-        public static Vector4[] CreateQuad(float widthheight, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f)
+        public static Vector4[] CreateQuad(float widthheight, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f, bool ccw = true)
         {
-            return CreateQuad(widthheight, widthheight, rotationradians, pos, scale);
+            return CreateQuad(widthheight, widthheight, rotationradians, pos, scale, ccw);
         }
 
         /// <summary>
-        /// Create a Quad  (--,+-,++,-+) winding anticlockwise
+        /// Create a Quad (--,+-,++,-+) winding anticlockwise
         /// </summary>
         /// <param name="width">Width required</param>
         /// <param name="height">Height required</param>
         /// <param name="rotationradians">Any rotation</param>
         /// <param name="pos">World position</param>
         /// <param name="scale">Any sizing for both axis</param>
+        /// <param name="ccw">Counter clock wise winding</param>
         /// <returns>Quad</returns>
 
-        public static Vector4[] CreateQuad(float width, float height, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f)
+        public static Vector4[] CreateQuad(float width, float height, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f, bool ccw = true)
         {
             width = width / 2.0f * scale;
             height = height / 2.0f * scale;
 
-            Vector4[] vertices1 =
+
+            Vector4[] vertices1;
+
+            if (ccw)
             {
-                new Vector4(-width, 0, -height, 1.0f),          // -, -
-                new Vector4(+width, 0, -height, 1.0f),          // +, -
-                new Vector4(+width, 0, +height, 1.0f),          // +, +
-                new Vector4(-width, 0, +height, 1.0f),          // -, +
-            };
+                vertices1 = new Vector4[]
+                {
+                    new Vector4(-width, 0, -height, 1.0f),          // -, -
+                    new Vector4(+width, 0, -height, 1.0f),          // +, -
+                    new Vector4(+width, 0, +height, 1.0f),          // +, +
+                    new Vector4(-width, 0, +height, 1.0f),          // -, +
+                };
+            }
+            else
+            {
+                vertices1 = new Vector4[]
+                {
+                    new Vector4(-width, 0, -height, 1.0f),          // -, -
+                    new Vector4(-width, 0, +height, 1.0f),          // -, +
+                    new Vector4(+width, 0, +height, 1.0f),          // +, +
+                    new Vector4(+width, 0, -height, 1.0f),          // +, -
+                };
+            }
 
             GLStaticsVector4.RotPos(ref vertices1, rotationradians, pos);
 
@@ -159,7 +178,7 @@ namespace GLOFC.GL4.ShapeFactory
         }
 
         /// <summary> A Tex Quad (-+,++,+-,--) clockwise winding</summary>
-        static public Vector2[] TexQuad { get; set; } = new Vector2[]
+        static public Vector2[] TexQuadCW { get; set; } = new Vector2[]
         {
             new Vector2(0, 1.0f),
             new Vector2(1.0f, 1.0f),
@@ -167,8 +186,8 @@ namespace GLOFC.GL4.ShapeFactory
             new Vector2(0, 0),
         };
 
-        /// <summary> A Tex Quad Inverted (--,+-,++,-+) anticlockwise winding</summary>
-        static public Vector2[] TexQuadInv { get; set; } = new Vector2[]
+        /// <summary> A Tex Quad (--,+-,++,-+) anticlockwise winding</summary>
+        static public Vector2[] TexQuadCCW { get; set; } = new Vector2[]
         {
             new Vector2(0, 0),
             new Vector2(1.0f, 0),

@@ -34,8 +34,12 @@ namespace GLOFC.GL4.Controls
         /// <summary> Set to determine CRLF or LF is used</summary>
         public bool CRLF { get; set; } = true;
         /// <summary> Set true to enable multiline text box. 
-        /// Set false for a single line text box, in which case TextAlign then determines alignment in box (vert only)</summary>
-        public bool MultiLineMode { get; set; } = true;                      
+        /// Set false for a single line text box, in which case TextAlign then determines alignment in box (vert only)
+        /// Do this before control becomes active.
+        /// </summary>
+        public bool MultiLineMode { get; set; } = true;
+        /// <summary> Insert mode </summary>
+        public bool Insert { get { return insert; } set { insert = value; Invalidate(); } }
         /// <summary> Set true so when first character is types the text box is cleared </summary>
         public bool ClearOnFirstChar { get; set; } = false;                 
         /// <summary> Allow control character in text </summary>
@@ -232,23 +236,23 @@ namespace GLOFC.GL4.Controls
         /// Any current selection is removed.
         /// Note the type of end of line inserted is determined by the CRLF state, not by the form in the text
         /// </summary>
-        public void InsertTextWithCRLF(string text, bool insertinplace = false)        // any type of lf/cr combo, replaced by selected combo
+        public void InsertTextWithCRLF(string text, bool insertinplace = false)       
         {
             if (!ReadOnly)
             {
-                DeleteSelectionClearInt();         
+                DeleteSelectionClearInt();         // clear any selection
 
                 int cpos = 0;
                 while (true)
                 {
-                    if (cpos < text.Length)
+                    if (cpos < text.Length)         // if not at end of input text
                     {
-                        int nextlf = text.IndexOfAny(new char[] { '\r', '\n' }, cpos);
+                        int nextlf = text.IndexOfAny(new char[] { '\r', '\n' }, cpos);  // find crlf
 
-                        if (nextlf >= 0)
+                        if (nextlf >= 0)    // if found..
                         {
-                            InsertTextIntoLineInt(text.Substring(cpos, nextlf - cpos), insertinplace);
-                            InsertCRLFInt();
+                            InsertTextIntoLineInt(text.Substring(cpos, nextlf - cpos), insertinplace);      // insert up to it
+                            InsertCRLFInt();        // insert crlf
 
                             if (text[nextlf] == '\r')
                             {
@@ -258,14 +262,16 @@ namespace GLOFC.GL4.Controls
                             if (nextlf < text.Length && text[nextlf] == '\n')
                                 nextlf++;
 
-                            cpos = nextlf;
+                            cpos = nextlf;  // move on, after removeing crlf
                         }
                         else
                         {
-                            InsertTextIntoLineInt(text.Substring(cpos), insertinplace);
+                            InsertTextIntoLineInt(text.Substring(cpos), insertinplace); // just insert and stop
                             break;
                         }
                     }
+                    else
+                        break;
                 }
 
                 Finish(invalidate: true, clearselection: true, restarttimer: true);
@@ -287,10 +293,40 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <summary> Overwrite text at cursor position. No CR/LF is allowed in text.
+        /// Any current selection is removed.
+        /// </summary>
+        public void OverwriteText(string text)
+        {
+            if (!ReadOnly)
+            {
+                DeleteSelectionClearInt();      // clear any selection
+
+                for (int i = 0 ; i < text.Length; i++)
+                {
+                    int offsetin = cursorpos - cursorlinecpos;
+                    if (offsetin >= linelengths[cursorlineno] - lineendlengths[cursorlineno])
+                    {
+                        System.Diagnostics.Debug.WriteLine("At end, insert rest");
+                        InsertTextIntoLineInt(text.Substring(i));   // insert the rest
+                        break;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("Delete right and insert");
+                        DeleteInt();
+                        InsertTextIntoLineInt(text.Substring(i, 1));
+                    }
+                }
+
+                Finish(invalidate: true, clearselection: true, restarttimer: true);
+                OnTextChanged();
+            }
+        }
+
         /// <summary> Insert a line break (CR+LF or LF dependent on CRLF state) at cursor position. 
         /// Any current selection is removed.
         /// </summary>
-
         public void InsertCRLF()        // insert the selected cr/lf pattern
         {
             if (!ReadOnly)
@@ -348,27 +384,8 @@ namespace GLOFC.GL4.Controls
             {
                 if (!DeleteSelection())      // if we deleted a selection, no other action
                 {
-                    int offsetin = cursorpos - cursorlinecpos;
-
-                    if (offsetin < linelengths[cursorlineno] - lineendlengths[cursorlineno])   // simple delete
+                    if ( DeleteInt() )      // if we deleted something
                     {
-                        //System.Diagnostics.Debug.WriteLine("Text '" + text.EscapeControlChars() + "' cursor text '" + text.Substring(cursorpos).EscapeControlChars() + "'");
-                        text = text.Substring(0, cursorpos) + text.Substring(cursorpos + 1);
-                        linelengths[cursorlineno]--;
-                        MaxLineLength = -1;     // we don't know if its the max anymore
-
-                        Finish(invalidate: true, clearselection: true, restarttimer: true);
-                        OnTextChanged();
-                    }
-                    else if (cursorpos < Text.Length) // not at end of text
-                    {
-                        text = text.Substring(0, cursorpos) + text.Substring(cursorpos + lineendlengths[cursorlineno]); // remove lf/cr from out line
-                        linelengths[cursorlineno] += linelengths[cursorlineno + 1] - lineendlengths[cursorlineno];   // our line is whole of next less our lf/cr
-                        linelengths.RemoveAt(cursorlineno + 1);     // next line disappears
-                        lineendlengths.RemoveAt(cursorlineno);  // and we remove our line ends and keep the next one
-
-                        MaxLineLength = Math.Max(MaxLineLength, linelengths[cursorlineno] - lineendlengths[cursorlineno]);  // we made a bigger, line, see if its max
-
                         Finish(invalidate: true, clearselection: true, restarttimer: true);
                         OnTextChanged();
                     }
@@ -686,7 +703,7 @@ namespace GLOFC.GL4.Controls
                 Rectangle measurearea = usablearea;
                 measurearea.Width = 7000;        // big rectangle so we get all the text in
 
-                using (Bitmap bmp = new Bitmap(1, 1))
+                using (Bitmap bmp = new Bitmap(1, 1))           // make sure cursor is visible across the line
                 {
                     using (Graphics gr = Graphics.FromImage(bmp))
                     {
@@ -730,11 +747,6 @@ namespace GLOFC.GL4.Controls
                     //System.Diagnostics.Debug.WriteLine("Change state to {0}", newstate);
                     invalidate = true;
                 }
-
-                //if (horzscroller != null)
-                //{
-                //    //horzscroller.Padding = new Padding(0, 0, newstate ? ScrollBarWidth : 0, 0);
-                //}
 
                 if (vertscroller.Visible)
                     vertscroller.SetValueMaximumLargeChange(firstline, NumberOfLines-1 , CurrentDisplayableLines);
@@ -813,6 +825,32 @@ namespace GLOFC.GL4.Controls
             lineendlengths[cursorlineno] = CRLF ? 2 : 1;    // and set ours to CR type
             cursorpos = cursorlinecpos += linelengths[cursorlineno++];
             MaxLineLength = -1;         // no idea now, recalc thru Ensure.
+        }
+
+        private bool DeleteInt()            // delete to right, true if we did it
+        {
+            int offsetin = cursorpos - cursorlinecpos;
+
+            if (offsetin < linelengths[cursorlineno] - lineendlengths[cursorlineno])   // simple delete
+            {
+                //System.Diagnostics.Debug.WriteLine("Text '" + text.EscapeControlChars() + "' cursor text '" + text.Substring(cursorpos).EscapeControlChars() + "'");
+                text = text.Substring(0, cursorpos) + text.Substring(cursorpos + 1);
+                linelengths[cursorlineno]--;
+                MaxLineLength = -1;     // we don't know if its the max anymore
+                return true;
+            }
+            else if (cursorpos < Text.Length) // not at end of text
+            {
+                text = text.Substring(0, cursorpos) + text.Substring(cursorpos + lineendlengths[cursorlineno]); // remove lf/cr from out line
+                linelengths[cursorlineno] += linelengths[cursorlineno + 1] - lineendlengths[cursorlineno];   // our line is whole of next less our lf/cr
+                linelengths.RemoveAt(cursorlineno + 1);     // next line disappears
+                lineendlengths.RemoveAt(cursorlineno);  // and we remove our line ends and keep the next one
+
+                MaxLineLength = Math.Max(MaxLineLength, linelengths[cursorlineno] - lineendlengths[cursorlineno]);  // we made a bigger, line, see if its max
+                return true;
+            }
+            else
+                return false;
         }
 
         private bool DeleteSelectionClearInt()      // true if cleared a selection..
@@ -1065,37 +1103,38 @@ namespace GLOFC.GL4.Controls
 
                         if (cursorlineno == lineno && Enabled && Focused && cursorshowing && cursoroffset >= 0 )
                         {
-                            int cursorxpos = -1;
-
                             using (var sfmt = new StringFormat())
                             {
                                 sfmt.Alignment = StringAlignment.Near;
                                 sfmt.LineAlignment = StringAlignment.Near;
                                 sfmt.FormatFlags = StringFormatFlags.NoWrap;
 
-                                CharacterRange[] characterRanges = { new CharacterRange(0, Math.Max(cursoroffset, 1)) };   // if offset=0, 1 char and we use the left pos
+                                CharacterRange[] characterRanges = { new CharacterRange(cursoroffset, 1) };   // find character at cursor offset left and width
 
-                                string t = GetLineWithoutCRLF(cursorlinecpos, cursorlineno, displaystartx) + "a";
-                                //System.Diagnostics.Debug.WriteLine(" Offset '{0}' {1} {2} {3}", t.Substring(cursoroffset), cursoroffset, characterRanges[0].First, characterRanges[0].Length);
+                                string t = GetLineWithoutCRLF(cursorlinecpos, cursorlineno, displaystartx) + "i";       // add an extra character for the end, small
 
                                 sfmt.SetMeasurableCharacterRanges(characterRanges);
                                 var rect = gr.MeasureCharacterRanges(t, Font, usablearea, sfmt)[0].GetBounds(gr);    // ensure at least 1 char, need to do it in area otherwise it does not works:
 
+                                //System.Diagnostics.Debug.WriteLine(" Offset '{0}' {1} {2} {3} {4}", t.Substring(cursoroffset), cursoroffset, characterRanges[0].First, characterRanges[0].Length, rect);
                                 //using (Pen p = new Pen(this.ForeColor)) { gr.DrawRectangle(p, new Rectangle((int)rect.Left, (int)rect.Top, (int)rect.Width, (int)rect.Height)); }
 
-                                if (cursoroffset == 0)
-                                    cursorxpos = (int)rect.Left;
-                                else if (rect.Right < usablearea.Width)
-                                    cursorxpos = (int)rect.Right-1;
+                                int charwidth = (int)rect.Width;
+                                int cursorxpos = (int)rect.Left;
 
-                                //System.Diagnostics.Debug.WriteLine(" Measured {0} -> {1}", rect, cursorxpos);
-                            }
-
-                            if (cursorxpos >= 0)
-                            {
-                                using (Pen p = new Pen(this.ForeColor))
+                                if (insert == false)
                                 {
-                                    gr.DrawLine(p, new Point(cursorxpos, usablearea.Y), new Point(cursorxpos, usablearea.Y + Font.Height - 2));
+                                    using (Brush b = new SolidBrush(Color.FromArgb(64, this.ForeColor)))        // overwrite mode paints forecolor over the char with low alpha
+                                    {
+                                        gr.FillRectangle(b, new Rectangle(cursorxpos, usablearea.Y, charwidth, Font.Height - 2));
+                                    }
+                                }
+                                else
+                                {
+                                    using (Pen p = new Pen(this.ForeColor))     // a solid bar
+                                    {
+                                        gr.DrawLine(p, new Point(cursorxpos, usablearea.Y), new Point(cursorxpos, usablearea.Y + Font.Height - 2));
+                                    }
                                 }
                             }
                         }
@@ -1152,6 +1191,11 @@ namespace GLOFC.GL4.Controls
                         Copy();
                     else if (e.Shift)
                         Paste();
+                    else
+                    {
+                        insert = !insert;
+                        Invalidate();
+                    }
                 }
 
                 else if (e.KeyCode == System.Windows.Forms.Keys.F1)
@@ -1190,7 +1234,14 @@ namespace GLOFC.GL4.Controls
                 }
                 else if (!char.IsControl(e.KeyChar) || AllowControlChars)
                 {
-                    InsertText(new string(e.KeyChar, 1));
+                    if (insert)
+                    {
+                        InsertText(new string(e.KeyChar, 1));
+                    }
+                    else
+                    {
+                        OverwriteText(new string(e.KeyChar, 1));
+                    }
                 }
             }
         }
@@ -1449,6 +1500,8 @@ namespace GLOFC.GL4.Controls
         private GLScrollBar horzscroller;
 
         private GLContextMenu rightclickmenu;
+
+        private bool insert = true;
 
         //bool pone = false;      // debugging only
 

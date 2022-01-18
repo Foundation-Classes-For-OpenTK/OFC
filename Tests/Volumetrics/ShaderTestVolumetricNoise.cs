@@ -210,12 +210,12 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
                                         GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuad, numberpos,
+                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos,
                                                 rt, numberpos.Length));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b2",
                                         GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuad, numberpos2,
+                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos2,
                                                 rt, numberpos.Length));
             }
 

@@ -103,8 +103,11 @@ namespace GLOFC.Controller
 
         /// <summary> 
         /// Camera position in degrees
-        /// camera.x rotates around X, counterclockwise, = 0 (up), 90 = (forward), 180 (down)
-        /// camera.y rotates around Y, counterclockwise, = 0 (forward), 90 = (to left), 180 (back), -90 (to right)
+        /// * camera.x rotates around the x axis (elevation) and camera.y rotates around the y axis (aziumth)
+        /// * camera.x rotates around the x axis (elevation) and camera.y rotates around the y axis (aziumth)
+        /// * Elevation: 0 is straignt up, 180 is straight down, 90 is level
+        /// * Azimuth in opengl +Z towards the viewer: 180 is straight forward, 0 is straight back
+        /// * Azimuth in +Z away from the viewer: 0 is straight forward, 180 is straight back
         /// </summary>
         public Vector2 CameraDirection { get { return cameradir; } set { KillSlew(); cameradir = value; SetLookatPositionFromEye(value, EyeDistance); } }
 
@@ -131,6 +134,8 @@ namespace GLOFC.Controller
             if (newdir.X == 0 || newdir.X == 180)                // we can't rotate camera at these positions, reject
                 return false;
 
+            camerarot = camerarot.AddBoundedAngle(addzrot);
+            
            // System.Diagnostics.Debug.WriteLine($".. Rotate {CameraDirection} -> {newdir} {camerarot}");
 
             if (changelookat)

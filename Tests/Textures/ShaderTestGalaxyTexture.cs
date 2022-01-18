@@ -138,7 +138,7 @@ void main(void)
 
             rObjects.Add(items.Shader("TEX-NC"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rg,
-                        GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("gal"), new Vector3(0, 0, 0))
                         ));
 

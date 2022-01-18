@@ -241,7 +241,7 @@ namespace TestOpenTk
                 GLRenderState rq = GLRenderState.Quads();
                 
                 var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))  );
 
                 ri3.Execute(items.Shader("TEXOT"), renderState, mc);
@@ -286,7 +286,7 @@ namespace TestOpenTk
                 // TexQuadInv corrects for the inverted FB texture
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadInv,
+                        GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCCW,
                         new GLRenderDataTranslationRotationTexture(ctex, new Vector3(-15, 0, 10))
                         ));
             }
@@ -296,7 +296,7 @@ namespace TestOpenTk
                 GLRenderState rq = GLRenderState.Quads();
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))
                         ));
             }

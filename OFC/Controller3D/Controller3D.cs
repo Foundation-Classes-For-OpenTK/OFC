@@ -89,7 +89,7 @@ namespace GLOFC.Controller
             MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
 
             PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
-            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition,  PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
         }
 
@@ -119,7 +119,7 @@ namespace GLOFC.Controller
         {
             if (PosCamera.SetPositionCamera(s))
             {
-                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition,  PosCamera.CameraRotation);
                 return true;
             }
             else
@@ -130,7 +130,7 @@ namespace GLOFC.Controller
         public void ChangePerspectiveMode(bool on)
         {
             MatrixCalc.InPerspectiveMode = on;
-            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
         }
@@ -182,10 +182,17 @@ namespace GLOFC.Controller
 
             if (moved)
             {
-                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation);
+                MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraRotation);
             }
 
             return moved;
+        }
+
+        /// <summary> Recalculate matrix - only use if changed a fundamental in matrixcalc </summary>
+        public void RecalcMatrices()
+        {
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraRotation);
+            MatrixCalc.CalculateProjectionMatrix();
         }
 
 
@@ -196,7 +203,7 @@ namespace GLOFC.Controller
         {
             //System.Diagnostics.Debug.WriteLine("Controller3d Resize" + glwin.Size);
             MatrixCalc.ResizeViewPort(this,glwin.Size);
-            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraDirection, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraRotation); // non perspective viewport changes also can affect model matrix
             MatrixCalc.CalculateProjectionMatrix();
             glwin.Invalidate();
         }
@@ -214,12 +221,18 @@ namespace GLOFC.Controller
         }
         private protected override void RotateCamera(Vector2 dir, float addzrot, bool changelookat)
         {
-            PosCamera.RotateCamera(dir, addzrot, changelookat);
+            if (MatrixCalc.ModelAxisPositiveZAwayFromViewer)            
+                PosCamera.RotateCamera(dir, addzrot, changelookat);
+            else
+                PosCamera.RotateCamera(new Vector2(dir.X,-dir.Y), addzrot, changelookat); // if we are operating in gl mode (+Z to viewer), the axis is turned, so rotation needs inverting
         }
 
         private protected override void Translate(Vector3 dir)
         {
-            PosCamera.Translate(dir);
+            if (MatrixCalc.ModelAxisPositiveZAwayFromViewer)
+                PosCamera.Translate(dir);
+            else
+                PosCamera.Translate(new Vector3(-dir.X,dir.Y,dir.Z));   // if we are operating in gl mode, the axis is turned, so X translation needs inverting
         }
 
         private protected override void ZoomScale(bool dir)
