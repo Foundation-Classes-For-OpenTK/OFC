@@ -14,7 +14,9 @@
 
 using GLOFC.Utils;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
@@ -58,32 +60,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Is the scroll bar in horizonal mode? </summary>
         public bool HorizontalScroll { get; set; } = false;
 
-        /// <summary> Scroll bar arrow color</summary>
-        public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }       // of text
-        /// <summary> Scroll bar slider color </summary>
-        public Color SliderColor { get { return slidercolor; } set { slidercolor = value; Invalidate(); } }
-        /// <summary> Scroll bar arrow button color</summary>
-        public Color ArrowButtonColor { get { return arrowButtonColor; } set { arrowButtonColor = value; Invalidate(); } }
-        /// <summary> Scroll bar arrow button border color</summary>
-        public Color ArrowBorderColor { get { return arrowBorderColor; } set { arrowBorderColor = value; Invalidate(); } }
-        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowUpDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
-        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowDownDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
-        /// <summary> Scroll bar arrow color gradient scaling</summary>
-        public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
-        /// <summary> Scroll bar mouse over color</summary>
-        public Color MouseOverButtonColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
-        /// <summary> Scroll bar mouse pressed color</summary>
-        public Color MousePressedButtonColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
-        /// <summary> Scroll bar thumb button color</summary>
-        public Color ThumbButtonColor { get { return thumbButtonColor; } set { thumbButtonColor = value; Invalidate(); } }
-        /// <summary> Scroll bar thumb border color</summary>
-        public Color ThumbBorderColor { get { return thumbBorderColor; } set { thumbBorderColor = value; Invalidate(); } }
-        /// <summary> Scroll bar thumb color gradient scaling</summary>
-        public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
-        /// <summary> Scroll bar thumb color gradient angle</summary>
-        public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
+        /// <summary> Themeing control for the scrollbar </summary>
+        public GLScrollBarTheme Theme { get; set; }
 
         /// <summary> Disable autosize </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
@@ -91,6 +69,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds, scroll bar min and max</summary>
         public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos)
         {
+            Theme = new GLScrollBarTheme();
+            Theme.Parents.Add(this);
             thumbvalue = minimum = min;
             maximum = max;
             BorderColorNI = DefaultScrollbarBorderColor;
@@ -105,7 +85,7 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>
         protected override void Paint(Graphics gr)
         {
-            using (Brush br = new SolidBrush(this.SliderColor))
+            using (Brush br = new SolidBrush(this.Theme.SliderColor))
                 gr.FillRectangle(br, new Rectangle(sliderarea.Left, sliderarea.Top, sliderarea.Width, sliderarea.Height));
 
             DrawButton(gr, new Rectangle(decreasebuttonarea.Left, decreasebuttonarea.Top, decreasebuttonarea.Width, decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
@@ -127,15 +107,15 @@ namespace GLOFC.GL4.Controls
                 if (!thumbenable)
                     return;
 
-                c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ThumbButtonColor);
-                c2 = c1.Multiply(ThumbColorScaling);
-                angle = HorizontalScroll ? ((ThumbDrawAngle+90)%360) : ThumbDrawAngle;
+                c1 = (mousepressed == but) ? Theme.MousePressedButtonColor : ((mouseover == but) ? Theme.MouseOverButtonColor : Theme.ThumbButtonColor);
+                c2 = c1.Multiply(Theme.ThumbColorScaling);
+                angle = HorizontalScroll ? ((Theme.ThumbDrawAngle +90)%360) : Theme.ThumbDrawAngle;
             }
             else
             {
-                c1 = (mousepressed == but) ? MousePressedButtonColor : ((mouseover == but) ? MouseOverButtonColor : ArrowButtonColor);
-                c2 = c1.Multiply(ArrowColorScaling);
-                angle = (but == MouseOver.MouseOverDecrease) ? ArrowUpDrawAngle : ArrowDownDrawAngle;
+                c1 = (mousepressed == but) ? Theme.MousePressedButtonColor : ((mouseover == but) ? Theme.MouseOverButtonColor : Theme.ArrowButtonColor);
+                c2 = c1.Multiply(Theme.ArrowColorScaling);
+                angle = (but == MouseOver.MouseOverDecrease) ? Theme.ArrowUpDrawAngle : Theme.ArrowDownDrawAngle;
                 if ( HorizontalScroll)
                     angle = (angle - 90) % 360;
             }
@@ -145,7 +125,7 @@ namespace GLOFC.GL4.Controls
 
             if (Enabled && thumbenable && !isthumb)
             {
-                using (Pen p2 = new Pen(ArrowColor))
+                using (Pen p2 = new Pen(Theme.ArrowColor))
                 {
                     int hoffset = rect.Width / 3;
                     int voffset = rect.Height / 3;
@@ -190,7 +170,7 @@ namespace GLOFC.GL4.Controls
 
             if (but == mouseover || isthumb)
             {
-                using (Pen p = new Pen(isthumb ? ThumbBorderColor : ArrowBorderColor))
+                using (Pen p = new Pen(isthumb ? Theme.ThumbBorderColor : Theme.ArrowBorderColor))
                 {
                     Rectangle border = rect;
                     border.Width--; border.Height--;
@@ -483,21 +463,6 @@ namespace GLOFC.GL4.Controls
             Scroll?.Invoke(this, se);
         }
 
-        private Color slidercolor { get; set; } = DefaultScrollbarSliderColor;
-        private Color arrowcolor { get; set; } = DefaultScrollbarArrowColor;
-        private Color arrowButtonColor { get; set; } = DefaultScrollbarArrowButtonFaceColor;
-        private Color arrowBorderColor { get; set; } = DefaultScrollbarArrowButtonBorderColor;
-        private float arrowUpDrawAngle { get; set; } = 90F;
-        private float arrowDownDrawAngle { get; set; } = 270F;
-        private float arrowColorScaling { get; set; } = 0.5F;
-
-        private Color mouseOverColor { get; set; } = DefaultScrollbarMouseOverColor;
-        private Color mouseDownColor { get; set; } = DefaultScrollbarMouseDownColor;
-        private Color thumbButtonColor { get; set; } = DefaultScrollbarThumbColor;
-        private Color thumbBorderColor { get; set; } = DefaultScrollbarThumbBorderColor;
-        private float thumbColorScaling { get; set; } = 0.5F;
-        private float thumbDrawAngle { get; set; } = 0F;
-
         private Rectangle sliderarea;
         private Rectangle decreasebuttonarea;
         private Rectangle increasebuttonarea;
@@ -552,7 +517,65 @@ namespace GLOFC.GL4.Controls
         {
             HorizontalScroll = false;
         }
-
     }
+
+    /// <summary>
+    /// This is the themeing class for a scroll bar. One is attached to each scroll bar. It can be shared between multiple scroll bars on some controls.
+    /// </summary>
+    public class GLScrollBarTheme
+    {
+        /// <summary> Scroll bar theme parents</summary>
+        public List<GLScrollBar> Parents { get; set; } = new List<GLScrollBar>();
+
+        /// <summary> Scroll bar back color</summary>
+        public Color BackColor { get { return Parents?[0].BackColor ?? Color.Transparent; } set { if (Parents != null) { foreach (var x in Parents) x.BackColor = value; } } }       
+        /// <summary> Scroll bar arrow color</summary>
+        public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }    
+        /// <summary> Scroll bar slider color </summary>
+        public Color SliderColor { get { return slidercolor; } set { slidercolor = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow button color</summary>
+        public Color ArrowButtonColor { get { return arrowButtonColor; } set { arrowButtonColor = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow button border color</summary>
+        public Color ArrowBorderColor { get { return arrowBorderColor; } set { arrowBorderColor = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
+        public float ArrowUpDrawAngle { get { return arrowUpDrawAngle; } set { arrowUpDrawAngle = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
+        public float ArrowDownDrawAngle { get { return arrowDownDrawAngle; } set { arrowDownDrawAngle = value; Invalidate(); } }
+        /// <summary> Scroll bar arrow color gradient scaling</summary>
+        public float ArrowColorScaling { get { return arrowColorScaling; } set { arrowColorScaling = value; Invalidate(); } }
+        /// <summary> Scroll bar mouse over color</summary>
+        public Color MouseOverButtonColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
+        /// <summary> Scroll bar mouse pressed color</summary>
+        public Color MousePressedButtonColor { get { return mouseDownColor; } set { mouseDownColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb button color</summary>
+        public Color ThumbButtonColor { get { return thumbButtonColor; } set { thumbButtonColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb border color</summary>
+        public Color ThumbBorderColor { get { return thumbBorderColor; } set { thumbBorderColor = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb color gradient scaling</summary>
+        public float ThumbColorScaling { get { return thumbColorScaling; } set { thumbColorScaling = value; Invalidate(); } }
+        /// <summary> Scroll bar thumb color gradient angle</summary>
+        public float ThumbDrawAngle { get { return thumbDrawAngle; } set { thumbDrawAngle = value; Invalidate(); } }
+
+        private Color slidercolor { get; set; } = GLBaseControl.DefaultScrollbarSliderColor;
+        private Color arrowcolor { get; set; } = GLBaseControl.DefaultScrollbarArrowColor;
+        private Color arrowButtonColor { get; set; } = GLBaseControl.DefaultScrollbarArrowButtonFaceColor;
+        private Color arrowBorderColor { get; set; } = GLBaseControl.DefaultScrollbarArrowButtonBorderColor;
+        private float arrowUpDrawAngle { get; set; } = 90F;
+        private float arrowDownDrawAngle { get; set; } = 270F;
+        private float arrowColorScaling { get; set; } = 0.5F;
+        private Color mouseOverColor { get; set; } = GLBaseControl.DefaultScrollbarMouseOverColor;
+        private Color mouseDownColor { get; set; } = GLBaseControl.DefaultScrollbarMouseDownColor;
+        private Color thumbButtonColor { get; set; } = GLBaseControl.DefaultScrollbarThumbColor;
+        private Color thumbBorderColor { get; set; } = GLBaseControl.DefaultScrollbarThumbBorderColor;
+        private float thumbColorScaling { get; set; } = 0.5F;
+        private float thumbDrawAngle { get; set; } = 0F;
+
+        private void Invalidate()
+        {
+            foreach (var x in Parents.DefaultIfEmpty())
+                x.Invalidate();
+        }
+    }
+
 }
 

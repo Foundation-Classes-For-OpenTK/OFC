@@ -296,6 +296,7 @@ namespace TestOpenTk
             {
                 GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan2", new Rectangle(col3, 5, 190, 190));
                 spb1.ScrollBackColor = Color.Blue;
+                spb1.ScrollBarTheme.ThumbButtonColor = Color.Red;
                 spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);

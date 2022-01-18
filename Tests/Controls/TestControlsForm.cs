@@ -307,6 +307,8 @@ namespace TestOpenTk
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     lb1.ShowFocusBox = true;
+                    lb1.ScrollBarTheme.SliderColor = Color.AliceBlue;
+                    lb1.ScrollBarTheme.ThumbButtonColor = Color.Blue;
                     //lb1.FitToItemsHeight = false;
                     pform.Add(lb1);
                     lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };

@@ -82,33 +82,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Show focus box around item instead of highlight </summary>
         public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }
 
-        // scroll bar
-        /// <summary> Scroll bar arrow color</summary>
-        public Color ArrowColor { get { return scrollbar.ArrowColor; } set { scrollbar.ArrowColor = value; } }       // of text
-        /// <summary> Scroll bar slider color</summary>
-        public Color SliderColor { get { return scrollbar.SliderColor; } set { scrollbar.SliderColor = value; } }
-        /// <summary> Scroll bar arrow button color</summary>
-        public Color ArrowButtonColor { get { return scrollbar.ArrowButtonColor; } set { scrollbar.ArrowButtonColor = value; } }
-        /// <summary> Scroll bar arrow button border color</summary>
-        public Color ArrowBorderColor { get { return scrollbar.ArrowBorderColor; } set { scrollbar.ArrowBorderColor = value; } }
-        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowUpDrawAngle { get { return scrollbar.ArrowUpDrawAngle; } set { scrollbar.ArrowUpDrawAngle = value; } }
-        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowDownDrawAngle { get { return scrollbar.ArrowDownDrawAngle; } set { scrollbar.ArrowDownDrawAngle = value; } }
-        /// <summary> Scroll bar arrow color gradient scaling</summary>
-        public float ArrowColorScaling { get { return scrollbar.ArrowColorScaling; } set { scrollbar.ArrowColorScaling = value; } }
-        /// <summary> Scroll bar mouse over color</summary>
-        public Color MouseOverButtonColor { get { return scrollbar.MouseOverButtonColor; } set { scrollbar.MouseOverButtonColor = value; } }
-        /// <summary> Scroll bar mouse pressed color</summary>
-        public Color MousePressedButtonColor { get { return scrollbar.MousePressedButtonColor; } set { scrollbar.MousePressedButtonColor = value; } }
-        /// <summary> Scroll bar thumb button color</summary>
-        public Color ThumbButtonColor { get { return scrollbar.ThumbButtonColor; } set { scrollbar.ThumbButtonColor = value; } }
-        /// <summary> Scroll bar thumb border color</summary>
-        public Color ThumbBorderColor { get { return scrollbar.ThumbBorderColor; } set { scrollbar.ThumbBorderColor = value; } }
-        /// <summary> Scroll bar thumb color gradient scaling</summary>
-        public float ThumbColorScaling { get { return scrollbar.ThumbColorScaling; } set { scrollbar.ThumbColorScaling = value; } }
-        /// <summary> Scroll bar thumb color gradient angle</summary>
-        public float ThumbDrawAngle { get { return scrollbar.ThumbDrawAngle; } set { scrollbar.ThumbDrawAngle = value; } }
+        /// <summary> Scroll bar theme</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return scrollbar.Theme; } }
 
         /// <summary> Get scroll bar width </summary>
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }

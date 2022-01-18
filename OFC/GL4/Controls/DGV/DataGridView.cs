@@ -131,7 +131,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Set upper left cell back color</summary>
         public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
 
-        public Color ScrollBar
+        /// <summary> Scroll bar theme</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return vertscroll.Theme; } }
 
         // pixel positions
         /// <summary> Find pixel left position of column</summary>
@@ -172,12 +173,16 @@ namespace GLOFC.GL4.Controls
         {
 
             int sbwidth = 16;
+            
             vertscroll = new GLVerticalScrollBar(name + "_VSB", new Rectangle(0, 0, sbwidth, 10), 0, 100);
             vertscroll.Dock = DockingType.Right;
             vertscroll.Scroll += (sb, se) => { contentpanel.FirstDisplayIndex = se.NewValue; };
             horzscroll = new GLHorizontalScrollBar(name + "_HSB", new Rectangle(0, 0, 10, sbwidth), 0, 100);
             horzscroll.Dock = DockingType.Bottom;
             horzscroll.Scroll += (sb, se) => { colheaderpanel.HorzScroll = contentpanel.HorzScroll = se.NewValue; };
+            horzscroll.Theme = vertscroll.Theme;        // use one theme between them
+            vertscroll.Theme.Parents.Add(horzscroll);
+
             rowheaderpanel = new GLDataGridViewRowHeaderPanel(name + "_RHP", location);
             rowheaderpanel.Dock = DockingType.Left;
             contentpanel = new GLDataGridViewContentPanel(name + "_CP", rowheaderpanel, location);

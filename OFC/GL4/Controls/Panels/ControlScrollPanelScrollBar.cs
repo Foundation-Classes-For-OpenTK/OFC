@@ -26,33 +26,9 @@ namespace GLOFC.GL4.Controls
     {
         /// <summary> Scroll panelback color</summary>
         public Color ScrollBackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
-        /// <summary> Scroll bar arrow color</summary>
 
-        public Color ArrowColor { get { return vertscrollbar.ArrowColor; } set { horzscrollbar.ArrowColor = vertscrollbar.ArrowColor = value;  } }       // of text
-        /// <summary> Scroll bar slider color </summary>
-        public Color SliderColor { get { return vertscrollbar.SliderColor; } set { horzscrollbar.SliderColor = vertscrollbar.SliderColor = value;  } }
-        /// <summary> Scroll bar arrow button color</summary>
-        public Color ArrowButtonColor { get { return vertscrollbar.ArrowButtonColor; } set { horzscrollbar.ArrowButtonColor = vertscrollbar.ArrowButtonColor = value; } }
-        /// <summary> Scroll bar arrow button border color</summary>
-        public Color ArrowBorderColor { get { return vertscrollbar.ArrowBorderColor; } set { horzscrollbar.ArrowBorderColor = vertscrollbar.ArrowBorderColor = value;  } }
-        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowUpDrawAngle { get { return vertscrollbar.ArrowUpDrawAngle; } set { horzscrollbar.ArrowUpDrawAngle = vertscrollbar.ArrowUpDrawAngle = value;  } }
-        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowDownDrawAngle { get { return vertscrollbar.ArrowDownDrawAngle; } set { horzscrollbar.ArrowDownDrawAngle = vertscrollbar.ArrowDownDrawAngle = value;  } }
-        /// <summary> Scroll bar arrow color gradient scaling</summary>        
-        public float ArrowColorScaling { get { return vertscrollbar.ArrowColorScaling; } set { horzscrollbar.ArrowColorScaling = vertscrollbar.ArrowColorScaling = value;  } }
-        /// <summary> Scroll bar mouse over color</summary>
-        public Color MouseOverButtonColor { get { return vertscrollbar.MouseOverButtonColor; } set { horzscrollbar.MouseOverButtonColor = vertscrollbar.MouseOverButtonColor = value;  } }
-        /// <summary> Scroll bar mouse pressed color</summary>
-        public Color MousePressedButtonColor { get { return vertscrollbar.MousePressedButtonColor; } set { horzscrollbar.MousePressedButtonColor = vertscrollbar.MousePressedButtonColor = value;  } }
-        /// <summary> Scroll bar thumb button color</summary>
-        public Color ThumbButtonColor { get { return vertscrollbar.ThumbButtonColor; } set { horzscrollbar.ThumbButtonColor = vertscrollbar.ThumbButtonColor = value;  } }
-        /// <summary> Scroll bar thumb border color</summary>
-        public Color ThumbBorderColor { get { return vertscrollbar.ThumbBorderColor; } set { horzscrollbar.ThumbBorderColor = vertscrollbar.ThumbBorderColor = value;  } }
-        /// <summary> Scroll bar thumb color gradient scaling</summary>
-        public float ThumbColorScaling { get { return vertscrollbar.ThumbColorScaling; } set { horzscrollbar.ThumbColorScaling = vertscrollbar.ThumbColorScaling = value;  } }
-        /// <summary> Scroll bar thumb color gradient angle</summary>
-        public float ThumbDrawAngle { get { return vertscrollbar.ThumbDrawAngle; } set { horzscrollbar.ThumbDrawAngle = vertscrollbar.ThumbDrawAngle = value;  } }
+        /// <summary> Scroll bar theme</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return vertscrollbar.Theme; } }
 
         /// <summary> Controls of panel in Z order</summary>
         public override IList<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
@@ -92,6 +68,9 @@ namespace GLOFC.GL4.Controls
             horzscrollbar.Height =ScrollBarWidth;
             base.Add(horzscrollbar);     // last added always goes to top of z-order
             horzscrollbar.Scroll += HScrolled;
+
+            horzscrollbar.Theme = vertscrollbar.Theme;                  // set theme for horz scroll bar to same as vertical scroll bar
+            vertscrollbar.Theme.Parents.Add(horzscrollbar);             // and add it to Parents so when it gets changed, we invalidate both
         }
 
         /// <summary> Empty Construct</summary>

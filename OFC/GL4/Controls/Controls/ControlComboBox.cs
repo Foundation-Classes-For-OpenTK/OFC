@@ -76,33 +76,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Stop responding to up/down/left/right directly. Return will still work</summary>
         public bool DisableChangeKeys { get; set; } = false;
 
-        // scroll bar
-        /// <summary> Scroll bar arrow color</summary>
-        public Color ArrowColor { get { return dropdownbox.ArrowColor; } set { dropdownbox.ArrowColor = value; } }       // of text
-        /// <summary> Scroll bar slider color</summary>
-        public Color SliderColor { get { return dropdownbox.SliderColor; } set { dropdownbox.SliderColor = value; } }
-        /// <summary> Scroll bar arrow button color</summary>
-        public Color ArrowButtonColor { get { return dropdownbox.ArrowButtonColor; } set { dropdownbox.ArrowButtonColor = value; } }
-        /// <summary> Scroll bar arrow button border color</summary>
-        public Color ArrowBorderColor { get { return dropdownbox.ArrowBorderColor; } set { dropdownbox.ArrowBorderColor = value; } }
-        /// <summary> Scroll bar arrow up button gradient fill draw angle</summary>
-        public float ArrowUpDrawAngle { get { return dropdownbox.ArrowUpDrawAngle; } set { dropdownbox.ArrowUpDrawAngle = value; } }
-        /// <summary> Scroll bar arrow down button gradient fill draw angle</summary>
-        public float ArrowDownDrawAngle { get { return dropdownbox.ArrowDownDrawAngle; } set { dropdownbox.ArrowDownDrawAngle = value; } }
-        /// <summary> Scroll bar arrow color gradient scaling</summary>
-        public float ArrowColorScaling { get { return dropdownbox.ArrowColorScaling; } set { dropdownbox.ArrowColorScaling = value; } }
-        /// <summary> Scroll bar mouse over color</summary>
-        public Color MouseOverButtonColor { get { return dropdownbox.MouseOverButtonColor; } set { dropdownbox.MouseOverButtonColor = value; } }
-        /// <summary> Scroll bar mouse pressed color</summary>
-        public Color MousePressedButtonColor { get { return dropdownbox.MousePressedButtonColor; } set { dropdownbox.MousePressedButtonColor = value; } }
-        /// <summary> Scroll bar button color</summary>
-        public Color ThumbButtonColor { get { return dropdownbox.ThumbButtonColor; } set { dropdownbox.ThumbButtonColor = value; } }
-        /// <summary> Scroll bar thumb border color</summary>
-        public Color ThumbBorderColor { get { return dropdownbox.ThumbBorderColor; } set { dropdownbox.ThumbBorderColor = value; } }
-        /// <summary> Scroll bar thumb color gradient scaling</summary>
-        public float ThumbColorScaling { get { return dropdownbox.ThumbColorScaling; } set { dropdownbox.ThumbColorScaling = value; } }
-        /// <summary> Scroll bar thumb color gradient angle</summary>
-        public float ThumbDrawAngle { get { return dropdownbox.ThumbDrawAngle; } set { dropdownbox.ThumbDrawAngle = value; } }
+        /// <summary> Scroll bar theme</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return dropdownbox.ScrollBarTheme; } }
 
         /// <summary> Construct with name, bounds and list of items</summary>
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)

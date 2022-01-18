@@ -177,6 +177,14 @@ namespace TestOpenTk
                 dgv.DefaultCellStyle.BackColor = Color.FromArgb(200, 40, 40, 40);
                 dgv.DefaultAltRowCellStyle.BackColor = Color.FromArgb(200, 50, 50, 50);
 
+                dgv.ScrollBarTheme.BackColor = Color.Transparent;
+                dgv.ScrollBarTheme.SliderColor = Color.FromArgb(0, 64, 64, 64);
+                dgv.ScrollBarTheme.ThumbButtonColor = Color.DarkOrange;
+                dgv.ScrollBarTheme.MouseOverButtonColor = Color.Orange;
+                dgv.ScrollBarTheme.MousePressedButtonColor = Color.FromArgb(255, 255, 192, 0);
+                dgv.ScrollBarTheme.ArrowButtonColor = Color.Transparent;
+                dgv.ScrollBarTheme.ArrowColor = Color.DarkOrange;
+
                 col2.SortCompare = GLDataGridViewSorts.SortCompareNumeric;
 
                 for (int i = 0; i < 200; i++)
