@@ -31,6 +31,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> List of rows </summary>
         public IList<GLDataGridViewRow> Rows { get { return rows.AsReadOnly(); } }
 
+
         /// <summary> Sort column, -1 means not sorted. Note adding new rows causes the sort to be incorrect, but this value will maintain its value </summary>
         public int SortColumn { get; set; } = -1;
         /// <summary> Sort ascending (true) or decending (false)</summary>
@@ -39,11 +40,19 @@ namespace GLOFC.GL4.Controls
         /// <summary> Scroll bar width </summary>
         public int ScrollBarWidth { get { return vertscroll.Width; } set { vertscroll.Width = horzscroll.Height = value; ContentInvalidateLayout(); } }
 
+
         /// <summary> Default cell style. Applied unless overridden by an individual row DefaultCellStyle or by a cell's cell style. </summary>
         public GLDataGridViewCellStyle DefaultCellStyle { get { return defaultcellstyle; } set { defaultcellstyle = value; ContentInvalidateLayout(); } }
         /// <summary> Default alternate row cell style. The DefaultCellStyle will be applied if this is not changed.
         /// Applied unless overridden by an individual row DefaultCellStyle or by a cell's cell style. </summary>
         public GLDataGridViewCellStyle DefaultAltRowCellStyle { get { return defaultaltrowcellstyle; } set { defaultaltrowcellstyle = value; ContentInvalidateLayout(); } }
+
+
+        /// <summary> Enable Horizontal scroll bar visibility </summary>
+        public bool HorizontalScrollVisible { get { return horzscroll.Visible; } set { horzscroll.Visible = value; ContentInvalidateLayout(); } }
+        /// <summary> Enable Vertical scroll bar visibility </summary>
+        public bool VerticalScrollVisible { get { return vertscroll.Visible; } set { vertscroll.Visible = value; ContentInvalidateLayout(); } }
+
 
         /// <summary> Column Fill Mode Types</summary>
         public enum ColFillMode {
@@ -67,6 +76,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Allow user to click on column to sort </summary>
         public bool AllowUserToSortColumns { get; set; } = true;
 
+
         /// <summary> Default style for row headers. A Row header can override this with its own HeaderStyle </summary>
         public GLDataGridViewCellStyle DefaultRowHeaderStyle { get { return rowheaderstyle; } set { rowheaderstyle = value; ContentInvalidateLayout(); } }
         /// <summary> Row header show/no show</summary>
@@ -85,6 +95,7 @@ namespace GLOFC.GL4.Controls
         public bool AllowUserToDragSelectCells { get; set; } = true;
         /// <summary> Clicking on a cell in a row selects the whole row </summary>
         public bool SelectCellSelectsRow { get; set; } = false;
+
 
         /// <summary> Callback when a row is selected or unselected (bool indicates)</summary>
         public Action<GLDataGridViewRow, bool> SelectedRow { get; set; } = null;
@@ -119,6 +130,8 @@ namespace GLOFC.GL4.Controls
         public int CellBorderWidth { get { return cellborderwidth; } set { cellborderwidth = value; ContentInvalidateLayout(); } }
         /// <summary> Set upper left cell back color</summary>
         public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
+
+        public Color ScrollBar
 
         // pixel positions
         /// <summary> Find pixel left position of column</summary>
@@ -403,7 +416,14 @@ namespace GLOFC.GL4.Controls
             UpdateScrollBar();
         }
 
-        /// <summary> Adjust the column width to newwidth (in pixels). Will update FillWidth if required. </summary>
+        /// <summary> Clear the DGV </summary>
+        public void Clear()
+        {
+            rows.Clear();
+            ContentInvalidateLayout();
+        }
+
+            /// <summary> Adjust the column width to newwidth (in pixels). Will update FillWidth if required. </summary>
         public void SetColumnWidth(int column,int newwidth)
         {
            // System.Diagnostics.Debug.WriteLine($"Col {index} delta {newwidth}");
@@ -539,9 +559,7 @@ namespace GLOFC.GL4.Controls
             rowheaderpanel.Width = rowheaderwidth + cellborderwidth;
             rowheaderpanel.DockingMargin = new MarginType(0, ColumnHeaderEnable ? colheaderpanel.Height : 0, 0, 0);
             topleftpanel.Size = new Size(rowheaderwidth + cellborderwidth, columnheaderheight + cellborderwidth);
-            colheaderpanel.BackColor = BackColor;
-            rowheaderpanel.BackColor = BackColor;
-            contentpanel.BackColor = BackColor;
+            colheaderpanel.BackColor = rowheaderpanel.BackColor = topleftpanel.BackColor = contentpanel.BackColor = BackColor;
 
             base.PerformRecursiveLayout();      // do layout on children.
 

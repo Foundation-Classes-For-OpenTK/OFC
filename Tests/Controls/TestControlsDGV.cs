@@ -135,7 +135,6 @@ namespace TestOpenTk
 
             pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(10, 10, 700, 800));
 
-
             displaycontrol.Add(pform);
 
             if (true)
@@ -164,6 +163,19 @@ namespace TestOpenTk
                 dgv.AddColumn(col1);
                 dgv.AddColumn(col2);
                 dgv.AddColumn(col3);
+
+                pform.BackColor = Color.FromArgb(128, 128, 128, 128);
+                pform.ForeColor = Color.DarkOrange;
+
+                dgv.BackColor = Color.FromArgb(128, 60, 60, 0);
+                dgv.DefaultColumnHeaderStyle.ForeColor = dgv.DefaultRowHeaderStyle.ForeColor =
+                dgv.DefaultCellStyle.ForeColor = dgv.DefaultAltRowCellStyle.ForeColor = Color.DarkOrange;
+
+                dgv.UpperLeftBackColor =
+                dgv.DefaultColumnHeaderStyle.BackColor = dgv.DefaultRowHeaderStyle.BackColor =  Color.FromArgb(192, 64, 64, 64);
+
+                dgv.DefaultCellStyle.BackColor = Color.FromArgb(200, 40, 40, 40);
+                dgv.DefaultAltRowCellStyle.BackColor = Color.FromArgb(200, 50, 50, 50);
 
                 col2.SortCompare = GLDataGridViewSorts.SortCompareNumeric;
 
@@ -470,6 +482,19 @@ namespace TestOpenTk
         private void buttonRowHeader_Click(object sender, EventArgs e)
         {
             dgv.RowHeaderEnable = !dgv.RowHeaderEnable;
+        }
+
+        private void buttonHorzScroll_Click(object sender, EventArgs e)
+        {
+            dgv.HorizontalScrollVisible = !dgv.HorizontalScrollVisible;
+            buttonHorzScroll.ForeColor = dgv.HorizontalScrollVisible ? Color.Green : Color.Red;
+        }
+
+        private void buttonVertScroll_Click(object sender, EventArgs e)
+        {
+            dgv.VerticalScrollVisible = !dgv.VerticalScrollVisible;
+            buttonVertScroll.ForeColor = dgv.VerticalScrollVisible ? Color.Green : Color.Red;
+
         }
     }
 }

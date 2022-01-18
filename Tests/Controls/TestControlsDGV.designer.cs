@@ -56,6 +56,8 @@
             this.buttonDumpSelection = new System.Windows.Forms.Button();
             this.buttonRowHeader = new System.Windows.Forms.Button();
             this.buttonColHeader = new System.Windows.Forms.Button();
+            this.buttonHorzScroll = new System.Windows.Forms.Button();
+            this.buttonVertScroll = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // glControlContainer
@@ -128,7 +130,7 @@
             // 
             // buttonSizeA
             // 
-            this.buttonSizeA.Location = new System.Drawing.Point(854, 211);
+            this.buttonSizeA.Location = new System.Drawing.Point(854, 226);
             this.buttonSizeA.Name = "buttonSizeA";
             this.buttonSizeA.Size = new System.Drawing.Size(99, 23);
             this.buttonSizeA.TabIndex = 1;
@@ -138,7 +140,7 @@
             // 
             // buttonSizeB
             // 
-            this.buttonSizeB.Location = new System.Drawing.Point(959, 211);
+            this.buttonSizeB.Location = new System.Drawing.Point(959, 226);
             this.buttonSizeB.Name = "buttonSizeB";
             this.buttonSizeB.Size = new System.Drawing.Size(99, 23);
             this.buttonSizeB.TabIndex = 1;
@@ -334,6 +336,26 @@
             this.buttonColHeader.UseVisualStyleBackColor = true;
             this.buttonColHeader.Click += new System.EventHandler(this.buttonColHeader_Click);
             // 
+            // buttonHorzScroll
+            // 
+            this.buttonHorzScroll.Location = new System.Drawing.Point(854, 197);
+            this.buttonHorzScroll.Name = "buttonHorzScroll";
+            this.buttonHorzScroll.Size = new System.Drawing.Size(99, 23);
+            this.buttonHorzScroll.TabIndex = 1;
+            this.buttonHorzScroll.Text = "Tog Horz Scroll";
+            this.buttonHorzScroll.UseVisualStyleBackColor = true;
+            this.buttonHorzScroll.Click += new System.EventHandler(this.buttonHorzScroll_Click);
+            // 
+            // buttonVertScroll
+            // 
+            this.buttonVertScroll.Location = new System.Drawing.Point(961, 197);
+            this.buttonVertScroll.Name = "buttonVertScroll";
+            this.buttonVertScroll.Size = new System.Drawing.Size(99, 23);
+            this.buttonVertScroll.TabIndex = 1;
+            this.buttonVertScroll.Text = "Tog Vert Scroll";
+            this.buttonVertScroll.UseVisualStyleBackColor = true;
+            this.buttonVertScroll.Click += new System.EventHandler(this.buttonVertScroll_Click);
+            // 
             // TestControlsDGV
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -342,6 +364,8 @@
             this.Controls.Add(this.buttonToggleFillMode);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.buttonColHeader);
+            this.Controls.Add(this.buttonVertScroll);
+            this.Controls.Add(this.buttonHorzScroll);
             this.Controls.Add(this.buttonRowHeader);
             this.Controls.Add(this.buttonDumpSelection);
             this.Controls.Add(this.button3);
@@ -403,6 +427,8 @@
         private System.Windows.Forms.Button buttonDumpSelection;
         private System.Windows.Forms.Button buttonRowHeader;
         private System.Windows.Forms.Button buttonColHeader;
+        private System.Windows.Forms.Button buttonHorzScroll;
+        private System.Windows.Forms.Button buttonVertScroll;
     }
 }
 
