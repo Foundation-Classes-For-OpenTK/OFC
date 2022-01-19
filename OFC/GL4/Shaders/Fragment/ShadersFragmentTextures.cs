@@ -13,21 +13,26 @@
  * governing permissions and limitations under the License.
  */
 
-
-using System;
 using System.Drawing;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Fragment
 {
-    // Pipeline shader for a 2D texture bound with 2D vertexes
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      tex binding X : textureObject : 2D texture
+    /// <summary>
+    /// Shader for a 2D texture bound with 2D vertexes
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      texture : 2D texture bound on binding point
+    /// </summary>
 
     public class GLPLFragmentShaderTexture : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="binding">Binding of texture</param>
         public GLPLFragmentShaderTexture(int binding = 1)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
@@ -52,22 +57,29 @@ void main(void)
         }
 
     }
-
-    // Pipeline shader for a 2D array texture, discard if alpha is too small or imageno < 0
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      location 1 : flat in imageno to select, <0 discard
+    /// <summary>
+    /// Shader for a 2D array texture with discard
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      location 1 : flat in imageno to select, less than 0 discard
+    ///      texture : 2D texture bound on binding point
+    /// </summary>
 
     public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineComponentShadersBase
     {
-        // alphazerocolor allows a default colour to show for zero alpha samples
+        // alphazerocolor 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="binding">Binding of texture</param>
+        /// <param name="alphazerocolour">Allows a default colour to show for low alpha samples</param>
         public GLPLFragmentShaderTexture2DDiscard(int binding = 1, Color? alphazerocolour = null)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding, alphazerocolour != null), constvalues: new object[] { "alphacolor", alphazerocolour }, auxname: GetType().Name);
         }
 
-        public string Code(int binding, bool alphacolor)
+        private string Code(int binding, bool alphacolor)
         {
             return
 @"
@@ -92,7 +104,7 @@ void main(void)
         {
 "
 +
-((!alphacolor) ? @"discard;" : @"color=alphacolor;")
+(!alphacolor ? @"discard;" : @"color=alphacolor;")
 +
  @"           
         }
@@ -103,35 +115,39 @@ void main(void)
 }
 ";
         }
-
     }
 
-    // Pipeline shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
-    // discard if alpha is too small or replace with colour
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      location 2 : vs_in.vs_instance - instance id/texture offset. 
-    //      location 3 : alpha (if alpha blend enabled) float
-    //      tex binding : textureObject : 2D texture
+    /// <summary>
+    /// Shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
+    /// discard if alpha is too small or replace with colour
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      location 2 : vs_in.vs_instance - instance id to pick texture (added by offset in constructor)E. 
+    ///      location 3 : alpha (if alpha blend enabled) float
+    ///      tex binding : textureObject : 2D Array texture
+    /// </summary>
 
     public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineComponentShadersBase
     {
-        // alphablend allows alpha to be passed from the vertex shader to this
-        // alphazerocolor allows a default colour to show for zero alpha samples
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="offset">Ofsset into texture array as base</param>
+        /// <param name="binding">Texture binding point</param>
+        /// <param name="alphablend">Allows alpha to be passed from the vertex shader to this</param>
+        /// <param name="alphazerocolour">Allows a default colour to show for zero alpha samples</param>
 
         public GLPLFragmentShaderTexture2DIndexed(int offset, int binding = 1, bool alphablend = false, Color? alphazerocolour = null)
         {
             CompileLink(ShaderType.FragmentShader, Code(alphazerocolour != null), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "alphacolor", alphazerocolour }, auxname: GetType().Name);
         }
 
-        public string Code(bool alphacolor)
+        private string Code(bool alphacolor)
         {
             return
 @"
 #version 450 core
 layout (location=0) in vec2 vs_textureCoordinate;
-
-// supports up to four texture bindings
 const int texbinding = 1;
 layout (binding=texbinding) uniform sampler2DArray textureObject2D;
 
@@ -159,7 +175,7 @@ void main(void)
     {
 "
 +
-((!alphacolor) ? @"discard;" : @"color=alphacolor;")
+(!alphacolor ? @"discard;" : @"color=alphacolor;")
 +
  @"
     }
@@ -172,21 +188,29 @@ void main(void)
 
     }
 
-    // Pipeline shader for an array of 2D Array textures.
-    // vs_instance input is used to pick array and 2d depth image
-    // Discard if small alpha
-    // Use with GLVertexShaderTextureMatrixTransform
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      location 2 : vs_in.vs_instance - instance id/texture offset. 
-    //                  bits 0..15 = image index in texture, bits 16.. texture index in bindings array
-    //      location 3 : alpha (if alpha blend enabled) float
-    //      tex binding [N..] : textureObject : 2D textures, multiple ones. select
+    /// <summary>
+    /// Shader for an array of 2D Array textures.
+    /// vs_instance input is used to pick array and 2d depth image
+    /// Discard if small alpha
+    /// Use with GLVertexShaderTextureMatrixTransform
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      location 2 : vs_in.vs_instance - instance id/texture offset. 
+    ///                  bits 0..15 = image index in texture array, bits 16.. texture array to pick 
+    ///      location 3 : alpha (if alpha blend enabled) float
+    ///      tex binding [N..] : textureObject : 2D textures, multiple ones. select
+    /// </summary>
 
-    public class GLPLFragmentShaderTexture2DIndexedMulti : GLShaderPipelineComponentShadersBase
+    public class GLPLFragmentShaderTexture2DIndexMulti : GLShaderPipelineComponentShadersBase
     {
-        // alphablend allows alpha to be passed from the vertex shader to this
-        public GLPLFragmentShaderTexture2DIndexedMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  // 16 is the opengl minimum textures supported
+        /// <summary>
+        /// Constructor. 
+        /// </summary>
+        /// <param name="offset">Image offset in all texture array to start from</param>
+        /// <param name="binding">Texture binding start for first of the 2D Textures bound</param>
+        /// <param name="alphablend">Alpha blend enable, allow alpha to be passed from vertex shader to this shader</param>
+        /// <param name="maxtextures">No of textures. Note 16 is the opengl minimum textures supported</param>
+        public GLPLFragmentShaderTexture2DIndexMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  
         {
             CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
         }
@@ -236,21 +260,29 @@ void main(void)
 
     }
 
-    // Pipeline shader, 2d texture array (0,1), 2d o-ords, with blend between them via a uniform
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      location 30 : uniform float blend between the two texture
+    ///<summary>
+    /// Shader, 2d texture array (0,1), 2d co-ords, with blend between them via a uniform
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    ///      location 30 : uniform float blend between the two texture
+    ///</summary>
 
     public class GLPLFragmentShaderTexture2DBlend : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Blend percent between images </summary>
         public float Blend { get; set; } = 0.0f;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="binding">Tex binding number</param>
         public GLPLFragmentShaderTexture2DBlend(int binding = 1)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
         }
 
+        /// <summary> Start shader </summary>
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform1(Id, 30, Blend);
@@ -277,35 +309,39 @@ void main(void)
         }
 
     }
-
-    // Pipeline shader for a 2D texture bound with a variable texture offset
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    //      tex binding X : textureObject : 2D texture
-
-    // Pipeline shader, Co-ords are from a triangle strip
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    //      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      location 24 : uniform of texture offset (written by start automatically)
+    /// <summary>
+    /// Shader for a 2D texture bound with a variable texture offset
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+    ///      tex binding X : textureObject : 2D texture
+    /// Pipeline shader, Co-ords are from a triangle strip
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// </summary>
 
     public class GLPLFragmentShaderTextureOffset : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Texture offset 0-1 </summary>
         public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
 
-        // for normal triangle strips, backtobackrect = false.  Only used for special element index draws
-
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="binding">Tex binding</param>
         public GLPLFragmentShaderTextureOffset(int binding = 1)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
         }
 
+        /// <summary> Start shader</summary>
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
 
-        public string Code(int binding)
+        private string Code(int binding)
         {
             return
 @"
@@ -320,10 +356,6 @@ void main(void)
     color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f
 }";
         }
-
     }
-
- 
-
 }
 

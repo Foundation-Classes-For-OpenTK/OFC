@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -12,6 +12,7 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,10 @@ using System.Linq;
 
 namespace GLOFC.WaveFront
 {
+    /// <summary>
+    /// Read text for a definition of a waveform object
+    /// </summary>
+
     public class GLWaveformObjReader
     {
         // wavefront object format, not exactly well documented..
@@ -27,6 +32,11 @@ namespace GLOFC.WaveFront
         // co-ordinate system is right handled - +x to right, +y upwards, +z towards you
         // to compensate for opengl, with +x to right, +y upwards, +z away, z co-ordinates in normals/vertexes are inverted
 
+        /// <summary>
+        /// Read objects from file and return list of objects. Null if not read
+        /// </summary>
+        /// <param name="path">Path to file</param>
+        /// <returns>List of wavefront objects or null if fails</returns>
         public List<GLWaveformObject> ReadOBJFile(string path)      // throws exceptions
         {
             string text = null;
@@ -42,19 +52,16 @@ namespace GLOFC.WaveFront
             return ReadOBJData(text);
         }
 
-        private GLWaveformObject Create(bool cond)
-        {
-            if (cond)
-            {
-                GLWaveformObject cur = new GLWaveformObject(GLWaveformObject.ObjectType.Unassigned, reader_vertices, reader_matlib);
-                reader_objects.Add(cur);
-                return cur;
-            }
-            else
-                return reader_objects.Last();
-        }
+        /// <summary>
+        /// Read objects from a string.
+        /// </summary>
+        /// <param name="textdescription">Wavefront definition of objects</param>
+        /// <param name="correctzforopengl">Correct for opengl orientation in z axis (true means invert)</param>
+        /// <param name="thrownotimplemented">Throw on finding a not implemented descriptor</param>
+        /// <returns>List of objects, or null if fails</returns>
+        /// <exception cref="System.NotImplementedException">Descriptor not implemented</exception>
 
-        public List<GLWaveformObject> ReadOBJData(string data, bool correctzforopengl = true)          // throws exceptions
+        public List<GLWaveformObject> ReadOBJData(string textdescription, bool correctzforopengl = true, bool thrownotimplemented = false)          // throws exceptions
         {
             reader_vertices = new GLMeshVertices();
             reader_objects = new List<GLWaveformObject>();
@@ -63,7 +70,7 @@ namespace GLOFC.WaveFront
 
             float zcorr = correctzforopengl ? -1 : 1;
 
-            using (TextReader reader = new StringReader(data))
+            using (TextReader reader = new StringReader(textdescription))
             {
                 string line;
                 while( (line = reader.ReadLine()) != null )
@@ -85,8 +92,7 @@ namespace GLOFC.WaveFront
 
                         words.RemoveAt(0);
 
-
-                        System.Diagnostics.Debug.WriteLine("Read " + line);
+                        //System.Diagnostics.Debug.WriteLine("Read " + line);
 
                         if (type.StartsWith("#"))
                         {
@@ -121,30 +127,35 @@ namespace GLOFC.WaveFront
                         }
                         else if (type == "vp")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                         else if (type == "deg")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "bmat")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "step")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "cstype")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                         else if (type == "f")
                         {
-                            reader_current = Create(reader_current == null || (reader_current.Objecttype != GLWaveformObject.ObjectType.Polygon && reader_current.Objecttype != GLWaveformObject.ObjectType.Unassigned));
-                            reader_current.Objecttype = GLWaveformObject.ObjectType.Polygon;
+                            reader_current = Create(reader_current == null || (reader_current.ObjectType != GLWaveformObject.ObjectTypeEnum.Polygon && reader_current.ObjectType != GLWaveformObject.ObjectTypeEnum.Unassigned));
+                            reader_current.ObjectType = GLWaveformObject.ObjectTypeEnum.Polygon;
 
                             foreach (string w in words)
                             {
@@ -155,7 +166,7 @@ namespace GLOFC.WaveFront
                                 if (ti != int.MinValue)
                                 {
                                     if (reader_current.Indices.VertexIndices.Count != reader_current.Indices.TextureIndices.Count)
-                                        throw new Exception("New texture index but previous was missing them");
+                                        throw new NotImplementedException("New texture index but previous was missing them");
 
                                     if (ti < 0)
                                         ti = reader_vertices.TextureVertices.Count + ti;
@@ -171,7 +182,7 @@ namespace GLOFC.WaveFront
                                 if ( ni != int.MinValue )
                                 {
                                     if (reader_current.Indices.VertexIndices.Count != reader_current.Indices.NormalIndices.Count)
-                                        throw new Exception("New texture index but previous was missing them");
+                                        throw new NotImplementedException("New texture index but previous was missing them");
 
                                     if (ni < 0)
                                         ni = reader_vertices.Normals.Count + ni;
@@ -199,53 +210,65 @@ namespace GLOFC.WaveFront
                         }
                         else if (type == "p")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "l")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "curv")    // curve http://paulbourke.net/dataformats/obj/
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "curv2")   // 2d curve
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "surf")   // surface
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                         else if (type == "parm")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "trim")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "hole")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "scrv")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "sp")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "end")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                         else if (type == "con")
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                         else if (type == "mtllib")
@@ -256,64 +279,73 @@ namespace GLOFC.WaveFront
                         }
                         else if (type == "usemtl")
                         {
-                            reader_current = Create(reader_current == null || reader_current.Objecttype != GLWaveformObject.ObjectType.Unassigned);
+                            reader_current = Create(reader_current == null || reader_current.ObjectType != GLWaveformObject.ObjectTypeEnum.Unassigned);
                             reader_current.Material = line;
                         }
                         else if (type == "g")
                         {
-                            reader_current = Create(reader_current == null || reader_current.Objecttype != GLWaveformObject.ObjectType.Unassigned);
-                            reader_current.Groupname = line;
+                            reader_current = Create(reader_current == null || reader_current.ObjectType != GLWaveformObject.ObjectTypeEnum.Unassigned);
+                            reader_current.GroupName = line;
                         }
                         else if (type == "s") // smoothing group
                         {
                             // ignore smoothing groups..
-                            //throw new Exception("Not implemented:" + type);
+                            //throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "mg") // merging group
                         {
-                            throw new Exception("Not implemented:" + type);
+                            throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "o") // object name
                         {
-                            reader_current = Create(reader_current == null || reader_current.Objecttype != GLWaveformObject.ObjectType.Unassigned);
-                            reader_current.Objectname = line;
+                            reader_current = Create(reader_current == null || reader_current.ObjectType != GLWaveformObject.ObjectTypeEnum.Unassigned);
+                            reader_current.ObjectName = line;
                         }
 
                         else if (type == "bevel") // Bevel interpolation
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "c_interp") //   Color interpolation
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "d_interp") // Dissolve interpolation
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "lod") //   Level of detail
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "shadow_obj") //  Shadow casting
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "trace_obj") //Ray tracing
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "ctech") //  Curve approximation technique
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else if (type == "stech") //  Surface approximation technique
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
                         else
                         {
-                            throw new Exception("Not implemented:" + type);
+                            if (thrownotimplemented)
+                                throw new NotImplementedException("Not implemented:" + type);
                         }
 
                     }
@@ -321,6 +353,18 @@ namespace GLOFC.WaveFront
             }
 
             return reader_objects;
+        }
+
+        private GLWaveformObject Create(bool cond)
+        {
+            if (cond)
+            {
+                GLWaveformObject cur = new GLWaveformObject(GLWaveformObject.ObjectTypeEnum.Unassigned, reader_vertices, reader_matlib);
+                reader_objects.Add(cur);
+                return cur;
+            }
+            else
+                return reader_objects.Last();
         }
 
         private GLMeshVertices reader_vertices;

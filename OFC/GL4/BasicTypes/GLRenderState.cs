@@ -16,83 +16,104 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // Wraps the openGL main state variables in a class so they get selected correctly for each render.
+    ///<summary>Wraps the openGL main state variables in a class so they get selected correctly for each render.
+    /// An instance of this class is associated with each GLRenderableItem
+    ///</summary> 
 
     public class GLRenderState
     {
         // static creates of a GLRenderControl for the various OpenGL primitives
 
+        /// <summary> Render setup for primitive Triangles, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
+        /// <summary> Render setup for primitive Triangles, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        
+
+        /// <summary> Render setup for primitive Triangles with primitive restart, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
+        /// <summary> Render setup for primitive Triangles from a previous RS and with primitive restart, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(GLRenderState prev, uint primitiverestart, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { PrimitiveRestart = primitiverestart, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
+        /// <summary> Render setup for primitive Triangles with primitive restart, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
+        /// <summary> Render setup for primitive Trianges from a previous RS with primitive restart, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(GLRenderState prev, DrawElementsType primitiverestarttype, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
         // same as Tri, but just kept for naming purposes 
+        /// <summary> Render setup for primitive Quads, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Quads(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
+        /// <summary> Render setup for primitive Quads from a previous RS, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Quads(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
 
+        /// <summary> Render setup for primitive Points, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Points(float pointsize = 1, bool smooth = true)
         { return new GLRenderState() { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
+        /// <summary> Render setup for primitive Points from a previous RS, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Points(GLRenderState prev, float pointsize = 1, bool smooth = true)
         { return new GLRenderState(prev) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
+        /// <summary> Render setup for primitive Points by Program, with optional control over various parameters of the primitive </summary>
         static public GLRenderState PointsByProgram()
         { return new GLRenderState() { PointSize = 0 }; }
 
+        /// <summary> Render setup for primitive Point sprites, with optional control over various parameters of the primitive </summary>
         static public GLRenderState PointSprites()
         { return new GLRenderState() { PointSize = 0, PointSprite = true }; }
 
+        /// <summary> Render setup for primitive Point sprites from a previous RS, with optional control over various parameters of the primitive </summary>
         static public GLRenderState PointSprites(GLRenderState prev)
         { return new GLRenderState(prev) { PointSize = 0, PointSprite = true }; }
 
+        /// <summary> Render setup for primitive Patches, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
         { return new GLRenderState() { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
+        /// <summary> Render setup for primitive Patches from a previous RS, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Patches(GLRenderState prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
         { return new GLRenderState(prev) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
+        /// <summary> Render setup for primitive Lines, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
         { return new GLRenderState() { LineWidth = linewidth, LineSmooth = smooth }; }
 
+        /// <summary> Render setup for primitive Lines from a previous RS, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Lines(GLRenderState prev, float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
         { return new GLRenderState(prev) { LineWidth = linewidth, LineSmooth = smooth }; }
 
-       
+
         // creators
 
+        /// <summary> Create a default render state </summary>
         public GLRenderState()                                          // fully default 
         {
         }
 
+        /// <summary> Copy constructor </summary>
         public GLRenderState(GLRenderState prev)      // copy previous fixed settings
         {
             PrimitiveRestart = prev.PrimitiveRestart;
@@ -112,6 +133,7 @@ namespace GLOFC.GL4
             ColorMasking = prev.ColorMasking;
         }
 
+        /// <summary> Called by WinFormControl, this sets up the initial render state </summary>
         static public GLRenderState Start()
         {
             var startstate = new GLRenderState()        // Set the default state we want to be in at start (some state defaults are at bottom)
@@ -152,6 +174,7 @@ namespace GLOFC.GL4
             return startstate;
         }
 
+        /// <summary> This sets the GL state variables to the render state this object requires. Called by RenderableItem</summary>
         public void ApplyState(GLRenderState newstate)      // apply deltas to GL
         {
             // general
@@ -343,35 +366,72 @@ namespace GLOFC.GL4
 
         // these are only set for particular primitive types - so the default construction is don't care.
 
+        /// <summary> Patch size, number of</summary>
         public int? PatchSize { get; set; } = null;                 // patches (Geo shaders)
+        /// <summary> Point size </summary>
         public float? PointSize { get; set; } = null;               // points
+        /// <summary> Point sprite on/off </summary>
         public bool? PointSprite { get; set; } = null;              // points
+        /// <summary> Point smooth on/off</summary>
         public bool? PointSmooth { get; set; } = null;              // points
+        /// <summary> Line Width</summary>
         public float? LineWidth { get; set; } = null;               // lines
+        /// <summary> Line Smooth on/off</summary>
         public bool? LineSmooth { get; set; } = null;               // lines
+        /// <summary> Poly Mode - Point, Line or Fill</summary>
         public PolygonMode? PolygonModeFrontAndBack { get; set; } = null;        // triangles/quads
+        /// <summary> Polygon Smooth on/off</summary>
         public bool? PolygonSmooth { get; set; } = null;            // triangles/quads, not normally set
+        /// <summary> Cull Face on/off</summary>
         public bool? CullFace { get; set; } = null;                 // triangles/quads
+        /// <summary> Front face direction. Cw or Ccw</summary>
         public FrontFaceDirection? FrontFace { get; set; } = null;  // triangles/quads
 
         // Fixed set - these affect all types so are configured to their defaults for normal drawing
 
+        /// <summary> Primitive restart value. Null is disabled </summary>
         public uint? PrimitiveRestart { get; set; } = null;         // its either null (disabled) or value (enabled). null does not mean don't care.
+        /// <summary> Number of clip distances to consider. 0 off. Default 0 </summary>
         public int ClipDistanceEnable { get; set; } = 0;            // set for number of clip/cull distances to enable. 0 means none. 
+        /// <summary> Depth Test on/off</summary>
         public bool DepthTest { get; set; } = true;                 // default on start of Paint draw is ON
+        /// <summary> Depth function mode. Default is Less. </summary>
         public DepthFunction DepthFunctionMode { get; set; } = DepthFunction.Less;
+        /// <summary> Write Depth buffer on/off. Default is on.</summary>
         public bool WriteDepthBuffer { get; set; } = true;          // default on start of Paint draw is ON
-        public bool DepthClamp { get; set; } = false;   
+        /// <summary> Depth Clamp on/off. Default is off </summary>
+        public bool DepthClamp { get; set; } = false;
+        /// <summary> Blend Enable on/off. Default is on</summary>
         public bool BlendEnable { get; set; } = true;
+        /// <summary> Blend Source RGB. Default is SrcAlpha </summary>
         public BlendingFactorSrc BlendSourceRGB { get; set; } = BlendingFactorSrc.SrcAlpha;
+        /// <summary> Blend Dest RGB. Default is OneMinusSrcAlpha </summary>
         public BlendingFactorDest BlendDestRGB { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
+        /// <summary> Blend Source A. Default is SrcAlpha </summary>
         public BlendingFactorSrc BlendSourceA { get; set; } = BlendingFactorSrc.SrcAlpha;
+        /// <summary> Blend Dest A. Default is OneMinusSrcAlpha </summary>
         public BlendingFactorDest BlendDestA { get; set; } = BlendingFactorDest.OneMinusSrcAlpha;
+        /// <summary> Blend Equation RGB. Default is FuncAdd </summary>
         public BlendEquationMode BlendEquationRGB { get; set; } = BlendEquationMode.FuncAdd;
+        /// <summary> Blend Equation A. Default is FuncAdd </summary>
         public BlendEquationMode BlendEquationA { get; set; } = BlendEquationMode.FuncAdd;
+        /// <summary> Discard all render on/off. Default is off</summary>
         public bool Discard {get;set;} = false;                     // normal not to discard. default on start of draw is OFF
 
-        [System.Flags] public enum ColorMask { Red=1,Green=2,Blue=4,Alpha=8, All=15};
+        /// <summary> Colour Mask flags </summary>
+        [System.Flags] public enum ColorMask {
+            /// <summary> Red mask </summary>
+            Red = 1,
+            /// <summary> Green mask </summary>
+            Green = 2,
+            /// <summary> Blue mask </summary>
+            Blue = 4,
+            /// <summary> Alpha mask </summary>
+            Alpha = 8,
+            /// <summary> All </summary>
+            All = 15
+        };
+        /// <summary> Set Colour Masking. Default is All. </summary>
         public ColorMask ColorMasking = ColorMask.Red | ColorMask.Green | ColorMask.Blue | ColorMask.Alpha;
 
     }

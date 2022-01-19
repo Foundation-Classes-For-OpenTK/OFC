@@ -13,21 +13,33 @@
  */
  
 using System;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
+    /// <summary>
+    /// Uniform block to store volumetric control information into
+    /// </summary>
+
     public class GLVolumetricUniformBlock : GLUniformBlock
     {
+        /// <summary> Construct and set the binding point </summary>
         public GLVolumetricUniformBlock(int bindingpoint = 1 ) : base(bindingpoint)         // binding block 1 is default
         {
         }
 
-        // if slicesize=0, we take 1 slice in the middle of the z volume
-        // otherwise we slice up min/max z by slicesize
+        /// <summary>
+        /// Set up the volumetirc block
+        /// if slicesize=0, we take 1 slice in the middle of the z volume, otherwise we slice up min/max z by slicesize
+        /// </summary>
+        /// <param name="matrixcalc">Matrix calc to provide model matrix</param>
+        /// <param name="boundingbox">Bounding box of volumetric draw</param>
+        /// <param name="slicesize">Slice slice of each plane</param>
+        /// <returns></returns>
 
-        public int Set(GLMatrixCalc c, Vector4[] boundingbox, float slicesize) // return slices to show
+        public int Set(GLMatrixCalc matrixcalc, Vector4[] boundingbox, float slicesize) // return slices to show
         {
             if (NotAllocated)
                 AllocateBytes(Vec4size * 9 + 4 * sizeof(float) + 32, BufferUsageHint.DynamicCopy);   // extra for alignment, not important to get precise
@@ -37,7 +49,7 @@ namespace GLOFC.GL4
             float minzv = float.MaxValue, maxzv = float.MinValue;
             for (int i = 0; i < boundingbox.Length; i++)
             {
-                Vector4 m = Vector4.Transform(boundingbox[i], c.ModelMatrix);
+                Vector4 m = Vector4.Transform(boundingbox[i], matrixcalc.ModelMatrix);
                 Write(m);
                 if (m.Z < minzv)
                 {
@@ -84,14 +96,13 @@ namespace GLOFC.GL4
             //Vector4 t3 = new Vector4(0, 0, 0, 1);
             //c.WorldToScreen(t3, "so");
 
-            ////   TestZ(c, boundingbox, minzv);
+            ////   TestZ(c, boundingbox, minzv); 
 
             return slices;
         }
 
         // code from the volumetric testers to help debug stuff
-
-        void Test(GLMatrixCalc c, Vector4[] boundingbox, float percent)
+        private void Test(GLMatrixCalc c, Vector4[] boundingbox, float percent)
         {
             Vector4[] modelboundingbox = boundingbox.Transform(c.ModelMatrix);
 
@@ -117,7 +128,7 @@ namespace GLOFC.GL4
             TestZ(c, boundingbox, zpoint);
         }
 
-        void TestZ(GLMatrixCalc c, Vector4[] boundingbox, float zpoint)
+        private void TestZ(GLMatrixCalc c, Vector4[] boundingbox, float zpoint)
         {
             Vector4[] modelboundingbox = boundingbox.Transform(c.ModelMatrix);
 

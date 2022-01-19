@@ -17,6 +17,11 @@ using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -118,8 +123,8 @@ namespace TestOpenTk
                 return (float)ms * 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLTexturedShaderObjectCommonTranslation(), "TEXOCT");
 
             items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "golden");
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
@@ -247,7 +252,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc,false);
 

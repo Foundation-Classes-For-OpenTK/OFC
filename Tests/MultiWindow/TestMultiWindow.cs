@@ -29,7 +29,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GLOFC;
 using System.Threading;
-
+using GLOFC.Utils;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -48,7 +51,7 @@ namespace TestOpenTk
             InitializeComponent();
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-            glwfc.EnsureCurrentPaintResize = true;
+            glwfc.EnsureCurrent = true;
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -76,9 +79,9 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
 
             items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  , "dotted");
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
@@ -135,7 +138,7 @@ namespace TestOpenTk
 
                 rObjects.Add(items.Shader("TEXOT"),
                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
                             ));
 
@@ -169,7 +172,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
             

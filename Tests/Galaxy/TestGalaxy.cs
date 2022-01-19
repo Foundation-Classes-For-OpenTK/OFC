@@ -12,6 +12,7 @@ using GLOFC.GL4.Controls;
 using EliteDangerousCore.EDSM;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -75,7 +76,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            GLOFC.Timers.Timer.ProcessTimers();
+            PolledTimer.ProcessTimers();
             map.Systick();
         }
     }

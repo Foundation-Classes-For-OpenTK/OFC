@@ -21,6 +21,13 @@ using GLOFC.GL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 // Demonstrate the volumetric calculations needed to compute a plane facing the user inside a bounding box done inside a geo shader
 // this one add on tex coord calculation and using a single tight quad shows its working
@@ -99,7 +106,7 @@ void main(void)
         {
             public GLFixedProjectionShader(Color c, Action<IGLProgramShader, GLMatrixCalc> action = null) : base(action)
             {
-                AddVertexFragment(new GLPLVertexShaderViewSpaceCoord(), new GLPLFragmentShaderFixedColor(c));
+                AddVertexFragment(new GLPLVertexShaderViewSpace(), new GLPLFragmentShaderFixedColor(c));
             }
         }
 
@@ -120,7 +127,7 @@ void main(void)
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
@@ -151,22 +158,22 @@ void main(void)
                 {
                     int v = -100 + i * 10;
                     numbers[i] = new Bitmap(100, 100);
-                    BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
+                    GLOFC.Utils.BitMapHelpers.DrawTextCentreIntoBitmap(ref numbers[i], v.ToString(), fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.Red, Color.AliceBlue);
                     numberpos[i] = Matrix4.CreateScale(1);
                     numberpos[i] *= Matrix4.CreateRotationX(-80f.Radians());
                     numberpos[i] *= Matrix4.CreateTranslation(new Vector3(20, 0, v));
                 }
 
-                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbitmaps: true);
+                GLTexture2DArray array = new GLTexture2DArray(numbers, SizedInternalFormat.Rgba8, ownbmp: true);
                 items.Add(array, "Nums");
-                items.Add(new GLShaderPipeline(new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexed(0,4)), "IC-2");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0,4)), "IC-2");
 
                 GLRenderState rq = GLRenderState.Quads(cullface:false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"),4);
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
                                         GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(1.0f), GLShapeObjectFactory.TexQuad, numberpos, rt, 
+                                                GLShapeObjectFactory.CreateQuad(1.0f), GLShapeObjectFactory.TexQuadCW, numberpos, rt, 
                                                 numberpos.Length));
             }
 

@@ -12,19 +12,23 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // vertex have already been modelview transformed. Perform projection view. Co-ords are in model view values
-    // Requires:
-    //      location 0 : vec4 positions
-    //      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// <summary>
+    /// Shader, Vertex have already been modelview transformed. Perform projection view. Co-ords are in model view values
+    /// Requires:
+    ///      location 0 : vec4 positions
+    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// </summary>
 
-    public class GLPLVertexShaderViewSpaceCoord : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderViewSpace : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderViewSpaceCoord()
+        /// <summary> Constructor </summary>
+        public GLPLVertexShaderViewSpace()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
@@ -42,7 +46,6 @@ out gl_PerVertex {
         float gl_ClipDistance[];
     };
 
-    //      uniform 22 : objecttransform: mat4 array of transforms
 void main(void)
 {
 	gl_Position = mc.ProjectionMatrix * position;        // order important

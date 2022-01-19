@@ -13,32 +13,46 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Vertex look at with autoscale, optional uniform common transform, optional generate world pos
-    // output is either model scaled + worldpos, for use by a tes shader
-    // or projectionmodelmatrix * (model+worldpos) for use directly by a frag shader
-    //
-    // Input
-    //      location 0 : model position: vec4 vertex array of positions model coords, w is ignored. Scaled/autorotated. Optionally used to compute gl_Position
-    //      location 1 : worldpositions - passed thru to world pos, optionally used to compute gl_Position.
-    //      location 2 : texcoords - passed thru, optional
-    //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 (configurable): objecttransform: mat4 transform of model before world applied (for rotation/scaling)
-    // Out:
-    //      gl_Position: either model position passed thru scaled/rotated, or if generateworldpos = true then projmodelmatrix * (modelpos+worldpos)
-    //      location 1 : worldpos copied
-    //      location 2 : instance id
+    /// <summary>
+    ///  Vertex look at with autoscale, optional uniform common transform, optional generate world pos
+    ///  output is either model scaled + worldpos, for use by a tes shader
+    ///  or projectionmodelmatrix * (model+worldpos) for use directly by a frag shader
+    ///  Input
+    ///       location 0 : model position: vec4 vertex array of positions model coords, w is ignored. Scaled/autorotated. Optionally used to compute gl_Position
+    ///       location 1 : worldpositions - passed thru to world pos, optionally used to compute gl_Position.
+    ///       location 2 : texcoords optionally passed thru to 0
+    ///       uniform buffer 0 : GL MatrixCalc
+    ///       uniform configurable: objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+    ///  Out:
+    ///       gl_Position: either model position passed thru scaled/rotated, or if generateworldpos = true then projmodelmatrix * (modelpos+worldpos)
+    ///       location 0 : optional tex coords generated
+    ///       location 1 : worldpos copied
+    ///       location 2 : instance id
+    /// </summary>
 
     public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
-        // set commontransform uniform non zero to use
-        public GLPLVertexScaleLookat(bool rotate = false, bool rotateelevation = true, int commontransformuniform = 0, bool texcoords = false, bool generateworldpos = false,
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="rotatetoviewer">True to rotate in azimuth to viewer</param>
+        /// <param name="rotateelevation">True to rotate in elevation to viewer</param>
+        /// <param name="commontransformuniform">0 off, else use this uniform binding point as a common transform</param>
+        /// <param name="texcoords">Generate tex coords for frag shader</param>
+        /// <param name="generateworldpos">If true, pass out ProjModelMatrix * (modelpos+worldpos), else pass out model position scaled and rotated</param>
+        /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
+        /// <param name="autoscalemin">Minimum to scale to</param>
+        /// <param name="autoscalemax">Maximum to scale to</param>
+        /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
+        public GLPLVertexScaleLookat(bool rotatetoviewer = false, bool rotateelevation = true, int commontransformuniform = 0, bool texcoords = false, bool generateworldpos = false,
                                                     float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
-            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotate, "rotateelevation", rotateelevation,
+            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotatetoviewer, "rotateelevation", rotateelevation,
                                                                     "usetexcoords", texcoords, "generateworldpos", generateworldpos,
                                                                     "autoscale", autoscale,
                                                                     "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance,

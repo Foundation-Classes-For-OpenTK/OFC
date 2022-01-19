@@ -17,15 +17,17 @@
 using System;
 using System.Drawing;
 
-namespace GLOFC
+namespace GLOFC.Utils
 {
+    /// <summary>
+    /// Static extensions for helping with Color
+    /// </summary>
     public static class ObjectExtensionsColors
     {
         /// <summary>
         /// Determine if two colors are both fully transparent or are otherwise equal in value, ignoring
         /// any stupid naming comparisons or RGB comparisons when both are fully transparent.
         /// </summary>
-        /// <param name="other">The color to compare to.</param>
         /// <returns><c>true</c> if the colors are both fully transparent or are equal in value; <c>false</c> otherwise.</returns>
         public static bool IsEqual(this Color c, Color other)
         {
@@ -54,6 +56,7 @@ namespace GLOFC
         /// Average two <see cref="Color"/> objects together, complete with alpha, with <paramref name="ratio"/>
         /// determining the ratio of the original color to the <paramref name="other"/> <see cref="Color"/>.
         /// </summary>
+        /// <param name="c">The color.</param>
         /// <param name="other">The <see cref="Color"/> to average with this one.</param>
         /// <param name="ratio">(0.0f-1.0f) The strength of the original <see cref="Color"/> in the resulting value. 1.0f means
         /// all original, while 0.0f means all <paramref name="other"/>, with 0.5f being an equal mix between the two.</param>
@@ -76,6 +79,7 @@ namespace GLOFC
         /// <summary>
         /// Multiply a color. That is, brighten or darken all three channels by the same <paramref name="amount"/>, without modification to the alpha channel.
         /// </summary>
+        /// <param name="c">The color.</param>
         /// <param name="amount"><c>1.0</c> will yield an identical color, <c>0.0</c> will yield black, <c>0.5</c> will
         /// be half as bright, <c>2.0</c> will be twice as bright. Negative values will be treated as positive.</param>
         /// <returns>The multiplied color with the new brightness. If <paramref name="amount"/> is
@@ -93,6 +97,9 @@ namespace GLOFC
                 (byte)Math.Max(Math.Min(Math.Round((float)c.B * val), 255), 0));
         }
 
+        /// <summary>
+        /// Multiply and add to colour 
+        /// </summary>
         public static Color MultiplyAdd(this Color c, float redamount = 1.0f, float greenamount = 1.0f, float blueamount = 1.0f,
                                                       float redoffset = 0f, float greenoffset = 0f, float blueoffset = 0f)
         {
@@ -102,6 +109,9 @@ namespace GLOFC
                 (byte)Math.Max(Math.Min(Math.Round((float)c.B * blueamount + blueoffset), 255), 0));
         }
 
+        /// <summary>
+        /// Increase of decrease the brightess of a colour 
+        /// </summary>
         public static Color MultiplyBrightness(this Color c, float amount = 1.0f)        // if too dark, multiple white.
         {
             if (float.IsNaN(amount))
@@ -118,6 +128,9 @@ namespace GLOFC
                 (byte)Math.Max(Math.Min(Math.Round((float)c.B * val), 255), 0));
         }
 
+        /// <summary>
+        /// Invert the brightness of a colour
+        /// </summary>
         public static Color InvertBrightness(this Color c, float amount = 0.5f)        // multiply up/down by this amount, dep. on brightness
         {
             if (float.IsNaN(amount))
@@ -135,6 +148,9 @@ namespace GLOFC
                 (byte)Math.Max(Math.Min(Math.Round((float)c.B * val), 255), 0));
         }
 
+        /// <summary>
+        /// Pack an colour into an Int. No Alpha
+        /// </summary>
         public static int PackRGB(this Color c)
         {
             return c.R + (((int)c.G) << 8) + (((int)c.B) << 16);

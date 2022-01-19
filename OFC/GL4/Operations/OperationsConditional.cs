@@ -15,37 +15,49 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Operations
 {
+    /// <summary>
+    /// Begin condition render on objects in list
+    /// </summary>
     public class GLOperationBeginConditionalRender : GLOperationsBase
     {
-        int id;
-        ConditionalRenderType mode;
+        private int id;
+        private ConditionalRenderType mode;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="id">Specifies the name of an occlusion query object whose results are used to determine if the rendering commands are discarde</param>
+        /// <param name="mode">Specifies how this interprets the results of the occlusion query. </param>
         public GLOperationBeginConditionalRender(int id, ConditionalRenderType mode)
         {
             this.id = id;
             this.mode = mode;
         }
 
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             GL.BeginConditionalRender(id, mode);
         }
     }
 
+    /// <summary>
+    /// End the condition render, pair with start the conditional render operation.
+    /// </summary>
     public class GLOperationEndConditionalRender : GLOperationsBase
     {
+        /// <summary> Constructor </summary>
         public GLOperationEndConditionalRender()
         {
         }
 
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
             GL.EndConditionalRender();
         }
     }
 
-  
-  }
-
+}

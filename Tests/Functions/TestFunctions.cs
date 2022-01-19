@@ -21,6 +21,12 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -199,7 +205,7 @@ void main(void)
 
             // this bit is eye candy just to show its working
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             GLRenderState rl = GLRenderState.Lines(1);
 
             rObjects.Add(items.Shader("COSW"),
@@ -217,7 +223,7 @@ void main(void)
 
 
             items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0
 
@@ -367,6 +373,8 @@ void main(void)
                 StringMatrix res = StringMatrix.Mult(roxm90, roy);
                 string r = res.ToString(true);
                 System.Diagnostics.Debug.WriteLine($"{r}");
+                r = res.ToList();
+                System.Diagnostics.Debug.WriteLine($"{r}");
 
                 res = StringMatrix.Mult(rox, roy);
                 r = res.ToString(true);
@@ -381,7 +389,8 @@ void main(void)
             }
 
 
-            //    System.Diagnostics.Debug.WriteLine(rotplustransscale.ToString());
+            //    System.Di
+            //    agnostics.Debug.WriteLine(rotplustransscale.ToString());
 
 
         }

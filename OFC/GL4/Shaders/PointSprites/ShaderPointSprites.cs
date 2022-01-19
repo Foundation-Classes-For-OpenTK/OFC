@@ -12,14 +12,38 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Sprites
 {
-    // point sprite shader based on eye position vs sprite position.  Needs point sprite on and program point size
+    /// <summary>
+    /// This namespace contains sprite shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
+    /// Point sprite shader based on eye position vs sprite position.  Needs point sprite on and program point size 
+    /// </summary>
 
     public class GLPointSpriteShader : GLShaderStandard
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="tex">Texture to use for sprite</param>
+        /// <param name="maxsize">Maximum size of sprite</param>
+        /// <param name="scale">Scalar for sprite vs disatance</param>
+        public GLPointSpriteShader(IGLTexture tex, float maxsize = 120, float scale = 80) : base()
+        {
+            StartAction = (a,m) =>
+            {
+                tex.Bind(4);
+            };
+
+            CompileLink(vert, frag: frag, vertexconstvars:new object[] { "maxsize", maxsize, "scale", scale });
+        }
+
         string vert =
 @"
         #version 450 core
@@ -72,15 +96,7 @@ namespace GLOFC.GL4
         }
         ";
 
-        public GLPointSpriteShader(IGLTexture tex, float maxsize = 120, float scale = 80) : base()
-        {
-            StartAction = (a,m) =>
-            {
-                tex.Bind(4);
-            };
 
-            CompileLink(vert, frag: frag, vertexconstvars:new object[] { "maxsize", maxsize, "scale", scale });
-        }
     }
 }
 

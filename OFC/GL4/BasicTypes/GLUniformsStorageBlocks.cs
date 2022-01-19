@@ -16,12 +16,15 @@ using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // this takes a basic GLBuffer and adds on features for Uniform and storage blocks etc
-
+    /// <summary>
+    /// GLDataBlock extends a GLBuffer and allows it to bind to a binding index 
+    /// </summary>
     public abstract class GLDataBlock : GLBuffer
     {
+        /// <summary> Binding index</summary>
         public int BindingIndex { get; private set; }
 
+        /// <summary> Construct and bind to binding index on target</summary>
         public GLDataBlock(int bindingindex, bool std430, BufferRangeTarget tgr) : base(std430)
         {
             BindingIndex = bindingindex;
@@ -29,25 +32,34 @@ namespace GLOFC.GL4
         }
     }
 
-    // uniform blocks - std140 only.  Uniform blocks are global across shaders.  IDs really need to be unique or you will have to rebind
+    /// <summary>
+    /// Uniform blocks - std140 only.  Blocks are global across shaders.  IDs really need to be unique or you will have to rebind 
+    /// </summary>
     public class GLUniformBlock : GLDataBlock
     {
+        /// <summary> Construct and bind to binding index</summary>
         public GLUniformBlock(int bindingindex) : base(bindingindex, false,  BufferRangeTarget.UniformBuffer)
         {
         }
     }
 
-    // storage blocks - std140 and 430. Writable. Can perform Atomics.  Storage blocks are global across shaders.  IDs really need to be unique or you will have to rebind
+    /// <summary>
+    /// Storage blocks - std140 and 430. Writable. Can perform Atomics.  Storage blocks are global across shaders.  IDs really need to be unique or you will have to rebind 
+    /// </summary>
     public class GLStorageBlock : GLDataBlock
     {
+        /// <summary> Construct and bind to binding index</summary>
         public GLStorageBlock(int bindingindex, bool std430 = false) : base(bindingindex, std430,  BufferRangeTarget.ShaderStorageBuffer)
         {
         }
     }
 
-    // atomic blocks. Storage blocks are global across shaders.  IDs really need to be unique or you will have to rebind
+    /// <summary>
+    /// Atomic counter blocks. Blocks are global across shaders.  IDs really need to be unique or you will have to rebind 
+    /// </summary>
     public class GLAtomicBlock : GLDataBlock
     {
+        /// <summary> Construct and bind to binding index</summary>
         public GLAtomicBlock(int bindingindex) : base(bindingindex, false, BufferRangeTarget.AtomicCounterBuffer)
         {
         }

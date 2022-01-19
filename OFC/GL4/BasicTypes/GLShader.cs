@@ -17,41 +17,52 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4
 {
-    // This is a GL shader object of type ShaderType
+    /// <summary>
+    /// This is a GL shader object of type ShaderType.
+    /// </summary>
 
     public class GLShader : IDisposable
     {
+        /// <summary>GL ID</summary>
         public int Id { get; private set; } = -1;
+        /// <summary>Has it been compiled</summary>
         public bool Compiled { get { return Id != -1; } }
 
-        static public List<string> IncludePaths = new List<string>();               // add to add new include paths for #include
-        static public List<string> IncludeModules = new List<string>();             // add to add new resource paths for #include
+        /// <summary>Static set of Include Paths to search for files</summary>
+        static public List<string> IncludePaths { get; set; } = new List<string>();              
+        /// <summary>Static set of Include Modules references (Namespace.Module) to search for files</summary>
+        static public List<string> IncludeModules { get; set; } = new List<string>();             
 
         private ShaderType type;
 
+        /// <summary> Create a new stader of this shader type </summary>
         public GLShader( ShaderType t )
         {
             type = t;
         }
 
-        // codelisting is glsl with the following extensions:
-        // #include resourcename
-        //      resourcename can either be a reference to an OFC glsl file, from the GL4 root, such as Shaders.Volumetric.volumetricgeoshader.glsl
-        //      or it can be a fully qualified resource reference: TestOpenTk.Volumetrics.volumetricgeo3.glsl
-        //      or it can be a partial resource reference from a include modules path (no . at the end, fully qualified : TestOpenTk.Volumetrics)
-        //      or it can be a fully qualified filename (no quotes)
-        //      or a partial path from one of the static includepaths
-        // const values
-        //      constvalues allow you to override definitions in the script for const <type> var = value
-        //      declare your variables in glsl like this (const int iterations = 10 for example)
-        //      then include in call a list of (string,value) pairs to set the const values to (new object[] {"iterations",20})
-        //      glsl types: int, float (passed in as float or double), bool, vec2 (OpenTK.Vector2), vec3 (OpenTK.Vector3), vec4 (as OpenTK.Vector4 or Color)
-        //                  vec4[] (OpenTK.Vector4[])
+        /// <summary> 
+        /// Compile. The codelisting is glsl with the following extensions:
+        /// #include resourcename
+        /// ..   resourcename can either be a reference to an OFC glsl file, from the GL4 root, such as Shaders.Volumetric.volumetricgeoshader.glsl
+        /// ..   or it can be a fully qualified resource reference: TestOpenTk.Volumetrics.volumetricgeo3.glsl
+        /// ..   or it can be a partial resource reference from a include modules path (no . at the end, fully qualified : TestOpenTk.Volumetrics)
+        /// ..   or it can be a fully qualified filename (no quotes)
+        /// ..   or a partial path from one of the static includepaths
+        /// const values:
+        /// ..   constvalues allow you to override definitions in the script for const type var = value
+        /// ..   declare your variables in glsl like this (const int iterations = 10 for example)
+        /// ..   then include in call a list of (string,value) pairs to set the const values to (new object[] {"iterations",20})
+        /// ..   glsl types: int, float (passed in as float or double), System.Drawing.Color, bool,
+        /// ..   vec2 (OpenTK.Vector2), vec3 (OpenTK.Vector3), vec4 (as OpenTK.Vector4)
+        /// ..   vec4[] (OpenTK.Vector4[]), Color[]
+        ///</summary>
 
         public string Compile(string codelisting, Object[] constvalues = null, string completeoutfile = null)                // string return gives any errors
         {
@@ -91,6 +102,7 @@ namespace GLOFC.GL4
             return null;
         }
 
+        /// <summary> </summary>
         public void Dispose()           // you can double dispose.
         {
             if (Id != -1)
@@ -149,7 +161,7 @@ namespace GLOFC.GL4
                     {
                         if (File.Exists(line))
                         {
-                            include = GLOFC.FileHelpers.TryReadAllTextFromFile(line);
+                            include = GLOFC.Utils.FileHelpers.TryReadAllTextFromFile(line);
                         }
                         else
                         {
@@ -158,7 +170,7 @@ namespace GLOFC.GL4
                                 string path = Path.Combine(partial, line);
                                 if (File.Exists(path))
                                 {
-                                    include = GLOFC.FileHelpers.TryReadAllTextFromFile(path);
+                                    include = GLOFC.Utils.FileHelpers.TryReadAllTextFromFile(path);
                                     break;
                                 }
                             }

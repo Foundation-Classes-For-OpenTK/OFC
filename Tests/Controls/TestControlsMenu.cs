@@ -23,6 +23,13 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -62,33 +69,6 @@ namespace TestOpenTk
             }
         }
 
-        class MatrixCalcSpecial : GLMatrixCalc
-        {
-            public MatrixCalcSpecial()
-            {
-                ScreenCoordMax = new Size(2000, 1000);
-                //ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
-                //ScreenCoordClipSpaceSize = new SizeF(1f, 1f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.5f, 0.5f);
-            }
-
-            public override void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
-            {
-                if (!(sender is Controller3D))         // ignore from 3dcontroller as it also sends it, but it will be reporting the size of the display window
-                {
-                    System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
-                    ScreenSize = newsize;
-                    ScreenCoordMax = newsize;
-                    int margin = 0;
-                    ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
-                    SetViewPort();
-                }
-            }
-
-
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -126,7 +106,7 @@ namespace TestOpenTk
             float h = 0;
             if ( h != -1)
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
@@ -144,7 +124,7 @@ namespace TestOpenTk
 
             }
 
-            MatrixCalcSpecial mc = new MatrixCalcSpecial();
+            GLMatrixCalc mc = new GLMatrixCalc();
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 500000f;
 
@@ -220,6 +200,7 @@ namespace TestOpenTk
 
                     ctx1 = new GLContextMenu("CM1");
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
+                    cm1.CheckOnClick = true;
 
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
@@ -231,6 +212,14 @@ namespace TestOpenTk
                     GLCheckBox l1a3 = new GLCheckBox("CM1C-3", new Rectangle(0, 0, 0, 0), "CheckBox A-1-3");
                     l1a3.CheckOnClick = true;
                     cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
+
+                    int count = 0;
+                    ctx1.Opening += (c1,c2) =>
+                    {
+                        bool on = count++ % 2 == 0;
+                        System.Diagnostics.Debug.WriteLine($"Set cm2 state {on}");
+                        cm2.Visible = on;
+                    };
 
                     ctx1.Add(cm1);
                     ctx1.Add(cm2);
@@ -251,6 +240,7 @@ namespace TestOpenTk
                     {
                         if (ev.Button == GLMouseEventArgs.MouseButtons.Left)
                         {
+                            System.Diagnostics.Debug.WriteLine($"*********************** OPEN");
                             ctx1.Show(displaycontrol, ev.ScreenCoord);
                         }
                         else  if (ev.Button == GLMouseEventArgs.MouseButtons.Right)
@@ -294,7 +284,7 @@ namespace TestOpenTk
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         { 
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -303,7 +293,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            GLOFC.Timers.Timer.ProcessTimers();
+            PolledTimer.ProcessTimers();
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, Otherkeys);

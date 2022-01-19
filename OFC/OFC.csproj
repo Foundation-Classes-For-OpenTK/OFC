@@ -12,6 +12,15 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <DefaultDocumentationGeneratedPages>Classes,Delegates,Interfaces</DefaultDocumentationGeneratedPages>
+    <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
+    <DefaultDocumentationFolder>bin\mddoc</DefaultDocumentationFolder>
+    <DefaultDocumentationRemoveFileExtensionFromLinks>True</DefaultDocumentationRemoveFileExtensionFromLinks>
+    <DefaultDocumentationExternLinksFiles>docexternlinks.txt</DefaultDocumentationExternLinksFiles>
+    <DefaultDocumentationGeneratedAccessModifiers>Public,Protected</DefaultDocumentationGeneratedAccessModifiers>
+    <DefaultDocumentationNestedTypeVisibilities>DeclaringType</DefaultDocumentationNestedTypeVisibilities>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +39,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\Release\GLOFC.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -70,45 +81,58 @@
     <Compile Include="GL4\Buffers\GLSetOfObjectsWithLabels.cs" />
     <Compile Include="GL4\Buffers\GLVertexBufferIndirect.cs" />
     <Compile Include="GL4\Buffers\GLObjectsWithLabels.cs" />
-    <Compile Include="GL4\Controls\Control_WindowControl.cs" />
-    <Compile Include="GL4\Controls\ControlAnimators.cs" />
-    <Compile Include="GL4\Controls\ControlAnimation.cs" />
-    <Compile Include="GL4\Controls\ControlBaseCheckBox.cs" />
-    <Compile Include="GL4\Controls\ControlCalendar.cs" />
-    <Compile Include="GL4\Controls\ControlMenuItem.cs" />
+    <Compile Include="GL4\Controls\Base\Control_Implementation.cs" />
+    <Compile Include="GL4\Controls\Base\Control_DefaultColours.cs" />
+    <Compile Include="GL4\Controls\Base\Control_WindowControl.cs" />
+    <Compile Include="GL4\Controls\Animation\ControlAnimators.cs" />
+    <Compile Include="GL4\Controls\Animation\ControlAnimation.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlBaseCheckBox.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlCalendar.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewSorts.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCellControls.cs" />
+    <Compile Include="GL4\Controls\Menus\ControlMenuItem.cs" />
     <Compile Include="GL4\Buffers\GLSetOfMatrixBufferWithGenerations.cs" />
     <Compile Include="GL4\Buffers\GLMatrixBufferWithGenerations.cs" />
-    <Compile Include="GL4\Controls\ControlMenuStrip.cs" />
-    <Compile Include="GL4\Controls\ControlNumberBox.cs" />
-    <Compile Include="GL4\Controls\ControlStructsEnums.cs" />
-    <Compile Include="GL4\Controls\ControlTextBoxAutoComplete.cs" />
-    <Compile Include="GL4\Controls\ControlToolTip.cs" />
-    <Compile Include="GL4\Controls\FormMessageBox.cs" />
-    <Compile Include="GL4\Controls\FormConfigurable.cs" />
-    <Compile Include="GL4\Controls\ControlBaseButton.cs" />
-    <Compile Include="GL4\Controls\ControlComboBox.cs" />
-    <Compile Include="GL4\Controls\ControlCheckBox.cs" />
-    <Compile Include="GL4\Controls\ControlButton.cs" />
-    <Compile Include="GL4\Controls\ControlGroupBox.cs" />
-    <Compile Include="GL4\Controls\ControlBaseText.cs" />
-    <Compile Include="GL4\Controls\ControlMultiLineTextBox.cs" />
-    <Compile Include="GL4\Controls\ControlUpDown.cs" />
-    <Compile Include="GL4\Controls\ControlLabel.cs" />
-    <Compile Include="GL4\Controls\ControlListBox.cs" />
-    <Compile Include="GL4\Controls\ControlForm.cs" />
-    <Compile Include="GL4\Controls\ControlScrollBar.cs" />
-    <Compile Include="GL4\Controls\ControlScrollPanelScrollBar.cs" />
-    <Compile Include="GL4\Controls\ControlScrollPanel.cs" />
-    <Compile Include="GL4\Controls\ControlFlowLayoutPanel.cs" />
-    <Compile Include="GL4\Controls\ControlDateTimePicker.cs" />
-    <Compile Include="GL4\Controls\ControlTab.cs" />
-    <Compile Include="GL4\Controls\ControlTableLayoutPanel.cs" />
-    <Compile Include="GL4\Controls\ControlTextBox.cs" />
-    <Compile Include="GL4\Controls\ControlPanel.cs" />
-    <Compile Include="GL4\Controls\ControlImage.cs" />
-    <Compile Include="GL4\Controls\ControlDisplay.cs" />
-    <Compile Include="GL4\Controls\Control.cs" />
-    <Compile Include="GL4\Controls\ControlTabStyleCustom.cs" />
+    <Compile Include="GL4\Controls\Menus\ControlMenuStrip.cs" />
+    <Compile Include="GL4\Controls\TextBoxes\ControlNumberBox.cs" />
+    <Compile Include="GL4\Controls\Base\Control_StructsEnums.cs" />
+    <Compile Include="GL4\Controls\TextBoxes\ControlTextBoxAutoComplete.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlToolTip.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewTopLeftPanel.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewRowHeaderPanel.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewColumnHeaderPanel.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewContentPanel.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewRow.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCell.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewColumn.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridViewCellStyle.cs" />
+    <Compile Include="GL4\Controls\DGV\DataGridView.cs" />
+    <Compile Include="GL4\Controls\Forms\FormMessageBox.cs" />
+    <Compile Include="GL4\Controls\Forms\FormConfigurable.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlBaseButton.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlComboBox.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlCheckBox.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlButton.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlGroupBox.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlBaseText.cs" />
+    <Compile Include="GL4\Controls\TextBoxes\ControlMultiLineTextBox.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlUpDown.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlLabel.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlListBox.cs" />
+    <Compile Include="GL4\Controls\Forms\Form.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlScrollBar.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlScrollPanelScrollBar.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlScrollPanel.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlFlowLayoutPanel.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlDateTimePicker.cs" />
+    <Compile Include="GL4\Controls\Tabs\ControlTab.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlTableLayoutPanel.cs" />
+    <Compile Include="GL4\Controls\TextBoxes\ControlTextBox.cs" />
+    <Compile Include="GL4\Controls\Panels\ControlPanel.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlImage.cs" />
+    <Compile Include="GL4\Controls\Base\ControlDisplay.cs" />
+    <Compile Include="GL4\Controls\Base\Control.cs" />
+    <Compile Include="GL4\Controls\Tabs\ControlTabStyleCustom.cs" />
     <Compile Include="GL4\Operations\OperationsConditional.cs" />
     <Compile Include="GL4\Operations\OperationsScissors.cs" />
     <Compile Include="GL4\Operations\OperationsSync.cs" />
@@ -137,7 +161,9 @@
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexWorldColour.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
+    <Compile Include="GL4\Textures\Texture1DArray.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
+    <Compile Include="GL\GLEventArguments.cs" />
     <Compile Include="GL\GLMatrixArray.cs" />
     <Compile Include="GL\GLMatrixString.cs" />
     <Compile Include="GL\GLMatrix4Statics.cs" />
@@ -156,7 +182,7 @@
     <Compile Include="GL4\ShapeFactory\FactoryPoints.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryShapes.cs" />
     <Compile Include="GL4\ShapeFactory\FactorySphere.cs" />
-    <Compile Include="GL4\ItemLists\GLItemsList.cs" />
+    <Compile Include="GL4\BasicTypes\GLItemsList.cs" />
     <Compile Include="GL4\IGLInterfaces.cs" />
     <Compile Include="GL4\Renderers\RenderItemData.cs" />
     <Compile Include="GL4\Renderers\RenderableItem.cs" />
@@ -182,7 +208,7 @@
     <Compile Include="GL4\UniformStorageBlocks\MatrixCalcUniformBlock.cs" />
     <Compile Include="GL4\BasicTypes\GLUniformsStorageBlocks.cs" />
     <Compile Include="GL4\BasicTypes\GLVertexArray.cs" />
-    <Compile Include="GL\GLClasses.cs" />
+    <Compile Include="GL\GLWindowControl.cs" />
     <Compile Include="GL4\BasicTypes\GL4Statics.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -199,7 +225,6 @@
     <Compile Include="Controller3D\Controller3D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BaseUtils\ColorObjectExtensions.cs" />
-    <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\ControlHelpers.cs" />
     <Compile Include="BaseUtils\BitMapHelpers.cs" />
     <Compile Include="BaseUtils\DisposableDictionary.cs" />
@@ -242,6 +267,15 @@
     <None Include="Readme.txt" />
     <None Include="Resources\Calendar.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="docexternlinks.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets" Condition="Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets'))" />
+  </Target>
 </Project>

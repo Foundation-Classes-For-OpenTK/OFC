@@ -16,43 +16,54 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Buffers
 {
-    // Class holds a MatrixBuffer, as used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
-    // [0,3] = image index, [1,3] = ctrl word (<0 not shown, 0++ ctrl as per GLPL)
-    // You can delete by tag name or clear all
-    // You can delete by generation
+    /// <summary>
+    /// This namespace contains various complex buffer objects which allow the GL buffers to the manipulated efficiently.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
+    /// Class holds a Buffer, filled with Matrices. Used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
+    /// [0,3] = image index, [1,3] = ctrl word ( less than 0 not shown, 0++ ctrl as per GLPL)
+    /// You can delete by tag name or clear all
+    /// You can delete by generation
+    /// </summary>
 
     public class GLMatrixBufferWithGenerations : IDisposable
     {
+        /// <summary> Number of entries </summary>
         public int Count { get { return entries.Count; } }
+        /// <summary> Entries left</summary>
         public int Left { get { return Max - (entries.Count - Deleted); } }
+        /// <summary> Now many are deleted in the list </summary>
         public int Deleted { get; private set; } = 0;
+        /// <summary> Maximum size </summary>
         public int Max { get; private set; } = 0;
 
+        /// <summary> The matrix buffer itself </summary>
         public GLBuffer MatrixBuffer { get; private set; }
 
-        private class EntryInfo
-        {
-            public Object tag;
-            public IDisposable data { get; set; }   // only disposed if non null
-            public uint generation { get; set; } = int.MaxValue;     // 0 = newest, MaxValue = empty
-            public bool empty { get; set; } = true;
-        }
-
-        private List<EntryInfo> entries = new List<EntryInfo>();
-
-        public GLMatrixBufferWithGenerations(GLItemsList items, int groupsize)
+        /// <summary> Construct, on an item list, a buffer with this size </summary>
+        public GLMatrixBufferWithGenerations(GLItemsList items, int maximumsize)
         {
             MatrixBuffer = new GLBuffer();
             items.Add(MatrixBuffer);
-            Max = groupsize;
+            Max = maximumsize;
             MatrixBuffer.AllocateBytes(Max * GLLayoutStandards.Mat4size);
             MatrixBuffer.AddPosition(0);        // CreateMatrix4 needs to have a position
         }
 
-        // return position added as index. If tag == null, you can't find it again
-        public int Add(Object tag, IDisposable data, Matrix4 mat, uint generation)
+        /// <summary>
+        /// Add an entry to the buffer
+        /// </summary>
+        /// <param name="tag">User tag to identify the entry, may be null</param>
+        /// <param name="data">User disposable data to hold for this entry, may be null</param>
+        /// <param name="matrix">Matrix to store</param>
+        /// <param name="generation">Generation of matrix</param>
+        /// <returns>return position added as index.</returns>
+
+        public int Add(Object tag, IDisposable data, Matrix4 matrix, uint generation)
         {
             var entry = new EntryInfo() { tag = tag, data = data, generation = generation, empty = false };
 
@@ -72,16 +83,17 @@ namespace GLOFC.GL4
             }
 
             //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
-            mat[0, 3] = pos;     // store pos of image in stack
+            matrix[0, 3] = pos;     // store pos of image in stack
 
             MatrixBuffer.StartWrite(GLLayoutStandards.Mat4size * pos, GLLayoutStandards.Mat4size);
-            MatrixBuffer.Write(mat);
+            MatrixBuffer.Write(matrix);
             MatrixBuffer.StopReadWrite();
 
             //float[] stored = MatrixBuffer.ReadFloats(GLLayoutStandards.Mat4size * pos, 16, true);
             return pos;
         }
 
+        /// <summary> Remove entry at position (entry is nulled except matrix[1,3] is set to -1)</summary>
         public bool RemoveAt(int i)
         {
             if (i >= 0 && i < entries.Count && entries[i].empty == false )      // if valid to remove
@@ -103,6 +115,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
+        /// <summary> Set the visibility and rotation of a matrix</summary>
         public bool SetVisibilityRotation(int i, float ctrl)            // reset the ctrl word at [1,3] of a particular entry
         {
             if (i >= 0 && i < entries.Count && entries[i].empty == false)      // in range and not empty
@@ -117,6 +130,7 @@ namespace GLOFC.GL4
                 return false;
         }
 
+        /// <summary> Get Matrix. If does not exist, return empty matrix</summary>
         public Matrix4 GetMatrix(int i)
         {
             if (i >= 0 && i < entries.Count && entries[i].empty == false)      // in range and not empty
@@ -130,10 +144,14 @@ namespace GLOFC.GL4
                 return Matrix4.Zero;
         }
 
-        // if keeplist, and its in the list, generation = currentgeneration and kept
-        // else if <= removegeneration (modulo), remove
-        // return relative index giving the different between the current gen and the maximum generation found
-
+        /// <summary>
+        /// Remove a generation from the buffer
+        /// </summary>
+        /// <param name="removegeneration">Remove all generations less or equal to this generation</param>
+        /// <param name="currentgeneration">Current generation</param>
+        /// <param name="tagtoentries">Tag to entry list to update on removal of each item, this tag is removed from this list on removal</param>
+        /// <param name="keeplist">if keeplist is set, and its in the list, the generation is reset to currentgeneration and its kept</param>
+        /// <returns>return relative index giving the different between the current gen and the maximum generation found</returns>
         public uint RemoveGeneration(uint removegeneration, uint currentgeneration,
                                              Dictionary<object, Tuple<GLMatrixBufferWithGenerations, int>> tagtoentries,
                                              HashSet<object> keeplist = null )
@@ -190,6 +208,7 @@ namespace GLOFC.GL4
             return oldestgenfound;
         }
 
+        /// <summary> Clear all entries (all entries are nulled except matrix[1,3] is set to -1)</summary>
         public void Clear()
         {
             for (int i = 0; i < entries.Count; i++)
@@ -208,6 +227,7 @@ namespace GLOFC.GL4
             Deleted = entries.Count;
         }
 
+        /// <summary> Dispose of the buffer </summary>
         public void Dispose()
         {
             if (entries != null)
@@ -221,6 +241,17 @@ namespace GLOFC.GL4
                 entries = null;
             }
         }
+
+        private class EntryInfo
+        {
+            public Object tag;
+            public IDisposable data { get; set; }   // only disposed if non null
+            public uint generation { get; set; } = int.MaxValue;     // 0 = newest, MaxValue = empty
+            public bool empty { get; set; } = true;
+        }
+
+        private List<EntryInfo> entries = new List<EntryInfo>();
+
     }
 }
 

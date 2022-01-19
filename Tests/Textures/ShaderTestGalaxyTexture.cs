@@ -14,12 +14,17 @@
 
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -105,7 +110,7 @@ void main(void)
             };
 
 
-            items.Add( new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add( new GLColorShaderWorld(), "COSW");
             GLRenderState rl1 = GLRenderState.Lines(1);
 
             {
@@ -133,7 +138,7 @@ void main(void)
 
             rObjects.Add(items.Shader("TEX-NC"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rg,
-                        GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("gal"), new Vector3(0, 0, 0))
                         ));
 

@@ -13,27 +13,31 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders taking world positions
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Texture, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions. W contains encoded red, next green, blue in 24 bit quantity
-    //      uniform buffer 0 : GL MatrixCalc
-    // Out:
-    //      gl_Position
-    //      location 0 : vs_textureCoordinate per triangle strip rules - use a fragment shader which understands the order (GLPLFragmentShaderTextureTriStrip)
-    //      location 1 : worldpos
-    //      location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
-    //      location 3 : flat out color carried in vertex as a packed RGB value from input location 0 w co-ord
+    /// <summary>
+    ///  Pipeline shader, Texture, Worldpos, transform
+    ///  Requires:
+    ///       location 0 : position: vec4 vertex array of positions. W contains encoded red, next green, blue in 24 bit quantity
+    ///       uniform buffer 0 : GL MatrixCalc
+    ///  Out:
+    ///       gl_Position
+    ///       location 0 : vs_textureCoordinate per triangle strip rules - use a fragment shader which understands the order (GLPLFragmentShaderTextureTriStrip)
+    ///       location 1 : worldpos
+    ///       location 2 : flat out vertexid to tell the frag shader what vertex its on instead of using primitive_ID which does not work with primitive restart (does no reset).
+    ///       location 3 : flat out color carried in vertex as a packed RGB value from input location 0 w co-ord
+    /// </summary>
 
-    public class GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderWorldTextureTriStrip : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderTextureWorldCoordWithTriangleStripCoordWRGB()
+        /// <summary> Constructor </summary>
+        public GLPLVertexShaderWorldTextureTriStrip()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

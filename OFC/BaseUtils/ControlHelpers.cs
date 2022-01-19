@@ -17,9 +17,9 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-// from BaseUtils abridged
+#pragma warning disable 1591
 
-namespace GLOFC
+namespace GLOFC.Utils
 {
     public static class ControlHelpersStaticFunc
     {

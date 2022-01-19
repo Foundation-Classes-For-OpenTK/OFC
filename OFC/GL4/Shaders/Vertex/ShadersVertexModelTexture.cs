@@ -12,28 +12,34 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders, having a model input, texture coords
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Translation, Texture, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords, w is ignored
-    //      location 1 : vec2 texture co-ords
-    //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    // Out:
-    //      gl_Position
-    //      location 0: vs_textureCoordinate
-    //      location 1: modelpos
+    /// <summary>
+    /// Shader, Translation, Texture, Modelpos, transform
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
+    ///      location 1 : vec2 texture co-ords
+    ///      uniform buffer 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 array of transforms
+    /// Out:
+    ///      gl_Position
+    ///      location 0: vs_textureCoordinate
+    ///      location 1: modelpos
+    /// </summary>
 
-
-    public class GLPLVertexShaderTextureModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelTextureTranslation : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderTextureModelCoordWithObjectTranslation(bool saveable = false)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="saveable">Is shader to be saveable</param>
+        public GLPLVertexShaderModelTextureTranslation(bool saveable = false)
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, saveable: saveable);
         }
@@ -69,28 +75,34 @@ void main(void)
         }
     }
 
+    ///<summary>
+    /// Shader, Translation, Texture, autoscale and with matrix controlling rotation, position
+    /// image scaling with min/max per object
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions model coords
+    ///      location 1 : vec2 texture co-ordinates
+    ///      location 4 : transform: mat4 array of transforms.  position and rotation only, unit size, with:
+    ///                   [0][3] = image min size (autoscale>0)
+    ///                   [1][3] = image max size (autoscale>0)
+    ///                   [2][3] = image scaling (autoscale>0)
+    ///                   [3][3] = image no
+    ///      uniform buffer 0 : GL MatrixCalc
+    /// Out:
+    ///      location 0 : vs_textureCoordinate
+    ///      location 1 : modelpos
+    ///      location 2 : instance count
+    ///      location 4 : transform[3][3] image no value as int
+    ///      gl_Position
+    /// </summary>
 
-    // Pipeline shader, Translation, Texture, autoscale and with matrix controlling rotation, position
-    // image scaling with min/max per object
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords
-    //      location 1 : vec2 texture co-ordinates
-    //      location 4 : transform: mat4 array of transforms.  position and rotation only, unit size, with:
-    //                   [0][3] = image min size (autoscale>0)
-    //                   [1][3] = image max size (autoscale>0)
-    //                   [2][3] = image scaling (autoscale>0)
-    //                   [3][3] = image no
-    //      uniform buffer 0 : GL MatrixCalc
-    // Out:
-    //      location 0 : vs_textureCoordinate
-    //      location 1 : modelpos
-    //      location 2 : instance count
-    //      location 4 : transform[3][3] image no value as int
-    //      gl_Position
-
-    public class GLPLVertexShaderTextureModelCoordWithMatrixTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelMatrixTexture : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderTextureModelCoordWithMatrixTranslation(float autoscale = 0, bool useeyedistance = true)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
+        /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
+        public GLPLVertexShaderModelMatrixTexture(float autoscale = 0, bool useeyedistance = true)
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
                                                                     "autoscale", autoscale,
@@ -172,24 +184,33 @@ void main(void)
     }
 
 
+    ///<summary>
+    /// Shader, Translation, Texture, Common transform, Object transform, Auto Scale
+    /// uniform 22 should be supplied via RenderItemData
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of model positions
+    ///      location 1 : vec2 texture co-ords
+    ///      uniform 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 array of transforms
+    ///      uniform 23 : commontransform: mat4 array of transforms
+    /// Out:
+    ///      location 0: vs_textureCoordinate
+    ///      gl_Position
+    /// </summary>
 
-    // Pipeline shader, Translation, Texture, Common transform, Object transform, Auto Scale
-    // uniform 22 should be supplied via RenderItemData
-    // Requires:
-    //      location 0 : position: vec4 vertex array of model positions
-    //      location 1 : vec2 texture co-ords
-    //      uniform 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    //      uniform 23 : commontransform: mat4 array of transforms
-    // Out:
-    //      location 0: vs_textureCoordinate
-    //      gl_Position
-
-    public class GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelTranslationTexture : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Rotation to apply </summary>
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
-        public GLPLVertexShaderTextureModelCoordsWithObjectCommonTranslation(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
+        /// <summary>
+        ///  Constructor
+        /// </summary>
+        /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
+        /// <param name="autoscalemin">Minimum to scale to</param>
+        /// <param name="autoscalemax">Maximum to scale to</param>
+        /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
+        public GLPLVertexShaderModelTranslationTexture(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             Transform = new GLRenderDataTranslationRotation();
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
@@ -197,6 +218,7 @@ void main(void)
                                                                     "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
         }
 
+        /// <summary> Start shader </summary>
         public override void Start(GLMatrixCalc c)
         {
             base.Start(c);
@@ -257,29 +279,33 @@ void main(void)
     }
 
 
+    /// <summary>
+    /// Shader, Common Model Translation, Seperate World pos, transform
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
+    ///      location 1 : texco-ords 
+    ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, w ignored
+    ///      uniform buffer 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+    /// Out:
+    ///      gl_Position
+    ///      location 0 : texco
+    ///      location 1 : modelpos
+    ///      location 2 : instance id
+    /// </summary>
 
-    // Pipeline shader, Common Model Translation, Seperate World pos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords, w is ignored
-    //      location 1 : texco-ords 
-    //      location 2 : world-position: vec4 vertex array of world pos for model, instanced, w ignored
-    //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
-    // Out:
-    //      gl_Position
-    //      location 0 : texco
-    //      location 1 : modelpos
-    //      location 2 : instance id
-
-    public class GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderModelWorldTexture : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Rotation to apply </summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
-        public GLPLVertexShaderTextureModelCoordWithWorldTranslationCommonModelTranslation()
+        /// <summary> Constructor </summary>
+        public GLPLVertexShaderModelWorldTexture()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }
 
+        /// <summary> Start shader </summary>
         public override void Start(GLMatrixCalc c)
         {
             Matrix4 a = ModelTranslation;

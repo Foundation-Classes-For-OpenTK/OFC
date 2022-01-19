@@ -15,13 +15,20 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -64,12 +71,12 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOTNoRot");
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add(new GLFixedColorShaderWithObjectTranslation(Color.Goldenrod), "FCOSOT");
-            items.Add(new GLTexturedShaderWithObjectCommonTranslation(), "TEXOCT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEXOTNoRot");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add(new GLFixedColorShaderObjectTranslation(Color.Goldenrod), "FCOSOT");
+            items.Add(new GLTexturedShaderObjectCommonTranslation(), "TEXOCT");
 
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted");
             items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
@@ -95,7 +102,7 @@ namespace TestOpenTk
 
                 rObjects.Add(s, "Quad",
                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 3, -6))
                             ));
 
@@ -169,7 +176,7 @@ namespace TestOpenTk
             System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -232,7 +239,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

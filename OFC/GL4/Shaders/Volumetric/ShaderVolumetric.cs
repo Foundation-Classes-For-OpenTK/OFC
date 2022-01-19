@@ -14,14 +14,16 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Volumetric
 {
-    // vertex and geo shaders for volumetric shading.  You supply the fragment shader yourself, as its different for each use case.
-    // join up using a shader pipelineL:
-    // public Shader() {
-    //          Add(new GLVertexShaderVolumetric(), OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-    //          Add(new GLGeometricShaderVolumetric(), OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-    //          Add(new FragmentPipeline(), OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader); }
+    /// <summary>
+    /// This namespace contains pipeline volumentic shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
+    /// Vertex shader for volumetric shading.  
+    /// </summary>
 
     public class GLPLVertexShaderVolumetric : GLShaderPipelineComponentShadersBase
     {
@@ -43,14 +45,26 @@ void main(void)
 }
             ";
 
+        /// <summary> Constructor </summary>
         public GLPLVertexShaderVolumetric()
         {
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode);
         }
     }
 
+    /// <summary>
+    /// Geometric shader for volumetric shading
+    /// Requires:
+    ///     No vertex gl_position is fed in
+    ///     Location 0: Instance count from vertex shader is used
+    ///     uniform buffer: Volumetric info containing the point block and slice information - see shader
+    /// </summary>
     public class GLPLGeometricShaderVolumetric : GLShaderPipelineComponentShadersBase
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="bufferbindingpoint">Uniform buffer with volumetric info - see shader</param>
         public GLPLGeometricShaderVolumetric(int bufferbindingpoint)
         {
             CompileLink(ShaderType.GeometryShader, "#include Shaders.Volumetric.volumetricgeoshader.glsl", new object[] { "bufferbp", bufferbindingpoint } );

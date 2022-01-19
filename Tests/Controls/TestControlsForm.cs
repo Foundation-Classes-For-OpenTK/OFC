@@ -24,6 +24,14 @@ using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
 using System.Globalization;
+using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
+using static GLOFC.GL4.Controls.GLBaseControl;
+using static GLOFC.GL4.Controls.GLForm;
 
 namespace TestOpenTk
 {
@@ -65,33 +73,6 @@ namespace TestOpenTk
             }
         }
 
-        class MatrixCalcSpecial : GLMatrixCalc
-        {
-            public MatrixCalcSpecial()
-            {
-                ScreenCoordMax = new Size(2000, 1000);
-                //ScreenCoordClipSpaceSize = new SizeF(1.8f, 1.8f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.9f, 0.9f);
-                //ScreenCoordClipSpaceSize = new SizeF(1f, 1f);
-                //ScreenCoordClipSpaceOffset = new PointF(-0.5f, 0.5f);
-            }
-
-            public override void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
-            {
-                if (!(sender is Controller3D))         // ignore from 3dcontroller as it also sends it, but it will be reporting the size of the display window
-                {
-                    System.Diagnostics.Debug.WriteLine("Set GL Screensize {0}", newsize);
-                    ScreenSize = newsize;
-                    ScreenCoordMax = newsize;
-                    int margin = 0;
-                    ViewPort = new Rectangle(new Point(margin, margin), new Size(newsize.Width - margin * 2, newsize.Height - margin * 2));
-                    SetViewPort();
-                }
-            }
-
-
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -130,7 +111,7 @@ namespace TestOpenTk
             float h = 0;
             if ( h != -1)
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
@@ -148,7 +129,7 @@ namespace TestOpenTk
 
             }
 
-            MatrixCalcSpecial mc = new MatrixCalcSpecial();
+            GLMatrixCalc mc = new GLMatrixCalc();
             mc.PerspectiveNearZDistance = 1f;
             mc.PerspectiveFarZDistance = 500000f;
 
@@ -184,10 +165,10 @@ namespace TestOpenTk
                     pform.Add(lab1);
 
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Configuration Dialog");
-                    b1.Margin = new Margin(2);
+                    b1.Margin = new MarginType(2);
                     b1.AutoSize = true;
                     b1.TabOrder = taborder++;
-                    b1.Padding = new GLOFC.GL4.Controls.Padding(5);
+                    b1.Padding = new PaddingType(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
                     pform.Add(b1);
@@ -202,9 +183,9 @@ namespace TestOpenTk
                     pform.Add(b2);
 
                     GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Font");
-                    b3.Margin = new Margin(2);
+                    b3.Margin = new MarginType(2);
                     b3.TabOrder = taborder++;
-                    b3.Padding = new GLOFC.GL4.Controls.Padding(5);
+                    b3.Padding = new PaddingType(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
                     b3.Click += (c, ev) => {
                         displaycontrol.Font = new Font("Times", 12);
@@ -213,14 +194,14 @@ namespace TestOpenTk
 
                     GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
                     b4.TabOrder = taborder++;
-                    b4.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b4.Padding = new PaddingType(2);
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
                     pform.Add(b4);
 
                     GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Conf2");
                     b5.TabOrder = taborder++;
-                    b5.Padding = new GLOFC.GL4.Controls.Padding(2);
+                    b5.Padding = new PaddingType(2);
                     b5.ToolTipText = "Button 5 tip\r\nLine 2 of it";
                     b5.Click += (c, ev) => { ConfDialog2(); };
                     pform.Add(b5);
@@ -236,7 +217,7 @@ namespace TestOpenTk
                 if (true)
                 {
                     GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
-                    cb1.Margin = new Margin(16, 8, 16, 8);
+                    cb1.Margin = new MarginType(16, 8, 16, 8);
                     cb1.TabOrder = taborder++;
                     cb1.ToolTipText = "Combo Box";
                     pform.Add(cb1);
@@ -255,16 +236,16 @@ namespace TestOpenTk
                 {
 
                     GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "Normal");
-                    chk1.Margin = new Margin(16, 0, 0, 0);
+                    chk1.Margin = new MarginType(16, 0, 0, 0);
                     chk1.TabOrder = taborder++;
                     pform.Add(chk1);
                     GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "Radio");
-                    chk2.Appearance = CheckBoxAppearance.Radio;
+                    chk2.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk2.TabOrder = taborder++;
                     chk2.Checked = true;
                     pform.Add(chk2);
                     GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "Button");
-                    chk3.Appearance = CheckBoxAppearance.Button;
+                    chk3.Appearance = GLCheckBox.CheckBoxAppearance.Button;
                     chk3.TabOrder = taborder++;
                     chk3.BackColor = Color.FromArgb(200, 200, 200);
                     pform.Add(chk3);
@@ -272,12 +253,12 @@ namespace TestOpenTk
                     chk4.TabOrder = taborder++;
                     pform.Add(chk4);
                     GLCheckBox chk5 = new GLCheckBox("Checkbox5", new Rectangle(350, 150, 0, 0), "R1");
-                    chk5.Appearance = CheckBoxAppearance.Radio;
+                    chk5.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk5.GroupRadioButton = true;
                     chk5.TabOrder = taborder++;
                     pform.Add(chk5);
                     GLCheckBox chk6 = new GLCheckBox("Checkbox6", new Rectangle(400, 150, 0, 0), "R2");
-                    chk6.Appearance = CheckBoxAppearance.Radio;
+                    chk6.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk6.GroupRadioButton = true;
                     chk6.TabOrder = taborder++;
                     pform.Add(chk6);
@@ -286,7 +267,7 @@ namespace TestOpenTk
                     chk7.Enabled = false;
                     pform.Add(chk7);
                     GLCheckBox chk8 = new GLCheckBox("Checkbox8", new Rectangle(100, 175, 0, 0), "Disabled");
-                    chk8.Appearance = CheckBoxAppearance.Radio;
+                    chk8.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk8.TabOrder = taborder++;
                     chk8.Enabled = false;
                     pform.Add(chk8);
@@ -296,7 +277,7 @@ namespace TestOpenTk
                     chk9.Checked = true;
                     pform.Add(chk9);
                     GLCheckBox chk10 = new GLCheckBox("Checkbox10", new Rectangle(300, 175, 0, 0), "CDisabled");
-                    chk10.Appearance = CheckBoxAppearance.Radio;
+                    chk10.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk10.TabOrder = taborder++;
                     chk10.Enabled = false;
                     chk10.Checked = true;
@@ -326,53 +307,11 @@ namespace TestOpenTk
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     lb1.ShowFocusBox = true;
+                    lb1.ScrollBarTheme.SliderColor = Color.AliceBlue;
+                    lb1.ScrollBarTheme.ThumbButtonColor = Color.Blue;
                     //lb1.FitToItemsHeight = false;
                     pform.Add(lb1);
                     lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
-                }
-
-                if (true)
-                {
-                    string l = "";
-                    for (int i = 0; i < 5; i++)
-                    {
-                        string s = string.Format("Line " + i);
-                        if (i == 0)
-                            s += "And a much much longer Line which should break the width";
-                        l += s + "\r\n";
-                    }
-                    l += "trail ";
-                    // l = "";
-
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 200), l);
-                    mtb.Font = new Font("Ms Sans Serif", 16);
-                    mtb.LineColor = Color.Green;
-                    mtb.EnableVerticalScrollBar = true;
-                    mtb.EnableHorizontalScrollBar = true;
-                    mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    mtb.TabOrder = taborder++;
-                    mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
-                    pform.Add(mtb);
-                    //mtb.FlashingCursor = false;
-                    //mtb.ReadOnly = true;
-
-                    GLMultiLineTextBox mtb2 = new GLMultiLineTextBox("mltb2", new Rectangle(500, 400, 495, 200), l);
-                    mtb2.Font = new Font("Ms Sans Serif", 11);
-                    mtb2.LineColor = Color.Green;
-                    mtb2.EnableVerticalScrollBar = true;
-                    mtb2.EnableHorizontalScrollBar = true;
-                    mtb2.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    mtb2.TabOrder = taborder++;
-                    mtb2.RightClickMenuFont = new Font("Arial", 14f);
-                    pform.Add(mtb2);
-                }
-
-                if (true)
-                {
-                    GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
-                    tb1.Font = new Font("Arial", 12);
-                    tb1.TabOrder = taborder++;
-                    pform.Add(tb1);
                 }
 
                 if (true)
@@ -396,11 +335,18 @@ namespace TestOpenTk
                 if (true)
                 { 
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
+                    glf.BackColor = Color.AliceBlue;
                     glf.TabOrder = taborder++;
                     glf.Font = new Font("Ms Sans Serif", 12);
                     glf.Minimum = -1000;
                     glf.Maximum = 1000;
+                    glf.ValueChanged += (a) => { System.Diagnostics.Debug.WriteLine("GLF value changed"); };
+                    glf.ValidityChanged += (a,b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
                     pform.Add(glf);
+
+                    GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(610, 250, 40, 15), "Value");
+                    glfbut.Click += (e1, b1) => { glf.Value = 20.22f; };
+                    pform.Add(glfbut);
 
                     GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
                     gla.TabOrder = taborder++;
@@ -511,8 +457,9 @@ namespace TestOpenTk
             GLFormConfigurable cform = new GLFormConfigurable("test");
             cform.Add(new GLFormConfigurable.Entry("Lab1", typeof(GLLabel), "Label 1 ", new Point(10, 10), new Size(200, 24), "TT"));
             cform.Add(new GLFormConfigurable.Entry("But1", typeof(GLButton), "But 1", new Point(10, 40), new Size(200, 24), "TT"));
-            cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new List<string>() { "one", "two", "three" }));
+            cform.Add(new GLFormConfigurable.Entry("Com1", "two", new Point(10, 70), new Size(200, 24), "TT", new string[] { "one", "two", "three" }));
             cform.Add(new GLFormConfigurable.Entry("Textb", typeof(GLTextBox), "text box", new Point(10, 100), new Size(200, 24), "TT"));
+            cform.Add(new GLFormConfigurable.Entry("Double", typeof(GLNumberBoxDouble), "10.2", new Point(10, 100), new Size(200, 24), "TT"));
             cform.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(160, 300), new Size(100, 24), "TT") { Anchor = AnchorType.Right | AnchorType.Bottom });
             cform.InitCentered("Config Form Test");
             cform.Trigger += (cb, en, ctrlname, args) =>
@@ -560,7 +507,7 @@ namespace TestOpenTk
             for (int i = 0; i < 100; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(int.MinValue, 500), t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel, callback:MsgReturn);
         }
 
         private void MsgDialog2()
@@ -571,10 +518,10 @@ namespace TestOpenTk
 
             //            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message\r\nShorter than\r\nThe other" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
             //GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, "Longer message message\r\nShorter than\r\nThe other", "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore, callback: MsgReturn);
         }
 
-        private void MsgReturn(GLMessageBox msg, GLOFC.GL4.Controls.DialogResult res)
+        private void MsgReturn(GLMessageBox msg, DialogResultEnum res)
         {
             System.Diagnostics.Debug.WriteLine("!!! Message box " + res);
         }
@@ -582,7 +529,7 @@ namespace TestOpenTk
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -591,7 +538,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            GLOFC.Timers.Timer.ProcessTimers();
+            PolledTimer.ProcessTimers();
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();

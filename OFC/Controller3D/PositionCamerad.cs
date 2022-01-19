@@ -14,6 +14,7 @@
 *
 */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
 using System.Diagnostics;
@@ -22,29 +23,33 @@ using System.Windows.Forms;
 
 namespace GLOFC.Controller
 {
+    /// <summary>
+    /// Holds position (lookat, eye) and camera direction
+    /// </summary>
     public class PositionCamerad        // holds lookat and eyepositions and camera
     {
         #region Positions
-
+        /// <summary> Lookat position </summary>
         public Vector3d LookAt { get { return lookat; }  }
+        /// <summary> Eye position </summary>
         public Vector3d EyePosition { get { return eyeposition; }  }
 
+        /// <summary> Eye distance </summary>
         public double EyeDistance { get { return (lookat - EyePosition).Length; } }
 
+        /// <summary> Translate eye and lookout </summary>
         public void Translate(Vector3d pos, bool killslew = true)
         {
             if ( killslew) KillSlew();  lookat += pos;  eyeposition += pos;
         }
-
+        
+        /// <summary> Move look at to value, with optional kill slew </summary>
         public void MoveLookAt(Vector3d value, bool killslew = true)
         {
             if ( killslew) KillSlew(); var eyeoffset = eyeposition - lookat; lookat = value; eyeposition = lookat + eyeoffset;
         }
 
-        //public Vector3d LookAt { get { return lookat; } set {  } }
-        //public Vector3d EyePosition { get { return eyeposition; } set { KillSlew(); Vector3d eyeoffset = eyeposition - lookat; eyeposition = value; lookat = eyeposition - eyeoffset; } }
-
-        // time <0 estimate, 0 instant >0 time
+        /// <summary> Slew to lookat position. Timeslewsec is 0 for immediate, less than 0 for automatic calc, else seconds. unitspersecond determines speed for automatic </summary>
         public void GoTo(Vector3d gotopos, double timeslewsec = 0, double unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             if (!double.IsNaN(gotopos.X))
@@ -75,12 +80,14 @@ namespace GLOFC.Controller
             }
         }
 
+        /// <summary> Go to and zoom in. Timeslewsec is 0 for immediate, less than 0 for automatic calc, else seconds. unitspersecond determines speed for automatic</summary>
         public void GoToZoom(Vector3d gotopos, double zoom, double timeslewsec = 0, double unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             GoTo(gotopos, timeslewsec, unitspersecond);
             GoToZoom(zoom, Math.Max(targetposSlewTime, 1));
         }
 
+        /// <summary> Go to and zoom in and pan. Timeslewsec is 0 for immediate, less than 0 for automatic calc, else seconds. unitspersecond determines speed for automatic</summary>
         public void GoToZoomPan(Vector3d gotopos, Vector2d cameradir, double zoom, double timeslewsec = 0, double unitspersecond = 10000F)       // may pass a Nan Position - no action. Y is normal sense
         {
             GoTo(gotopos, timeslewsec, unitspersecond);
@@ -93,13 +100,17 @@ namespace GLOFC.Controller
 
         #region Camera
 
-        // camera is in degrees
-        // camera.x rotates around X, counterclockwise, = 0 (up), 90 = (forward), 180 (down)
-        // camera.y rotates around Y, counterclockwise, = 0 (forward), 90 = (to left), 180 (back), -90 (to right)
+        /// <summary> 
+        /// Camera position in degrees
+        /// camera.x rotates around X, counterclockwise, = 0 (up), 90 = (forward), 180 (down)
+        /// camera.y rotates around Y, counterclockwise, = 0 (forward), 90 = (to left), 180 (back), -90 (to right)
+        /// </summary>
         public Vector2d CameraDirection { get { return cameradir; } set { KillSlew(); cameradir = value; SetLookatPositionFromEye(value, EyeDistance); } }
 
+        /// <summary> Camera Rotation around its axis</summary>
         public double CameraRotation { get { return camerarot; } set { KillSlew(); camerarot = value; } }       // rotation around Z
 
+        /// <summary> Rotate camera by an amount.  If changelookat = true, we move the lookat, else we move the eye</summary>
         public bool RotateCamera(Vector2d addazel, double addzrot, bool changelookat)
         {
             KillSlew();
@@ -130,7 +141,7 @@ namespace GLOFC.Controller
             // System.Diagnostics.Debug.WriteLine("{0} Camera moved to {1} Eye {2} Zoom Fact {3} Eye dist {4}", Environment.TickCount % 10000, lookat, eyeposition, ZoomFactor, EyeDistance);
         }
 
-        // Pan to camera position, time = 0 immediate, <0 estimate, else time to slew in seconds
+        /// <summary> Pan to camera position, time = 0 immediate, less than 0 estimate, else time to slew in seconds</summary>
         public void Pan(Vector2d newcamerapos, double timeslewsec = 0)
         {
             if (timeslewsec == 0)
@@ -153,31 +164,37 @@ namespace GLOFC.Controller
             }
         }
 
-        // Pan to target, time = 0 immeidate, else time to slew
+        /// <summary> Pan to target, time = 0 immediate, else time to slew</summary>
         public void PanTo(Vector3d target, double timeslewsec = 0)
         {
             Vector2d camera = EyePosition.AzEl(target, true);
             Pan(camera, timeslewsec);
         }
 
-        // time = 0 estimate
-        public void PanZoomTo(Vector3d target, double zoom, double time = 0)
+        /// <summary> Pan to and zoom to target, time = 0 immediate, else time to slew in seconds</summary>
+        public void PanZoomTo(Vector3d target, double zoom, double timeslewsec = 0)
         {
             Vector2d camera = EyePosition.AzEl(target, true);
-            Pan(camera, time);
-            GoToZoom(zoom, time);
+            Pan(camera, timeslewsec);
+            GoToZoom(zoom, timeslewsec);
         }
 
         #endregion
 
         #region Zoom
 
+        /// <summary> Zoom factor. At zoom factor 1, distance is Zoom1Distance </summary>
         public double ZoomFactor { get { return Zoom1Distance / EyeDistance; } set { KillSlew(); Zoom(value); } }
-        public double Zoom1Distance { get; set; } = 1000F;                     // distance that Current=1 will be from the Position, in the direction of the camera.
-        public double ZoomMax = 300F;            // Default out Current
-        public double ZoomMin = 0.01F;           // Iain special ;-) - this depends on znear (the clip distance - smaller you can Current in more) and Zoomdistance.
-        public double ZoomScaling = 1.258925F;      // scaling
+        /// <summary> Distance at zoom 1</summary>
+        public double Zoom1Distance { get; set; } = 1000F;                     
+        /// <summary> Maximum zoom </summary>
+        public double ZoomMax = 300F;           
+        /// <summary> Minimum zoom </summary>
+        public double ZoomMin = 0.01F;           
+        /// <summary> Scaling for using zoom direction scaling</summary>
+        public double ZoomScaling = 1.258925F;
 
+        /// <summary> Scale zoom in a direction (true = increase) </summary>
         public void ZoomScale(bool direction)
         {
             KillSlew();
@@ -198,7 +215,7 @@ namespace GLOFC.Controller
             Zoom(newzoomfactor);
         }
 
-        // to to zoom, time 0 = immediate, <0 estimate, >0 in seconds
+        /// <summary> Goto to zoom. Time = 0 immediate, less than 0 estimate, else seconds </summary>
         public void GoToZoom(double z, double timetozoom = 0)        // <0 means auto estimate
         {
             z = Math.Max(Math.Min(z, ZoomMax), ZoomMin);
@@ -224,6 +241,7 @@ namespace GLOFC.Controller
             }
         }
 
+        /// <summary> Goto Zoom </summary>
         public void Zoom(double newzoomfactor)
         {
             newzoomfactor = Math.Max(Math.Min(newzoomfactor, ZoomMax), ZoomMin);
@@ -234,9 +252,11 @@ namespace GLOFC.Controller
 
         #region More Position functions
 
+        /// <summary> Return a string representation of lookat, eyeposition, camera rotation </summary>
         public string StringPositionCamera { get { return $"{lookat.X},{lookat.Y},{lookat.Z},{eyeposition.X},{eyeposition.Y},{eyeposition.Z},{camerarot}"; } }
 
-        public bool SetPositionCamera(string s)     // from StringPositionCamera
+        /// <summary> Set camera lookat, eyeposition, camera rotation from string </summary>
+        public bool SetPositionCamera(string s)     
         {
             string[] sparts = s.Split(',');
             if (sparts.Length == 7)
@@ -249,7 +269,8 @@ namespace GLOFC.Controller
                 return false;
         }
 
-        public void SetPositionCamera(Vector3d lookp, Vector3d eyeposp, double camerarotp = 0)     // set lookat/eyepos, rotation
+        /// <summary> Set camera by lookat, eyeposition, and camera rotation</summary>
+        public void SetPositionCamera(Vector3d lookp, Vector3d eyeposp, double camerarotp = 0)     
         {
             lookat = lookp;
             eyeposition = eyeposp;
@@ -257,7 +278,8 @@ namespace GLOFC.Controller
             cameradir = eyeposition.AzEl(lookat, true);
         }
 
-        public void SetPositionDistance(Vector3d lookp, Vector2d cameradirdegreesp, double distance, double camerarotp = 0)     // set lookat, cameradir, zoom from, rotation
+        /// <summary> Set camera by lookat, camera direction, distance and camera rotation</summary>
+        public void SetPositionDistance(Vector3d lookp, Vector2d cameradirdegreesp, double distance, double camerarotp = 0)    
         {
             lookat = lookp;
             cameradir = cameradirdegreesp;
@@ -265,7 +287,8 @@ namespace GLOFC.Controller
             SetEyePositionFromLookat(cameradir, distance);
         }
 
-        public void SetPositionZoom(Vector3d lookp, Vector2d cameradirdegreesp, double zoom, double camerarotp = 0)     // set lookat, cameradir, zoom from, rotation
+        /// <summary> Set camera by lookat, camera direction, zoom and camera rotation</summary>
+        public void SetPositionZoom(Vector3d lookp, Vector2d cameradirdegreesp, double zoom, double camerarotp = 0)    
         {
             lookat = lookp;
             cameradir = cameradirdegreesp;
@@ -273,13 +296,15 @@ namespace GLOFC.Controller
             SetEyePositionFromLookat(cameradir, Zoom1Distance / zoom);
         }
 
-        public void SetEyePositionFromLookat(Vector2d cameradirdegreesp, double distance)              // from current lookat, set eyeposition, given a camera angle and a distance
+        /// <summary> Set eye position from lookat given camera direction and distance</summary>
+        public void SetEyePositionFromLookat(Vector2d cameradirdegreesp, double distance)          
         {
             eyeposition = lookat.CalculateEyePositionFromLookat(cameradirdegreesp, distance);
             cameradir = cameradirdegreesp;
         }
 
-        public void SetLookatPositionFromEye(Vector2d cameradirdegreesp, double distance)              // from current eye position, set lookat, given a camera angle and a distance
+        /// <summary> Set lookat position from eye given camera direction and distance </summary>
+        public void SetLookatPositionFromEye(Vector2d cameradirdegreesp, double distance)           
         {
             lookat = eyeposition.CalculateLookatPositionFromEye(cameradirdegreesp, distance);
             //  System.Diagnostics.Debug.WriteLine($"setlookat {cameradirdegreesp} distance {distance} resulting distance {(lookat - eyeposition).Length}");
@@ -291,8 +316,10 @@ namespace GLOFC.Controller
 
         #region Slew
 
+        /// <summary> Are we slewing? </summary>
         public bool InSlew { get { return (targetposSlewProgress < 1.0f || zoomSlewTarget > 0 || cameraDirSlewProgress < 1.0f); } }
 
+        /// <summary> Kill all slews </summary>
         public void KillSlew()
         {
             if (targetposSlewProgress < 1)
@@ -304,6 +331,7 @@ namespace GLOFC.Controller
             cameraDirSlewProgress = 1.0f;
         }
 
+        /// <summary> Execute slews. </summary>
         public void DoSlew(int msticks)
         {
             if (targetposSlewProgress < 1.0f)
@@ -384,6 +412,7 @@ namespace GLOFC.Controller
         private Vector3d lasteyepos;
         private double lastcamerarotation;
 
+        /// <summary> Reset difference tracker</summary>
         public void ResetDifferenceTracker()
         {
             lasteyepos = EyePosition;
@@ -391,6 +420,7 @@ namespace GLOFC.Controller
             lastcamerarotation = 0;
         }
 
+        /// <summary> Has distance tracker detected movement </summary>
         public bool IsMoved(double minmovement = 0.1f, double cameramove = 1.0f)
         {
             bool moved = Vector3d.Subtract(lastlookat, LookAt).Length >= minmovement;

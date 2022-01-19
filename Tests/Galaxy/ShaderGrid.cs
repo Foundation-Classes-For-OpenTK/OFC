@@ -2,13 +2,16 @@
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using GLOFC;
-using GLOFC.GL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GLOFC.Utils;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -255,7 +258,7 @@ void main(void)
                     int bsx = sx + majorlines * (i / 3);
                     int bsz = sz + majorlines * (i % 3);
                     string label = bsx.ToStringInvariant() + "," + sy.ToStringInvariant("0") + "," + bsz.ToStringInvariant();
-                    BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, textcol, backcol);
+                    GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, textcol, backcol);
                     texcoords.LoadBitmap(texcoords.BitMaps[i], i, true, 1);
                     //System.Diagnostics.Debug.WriteLine("At {0} Draw {1}", i, label);
                 }
@@ -273,7 +276,7 @@ void main(void)
         public DynamicGridCoordVertexShader(Font f = null)
         {
             texcoords = new GLTexture2DArray();
-            texcoords.CreateTexture(200, 25, 9, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);        // size and number, and the texcoord will own them, so it will dispose of them
+            texcoords.CreateOrUpdateTexture(200, 25, 9, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);        // size and number, and the texcoord will own them, so it will dispose of them
             
             gridfnt = f ?? new Font("MS Sans Serif", 16);
 

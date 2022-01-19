@@ -56,8 +56,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\xml.cs" />
+    <Compile Include="Controls\TestControlsTextBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControlsTextBox.designer.cs">
+      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TestControlsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -69,6 +76,12 @@
     </Compile>
     <Compile Include="Controls\TestControlsMenu.designer.cs">
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\TestControlsDGV.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControlsDGV.designer.cs">
+      <DependentUpon>TestControlsDGV.cs</DependentUpon>
     </Compile>
     <Compile Include="FrameBuffer\TestRenderBuffer.cs">
       <SubType>Form</SubType>
@@ -221,6 +234,12 @@
     <Compile Include="Sync\TestSync.designer.cs">
       <DependentUpon>TestSync.cs</DependentUpon>
     </Compile>
+    <Compile Include="TestRender.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TestRender.designer.cs">
+      <DependentUpon>TestRender.cs</DependentUpon>
+    </Compile>
     <Compile Include="TestSimple.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -353,11 +372,17 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\TestControlsTextBox.resx">
+      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\TestControlsForm.resx">
       <DependentUpon>TestControlsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\TestControlsMenu.resx">
       <DependentUpon>TestControlsMenu.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TestControlsDGV.resx">
+      <DependentUpon>TestControlsDGV.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrameBuffer\TestRenderBuffer.resx">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
@@ -426,6 +451,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sync\TestSync.resx">
       <DependentUpon>TestSync.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TestRender.resx">
+      <DependentUpon>TestRender.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TestSimple.resx">
       <DependentUpon>TestSimple.cs</DependentUpon>

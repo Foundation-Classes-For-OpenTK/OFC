@@ -13,14 +13,12 @@
  * 
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace GLOFC
+#pragma warning disable 1591
+
+namespace GLOFC.Utils
 {
     public static class FileHelpers
     {
@@ -33,30 +31,6 @@ namespace GLOFC
             catch
             {
                 return null;
-            }
-        }
-
-        // if erroriftoobig = false, returns top folder if above is too big for directory depth
-        public static DirectoryInfo GetDirectoryAbove( this DirectoryInfo di, int above, bool errorifpastroot = false )        
-        {
-            while( above > 0 && di.Parent != null )
-            {
-                di = di.Parent;
-                above--;
-            }
-
-            return (errorifpastroot && above >0 ) ? null : di;
-        }
-
-        public static void DeleteFileNoError(string path)
-        {
-            try
-            {
-                File.Delete(path);
-            }
-            catch
-            {       // on purpose no error - thats the point of it
-                //System.Diagnostics.Debug.WriteLine("Exception " + ex);
             }
         }
     }

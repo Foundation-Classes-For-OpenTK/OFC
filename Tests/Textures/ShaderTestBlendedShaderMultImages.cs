@@ -14,6 +14,10 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
@@ -114,7 +118,7 @@ namespace TestOpenTk
                 GLRenderState rq = GLRenderState.Quads(cullface: false);
                 rObjects.Add(items.Shader("ShaderMat"),
                     GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3(-90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3(-90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                             pos2, ic: 3, separbuf: false
                             ));
             }

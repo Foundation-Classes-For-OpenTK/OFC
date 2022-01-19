@@ -15,12 +15,18 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -37,7 +43,7 @@ namespace TestOpenTk
         GLOperationQueryTimeStamp ts1, ts2;
         GLBuffer varyingbuffer;
         Vector4[] shape;
-        GLTransformFeedbackObject tfobj;
+        GLTransformFeedback tfobj;
 
         public TestTransformFeedbackObject()
         {
@@ -68,19 +74,17 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
 
-            var vs = new GLPLVertexShaderColorModelCoordWithObjectTranslation(new string[] { "modelpos" },TransformFeedbackMode.InterleavedAttribs);
+            var vs = new GLPLVertexShaderColorModelObjectTranslation(new string[] { "modelpos" },TransformFeedbackMode.InterleavedAttribs);
             var fs = new GLPLFragmentShaderVSColor();
             var cosot = new GLShaderPipeline(vs, fs);
             items.Add(cosot,"COSOT");
 
-            tfobj = new GLTransformFeedbackObject();
+            tfobj = new GLTransformFeedback();
             items.Add(tfobj);
 
             varyingbuffer = new GLBuffer(10000, true, BufferUsageHint.DynamicCopy);
-            //cosot.StartAction += (a, s) => { tfobj.Bind(); varyingbuffer.BindTransformFeedback(0,tfobj.Id); GLTransformFeedbackObject.BeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles); };
-           // cosot.FinishAction += (s) => { GLTransformFeedbackObject.EndTransformFeedback(); GLBuffer.UnbindTransformFeedback(0, tfobj.Id); GLTransformFeedbackObject.UnBind();  };
 
             ts1 = new GLOperationQueryTimeStamp();
             ts2 = new GLOperationQueryTimeStamp();
@@ -97,7 +101,8 @@ namespace TestOpenTk
                 GLRenderState rc = GLRenderState.Tri(def);
                 rc.CullFace = true;
 
-                rObjects.Add(cosot, new GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType.Triangles, tfobj, varyingbuffer));     // must be in render queue, after shader start
+                var tf = new GLOperationTransformFeedback(TransformFeedbackPrimitiveType.Triangles, tfobj, new GLBuffer[] { varyingbuffer });
+                rObjects.Add(cosot, tf);     // must be in render queue, after shader start
 
                 shape = GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f);
                 rObjects.Add(cosot, "Tri1",
@@ -107,7 +112,7 @@ namespace TestOpenTk
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
                             ));
 
-                rObjects.Add(cosot, new GLOperationEndTransformFeedback(tfobj, varyingbuffer));     // must be in render queue, after shader start
+                rObjects.Add(cosot, new GLOperationEndTransformFeedback(tf));     // must be in render queue, after shader start
             }
 
 
@@ -166,7 +171,7 @@ namespace TestOpenTk
             System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, true);
 
@@ -244,7 +249,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

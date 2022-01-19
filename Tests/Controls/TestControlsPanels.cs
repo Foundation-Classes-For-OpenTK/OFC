@@ -22,6 +22,14 @@ using System.Drawing;
 using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using System.Linq;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
+using GLOFC.Utils;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -125,7 +133,7 @@ namespace TestOpenTk
             float h = 0;
             if ( h != -1)
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 int dist = 1000;
                 Color cr = Color.FromArgb(100, Color.White);
@@ -145,7 +153,7 @@ namespace TestOpenTk
 
 
             {
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
                 items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
 
                 GLRenderState rt = GLRenderState.Tri();
@@ -158,8 +166,8 @@ namespace TestOpenTk
             }
 
             {
-                items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(150, Color.Green)), "FCS1");
-                items.Add(new GLFixedColorShaderWithWorldCoord(Color.FromArgb(80, Color.Red)), "FCS2");
+                items.Add(new GLFixedColorShaderWorld(Color.FromArgb(150, Color.Green)), "FCS1");
+                items.Add(new GLFixedColorShaderWorld(Color.FromArgb(80, Color.Red)), "FCS2");
 
                 GLRenderState rq = GLRenderState.Quads();
 
@@ -191,18 +199,18 @@ namespace TestOpenTk
             if (true)
             {
                 GLPanel p1 = new GLPanel("P3", new Size(150, 150), DockingType.TopLeft, 0);
-                p1.SetMarginBorderWidth(new Margin(1), 1, Color.Black, new GLOFC.GL4.Controls.Padding(1));
+                p1.SetMarginBorderWidth(new MarginType(1), 1, Color.Black, new PaddingType(1));
                 pform.Add(p1);
             }
 
             if (true)
             {
                 GLTableLayoutPanel ptable = new GLTableLayoutPanel("tablelayout", new Rectangle(5, 200, 190, 190));
-                ptable.Margin = new Margin(2);
-                ptable.Padding = new GLOFC.GL4.Controls.Padding(2);
+                ptable.Margin = new MarginType(2);
+                ptable.Padding = new PaddingType(2);
                 ptable.BorderWidth = 1;
-                ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
-                ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Relative, 50) };
+                ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
+                ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
                 pform.Add(ptable);
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
                 pti1.Column = 0; pti1.Row = 0; pti1.Dock = DockingType.Fill;
@@ -221,8 +229,8 @@ namespace TestOpenTk
             if (true)
             {
                 GLFlowLayoutPanel pflow1 = new GLFlowLayoutPanel("flowlayout", new Rectangle(5, 400, 190, 190));
-                pflow1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
-                pflow1.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 0);
+                pflow1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
+                pflow1.FlowPadding = new PaddingType(10, 5, 0, 0);
                 pform.Add(pflow1);
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
                 pflow1.Add(pti1);
@@ -265,22 +273,31 @@ namespace TestOpenTk
             {
                 GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan", new Rectangle(col2, 5, 190, 190));
                 spb1.ScrollBackColor = Color.Yellow;
-                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
-                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                GLButton but = new GLButton("SPB1BUT1", new Rectangle(40, 120, 40, 20), "But1");
+                but.Click += (en, eb) => { System.Diagnostics.Debug.WriteLine("Click on SP Button"); };
+                spb1.Add(but);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i2);
                 spb1.EnableHorzScrolling = false;
             }
 
+            {
+                GLButton but = new GLButton("ButExample", new Rectangle(40, 160, 40, 20), "But1");
+                but.Click += (en, eb) => { System.Diagnostics.Debug.WriteLine("Click on SP Button"); };
+                pform.Add(but);
+            }
             int col3 = 400;
 
             if (true)
             {
                 GLScrollPanelScrollBar spb1 = new GLScrollPanelScrollBar("CSPan2", new Rectangle(col3, 5, 190, 190));
                 spb1.ScrollBackColor = Color.Blue;
-                spb1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
+                spb1.ScrollBarTheme.ThumbButtonColor = Color.Red;
+                spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
                 GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
                 spb1.Add(spb1i1);
@@ -308,8 +325,8 @@ namespace TestOpenTk
                 tc.TabNotSelectedColor = Color.Yellow;
                 tc.TabSelectedColor = Color.Red;
                 tc.TabStyle = new TabStyleRoundedEdge();
-                tc.TabStyle = new TabStyleSquare();
-                tc.TabStyle = new TabStyleAngled();
+                //tc.TabStyle = new TabStyleSquare();
+                //tc.TabStyle = new TabStyleAngled();
                 tc.Font = new Font("Ms Sans Serif", 9);
 
                 GLTabPage tabp1 = new GLTabPage("tabp1", "TAB 1", Color.Blue);
@@ -331,23 +348,27 @@ namespace TestOpenTk
                 tc.Add(tabp4);
 
                 pform.Add(tc);
-                tc.SelectedTab = 0;
+                //     tc.SelectedTab = 0;
+
+                GLButton tabselnone = new GLButton("BTSN", new Rectangle(col2+200+5, 400, 40, 15), "None");
+                tabselnone.Click += ( c12, ev2) => { tc.SelectedTab = -1; };
+                pform.Add(tabselnone);
             }
 
 
             if (true)
             {
                 GLPanel pouter = new GLPanel("outerflow", new Rectangle(col3, 200, 1300, 30));      // make it very wide, so the child has all the width it wants to flow into
-                pouter.SetMarginBorderWidth(new Margin(5), 1, Color.Blue, new Padding(5));
+                pouter.SetMarginBorderWidth(new MarginType(5), 1, Color.Blue, new PaddingType(5));
                 pouter.AutoSize = true;
 
                 GLFlowLayoutPanel pflow2;
                 pflow2 = new GLFlowLayoutPanel("Flowlayout2", new Rectangle(0,0,10,10));
                 pflow2.AutoSize = true;
-                pflow2.Margin = new Margin(2);
-                pflow2.Padding = new GLOFC.GL4.Controls.Padding(2);
+                pflow2.Margin = new MarginType(2);
+                pflow2.Padding = new PaddingType(2);
                 pflow2.BorderWidth = 1;
-                pflow2.FlowPadding = new GLOFC.GL4.Controls.Padding(10, 5, 0, 5);
+                pflow2.FlowPadding = new PaddingType(10, 5, 0, 5);
 
                 GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
                 pflow2.Add(pti1);
@@ -404,7 +425,7 @@ namespace TestOpenTk
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -413,7 +434,7 @@ namespace TestOpenTk
 
         private void SystemTick(object sender, EventArgs e)
         {
-            GLOFC.Timers.Timer.ProcessTimers();
+            PolledTimer.ProcessTimers();
             displaycontrol.Animate(glwfc.ElapsedTimems);
             if (displaycontrol != null && displaycontrol.RequestRender)
                 glwfc.Invalidate();

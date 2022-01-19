@@ -12,21 +12,41 @@
  * governing permissions and limitations under the License.
  */
 
- using OpenTK.Graphics.OpenGL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.Utils;
+using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Tesselation
 {
-    // Pipeline shader, Tesselation , select tess level
-    // input gl_in
-    // input (1) worldposinstance
-    // input (2) instance
-    // output gl_out
-    // output (1) tcs_worldposinstance
-    // output (2) tcs_instance 
+    /// <summary>
+    /// This namespace contains pipeline tesselation shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+    /// <summary>
+    /// Shader, Tesselation , select tess level
+    /// Requires:
+    ///     gl_in
+    ///     1: worldposinstance
+    ///     2: instance
+    /// Output:
+    ///     gl_out
+    ///     1: tcs_worldposinstance
+    ///     2: tcs_instance 
+    /// </summary>
 
     public class GLPLTesselationControl : GLShaderPipelineComponentShadersBase
     {
-        string TCS(float tesselation)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="tess">Tesselation level</param>
+        public GLPLTesselationControl(float tess)
+        {
+            CompileLink(ShaderType.TessControlShader, TCS(tess));
+        }
+
+        private string TCS(float tesselation)
         {
             return
         @"
@@ -75,10 +95,7 @@ void main(void)
 ";
         }
 
-        public GLPLTesselationControl(float tess)
-        {
-            CompileLink(ShaderType.TessControlShader, TCS(tess));
-        }
+
     }
 
 }

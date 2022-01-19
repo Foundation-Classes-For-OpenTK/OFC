@@ -12,8 +12,12 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.Utils;
 using OpenTK;
 using System;
+
+// no xml needed 
+#pragma warning disable 1591
 
 namespace GLOFC
 {
@@ -150,6 +154,16 @@ namespace GLOFC
             }
 
             res += ")";
+            return res;
+        }
+        public string ToList()
+        {
+            string res = "";
+            for (int i = 0; i < 16; i++)
+            {
+                string element = $"m{(i / 4)+1}{(i % 4)+1}={Element[i]}" + Environment.NewLine;
+                res += element;
+            }
             return res;
         }
     }

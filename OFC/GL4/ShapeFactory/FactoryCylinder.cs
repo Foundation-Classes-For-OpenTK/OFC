@@ -13,18 +13,28 @@
  */
 
 using OpenTK;
-using OpenTK.Graphics;
 using System;
-using System.Collections.Generic;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.ShapeFactory
 {
-    // Factory created Cylinder Faces for use
-
+    /// <summary>
+    /// Shape factory for cylinders
+    /// </summary>
     static public class GLCylinderObjectFactory
     {
         // Thanks to https://github.com/doukasd/Unity-Components/blob/master/ProceduralCylinder/Assets/Scripts/Procedural/ProceduralCylinder.cs for the inspiration
 
+        /// <summary>
+        /// Create a cyliner from triangles with text co-ords, using an element index to reduce vertex count
+        /// </summary>
+        /// <param name="radius">Radius of cylinder</param>
+        /// <param name="height">Height of cylinder</param>
+        /// <param name="radialSegments">Number of segments around the circumference. More makes it more smooth</param>
+        /// <param name="heightSegments">Number of segments along the cylinder. More makes it more smooth</param>
+        /// <param name="caps">Produce the caps to the cylinder</param>
+        /// <param name="pos">Optional, offset position to place model</param>
+        /// <param name="ccw">Wind either CCW or CW</param>
+        /// <returns>Tuple of Vector4 vertex, Vector2 tex-coords, element index array</returns>
         public static Tuple<Vector4[], Vector2[], uint[]> CreateCylinderFromTrianglesIndexes(float radius, float height, uint radialSegments, uint heightSegments,
                                                     bool caps,
                                                     Vector3? pos = null, bool ccw = true)
@@ -48,7 +58,7 @@ namespace GLOFC.GL4
             float uvStepV = 1.0f / heightSegments;
 
             uint numSideTris = radialSegments * heightSegments * 2;      // 2 triangles per area
-            uint numCapTris = (caps) ? (radialSegments - 2) : 0;         // if caps on, we have 2 triangles for 4 vertexes, etc, 
+            uint numCapTris = caps ? radialSegments - 2 : 0;         // if caps on, we have 2 triangles for 4 vertexes, etc, 
 
             var Indexes = new uint[numSideTris * 3 + numCapTris * 3 * 2];
 
@@ -56,13 +66,13 @@ namespace GLOFC.GL4
             {
                 for (int i = 0; i < numVertexColumns; i++)
                 {
-                    float angle = (i == numVertexColumns - 1) ? 0 : (i * angleStep);
+                    float angle = i == numVertexColumns - 1 ? 0 : i * angleStep;
 
                     Vertices[j * numVertexColumns + i] = new Vector4(pos.Value.X + radius * (float)Math.Cos(angle),
                                                                      pos.Value.Y + j * heightStep,
                                                                      pos.Value.Z + radius * (float)Math.Sin(angle), 1);
 
-                    UVs[j * numVertexColumns + i] = new Vector2(ccw ? (1 - i * uvStepH) : (i * uvStepH), 1 - j * uvStepV);
+                    UVs[j * numVertexColumns + i] = new Vector2(ccw ? 1 - i * uvStepH : i * uvStepH, 1 - j * uvStepV);
                 }
             }
 
@@ -126,7 +136,17 @@ namespace GLOFC.GL4
             return new Tuple<Vector4[], Vector2[], uint[]>(Vertices, UVs, Indexes);
         }
 
-
+        /// <summary>
+        /// Create a cyliner from triangles with text co-ords
+        /// </summary>
+        /// <param name="radius">Radius of cylinder</param>
+        /// <param name="height">Height of cylinder</param>
+        /// <param name="radialSegments">Number of segments around the circumference. More makes it more smooth</param>
+        /// <param name="heightSegments">Number of segments along the cylinder. More makes it more smooth</param>
+        /// <param name="caps">Produce the caps to the cylinder</param>
+        /// <param name="pos">Optional, offset position to place model</param>
+        /// <param name="ccw">Wind either CCW or CW</param>
+        /// <returns>Tuple of Vector4 vertex, Vector2 tex-coords</returns>
         public static Tuple<Vector4[], Vector2[]> CreateCylinderFromTriangles(float radius, float height, int radialSegments, int heightSegments,
                                                     bool caps,
                                                     Vector3? pos = null, bool ccw = true)
@@ -148,9 +168,9 @@ namespace GLOFC.GL4
                 angleStep = -angleStep;
             float uvStepH = 1.0f / radialSegments;
             float uvStepV = 1.0f / heightSegments;
-            
+
             int numSideTris = radialSegments * heightSegments * 2;      // 2 triangles per area
-            int numCapTris = (caps) ? (radialSegments -2) : 0;         // if caps on, we have 2 triangles for 4 vertexes, etc, top and bot *2
+            int numCapTris = caps ? radialSegments - 2 : 0;         // if caps on, we have 2 triangles for 4 vertexes, etc, top and bot *2
 
             var Tris = new Vector4[numSideTris * 3 + numCapTris * 3 * 2];
             var UVOut = new Vector2[numSideTris * 3 + numCapTris * 3 * 2];
@@ -159,13 +179,13 @@ namespace GLOFC.GL4
             {
                 for (int i = 0; i < numVertexColumns; i++)
                 {
-                    float angle = (i == numVertexColumns - 1) ? 0 : (i * angleStep);
+                    float angle = i == numVertexColumns - 1 ? 0 : i * angleStep;
 
                     Vertices[j * numVertexColumns + i] = new Vector4(pos.Value.X + radius * (float)Math.Cos(angle),
                                                                      pos.Value.Y + j * heightStep,
                                                                      pos.Value.Z + radius * (float)Math.Sin(angle), 1);
 
-                    UVs[j * numVertexColumns + i] = new Vector2(ccw ? (1 - i * uvStepH) : (i * uvStepH), 1 - j * uvStepV);
+                    UVs[j * numVertexColumns + i] = new Vector2(ccw ? 1 - i * uvStepH : i * uvStepH, 1 - j * uvStepV);
                 }
             }
 
@@ -201,10 +221,10 @@ namespace GLOFC.GL4
 
                 bool leftSided = true;
                 int leftIndex = 1;
-                int rightIndex = numVertexColumns-2;
+                int rightIndex = numVertexColumns - 2;
                 int middleIndex = 0;
 
-                for (int i = 0; i < numCapTris ; i++)
+                for (int i = 0; i < numCapTris; i++)
                 {
                     if (i == 0)
                     {
@@ -221,7 +241,7 @@ namespace GLOFC.GL4
                     }
                     leftSided = !leftSided;
 
-                   // System.Diagnostics.Debug.WriteLine("{0} {1} {2}", leftIndex, middleIndex, rightIndex);
+                    // System.Diagnostics.Debug.WriteLine("{0} {1} {2}", leftIndex, middleIndex, rightIndex);
 
                     Tris[captri + 0] = Vertices[leftIndex];
                     Tris[captri + 2] = Vertices[middleIndex];
@@ -231,13 +251,13 @@ namespace GLOFC.GL4
                     UVOut[captri + 2] = UVs[middleIndex];
                     UVOut[captri + 1] = UVs[rightIndex];
 
-                    Tris[captri + 3] = Vertices[botvert+leftIndex];
-                    Tris[captri + 4] = Vertices[botvert+middleIndex];
-                    Tris[captri + 5] = Vertices[botvert+rightIndex];
+                    Tris[captri + 3] = Vertices[botvert + leftIndex];
+                    Tris[captri + 4] = Vertices[botvert + middleIndex];
+                    Tris[captri + 5] = Vertices[botvert + rightIndex];
 
-                    UVOut[captri + 3] = UVs[botvert+leftIndex];
-                    UVOut[captri + 4] = UVs[botvert+middleIndex];
-                    UVOut[captri + 5] = UVs[botvert+rightIndex];
+                    UVOut[captri + 3] = UVs[botvert + leftIndex];
+                    UVOut[captri + 4] = UVs[botvert + middleIndex];
+                    UVOut[captri + 5] = UVs[botvert + rightIndex];
 
                     captri += 6;
                 }

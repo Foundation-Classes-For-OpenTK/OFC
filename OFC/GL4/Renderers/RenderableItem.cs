@@ -22,59 +22,86 @@ using System.Linq;
 
 namespace GLOFC.GL4
 {
-    // Standard renderable item supporting Instancing and draw count, vertex arrays, instance data, element indexes, indirect command buffers
-    // It has a primitive type for Render
-    // It may be associated with a RenderControl state, which is to be applied before executing. If this is null, then the render state is not changed.
-    // it is associated with an optional VertexArray which is bound using Bind()
-    // it is associated with an optional InstanceData which is instanced using Bind()
-    // it is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
-    // it is associated with an optional IndirectBuffer giving draw command groups - this then selected the draw type to use
-    // it is associated with an optional ParameterBuffer (4.6) giving draw data
-
-    // Renderable items are normally put into a GLRenderProgramSortedList by shader, but can be executed directly
-    // using Execute.  This is normally only done for renders which do not produce output but compute to a buffer.
-
-    // Supplied a large range of static creator functions which make a renderable item out of supplied vertex data
+    ///<summary>
+    /// Standard renderable item supporting Instancing and draw count, vertex arrays, instance data, element indexes, indirect command buffers
+    /// It has a primitive type for Render
+    /// It may be associated with a RenderControl state, which is to be applied before executing. If this is null, then the render state is not changed.
+    /// It is associated with an optional VertexArray which is bound using Bind()
+    /// It is associated with an optional InstanceData which is instanced using Bind()
+    /// It is associated with an optional ElementBuffer giving vertex indices for all vertex inputs - this then selects the draw type to use
+    /// It is associated with an optional IndirectBuffer giving draw command groups - this then selected the draw type to use
+    /// It is associated with an optional ParameterBuffer (4.6) giving draw data
+    /// Renderable items are normally put into a GLRenderProgramSortedList by shader, but can be executed directly
+    /// using Execute.  This is normally only done for renders which do not produce output but compute to a buffer.
+    /// Supplied a large range of static creator functions which make a renderable item out of supplied vertex data
+    /// We can draw either arrays (A); element index (E); indirect arrays (IA); indirect element index (IE)
+    /// type is controlled by if ElementBuffer and/or IndirectBuffer is non null
+    ///</summary> 
 
     [System.Diagnostics.DebuggerDisplay("RI {PrimitiveType} d{DrawCount} i{InstanceCount}")]
     public class GLRenderableItem : IGLRenderableItem
     {
-        public bool Visible { get; set; } = true;                           // is visible?
+        ///<summary>Visble flag</summary>
+        public bool Visible { get; set; } = true;
 
-        public PrimitiveType PrimitiveType { get; set; }                    // for Render, the primitive to issue
+        ///<summary>for Render, the primitive to issue</summary>
+        public PrimitiveType PrimitiveType { get; set; }
 
-        public GLRenderState RenderState { get; set; }                      // may be null - if so no explicit render state to apply, use current state
+        /// <summary> Render State. It may be null - if so no explicit render state to apply, use current state </summary>
+        public GLRenderState RenderState { get; set; }
 
-        public IGLVertexArray VertexArray { get; set; }                     // may be null - if so no vertex data. Does not own
+        /// <summary> Vertex Array to bind. It may be null - if so no vertex data. Does not own so it needs to be added to Items list on creation </summary>
+        public IGLVertexArray VertexArray { get; set; }
 
-        // we can draw either arrays (A); element index (E); indirect arrays (IA); indirect element index (IE)
-        // type is controlled by if ElementBuffer and/or IndirectBuffer is non null
+        /// <summary> A+E : Draw count, IE+IA MultiDraw count, ICA+ICE Maximum draw count(don't exceed buffer size when setting this)</summary>
+        public int DrawCount { get; set; } = 0;                           
 
-        public int DrawCount { get; set; } = 0;                             // A+E : Draw count, IE+IA MultiDraw count, ICA+ICE Maximum draw count(don't exceed buffer size when setting this)
+        /// <summary> A+E: Instances (not used in indirect - this comes from the buffer)</summary>
+        public int InstanceCount { get; set; } = 1;                       
+        /// <summary>A+E: Base Instance, normally 0 (not used in indirect - this comes from the buffer) </summary>
+        public int BaseInstance { get; set; } = 0;                         
 
-        public int InstanceCount { get; set; } = 1;                         // A+E: Instances (not used in indirect - this comes from the buffer)
-        public int BaseInstance { get; set; } = 0;                          // A+E: Base Instance, normally 0 (not used in indirect - this comes from the buffer)
+        /// <summary> E+IE: if non null, we doing a draw using a element buffer to control indexes</summary>
+        public GLBuffer ElementBuffer { get; set; }                        
+        /// <summary>IA+IE: if non null, we doing a draw using a indirect buffer to control draws </summary>
+        public GLBuffer IndirectBuffer { get; set; }                       
+        /// <summary>ICA+ICE: if non null, we doing a draw using a parameter buffer to indicate count (needs indirect buffer) </summary>
+        public GLBuffer ParameterBuffer { get; set; }                    
 
-        public GLBuffer ElementBuffer { get; set; }                         // E+IE: if non null, we doing a draw using a element buffer to control indexes
-        public GLBuffer IndirectBuffer { get; set; }                        // IA+IE: if non null, we doing a draw using a indirect buffer to control draws
-        public GLBuffer ParameterBuffer { get; set; }                       // ICA+ICE: if non null, we doing a draw using a parameter buffer to indicate count (needs indirect buffer)
+        /// <summary>E+IE: for element draws, its index type (byte/short/uint) </summary>
+        public DrawElementsType ElementIndexSize { get; set; }            
 
-        public DrawElementsType ElementIndexSize { get; set; }              // E+IE: for element draws, its index type (byte/short/uint)
+        /// <summary> ICA+ICE: Where in the parameter buffer is the control data</summary>
+        public int ParameterBufferOffset { get; set; }                     
 
-        public int ParameterBufferOffset { get; set; }                      // ICA+ICE: Where in the parameter buffer is the control data
+        /// <summary> 
+        /// E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
+        /// IE+IA+ICA+ICE: offset in buffer in bytes to first command entry 
+        /// </summary>
+        public int BaseIndexOffset { get; set; }
 
-        public int BaseIndexOffset { get; set; }                            // E: for element draws, first index element in the element index buffer to use, offset to use different groups. 
-                                                                            // IE+IA+ICA+ICE: offset in buffer in bytes to first command entry 
+        /// <summary>E: for element draws (but not indirect) first vertex to use in the buffer (not used in indirect - this comes from the buffer) </summary>
+        public int BaseVertex { get; set; }                                 
 
-        public int BaseVertex { get; set; }                                 // E: for element draws (but not indirect) first vertex to use in the buffer (not used in indirect - this comes from the buffer)
+        /// <summary>IE+IA: distance between each command buffer entry (default is we use the maximum of elements+array structures) in bytes </summary>
+        public int MultiDrawCountStride { get; set; } = 20;                 
 
-        public int MultiDrawCountStride { get; set; } = 20;                 // IE+IA: distance between each command buffer entry (default is we use the maximum of elements+array structures) in bytes
+        /// <summary>Called on bind, use to bind extra data such as textures or set up uniforms
+        /// may be null - no specific render data. Does not own. </summary>
+        public IGLRenderItemData RenderData { get; set; }
 
-        public IGLRenderItemData RenderData { get; set; }                   // may be null - no specific render data. Does not own.  called at bind
-
-        public GLTransformFeedbackObject TFObj { get; set; }                // TF: if set, do drawtransformfeedback.  Do not use any of the A,E,IA,IE,ICA,ICE variables
+        /// <summary>TF: if set, do drawtransformfeedback.  Do not use any of the A,E,IA,IE,ICA,ICE variables </summary>
+        public GLTransformFeedback TFObj { get; set; }                
+        /// <summary>TFStream associated with transform feedback </summary>
         public int TFStream { get; set; } = 0;
 
+        /// <summary>Create a renderable item.  </summary>
+        /// <param name="pt">The primitive type to render</param>
+        /// <param name="rc">The render state to enforce for this draw</param>
+        /// <param name="drawcount">Number of draws</param>
+        /// <param name="va">Vertex array to bind</param>
+        /// <param name="id">Render data to bind at the draw</param>
+        /// <param name="ic">Instance count</param>
         public GLRenderableItem(PrimitiveType pt, GLRenderState rc, int drawcount, IGLVertexArray va, IGLRenderItemData id = null, int ic = 1)
         {
             PrimitiveType = pt;
@@ -85,24 +112,24 @@ namespace GLOFC.GL4
             InstanceCount = ic;
         }
 
-        // called before Render (normally by RenderList::Render) to set up data for the render.
-        // currentstate may be null, meaning, don't apply
-        // RenderState may be null, meaning don't change
-        public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc c)      
+        /// <summary> Called before Render (normally by RenderList::Render) to set up data for the render.
+        /// currentstate may be null, meaning, don't apply
+        /// RenderState may be null, meaning don't change</summary>
+        public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc matrixcalc)      
         {
             if (currentstate != null && RenderState != null)    // if either null, it means the last render state applied is the same as our render state, so no need to apply
                 currentstate.ApplyState(RenderState);           // else go to this state
 
             VertexArray?.Bind();                                // give the VA a chance to bind to GL
-            RenderData?.Bind(this,shader,c);                    // optional render data supplied by the user to bind
+            RenderData?.Bind(this,shader,matrixcalc);           // optional render data supplied by the user to bind
             ElementBuffer?.BindElement();                       // if we have an element buffer, give it a chance to bind
             IndirectBuffer?.BindIndirect();                     // if we have an indirect buffer, give it a chance to bind
             ParameterBuffer?.BindParameter();                   // if we have a parameter buffer, give it a chance to bind
         }
 
-        // Render - execute shader program on render data supplied by vertex array, any uniforms, etc applied using Bind() above
-        // Shader already set up - RenderableLists sets the shader up before calling this
-
+        /// <summary>Render - submit a draw to GL with the render data provided.  Parameters select the draw type submitted.
+        /// Bind must have been called first.
+        /// The shader must already be set up - RenderableLists sets the shader up before calling this</summary>
         public void Render()                                               
         {
             //System.Diagnostics.Debug.WriteLine("Draw " + RenderControl.PrimitiveType + " " + DrawCount + " " + InstanceCount);
@@ -173,8 +200,8 @@ namespace GLOFC.GL4
 
         #region These create a new RI with vertex arrays into buffers, lots of them 
 
-        // Vector4, Color4, optional instance data and count
-        // in attribute 0 and 1 setup vector4 and vector4 colours
+        /// <summary>Vector4, Color4, optional instance data and count
+        /// in attribute 0 and 1 setup vector4 and vector4 colours</summary>
         public static GLRenderableItem CreateVector4Color4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Color4[] colours, IGLRenderItemData id = null, int ic = 1)
         {
             var vb = items.NewBuffer();                                     // they all follow this pattern, grab a buffer (unless supplied)
@@ -192,7 +219,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);    // create new RI
         }
 
-        // in 0 set up
+        /// <summary>Vector4, in attribute 0</summary> 
         public static GLRenderableItem CreateVector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, 
                                         IGLRenderItemData id = null, int ic = 1)
         {
@@ -205,7 +232,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0 set up. Use a buffer, Must set up drawcount, or set to 0 and reset it later..
+        /// <summary> Use a buffer for Vector4 elements in attribute 0</summary>
         public static GLRenderableItem CreateVector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int drawcount, int pos = 0, 
                                         IGLRenderItemData id = null, int ic = 1)
         {
@@ -215,7 +242,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // in 0,1 set up.  Second vector can be instance divided. Drawcount set to vectors length
+        /// <summary> Two vectors4 in same buffer. Second vector can be instance divided. Drawcount set to vectors length. In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector,
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -232,8 +259,7 @@ namespace GLOFC.GL4
             va.Attribute(1, 1, 4, VertexAttribType.Float);
             return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
         }
-
-        // in 0,1 set up.  Second vector can be instance divided. 
+        /// <summary> Two Vector4s, in buffers. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int drawcount, GLBuffer buf2, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -246,7 +272,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // in 0,1,2 set up.  Second and third vector can be instance divided. Drawcount set to vectors length
+        /// <summary> Two Vector4s, and a Vector2 in one buffer. Second and Third vector can be instance divided.  In attributes 0,1,2</summary>
         public static GLRenderableItem CreateVector4Vector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                         Vector4[] vectors, Vector4[] secondvector, Vector2[] thirdvector,
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0, int thirddivisor = 0)
@@ -269,6 +295,8 @@ namespace GLOFC.GL4
 
             return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
         }
+
+        /// <summary> Two Vector4s, and a Vector2. Second given in buffer. First/Second in one buffer. Second and Third vector can be instance divided.  In attributes 0,1,2</summary>
         public static GLRenderableItem CreateVector4Vector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                         Vector4[] vectors, GLBuffer secondvector, int secondoffset, Vector2[] thirdvector,
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0, int thirddivisor = 0)
@@ -291,7 +319,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,1 set up. Two seperate buffers.  Second vector can be instance divided
+        /// <summary> Two Vector4s, in separate buffers. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector4Buf2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector4[] secondvector, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -312,7 +340,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,1 set up. With second buffer given to us (with a possible bufoff offset). Second vector can be instance divided
+        /// <summary> Two Vector4s, second in a given buffer. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, GLBuffer buf2, int bufoff = 0, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -329,7 +357,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,1 set up. With two given buffers and positions, Second buffer can be instance divided
+        /// <summary> Two Vector4s, both in buffers. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int buf1off, int drawcount, GLBuffer buf2, int buf2off = 0, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -342,7 +370,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt,drawcount, va, id, ic);
         }
 
-        // in 0,1 set up. Second vector can be instance divided
+        /// <summary> Vector4 and Vector2. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Vector2[] coords, 
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -359,7 +387,7 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,1 set up. Second vector can be instance divided
+        /// <summary> Vector4 and Vector2 in one buffer, with buffer given and positions given. Second vector can be instance divided.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int pos1, int pos2, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -371,14 +399,14 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // using output of some shape generators
+        /// <summary> Vector4 and Vector2 in a tuple, into one buffer.  In attributes 0,1</summary>
         public static GLRenderableItem CreateVector4Vector2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Tuple<Vector4[], Vector2[]> vectors, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             return CreateVector4Vector2(items, prim, pt, vectors.Item1, vectors.Item2, id, ic, seconddivisor);
         }
 
-        // using output of some shape generators, with element buffer indices. Normally Vertex, UVs, element indexes.. Not using primitive restart here.
+        /// <summary> Vector4 and Vector2 and index array in a tuple. Element index is created. In attributes 0,1. No primitive restart</summary>
         public static GLRenderableItem CreateVector4Vector2Indexed(GLItemsList items, PrimitiveType prim, GLRenderState pt, Tuple<Vector4[], Vector2[], uint[]> vectors, 
                                             IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
@@ -388,6 +416,7 @@ namespace GLOFC.GL4
             return ri;
         }
 
+        /// <summary> Vector4 and Vector2 and Vector4 in a tuple. See Vector4Vector2Vector4</summary>
         public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                                                    Tuple<Vector4[],Vector2[]> pos, 
                                                                     Vector4[] instanceposition,
@@ -397,10 +426,11 @@ namespace GLOFC.GL4
             return CreateVector4Vector2Vector4(items, prim, pt, pos.Item1, pos.Item2, instanceposition, id, ic, separbuf, divisorinstance);
         }
 
-        // in 0,1,4 set up.  
-        // if separbuffer = true it makes as separate buffer for instanceposition
-        // if separbuffer = true and instanceposition is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
-        // You can get this buffer using items.LastBuffer()
+        ///<summary> Vector4, Vector2 and Vector4 in buffers.  First is model, second is coords, third is instance positions
+        /// if separbuffer = true it makes as separate buffer for instanceposition
+        /// if separbuffer = true and instanceposition is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
+        /// You can get this buffer using items.LastBuffer()
+        ///Attributes 0,1,4 set up.  </summary>
         public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                                                    Vector4[] vectors, Vector2[] coords, Vector4[] instanceposition,
                                                                    IGLRenderItemData id = null, int ic = 1,
@@ -443,10 +473,13 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,1,4-7 set up.  if separbuffer = true and instancematrix is null, it makes a buffer for you to fill up externally.
-        // if separbuffer = true it makes as separate buffer for instancematrix
-        // if separbuffer = true and instancematrix is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
-        // You can get this buffer using items.LastBuffer()
+
+        ///<summary> Vector4, Vector2 and Matrix4 in buffers.  First is model, second is coords, third is instance matrix translation
+        /// if separbuffer = true and instancematrix is null, it makes a buffer for you to fill up externally.
+        /// if separbuffer = true it makes as separate buffer for instancematrix
+        /// if separbuffer = true and instancematrix is null, you fill up the separbuffer yourself outside of this (maybe auto generated).  
+        /// You can get this buffer using items.LastBuffer()
+        /// Attributes in 0,1,4-7 set up.</summary>
 
         public static GLRenderableItem CreateVector4Vector2Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, 
                                                                     Vector4[] vectors, Vector2[] coords, Matrix4[] instancematrix, 
@@ -491,6 +524,10 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
+        ///<summary> Vector4, Vector2 and Matrix4 in buffers.  First is model, second is coords, third is instance matrix translation
+        /// All are supplied by buffer references
+        /// Attributes in 0,1,4-7 set up.</summary>
+
         public static GLRenderableItem CreateVector4Vector2Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt,
                                                                     GLBuffer vbuf1, GLBuffer vbuf2, GLBuffer vbuf3,
                                                                     int vertexcount,
@@ -513,7 +550,8 @@ namespace GLOFC.GL4
         }
 
 
-        // in 0,4-7 set up
+        ///<summary> Vector4 and Matrix4.  
+        /// Attributes in 0,4-7 set up.</summary>
         public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, Matrix4[] matrix, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
@@ -534,7 +572,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,4-7 set up
+        ///<summary> Vector4 and Matrix4. Matrix4 is a buffer reference.
+        /// Attributes in 0,4-7 set up.</summary>
         public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector4[] vectors, GLBuffer matrix, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
@@ -551,7 +590,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0,4-7 set up
+        ///<summary> Vector4 and Matrix4. Both are buffer references.
+        /// Attributes in 0,4-7 set up.</summary>
         public static GLRenderableItem CreateVector4Matrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer shape, GLBuffer matrix, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
@@ -565,7 +605,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // in 4-7 set up
+        ///<summary> Matrix4. 
+        /// Attributes in 4-7 set up.</summary>
         public static GLRenderableItem CreateMatrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, Matrix4[] matrix, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
@@ -582,7 +623,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // in 4-7 set up
+        ///<summary> Matrix4 as a buffer reference.
+        /// Attributes in 4-7 set up.</summary>
         public static GLRenderableItem CreateMatrix4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vb, int bufoffset, int drawcount, 
                                             IGLRenderItemData id = null, int ic = 1, int matrixdivisor = 1)
         {
@@ -592,7 +634,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, drawcount, va, id, ic);
         }
 
-        // in 0 set up
+        ///<summary> Vector3 packed using GLBuffer.FillPacked2vec. Offsets and mult specify range
+        /// Attributes in 0.</summary>
         public static GLRenderableItem CreateVector3Packed2(GLItemsList items, PrimitiveType prim, GLRenderState pt, Vector3[] vectors, Vector3 offsets, float mult, 
                                                 IGLRenderItemData id = null, int ic = 1)
         {
@@ -607,7 +650,8 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);
         }
 
-        // in 0 set up floats with configurable components numbers
+        ///<summary> Floats packed into buffer with configurable component number (1,2,4)
+        /// Attributes in 0.</summary>
         public static GLRenderableItem CreateFloats(GLItemsList items, PrimitiveType prim, GLRenderState pt, float[] floats, int components, 
                                                 IGLRenderItemData id = null, int ic = 1)
         {
@@ -622,9 +666,9 @@ namespace GLOFC.GL4
             return new GLRenderableItem(prim,pt, floats.Length / components, va, id, ic);
         }
 
-        // no data into GL pipeline.  
-        // Used when a uniform buffer gives info for the vertex shader to create vertices
-        // Or when the vertex shader makes up its own vertexes from draw/instance counts
+        ///<summary> Null Vertex without any data.  No data into GL pipeline.
+        /// Used when a uniform buffer gives info for the vertex shader to create vertices
+        /// Or when the vertex shader makes up its own vertexes from draw/instance counts </summary>
 
         public static GLRenderableItem CreateNullVertex(PrimitiveType prim, GLRenderState pt, IGLRenderItemData id = null, int drawcount =1,  int instancecount = 1)
         {
@@ -635,7 +679,7 @@ namespace GLOFC.GL4
 
         #region Create element indexs for this RI. Normally called after Create..
 
-        // A set of rectangle indexes of reccount rectangles, with a restart after each rectangle
+        ///<summary> A set of rectangle indexes of reccount rectangles, with a restart after each rectangle, in Byte indexes </summary>
 
         public void CreateRectangleElementIndexByte(GLBuffer elementbuf, int reccount, uint restartindex = 0xff)
         {
@@ -646,6 +690,7 @@ namespace GLOFC.GL4
             //byte[] b = elementbuf.ReadBuffer(0, elementbuf.BufferSize); // test read back
         }
 
+        ///<summary> A set of rectangle indexes of reccount rectangles, with a restart after each rectangle, in short indexes </summary>
         public void CreateRectangleElementIndexUShort(GLBuffer elementbuf, int reccount, uint restartindex = 0xffff)
         {
             ElementBuffer = elementbuf;
@@ -654,8 +699,7 @@ namespace GLOFC.GL4
             DrawCount = ElementBuffer.Length - 1;
         }
 
-        // indexes from a byte[] array
-
+        ///<summary> Given a elementbuffer, fill with indexes from an array. Set ElementBuffer, ElementIndexSize, BaseIndexOffset, DrawCount </summary>
         public void CreateElementIndexByte(GLBuffer elementbuf, byte[] indexes, int base_index = 0)
         {
             ElementBuffer = elementbuf;
@@ -665,8 +709,7 @@ namespace GLOFC.GL4
             DrawCount = indexes.Length;
         }
 
-        // indexes from a ushort[] array
-
+        ///<summary> Given a elementbuffer, fill with indexes from an array. Set ElementBuffer, ElementIndexSize, BaseIndexOffset, DrawCount </summary>
         public void CreateElementIndexUShort(GLBuffer elementbuf, ushort[] indexes, int base_index = 0)
         {
             ElementBuffer = elementbuf;
@@ -676,15 +719,13 @@ namespace GLOFC.GL4
             DrawCount = indexes.Length;
         }
 
-        // create an index, calculate the draw type, from a list of indexes given by eids.  
-        // Note you control the PrimitiveRestart value given to the renderable item in render control
-
+        ///<summary> Given a elementbuffer, fill with indexes from an array. Set ElementBuffer, ElementIndexSize, BaseIndexOffset, DrawCount </summary>
         public void CreateElementIndex(GLBuffer elementbuf, uint[] eids, int base_index = 0)
         {
             CreateElementIndex(elementbuf, eids, GL4Statics.DrawElementsTypeFromMaxEID(eids.Max()), base_index);
         }
 
-        // create an index, to the drawtype size
+        ///<summary> Given a elementbuffer, fill with indexes from an array. Drawtype sets the element index size. Set ElementBuffer, ElementIndexSize, BaseIndexOffset, DrawCount </summary>
         public void CreateElementIndex(GLBuffer elementbuf, uint[] eids, DrawElementsType drawtype, int base_index = 0)
         {
             ElementBuffer = elementbuf;
@@ -713,8 +754,9 @@ namespace GLOFC.GL4
 
         #region Execute directly outside of a render list
 
-        // appliedstate if not null overrides this.RenderState and uses that instead
-
+        ///<summary> Execute a RenderableItem. 
+        /// Use to execute outside of the normal RenderableItemList system. For a compute shader for instance.  Or for a finder.
+        /// appliedstate if not null overrides this.RenderState and uses that instead </summary>
         public void Execute(IGLProgramShader shader, GLRenderState glstate, GLMatrixCalc c = null, GLRenderState appliedstate = null, bool noshaderstart = false)
         {
             System.Diagnostics.Debug.Assert(glstate != null && shader != null);

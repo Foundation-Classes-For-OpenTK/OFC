@@ -17,20 +17,36 @@ using System;
 using System.Collections.Generic;
 using OpenTK.Graphics.OpenGL4;
 using System.Drawing;
+using GLOFC.Utils;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.ShapeFactory
 {
-    // Factory created Vector4 shapes..
+    /// <summary>
+    /// Shape factor for tapes
+    /// </summary>
 
     static public class GLTapeObjectFactory
     {
-        // tape is segmented, and roty determines if its flat to Y or not, use with TriangleStrip
-        // series of tapes with a margin between them.  Set up to provide the element index buffer indices as well
-        // aligns the element indexes start point for each tape to modulo N to allow trianglestrip to work properly (4 normally)
-        // pass in colour array, or null, to add colour information to tape W values.  Note colour is one less in length than points array
-        // return list of points, and element buffer indexes, and the indexor draw element type
+        /// <summary>
+        /// Create a tape with element indexes. Use with a TriangleStrip
+        /// The tape is segmented, and roty determines if its flat to Y or not
+        /// The series of tapes with a margin between them.  
+        /// This provides the element index buffer indices as well
+        /// Aligns the element indexes start point for each tape to modulo N to allow trianglestrip to work properly (4 normally)
+        /// You pass in colour array, or null, to add colour information to tape W values.  Note colour is one less in length than points array
+        /// </summary>
+        /// <param name="points">Points along which the tape should go. Minimum 2 points</param>
+        /// <param name="colours">Array of colours to use, per segment. Color is packed into W of Vector4 positions on every vertex of a segment</param>
+        /// <param name="width">Tape width</param>
+        /// <param name="segmentlength">Segment length, for each triangle pair making up the tape</param>
+        /// <param name="rotationaroundyradians">Rotate the tape around its axis</param>
+        /// <param name="margin">Space between each segment</param>
+        /// <param name="restartindex">The element restart index to use</param>
+        /// <param name="modulo">The alignment of each segment start vertex index, to align for triangle strip use</param>
+        /// <returns>Return list of points, and element buffer indexes, and the indexor draw element type</returns>
 
-        public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, Color[] colours, float width, float segmentlength = 1, float rotationaroundy = 0, 
+        public static Tuple<List<Vector4>, List<uint>, DrawElementsType> CreateTape(Vector4[] points, Color[] colours, float width, float segmentlength = 1, 
+                                                       float rotationaroundyradians = 0,
                                                        float margin = 0, uint restartindex = 0xffffffff, int modulo = 4)
         {
             List<Vector4> vec = new List<Vector4>();
@@ -43,18 +59,18 @@ namespace GLOFC.GL4
 
                 for (int i = 0; i < points.Length - 1; i++)
                 {
-                    Vector4[] segment = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundy, margin);
+                    Vector4[] segment = CreateTape(points[i].ToVector3(), points[i + 1].ToVector3(), width, segmentlength, rotationaroundyradians, margin);
 
-                    if ( colours != null )
+                    if (colours != null)
                     {
                         int w = colours[i].PackRGB();
                         for (int j = 0; j < segment.Length; j++)
                             segment[j].W = w;
                     }
 
-                    while ( vec.Count % modulo != 0 )     // must be on a boundary of four for the vertex shaders which normally are used
+                    while (vec.Count % modulo != 0)     // must be on a boundary of four for the vertex shaders which normally are used
                     {
-                        vec.Add(new Vector4(1000,2000,3000,1));     // dummy value we can recognise
+                        vec.Add(new Vector4(1000, 2000, 3000, 1));     // dummy value we can recognise
                         vno++;
                     }
 
@@ -72,16 +88,25 @@ namespace GLOFC.GL4
                 det = GL4Statics.DrawElementsTypeFromMaxEID(vno - 1);
             }
 
-            return new Tuple<List<Vector4>, List<uint>,DrawElementsType>(vec, eids,det);
+            return new Tuple<List<Vector4>, List<uint>, DrawElementsType>(vec, eids, det);
         }
-        
-        // Creates triangle strip co-ords
-        // A tape, between start and end, of width. Minimum of 4 points
-        // segment length is the length between each set of vector points
-        // select rotation around y in radians
-        // margin is offset to start from and end from from points
 
-        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundx = 0, float margin = 0)
+        /// <summary>
+        /// Create a tape segment
+        /// A tape, between start and end, of width. Minimum of 4 vertex is created.
+        /// You can select rotation around y in radians
+        /// Segment length is the length between each set of vector points
+        /// Margin is offset to start from and end from from points
+        /// </summary>
+        /// <param name="start">Start point</param>
+        /// <param name="end">End point</param>
+        /// <param name="width">Tape width</param>
+        /// <param name="segmentlength">Segment length, for each triangle pair making up the tape</param>
+        /// <param name="rotationaroundyradians">Rotate the tape around its axis</param>
+        /// <param name="margin">Space between each segment</param>
+        /// <returns>Return list of points</returns>
+
+        public static Vector4[] CreateTape(Vector3 start, Vector3 end, float width, float segmentlength = 1, float rotationaroundyradians = 0, float margin = 0)
         {
             Vector3 vectorto = Vector3.Normalize(end - start);                  // vector between the points, normalised
 
@@ -117,8 +142,8 @@ namespace GLOFC.GL4
             leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY(-(float)rotatetoyzangle));     // rotate the normals to YZ plane
             rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationY(-(float)rotatetoyzangle));
 
-            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationX(-(float)rotationaroundx));     // rotate on the YZ plane around X to tip it up
-            rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationX(-(float)rotationaroundx));
+            leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationX(-(float)rotationaroundyradians));     // rotate on the YZ plane around X to tip it up
+            rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationX(-(float)rotationaroundyradians));
 
             leftnormal = Vector3.TransformNormal(leftnormal, Matrix4.CreateRotationY((float)rotatetoyzangle));      // rotate back to angle on XZ plane
             rightnormal = Vector3.TransformNormal(rightnormal, Matrix4.CreateRotationY((float)rotatetoyzangle));
@@ -132,7 +157,7 @@ namespace GLOFC.GL4
             Vector4[] tape = new Vector4[2 + 2 * innersegments];                // 2 start, plus 2 for any inners
 
             int i;
-            for ( i = 0; i <= innersegments; i++ )   // include at least the start
+            for (i = 0; i <= innersegments; i++)   // include at least the start
             {
                 tape[i * 2] = l;
                 tape[i * 2 + 1] = r;

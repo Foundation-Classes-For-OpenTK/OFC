@@ -18,12 +18,28 @@ using OpenTK.Graphics;
 using System;
 using System.Collections.Generic;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.ShapeFactory
 {
-    // Factory created Vector4 shapes..
-
+    /// <summary>
+    /// Shape factory for Points
+    /// </summary>
+    
     static public class GLPointsFactory
     {
+        /// <summary>
+        /// Random stars
+        /// </summary>
+        /// <param name="number">Count</param>
+        /// <param name="left">Left side of box</param>
+        /// <param name="right">Right side of box</param>
+        /// <param name="front">Front side of box</param>
+        /// <param name="back">Back side of box</param>
+        /// <param name="top">Top side of box</param>
+        /// <param name="bottom">Bottom side of box</param>
+        /// <param name="rnd">Random class to get values from, or null for autocreate</param>
+        /// <param name="seed">Seed for random class if rnd=null</param>
+        /// <returns>Vector3[]</returns>
+
         public static Vector3[] RandomStars(int number, float left, float right, float front, float back, float top, float bottom, Random rnd = null, int seed = 23)
         {
             if (rnd == null)
@@ -42,6 +58,21 @@ namespace GLOFC.GL4
 
             return array;
         }
+
+        /// <summary>
+        /// Random stars in a box
+        /// </summary>
+        /// <param name="number">Count</param>
+        /// <param name="left">Left side of box</param>
+        /// <param name="right">Right side of box</param>
+        /// <param name="front">Front side of box</param>
+        /// <param name="back">Back side of box</param>
+        /// <param name="top">Top side of box</param>
+        /// <param name="bottom">Bottom side of box</param>
+        /// <param name="rnd">Random class to get values from, or null for autocreate</param>
+        /// <param name="seed">Seed for random class if rnd=null</param>
+        /// <param name="w">Value for Vector4.w</param>
+        /// <returns>Vector4[]</returns>
 
         public static Vector4[] RandomStars4(int number, float left, float right, float front, float back, float top, float bottom, Random rnd = null, int seed = 23, float w = 1)
         {
@@ -62,6 +93,20 @@ namespace GLOFC.GL4
             return array;
         }
 
+        /// <summary>
+        /// Random stars in a disc
+        /// </summary>
+        /// <param name="number">Count</param>
+        /// <param name="x">Centre of x</param>
+        /// <param name="z">Centre of z</param>
+        /// <param name="dist">Size of disc</param>
+        /// <param name="top">Top side of area</param>
+        /// <param name="bottom">Bottom side of area</param>
+        /// <param name="rnd">Random class to get values from, or null for autocreate</param>
+        /// <param name="seed">Seed for random class if rnd=null</param>
+        /// <param name="w">Value for Vector4.w</param>
+        /// <returns>Vector4[]</returns>
+
         public static Vector4[] RandomStars4(int number, float x, float z, float dist, float top, float bottom, Random rnd = null, int seed = 23, float w = 1)
         {
             if (rnd == null)
@@ -70,27 +115,44 @@ namespace GLOFC.GL4
             Vector4[] array = new Vector4[number];
 
             int s = 0;
-            while( s < number)
+            while (s < number)
             {
-                float xd = rnd.Next(100000) * dist*2 / 100000.0f - dist;
-                float zd = rnd.Next(100000) * dist*2 / 100000.0f - dist;
+                float xd = rnd.Next(100000) * dist * 2 / 100000.0f - dist;
+                float zd = rnd.Next(100000) * dist * 2 / 100000.0f - dist;
 
-                if ( xd*xd + zd*zd < dist*dist)
+                if (xd * xd + zd * zd < dist * dist)
                 {
                     float yp = rnd.Next(100000) * (top - bottom) / 100000.0f + bottom;
-                    array[s++] = new Vector4(x+xd, yp, z+zd, w);
+                    array[s++] = new Vector4(x + xd, yp, z + zd, w);
                 }
             }
 
             return array;
         }
 
-        public static void RandomStars4(GLBuffer b, int number, float left, float right, float front, float back, float top, float bottom, Random rnd = null, int seed = 23, float w = 1)
+        /// <summary>
+        /// Random stars in a box, filling a buffer
+        /// </summary>
+        /// <param name="buffer">GL Buffer</param>
+        /// <param name="number">Count</param>
+        /// <param name="left">Left side of box</param>
+        /// <param name="right">Right side of box</param>
+        /// <param name="front">Front side of box</param>
+        /// <param name="back">Back side of box</param>
+        /// <param name="top">Top side of box</param>
+        /// <param name="bottom">Bottom side of box</param>
+        /// <param name="rnd">Random class to get values from, or null for autocreate</param>
+        /// <param name="seed">Seed for random class if rnd=null </param>
+        /// <param name="w">Value for Vector4.w</param>
+        /// <returns>Vector4[]</returns>
+
+        public static void RandomStars4(GLBuffer buffer, int number, float left, float right, float front, float back, float top, float bottom, 
+                                        Random rnd = null, int seed = 23, float w = 1)
         {
             if (rnd == null)
                 rnd = new Random(seed);
 
-            b.AlignFloat();
+            buffer.AlignFloat();
 
             for (int s = 0; s < number; s++)
             {
@@ -98,7 +160,7 @@ namespace GLOFC.GL4
                                             rnd.Next(100000) * (top - bottom) / 100000.0f + bottom,
                                             rnd.Next(100000) * (back - front) / 100000.0f + front,
                                             w };
-                b.WriteCont(a);
+                buffer.WriteCont(a);
             }
         }
 

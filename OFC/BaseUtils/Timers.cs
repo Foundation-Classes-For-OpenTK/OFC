@@ -17,48 +17,61 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace GLOFC.Timers
+namespace GLOFC.Utils
 {
-    // timer is thread safe
+    /// <summary>
+    /// A polled timer, handling as many timers as required.
+    /// Used in GL Controls, and you must call PolledTimer.ProcessTimers() in your system tick to make the timers work.
+    /// </summary>
 
-    public class Timer : IDisposable
+    public class PolledTimer : IDisposable
     {
+        /// <summary> Is Timer running? </summary>
         public bool Running { get; private set; } = false;
-        public Action<Timer, long> Tick { get; set; } = null;
-        public Object Tag { get; set; } = null;
+        /// <summary> Timer callback </summary>
+        public Action<PolledTimer, long> Tick { get; set; } = null;
+        /// <summary> Timer tag </summary>
+        public object Tag { get; set; } = null;
 
-        public Timer()
+        /// <summary> Time tick in ms </summary>
+        public ulong Time { get { return (ulong)mastertimer.ElapsedMilliseconds; } }
+
+        /// <summary> Time tick in ns </summary>
+        public ulong TimeNs { get { return (ulong)mastertimer.ElapsedTicks / (ulong)(Stopwatch.Frequency / 1000000); } }
+
+        /// <summary> Constructor </summary>
+        public PolledTimer()
         {
         }
 
-        public Timer(int initialdelayms, Action<Timer, long> tickaction, int repeatdelay = 0)
+        /// <summary>
+        /// Create and start a timer
+        /// </summary>
+        /// <param name="initialdelayms">Initial delay in ms</param>
+        /// <param name="tickaction">Timer action</param>
+        /// <param name="repeatdelay">Repeat delay, 0 means no repeat</param>
+        public PolledTimer(int initialdelayms, Action<PolledTimer, long> tickaction, int repeatdelay = 0)
         {
             Tick = tickaction;
             Start(initialdelayms, repeatdelay);
         }
 
-        public Timer(int initialdelayms, int repeatdelay = 0)
-        {
-            Start(initialdelayms, repeatdelay);
-        }
+        /// <summary>
+        /// Start a timer
+        /// Can call repeatedly on same timer during the period, just resets the time and starts the timer from now.
+        /// </summary>
+        /// <param name="initialdelayms">Initial delay in ms</param>
+        /// <param name="repeatdelay">Repeat delay, 0 means no repeat</param>
 
-        public void FireNow()
+        public void Start(int initialdelayms, int repeatdelay = 0)  // 
         {
-            Start(0);
-        }
-
-        public void Start(int initialdelayms, int repeatdelay = 0)  // can call repeatedly on same timer, just resets the time
-        {
-            if (!mastertimer.IsRunning)
-                mastertimer.Start();
-
             Stop();
 
             recurringtickdelta = Stopwatch.Frequency * repeatdelay / 1000;
 
-            long timeout = mastertimer.ElapsedTicks + (Stopwatch.Frequency * initialdelayms / 1000);
+            long timeout = mastertimer.ElapsedTicks + Stopwatch.Frequency * initialdelayms / 1000;
 
-            this.Running = true;
+            Running = true;
 
             lock (timerlist)
             {
@@ -68,6 +81,9 @@ namespace GLOFC.Timers
             //System.Diagnostics.Debug.WriteLine("Start timer");
         }
 
+        /// <summary>
+        /// Stop the timer.
+        /// </summary>
         public void Stop()
         {
             lock (timerlist)
@@ -82,6 +98,15 @@ namespace GLOFC.Timers
             }
         }
 
+        /// <summary> Fire now the timer </summary>
+        public void FireNow()
+        {
+            Start(0);
+        }
+
+        /// <summary>
+        /// Static call to process and fire timers, call in your main loop
+        /// </summary>
         public static void ProcessTimers()      // Someone needs to call this..
         {
             lock (timerlist)
@@ -92,7 +117,7 @@ namespace GLOFC.Timers
                 {
                     long tickout = timerlist.Keys[0];   // remember its tick
 
-                    Timer t = timerlist.Values[0];      // get the timer
+                    PolledTimer t = timerlist.Values[0];      // get the timer
 
                     //System.Diagnostics.Debug.WriteLine("Remove timer " );
                     timerlist.RemoveAt(0);          // remove from list, must be first
@@ -109,15 +134,25 @@ namespace GLOFC.Timers
             }
         }
 
+        /// <summary>
+        /// Dispose of timer.
+        /// </summary>
+
         public void Dispose()
         {
             Stop();
         }
 
-        long recurringtickdelta;
+        private long recurringtickdelta;
 
-        static SortedList<long,Timer> timerlist = new SortedList<long,Timer>();
-        static Stopwatch mastertimer = new Stopwatch();
+        private static SortedList<long, PolledTimer> timerlist = new SortedList<long, PolledTimer>();
+
+        private static Stopwatch mastertimer = new Stopwatch();
+        static PolledTimer()
+        {
+            mastertimer.Start();    // create master timer
+        }
+
 
     }
 }

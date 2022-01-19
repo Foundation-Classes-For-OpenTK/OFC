@@ -18,38 +18,63 @@ using System;
 
 namespace GLOFC.GL4
 {
-    // Simple functions to move GL into OFC namespace
-
+    /// <summary>
+    /// Fence Functions
+    /// </summary>
     public class GLFenceSync: IDisposable
     {
+        /// <summary>GL ID </summary>
         public IntPtr Id { get; set; } = (IntPtr)0;
 
-        public GLFenceSync(SyncCondition c = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags f = WaitSyncFlags.None)
+        /// <summary>Make a new fence, with condition and wait flags 
+        /// see <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFenceSync.xhtml</href>
+        /// </summary>
+        /// <param name="synccondition">Must be SyncCondition.SyncGpuCommandsComplete</param>
+        /// <param name="waitflags">Must be 0</param>
+        public GLFenceSync(SyncCondition synccondition = SyncCondition.SyncGpuCommandsComplete,WaitSyncFlags waitflags = WaitSyncFlags.None)
         {
-            Id = GL.FenceSync(c, f);
+            Id = GL.FenceSync(synccondition, waitflags);
             GLStatics.RegisterAllocation(typeof(GLFenceSync));
         }
 
-        public int[] Get(SyncParameterName p = SyncParameterName.SyncStatus)
+
+        /// <summary> Get the sync status of the fence. </summary>
+        /// <param name="paraname">Get SyncCondition, SyncStatus, SyncFlags or ObjectType. Default is to get sync status</param>
+        /// <returns>Returns an array of sync properties. Dependent on fence type</returns>
+        public int[] Get(SyncParameterName paraname = SyncParameterName.SyncStatus)
         {
             int[] array = new int[20];
-            GL.GetSync(Id, p, array.Length, out int len, array);
+            GL.GetSync(Id, paraname, array.Length, out int len, array);
             GLStatics.Check();
             int[] res = new int[len];
             Array.Copy(array, res, len);
             return res;
         }
 
+        /// <summary>
+        /// Wait for fence
+        /// </summary>
+        /// <param name="flags">Only None or SyncFlushCommandsBit</param>
+        /// <param name="timeout">In nanoseconds!</param>
+        /// <returns>Wait state (AlreadySignalled (pre signalled),Expired (timeout),Satisfied (signalled during timeout), Failed)</returns>
+
         public WaitSyncStatus ClientWait(ClientWaitSyncFlags flags, int timeout)
         {
             var status = GL.ClientWaitSync(Id, flags, timeout);
             return status;
         }
-        public void GLWait(WaitSyncFlags flags, int timeout)
+   
+        /// <summary>
+        /// Wait for sync
+        /// </summary>
+        /// <param name="timeout">In nanoseconds!</param>
+
+        public void GLWait(int timeout)
         {
-            GL.WaitSync(Id, flags, timeout);
+            GL.WaitSync(Id, WaitSyncFlags.None, timeout);
         }
 
+        /// <summary> Dispose of this fence </summary>
         public void Dispose()
         {
             if (Id != (IntPtr)0)

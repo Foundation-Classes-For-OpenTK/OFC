@@ -15,12 +15,18 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
 
 namespace TestOpenTk
 {
@@ -67,7 +73,7 @@ namespace TestOpenTk
             {
                 GLRenderState lines = GLRenderState.Lines(1);
 
-                items.Add(new GLColorShaderWithWorldCoord(),"COSW" );
+                items.Add(new GLColorShaderWorld(),"COSW" );
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines,lines,
@@ -82,7 +88,7 @@ namespace TestOpenTk
                                                              new Color4[] { Color.Red, Color.Red, Color.Green, Color.Green }));
             }
 
-            var vert = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation();
+            var vert = new GLPLVertexShaderModelCoordWorldAutoscale();
             var frag = new GLPLFragmentShaderFixedColor(Color.Yellow);
             var shader = new GLShaderPipeline(vert, frag);
             items.Add(shader,"TRI");
@@ -101,10 +107,10 @@ namespace TestOpenTk
 
             GLStorageBlock findblock = new GLStorageBlock(11);
 
-            findshader1 = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
+            findshader1 = items.NewShaderPipeline("FS", new GLPLVertexShaderModelCoordWorldAutoscale(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
             findrender1 = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic: 2, seconddivisor: 1);
 
-            findshader2 = items.NewShaderPipeline("FS2", new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
+            findshader2 = items.NewShaderPipeline("FS2", new GLPLVertexShaderModelCoordWorldAutoscale(), null, null, new GLPLGeoShaderFindTriangles(findblock, 16), null, null, null);
             findrender2 = GLRenderableItem.CreateVector4Vector4Buf2(items, PrimitiveType.Triangles, GLRenderState.Tri(), triangles, worldpos, ic: 2, seconddivisor: 1);
 
             Closed += ShaderTest_Closed;

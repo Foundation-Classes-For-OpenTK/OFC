@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GLOFC
+#pragma warning disable 1591
+
+namespace GLOFC.Utils
 {
     static public class PolygonTriangulator
     {

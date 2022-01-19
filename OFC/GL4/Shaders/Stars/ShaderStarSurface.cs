@@ -14,11 +14,57 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Stars
 {
+    /// <summary>
+    /// Star surface shader
+    /// </summary>
     public class GLPLStarSurfaceFragmentShader : GLShaderPipelineComponentShadersBase
     {
-        public string Fragment()
+        /// <summary>Time delta for surface, move to make it animate </summary>
+        public float TimeDeltaSurface { get; set; } = 0;
+        /// <summary>Time delta for spots, move to make it animate </summary>
+        public float TimeDeltaSpots { get; set; } = 0;
+
+        /// <summary> Set to make Freq/UnRadius/Scutoff/Blackdeepness/Concentrationequator be updated</summary>
+        public bool UpdateControls { get; set; } = true;
+        /// <summary> Spots, higher, more but small</summary>
+        public float Frequency { get; set; } = 0.00005f;   
+        /// <summary> Spots, Lower, more diffused </summary>
+        public float UnRadius { get; set; } = 200000;
+        /// <summary> Spots, Bar to pass, lower more, higher lots 0.4 lots, 0.6 few</summary>
+        public float Scutoff { get; set; } = 0.5f;          
+        /// <summary> How dark is each spot</summary>
+        public float Blackdeepness { get; set; } = 8;
+        /// <summary> Spots, how spread out </summary>
+        public float Concentrationequator { get; set; } = 4; 
+
+        /// <summary> Constructor </summary>
+        public GLPLStarSurfaceFragmentShader()
+        {
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), auxname: GetType().Name);
+        }
+
+        /// <summary> Start shader</summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            if ( UpdateControls )
+            {
+                GL.ProgramUniform1(Id, 10, Frequency);
+                GL.ProgramUniform1(Id, 11, UnRadius);
+                GL.ProgramUniform1(Id, 12, Scutoff);
+                GL.ProgramUniform1(Id, 13, Blackdeepness);
+                GL.ProgramUniform1(Id, 14, Concentrationequator);
+                UpdateControls = false;
+            }
+
+            GL.ProgramUniform1(Id, 15, TimeDeltaSurface);
+            GL.ProgramUniform1(Id, 16, TimeDeltaSpots);
+
+            GLOFC.GLStatics.Check();
+        }
+
+        private string Fragment()
         {
             return
 @"
@@ -60,40 +106,7 @@ void main(void)
 ";
         }
 
-        // applied each start, change to make spots move
-        public float TimeDeltaSurface { get; set; } = 0;
-        public float TimeDeltaSpots { get; set; } = 0;
 
-        // applied once unless UpdateControls set
-        public bool UpdateControls { get; set; } = true;        // set to update below
-        public float Frequency { get; set; } = 0.00005f;     // higher, more but small
-        public float UnRadius { get; set; } = 200000;        // lower, more diffused
-        public float Scutoff { get; set; } = 0.5f;           // bar to pass, lower more, higher lots 0.4 lots, 0.6 few
-        public float Blackdeepness { get; set; } = 8;        // how dark is each spot
-        public float Concentrationequator { get; set; } = 4; // how spread out
-
-        public GLPLStarSurfaceFragmentShader()
-        {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), auxname: GetType().Name);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            if ( UpdateControls )
-            {
-                GL.ProgramUniform1(Id, 10, Frequency);
-                GL.ProgramUniform1(Id, 11, UnRadius);
-                GL.ProgramUniform1(Id, 12, Scutoff);
-                GL.ProgramUniform1(Id, 13, Blackdeepness);
-                GL.ProgramUniform1(Id, 14, Concentrationequator);
-                UpdateControls = false;
-            }
-
-            GL.ProgramUniform1(Id, 15, TimeDeltaSurface);
-            GL.ProgramUniform1(Id, 16, TimeDeltaSpots);
-
-            GLOFC.GLStatics.Check();
-        }
     }
 }
 

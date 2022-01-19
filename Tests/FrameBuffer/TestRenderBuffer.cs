@@ -16,12 +16,19 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -67,15 +74,15 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
 
-            items.Add(new GLTexturedShaderWithObjectTranslation(), "TEXOT");
+            items.Add(new GLTexturedShaderObjectTranslation(), "TEXOT");
 
             {
                 Bitmap bmp = new Bitmap(Properties.Resources.dotted2);      // demo argb copy
                 byte[] argbbytes = bmp.GetARGBBytes();
-                Bitmap copy = BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
+                Bitmap copy = GLOFC.Utils.BitMapHelpers.CreateBitmapFromARGBBytes(bmp.Width, bmp.Height, argbbytes);
                 var tex = new GLTexture2D(copy, SizedInternalFormat.Rgba8);
                 items.Add(tex, "dotted2");
                 Bitmap bmp2 = tex.GetBitmap(inverty: false);
@@ -164,7 +171,7 @@ namespace TestOpenTk
                 GLRenderBuffer rb = new GLRenderBuffer();
                 items.Add(rb);
                 rb.Allocate(RenderbufferStorage.DepthComponent32f, ctex.Width, ctex.Height);
-                fb.AttachDepth(rb, 0);
+                fb.AttachDepth(rb);
 
                 // bind Framebuffer to system for it to be the target to draw to, with a default back colour
                 fb.BindColor(new OpenTK.Graphics.Color4(40, 40, 40, 255));
@@ -178,7 +185,7 @@ namespace TestOpenTk
                 mc.CalculateModelMatrix(lookat, camerapos, 20F, 0);
                 mc.CalculateProjectionMatrix();
 
-                ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetText(mc);
+                ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(mc);
 
                 var renderState = GLRenderState.Start();
 
@@ -233,7 +240,7 @@ namespace TestOpenTk
                 GLRenderState rq = GLRenderState.Quads();
 
                 var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0)));
 
                 ri3.Execute(items.Shader("TEXOT"), renderState, mc);
@@ -242,7 +249,7 @@ namespace TestOpenTk
                 gl3dcontroller.MatrixCalc.SetViewPort();        // restore the view port
 
                 byte[] texdatab = ctex.GetTextureImageAs<byte>(OpenTK.Graphics.OpenGL4.PixelFormat.Bgra, 0, true);
-                Bitmap bmp = BitMapHelpers.CreateBitmapFromARGBBytes(ctex.Width, ctex.Height, texdatab);
+                Bitmap bmp = GLOFC.Utils.BitMapHelpers.CreateBitmapFromARGBBytes(ctex.Width, ctex.Height, texdatab);
                 bmp.Save(@"c:\code\out.bmp");
             }
 
@@ -278,7 +285,7 @@ namespace TestOpenTk
                 // TexQuadInv corrects for the inverted FB texture
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadInv,
+                        GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCCW,
                         new GLRenderDataTranslationRotationTexture(ctex, new Vector3(-15, 0, 10))
                         ));
             }
@@ -288,7 +295,7 @@ namespace TestOpenTk
                 GLRenderState rq = GLRenderState.Quads();
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))
                         ));
             }
@@ -309,7 +316,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
 
@@ -372,7 +379,7 @@ namespace TestOpenTk
         {
             public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
             {
-                AddVertexFragment(new GLPLVertexShaderTextureScreenCoordWithTriangleStripCoord(), new GLPLFragmentShaderTextureOffset());
+                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
             }
         }
 

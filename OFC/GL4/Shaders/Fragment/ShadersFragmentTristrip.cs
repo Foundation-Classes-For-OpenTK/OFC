@@ -13,36 +13,44 @@
  * governing permissions and limitations under the License.
  */
 
-
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System.Drawing;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Fragment
 {
-    // Pipeline shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
-    // vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    //      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
-    //      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      location 24 : uniform of texture offset (written by start automatically)
+    /// <summary>
+    /// Shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
+    /// vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
+    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// </summary>
 
     public class GLPLFragmentShaderTextureTriStrip : GLShaderPipelineComponentShadersBase
     {
-        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
+        /// <summary> Offset into texture, 0-1 </summary>
+        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="binding">Binding point of texture</param>
         public GLPLFragmentShaderTextureTriStrip(int binding = 1)
         {
             CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
         }
 
+        /// <summary> Start shader </summary>
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
 
-        public string Code(int binding)
+        private string Code(int binding)
         {
             return
     @"
@@ -86,33 +94,39 @@ void main(void)
         }
     }
 
-    // Pipeline shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
-    // vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
-    // Requires:
-    //      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    //      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
-    //      location 3 : colour for the replacement value
-    //      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    //      location 24 : uniform of texture offset (written by start automatically)
+    /// <summary>
+    /// Shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
+    /// vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
+    /// Requires:
+    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+    ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
+    ///      location 3 : colour for the replacement value
+    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// </summary>
 
     public class GLPLFragmentShaderTextureTriStripColorReplace : GLShaderPipelineComponentShadersBase
     {
-        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   // set to animate.
+        /// <summary> Tex Offset, 0-1 </summary>
+        public Vector2 TexOffset { get; set; } = Vector2.Zero;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="binding">Texture binding point</param>
+        /// <param name="replace">Colour to replace with replacement colour</param>
         public GLPLFragmentShaderTextureTriStripColorReplace(int binding, Color replace)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), constvalues:new object[] { "replace", replace }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), constvalues: new object[] { "replace", replace }, auxname: GetType().Name);
         }
 
+        /// <summary> </summary>
         public override void Start(GLMatrixCalc c)
         {
             GL.ProgramUniform2(Id, 24, TexOffset);
         }
 
-        public string Code(int binding)
-        {
-            return
-    @"
+        private string Code(int binding) => @"
 #version 450 core
 layout (location=0) in vec2 vs_textureCoordinate;
 layout (location=2) flat in int vertexid;
@@ -140,8 +154,6 @@ void main(void)
         color = colorin;
 
 }";
-
-        }
 
     }
 

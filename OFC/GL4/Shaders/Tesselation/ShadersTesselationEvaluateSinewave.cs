@@ -12,22 +12,46 @@
  * governing permissions and limitations under the License.
  */
 
- using OpenTK.Graphics.OpenGL4;
+using GLOFC.GL4.Shaders;
+using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Tesselation
 {
-    // Pipeline shader, Tesselation Control, with sinewave
-    // input gl_in
-    // input (1) tcs_worldposinstance - w holds the image no. image no bit16 = don't animate.
-    // input (2) tcs_instance
-    // output gl_position
-    // output (0) vs_textureCoordinate
-    // output (1) imageno - from w in tcs_worldposinstance
-    // input (2) instance number from first vertex of primitive
-
+    /// <summary>
+    /// Shader, Tesselation Control, with sinewave
+    /// Requires:
+    ///     gl_in
+    ///     1: tcs_worldposinstance - w holds the image no. image no bit16 = don't animate.
+    ///     2: tcs_instance
+    /// Output:
+    ///     0: vs_textureCoordinate
+    ///     1: imageno - from w in tcs_worldposinstance
+    ///      2: instance number from first vertex of primitive
+    /// </summary>
     public class GLPLTesselationEvaluateSinewave : GLShaderPipelineComponentShadersBase
     {
-        string TES()
+        /// <summary> Phase, 0-1, use this to animate the sinewave </summary>
+        public float Phase { get; set; } = 0;                
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="amplitude">Amplitude of sinewave</param>
+        /// <param name="repeats">Number of repeats across the object</param>
+        public GLPLTesselationEvaluateSinewave(float amplitude, float repeats)
+        {
+            CompileLink(ShaderType.TessEvaluationShader, TES(), constvalues: new object[] { "amplitude", amplitude, "repeats", repeats });
+        }
+
+        /// <summary> Start shader</summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+            GL.ProgramUniform1(Id, 26, Phase);
+            GLOFC.GLStatics.Check();
+        }
+
+        private string TES()
         {
             return
 @"
@@ -85,19 +109,6 @@ void main(void)
 }";
         }
 
-        public float Phase { get; set; } = 0;                   // set to animate.  Phase is 0-1
-
-        public GLPLTesselationEvaluateSinewave(float amplitude, float repeats)
-        {
-            CompileLink(ShaderType.TessEvaluationShader, TES(), constvalues: new object[] { "amplitude", amplitude, "repeats", repeats });
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-            GL.ProgramUniform1(Id, 26, Phase);
-            GLOFC.GLStatics.Check();
-        }
 
     }
 

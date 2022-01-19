@@ -14,12 +14,18 @@
 
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using GLOFC.GL4.Shaders.Stars;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -70,7 +76,7 @@ namespace TestOpenTk
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // def binding of 0
 
             {
-                items.Add(new GLColorShaderWithWorldCoord(), "COS");
+                items.Add(new GLColorShaderWorld(), "COS");
                 GLRenderState rl = GLRenderState.Lines(1);
 
                 rObjects.Add(items.Shader("COS"),
@@ -88,7 +94,7 @@ namespace TestOpenTk
             }
 
             {
-                items.Add(new GLTexturedShaderWithObjectTranslation(), "TEX");
+                items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
                 items.Add(new GLTexture2D(Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8), "moon");
 
                 GLRenderState rt = GLRenderState.Tri();
@@ -101,7 +107,7 @@ namespace TestOpenTk
             }
 
             {
-                var sunvertex = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) });
+                var sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) });
 
                 items.Add(new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader()), "STAR");
 
@@ -136,7 +142,7 @@ namespace TestOpenTk
                 GLRenderState rt = GLRenderState.Tri();
                 GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
 
-                var vertshader = new GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation(new Color[] { Color.Red, Color.Green, Color.Blue });
+                var vertshader = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Red, Color.Green, Color.Blue });
                 var shader = new GLShaderPipeline(vertshader, new GLPLStarSurfaceFragmentShader());
                 items.Add(shader, "STAR-M2");
                 rObjects.Add(shader, ri);
@@ -181,7 +187,7 @@ namespace TestOpenTk
             if (items.Contains("STAR-M2"))
             {
                 var vid = items.Shader("STAR-M2").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
+                ((GLPLVertexShaderModelCoordWorldAutoscale)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
                 var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M2").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;
@@ -190,7 +196,7 @@ namespace TestOpenTk
             if (items.Contains("STAR-M3"))
             {
                 var vid = items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader);
-                ((GLPLVertexShaderModelCoordWithWorldTranslationCommonModelTranslation)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
+                ((GLPLVertexShaderModelCoordWorldAutoscale)vid).ModelTranslation = Matrix4.CreateRotationY((float)(-zeroone10s * Math.PI * 2));
                 var stellarsurfaceshader = (GLPLStarSurfaceFragmentShader)items.Shader("STAR-M3").GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 stellarsurfaceshader.TimeDeltaSpots = zeroone500s;
                 stellarsurfaceshader.TimeDeltaSurface = timediv100s;

@@ -2,6 +2,12 @@
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
+using GLOFC.Utils;
 using GLOFC.WinForm;
 using Newtonsoft.Json.Linq;
 using OpenTK;
@@ -15,6 +21,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using GLOFC.GL4.Bitmaps;
+using GLOFC.GL4.ShapeFactory;
+using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
@@ -192,7 +201,7 @@ namespace TestOpenTk
                 }
                 );
 
-            rightclickmenubody.Opening += (ms) =>
+            rightclickmenubody.Opening += (ms,tag) =>
             {
                 ms["RCMUntrack"].Enabled = track != -1;
             };
@@ -213,14 +222,14 @@ namespace TestOpenTk
                 }
                 );
 
-            rightclickmenuscreen.Opening += (ms) =>
+            rightclickmenuscreen.Opening += (ms,tag) =>
             {
                 ms["RCMUntrack"].Enabled = track != -1;
             };
 
             if ( true )
             {
-                var shader = new GLColorShaderWithWorldCoord();
+                var shader = new GLColorShaderWorld();
                 items.Add(shader);
 
                 GLRenderState lines = GLRenderState.Lines(1);
@@ -273,7 +282,7 @@ namespace TestOpenTk
                 }
             }
 
-            var orbitlinesvertshader = new GLPLVertexShaderModelCoordWithWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
+            var orbitlinesvertshader = new GLPLVertexShaderModelWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
             bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
 
@@ -289,7 +298,7 @@ namespace TestOpenTk
             var bodyfragshader = new GLPLFragmentShaderBindlessTexture(arbblock, discardiftransparent: true, useprimidover2: false);
 
             // takes 0:Vector4 model, 1: vec2 text, 4:matrix, out is 0:tex, 1: modelpos, 2: instance, 4 = matrix[3][3]
-            var bodyvertshader = new GLPLVertexShaderTextureModelCoordWithMatrixTranslation(1000000 * 1000 * mscaling, useeyedistance: false);
+            var bodyvertshader = new GLPLVertexShaderModelMatrixTexture(1000000 * 1000 * mscaling, useeyedistance: false);
             bodyshader = new GLShaderPipeline(bodyvertshader, bodyfragshader);
             items.Add(bodyshader);
 
@@ -476,7 +485,7 @@ namespace TestOpenTk
                // System.Diagnostics.Debug.WriteLine("Controller Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
             rBodyObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);

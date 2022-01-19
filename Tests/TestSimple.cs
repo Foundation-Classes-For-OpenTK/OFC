@@ -16,6 +16,10 @@
 using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -56,18 +60,31 @@ namespace TestOpenTk
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
-            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance= 1000f;
-            gl3dcontroller.ZoomDistance = 20F;
-            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(110f, 0, 0f), 1F);
+            gl3dcontroller.MatrixCalc.PerspectiveFarZDistance=21000f;
+            gl3dcontroller.MouseTranslateAmountAtZoom1PerPixel = 0.5f;
+            gl3dcontroller.ZoomDistance = 50F;
+            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(135f, 0, 0f), 1F);
+
+            bool useopenglcoords = true;        // true for +Z towards viewer. OFC is using mostly +Z away from viewer
+            if (useopenglcoords)
+            {
+                gl3dcontroller.MatrixCalc.ModelAxisPositiveZAwayFromViewer = false;
+                gl3dcontroller.SetPositionCamera(new Vector3(0, 0, 0), new Vector3(0, 0, 100), 0f);
+                gl3dcontroller.RecalcMatrices();
+            }
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
                 return (float)ms / 100.0f;
             };
 
-            items.Add(new GLColorShaderWithWorldCoord(), "COSW");
-            items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
-            items.Add( new GLTexturedShaderWithObjectTranslation(),"TEXOT");
+            // create stock shaders
+
+            items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderObjectTranslation(), "COSOT");
+            items.Add( new GLTexturedShaderObjectTranslation(),"TEXOT");
+
+            // create stock textures
 
             items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8)  , "dotted");
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
@@ -92,6 +109,7 @@ namespace TestOpenTk
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed }));
             }
+
             if (true)
             {
                 GLRenderState lines = GLRenderState.Lines(1);
@@ -111,65 +129,76 @@ namespace TestOpenTk
 
             #endregion
 
-            #region Coloured triangles
+            #region Coloured cubes
             if (true)
             {
                 GLRenderState rc = GLRenderState.Tri();
                 rc.CullFace = false;
 
+                var cube1pos = GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f, new Vector3(10, 2.5f, 10));
+                var cube1dtr = new GLRenderDataTranslationRotation(new Vector3(0, 0, 0));
+
+                // these are on positive Z and x
+
                 rObjects.Add(items.Shader("COSOT"), "scopen",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
-                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
-                                            new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
-                                            new GLRenderDataTranslationRotation(new Vector3(10, 3, 20))
+                                            cube1pos,
+                                            new Color4[] { Color4.Green, Color4.Green, Color4.Blue, Color4.Blue, Color4.Cyan, Color4.Cyan },
+                                             cube1dtr
+
                             ));
 
+                var cube2pos = GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f, new Vector3(10, 2.5f, 50));
+                rObjects.Add(items.Shader("COSOT"), "scopen1",
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            cube2pos,
+                                            new Color4[] { Color4.Green, Color4.Green, Color4.Blue, Color4.Blue, Color4.Cyan, Color4.Cyan },
+                                             cube1dtr
+
+                            ));
+
+                // this one above cube2 for use in testing ortho mode
+
+                var cube3pos = GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f, new Vector3(10, 10.25f, 50));
                 rObjects.Add(items.Shader("COSOT"), "scopen2",
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            cube3pos,
+                                            new Color4[] { Color4.Yellow },
+                                             cube1dtr
+
+                            ));
+
+                // negative z and x
+
+                rObjects.Add(items.Shader("COSOT"), "scopen3",
                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                                             new Color4[] { Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red },
-                                            new GLRenderDataTranslationRotation(new Vector3(-10, -3, -20))
+                                            new GLRenderDataTranslationRotation(new Vector3(-10, -2.5f, -10))
+                            ));
+
+                rObjects.Add(items.Shader("COSOT"), "scopen4",
+                            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
+                                            new Color4[] { Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red, Color4.Red },
+                                            new GLRenderDataTranslationRotation(new Vector3(-10, -2.5f, -20))
                             ));
             }
 
             #endregion
+
             #region textures
             if (true)
             {
+                // texture facing upwards, culled if viewer below it
+
                 GLRenderState rq = GLRenderState.Quads();
 
                 rObjects.Add(items.Shader("TEXOT"),
                             GLRenderableItem.CreateVector4Vector2(items,PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
+                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3( -0f.Radians(), 0, 0), ccw:gl3dcontroller.MatrixCalc.ModelAxisPositiveZAwayFromViewer), GLShapeObjectFactory.TexQuadCW,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
                             ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(2,0,0))
-                            ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(4,0,0))
-                            ));
-
-                GLRenderState rqnc = GLRenderState.Quads(cullface: false);
-
-                rObjects.Add(items.Shader("TEXOT"), "EDDFlat",
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(6, 0, 0))
-                            ));
-
-                rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( 90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuad,
-                            new GLRenderDataTranslationRotationTexture(items.Tex("smile"), new Vector3(8, 0, 0))
-                           ));
-
             }
 
             #endregion
@@ -193,7 +222,7 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("Draw");
 
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetText(gl3dcontroller.MatrixCalc);
+            mcub.SetFull(gl3dcontroller.MatrixCalc);
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
             
@@ -231,7 +260,7 @@ namespace TestOpenTk
                 gl3dcontroller.PanZoomTo(new Vector3(50, 0, 50), 1, 2);
             }
 
-            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
+            if (kb.HasBeenPressed(Keys.F4, GLOFC.Controller.KeyboardMonitor.ShiftState.None))           // ! change mode to perspective
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }

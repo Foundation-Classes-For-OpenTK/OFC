@@ -13,26 +13,26 @@
  * governing permissions and limitations under the License.
  */
 
-using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-// Vertex shaders taking world positions with textures
-
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Texture, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions
-    //      location 1 : vec2 texture co-ords
-    //      uniform buffer 0 :  : GL MatrixCalc
-    // Out:
-    //      gl_Position
-    //      location 0 : vs_textureCoordinate
-    //      location 1 : modelpos
+    /// <summary>
+    /// Shader, Texture, Modelpos, transform
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions
+    ///      location 1 : vec2 texture co-ords
+    ///      uniform buffer 0 :  : GL MatrixCalc
+    /// Out:
+    ///      gl_Position
+    ///      location 0 : vs_textureCoordinate
+    ///      location 1 : modelpos
+    /// </summary>
 
-    public class GLPLVertexShaderTextureWorldCoord : GLShaderPipelineComponentShadersBase
+    public class GLPLVertexShaderWorldTexture : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderTextureWorldCoord()
+        /// <summary> Constructor </summary>
+        public GLPLVertexShaderWorldTexture()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

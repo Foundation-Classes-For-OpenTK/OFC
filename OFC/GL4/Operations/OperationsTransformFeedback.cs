@@ -15,55 +15,93 @@
 
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Operations
 {
-    public class GLOperationBeginTransformFeedback : GLOperationsBase       // must be in render queue after shader starts
+    /// <summary>
+    /// Operations for transform feedback
+    /// </summary>
+    public class GLOperationTransformFeedback : GLOperationsBase       // must be in render queue after shader starts
     {
-        public TransformFeedbackPrimitiveType Mode { get; set; }
-        public GLTransformFeedbackObject TFObj { get; set; }
-        public GLBuffer VaryingBuffer { get; set; }
-        public int BindingIndex { get; set; }
-        public int Offset { get; set; }
-        public int Size { get; set; }
+        /// <summary> Transform feedback Primitive type </summary>
+        public TransformFeedbackPrimitiveType PrimitiveType { get; set; }
+        /// <summary> Transform feedback instance </summary>
+        public GLTransformFeedback TransformFeedback { get; set; }
+        /// <summary> Varying buffers, one per bindingindex </summary>
+        public GLBuffer[] VaryingBuffers { get; set; }
+        /// <summary> List of offsets into the buffer to map. Must be set if size if not null</summary>
+        public int[] Offsets { get; set; }
+        /// <summary> List of length of buffer area to use. If null, means all of buffer </summary>
+        public int[] Sizes { get; set; }
 
-        public GLOperationBeginTransformFeedback(TransformFeedbackPrimitiveType mode, GLTransformFeedbackObject obj, GLBuffer buffer, int bindingindex = 0, int offset = 0, int size = -1)
+        /// <summary>
+        /// Constructor, sets up transform parameters. 
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBeginTransformFeedback.xhtml</href>
+        /// </summary>
+        /// <param name="primitivetype">Primitive type for transform feedback (Points/Lines/Triangles) </param>
+        /// <param name="transformfeedback">The GLTransformfeedback instance, previously created. Created externally as it does not have to be created per render</param>
+        /// <param name="buffers">An array of buffers to receive the transform feedback into, starting at index 0. Must be created and allocated with DynamicCopy. See <href>https://www.khronos.org/opengl/wiki/Transform_Feedback</href> for details on how to use multiple buffers</param>
+        /// <param name="offset">Offset into buffer if size != -1</param>
+        /// <param name="size">Buffer area allocated. If size == -1, all of buffer</param>
+        public GLOperationTransformFeedback(TransformFeedbackPrimitiveType primitivetype, GLTransformFeedback transformfeedback, 
+                                                 GLBuffer[] buffers, int[] offset = null, int[] size = null)
         {
-            this.Mode = mode;
-            this.TFObj = obj;
-            this.VaryingBuffer = buffer;
-            this.BindingIndex = bindingindex;
-            this.Offset = offset;
-            this.Size = size;
+            this.PrimitiveType = primitivetype;
+            this.TransformFeedback = transformfeedback;
+            this.Id = TransformFeedback.Id;     // mirror the ID, we are the same
+            this.VaryingBuffers = buffers;
+            this.Offsets = offset;
+            this.Sizes = size;
         }
 
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
-            TFObj.Bind();
+            TransformFeedback.Bind();  // bind this transformfeedback to target transform feedback
             GLStatics.Check();
-            VaryingBuffer.BindTransformFeedback(BindingIndex, TFObj.Id, Offset, Size);
+
+            // bind these buffer at offset/set and binding index starting at 0
+            for (int i = 0; i < VaryingBuffers.Length; i++)
+            {
+                //System.Diagnostics.Debug.WriteLine($"TF {TransformFeedback.Id} bp {i} to buf {VaryingBuffers[i].Id}");
+                VaryingBuffers[i].BindTransformFeedback(i, TransformFeedback.Id, Offsets == null ? 0 : Offsets[i], Sizes == null ? 0 : Sizes[i]);
+            }
+
             GLStatics.Check();
-            GLTransformFeedbackObject.BeginTransformFeedback(Mode);
+
+            GLTransformFeedback.Begin(PrimitiveType);       // and start
             GLStatics.Check();
         }
     }
 
+    /// <summary>
+    /// Object to end transform feedback set up by GLOperationTransformFeedback
+    /// </summary>
     public class GLOperationEndTransformFeedback : GLOperationsBase       // must be in render queue after object drawn, before shader stops
     {
-        public GLTransformFeedbackObject TFObj { get; set; }
-        public GLBuffer VaryingBuffer { get; set; }
-        public int BindingIndex { get; set; }
+        /// <summary> Transform feedback operation </summary>
+        public GLOperationTransformFeedback TransformFeedbackOperation { get; set; }
 
-        public GLOperationEndTransformFeedback(GLTransformFeedbackObject obj, GLBuffer buffer, int bindingindex = 0)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="transformfeedback">The GLTransformfeedback instance, previously created</param>
+        public GLOperationEndTransformFeedback(GLOperationTransformFeedback transformfeedback)
         {
-            this.TFObj = obj;
-            this.VaryingBuffer = buffer;
+            this.TransformFeedbackOperation = transformfeedback;
         }
 
+        /// <summary> Called by render list and executes the operation </summary>
         public override void Execute(GLMatrixCalc c)
         {
-            GLTransformFeedbackObject.EndTransformFeedback();
-            GLBuffer.UnbindTransformFeedback(BindingIndex, TFObj.Id);
-            GLTransformFeedbackObject.UnBind();
+            GLTransformFeedback.End();
+            for (int i = 0; i < TransformFeedbackOperation.VaryingBuffers.Length; i++)
+            {
+                //System.Diagnostics.Debug.WriteLine($"TF {TransformFeedbackOperation.Id} bp {i}");
+                GLBuffer.UnbindTransformFeedback(i, TransformFeedbackOperation.Id);
+            }
+            GLStatics.Check();
+            GLTransformFeedback.UnBind();
+            GLStatics.Check();
         }
     }
 

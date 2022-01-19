@@ -12,24 +12,33 @@
  * governing permissions and limitations under the License.
  */
 
+using GLOFC.GL4.Shaders;
 using OpenTK.Graphics.OpenGL4;
 
 // Vertex shaders, having a model input
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Vertex
 {
-    // Pipeline shader, Translation, Modelpos, transform
-    // Requires:
-    //      location 0 : position: vec4 vertex array of positions model coords, W is ignored
-    //      uniform buffer 0 : GL MatrixCalc
-    //      uniform 22 : objecttransform: mat4 array of transforms
-    // Out:
-    //      gl_Position
-    //      location 1: modelpos
+    /// <summary>
+    /// This namespace contains pipeline vertex shaders
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
 
-    public class GLPLVertexShaderModelCoordWithObjectTranslation : GLShaderPipelineComponentShadersBase
+    /// <summary>
+    /// Shader, Translation, Modelpos, transform
+    /// Requires:
+    ///      location 0 : position: vec4 vertex array of positions model coords, W is ignored
+    ///      uniform buffer 0 : GL MatrixCalc
+    ///      uniform 22 : objecttransform: mat4 array of transforms
+    /// Out:
+    ///      gl_Position
+    ///      location 1: modelpos
+    /// </summary>
+
+    public class GLPLVertexShaderModelObjectTranslation : GLShaderPipelineComponentShadersBase
     {
-        public GLPLVertexShaderModelCoordWithObjectTranslation()
+        /// <summary> Constructor </summary>
+        public GLPLVertexShaderModelObjectTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
         }

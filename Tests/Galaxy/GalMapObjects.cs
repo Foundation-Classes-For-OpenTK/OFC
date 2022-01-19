@@ -15,10 +15,18 @@
 using EliteDangerousCore.EDSM;
 using GLOFC;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using OpenTK;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using GLOFC.GL4.Shaders.Tesselation;
+using GLOFC.GL4.Bitmaps;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -61,13 +69,13 @@ namespace TestOpenTk
 
             Bitmap[] images = galmap.RenderableMapTypes.Select(x => x.Image as Bitmap).ToArray();
             // 256 is defined normal size
-            var objtex = new GLTexture2DArray(images, mipmaplevel: 1, genmipmaplevel: 3, bmpsize: new Size(256, 256), internalformat: OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, alignment: ContentAlignment.BottomCenter);
+            var objtex = new GLTexture2DArray(images, bmpmipmaplevels: 1, wantedmipmaplevels: 3, texturesize: new Size(256, 256), internalformat: OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, alignment: ContentAlignment.BottomCenter);
             IGLTexture texarray = items.Add(objtex, "GalObjTex");
 
             // now build the shaders
 
             const int texbindingpoint = 1;
-            var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation,        // a look at vertex shader
+            var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation,        // a look at vertex shader
                                                         autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
             var tcs = new GLPLTesselationControl(40f);
             tes = new GLPLTesselationEvaluateSinewave(1f, 2f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
@@ -92,7 +100,7 @@ namespace TestOpenTk
             const float objsize = 10.0f;        // size of object on screen
 
             ridisplay = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, rt,
-                                GLShapeObjectFactory.CreateQuad2(objsize, objsize),         // quad2 4 vertexts
+                                GLShapeObjectFactory.CreateQuadTriStrip(objsize, objsize),         // quad2 4 vertexts
                                 new Vector4[galmap.RenderableMapObjects.Length],        // world positions
                                 ic: 0, seconddivisor: 1);
 
@@ -161,7 +169,7 @@ namespace TestOpenTk
                         textrenderer.Add(o.id, o.name, fnt,
                             Color.White, Color.FromArgb(0, 255, 0, 255),
                             pos,
-                            new Vector3(objsize, 0, 0), new Vector3(0, 0, 0), fmt: fmt, rotatetoviewer: dorotate, rotateelevation: doelevation,
+                            new Vector3(objsize, 0, 0), new Vector3(0, 0, 0), textformat: fmt, rotatetoviewer: dorotate, rotateelevation: doelevation,
                             alphafadescalar: -100, alphafadepos: 500); // fade in, alpha = 0 at >500, 1 at 400
 
                     }

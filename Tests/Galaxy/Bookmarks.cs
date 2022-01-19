@@ -16,6 +16,10 @@
 
 using BaseUtils;
 using GLOFC.GL4;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.GL4.Shaders.Geo;
 using Newtonsoft.Json.Linq;
 using OpenTK;
 using System;
@@ -26,6 +30,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using TestOpenTk;
+using GLOFC.GL4.ShapeFactory;
 
 namespace EliteDangerousCore.EDSM
 {
@@ -38,7 +43,7 @@ namespace EliteDangerousCore.EDSM
                 //var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false, texcoords: true,      // a look at vertex shader
                 //                                                          
                 //                var vert = new GLPLVertexShaderWorldCoord();
-                var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
+                var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
                                                                 autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
 
 
@@ -64,7 +69,7 @@ namespace EliteDangerousCore.EDSM
 
                 // 0 is model pos, 1 is world pos by a buffer, 2 is tex co-ords
                 ridisplay = GLRenderableItem.CreateVector4Vector4Vector2(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rt,
-                                    GLShapeObjectFactory.CreateQuad2(bookmarksize, bookmarksize),         // quad2 4 vertexts as the model positions
+                                    GLShapeObjectFactory.CreateQuadTriStrip(bookmarksize, bookmarksize),         // quad2 4 vertexts as the model positions
                                     bookmarkposbuf, 0,       // world positions come from here - not filled as yet
                                     GLShapeObjectFactory.TexTriStripQuad,
                                     ic: 0, seconddivisor: 1);
@@ -76,7 +81,7 @@ namespace EliteDangerousCore.EDSM
 
                 // hook to modelworldbuffer, at modelpos and worldpos.  UpdateEnables will fill in instance count
                 rifind = GLRenderableItem.CreateVector4Vector4Vector2(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rt,
-                                                                GLShapeObjectFactory.CreateQuad2(bookmarksize, bookmarksize),         // quad2 4 vertexts as the model positions
+                                                                GLShapeObjectFactory.CreateQuadTriStrip(bookmarksize, bookmarksize),         // quad2 4 vertexts as the model positions
                                                                 bookmarkposbuf, 0,
                                                                 GLShapeObjectFactory.TexTriStripQuad,
                                                                 ic: 0, seconddivisor: 1);

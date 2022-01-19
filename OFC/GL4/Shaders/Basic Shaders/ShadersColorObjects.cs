@@ -13,77 +13,102 @@
  * governing permissions and limitations under the License.
  */
 
-
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Fragment;
 using System;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Basic
 {
-    // Translation shader with vertex colours
-    // Requires:
-    //      location 0 vec4 positions of model
-    //      location 1 vec4 colours of each vertex
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
-    //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
+    /// <summary>
+    /// This namespace contains complete basic shaders for:
+    /// * color.
+    /// * texture.
+    /// * model and world translations. 
+    /// * Sinewave tesselations.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
 
-    public class GLColorShaderWithObjectTranslation : GLShaderPipeline
+    /// <summary>
+    /// Translation shader with vertex colours
+    /// Requires:
+    ///      location 0 vec4 positions of model
+    ///      location 1 vec4 colours of each vertex
+    ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
+    /// </summary>
+
+    public class GLColorShaderObjectTranslation : GLShaderPipeline
     {
-        public GLColorShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <summary> Constructor </summary>
+        public GLColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderVSColor());
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderVSColor());
         }
     }
 
-    // Translation shader with vertex colours, fixed colour
-    // Requires:
-    //      location 0 vec4 positions of model
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
-    //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
+    /// <summary>
+    /// Translation shader with vertex colours, fixed colour
+    /// Requires:
+    ///      location 0 vec4 positions of model
+    ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
+    /// </summary>
 
-    public class GLFixedColorShaderWithObjectTranslation : GLShaderPipeline
+    public class GLFixedColorShaderObjectTranslation : GLShaderPipeline
     {
-        public GLFixedColorShaderWithObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <summary> Constructor. Give color </summary>
+        public GLFixedColorShaderObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
         }
     }
 
-    // Translation shader with vertex colours, fixed colour
-    // Requires:
-    //      location 0 vec4 positions of model
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
-    //      uniform 22 matrix4 transform of model->world positions, supply using per object binding
-    //      uniform 25 colour of object
+    /// <summary>
+    /// Translation shader with vertex colours, fixed colour
+    /// Requires:
+    ///      location 0 vec4 positions of model
+    ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
+    ///      uniform 25 colour of object
+    /// </summary>
 
-    public class GLUniformColorShaderWithObjectTranslation : GLShaderPipeline
+    public class GLUniformColorShaderObjectTranslation : GLShaderPipeline
     {
-        public GLUniformColorShaderWithObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <summary> Constructor </summary>
+        public GLUniformColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelCoordWithObjectTranslation(), new GLPLFragmentShaderUniformColor());
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderUniformColor());
         }
     }
 
-    // Fixed position shader with vertex colours
-    // Requires:
-    //      location 0 vec4 positions of world positions
-    //      location 1 vec4 colours of each vertex
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// <summary>
+    /// Fixed position shader with vertex colours
+    /// Requires:
+    ///      location 0 vec4 positions of world positions
+    ///      location 1 vec4 colours of each vertex
+    ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// </summary>
 
-    public class GLColorShaderWithWorldCoord : GLShaderPipeline
+    public class GLColorShaderWorld : GLShaderPipeline
     {
-        public GLColorShaderWithWorldCoord(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <summary> Constructor </summary>
+        public GLColorShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderColorWorldCoord(), new GLPLFragmentShaderVSColor());
         }
     }
 
-    // Fixed position shader with fixed colour
-    // Requires:
-    //      location 0 vec4 positions of world positions
-    //      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// <summary>
+    /// Fixed position shader with fixed colour
+    /// Requires:
+    ///      location 0 vec4 positions of world positions
+    ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
+    /// </summary>
 
-    public class GLFixedColorShaderWithWorldCoord : GLShaderPipeline
+    public class GLFixedColorShaderWorld : GLShaderPipeline
     {
-        public GLFixedColorShaderWithWorldCoord(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <summary> Constructor. Give color </summary>
+        public GLFixedColorShaderWorld(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
         }

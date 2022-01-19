@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace GLOFC
+#pragma warning disable 1591
+
+namespace GLOFC.Utils
 {
     public static class ObjectExtensionsStringsLists
     {

@@ -16,15 +16,18 @@
 
 
 using System;
+using GLOFC.GL4.Shaders;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Compute
 {
-    // Compute shader, 3d noise, 8x8x8 multiple
-    // Requires:
-    //      3d texture to write to, bound on binding point
-    
+    /// <summary>
+    /// Compute shader, 3d noise, 8x8x8 multiple
+    /// Requires:
+    ///     3D texture to write to, bound on binding point
+    /// </summary>
     public class ComputeShaderNoise3D : GLShaderCompute
     {
         static int Localgroupsize = 8;
@@ -62,14 +65,24 @@ void main(void)
 ";
         }
 
-        // width/height/depth determine points, with wb/hb/db the granularity of the noise
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="width">Width of 3d texture, must be a multiple of 8 </param>
+        /// <param name="height">Height of 3d texture, must be a multiple of 8</param>
+        /// <param name="depth">Depth of 3d texture, must be a multiple of 8</param>
+        /// <param name="wb">Noise width (controls granularity of noise across texture)</param>
+        /// <param name="hb">Noise height</param>
+        /// <param name="db">Noise depth</param>
+        /// <param name="binding">Binding of texture</param>
+        /// <param name="saveable">Is shader to be saveable</param>
 
         public ComputeShaderNoise3D(int width, int height, int depth, int wb, int hb, int db, int binding = 3, bool saveable = false) : base(width / Localgroupsize, height / Localgroupsize, depth / Localgroupsize)
         {
             System.Diagnostics.Debug.Assert(width % 8 == 0);
             System.Diagnostics.Debug.Assert(height % 8 == 0);
             System.Diagnostics.Debug.Assert(depth % 8 == 0);
-            CompileLink(gencode(width, height, depth, wb, hb, db, binding),saveable:saveable);
+            CompileLink(gencode(width, height, depth, wb, hb, db, binding), saveable: saveable);
         }
     }
 }

@@ -19,52 +19,61 @@ using System.Collections.Generic;
 
 namespace GLOFC.GL4
 {
-    // local data block, writable in Vectors etc, supports std140 and std430
-    // you can use Allocate then Fill direct
-    // or you can use the GL Mapping function which maps the buffer into memory
+    ///<summary> Local data block, writable in Vectors etc, supports std140 and std430
+    /// you can use Allocate then Fill direct
+    /// or you can use the GL Mapping function which maps the buffer into memory </summary>
 
     [System.Diagnostics.DebuggerDisplay("Id {Id} Length {Length}")]
     public class GLBuffer : GLLayoutStandards, IDisposable
     {
+        ///<summary>GL ID</summary>
         public int Id { get; private set; } = -1;
+        private IntPtr context;
 
+        ///<summary>Create an empty buffer of this standard, default is std130. Standard defines the layout of members of the buffer. See OpenGL</summary>
         public GLBuffer(bool std430 = false) : base(std430)
         {
             GL.CreateBuffers(1, out int id);     // this actually makes the buffer, GenBuffer does not - just gets a name
             GLStatics.RegisterAllocation(typeof(GLBuffer));
             GLStatics.Check();
             Id = id;
+            context = GLStatics.GetContext();
         }
 
-        public GLBuffer(int allocatesize, bool std430 = false, BufferUsageHint bh = BufferUsageHint.StaticDraw) : this(std430)
+        ///<summary>Create a buffer of this size, with this standard and hint</summary>
+        public GLBuffer(int allocatesize, bool std430 = false, BufferUsageHint hint = BufferUsageHint.StaticDraw) : this(std430)
         {
-            AllocateBytes(allocatesize, bh);
+            AllocateBytes(allocatesize, hint);
         }
 
         #region Allocate/Resize/Copy
 
-        public void AllocateBytes(int bytessize, BufferUsageHint uh = BufferUsageHint.StaticDraw)  // call first to set buffer size.. allow for alignment in your size
+        ///<summary>Allocate or reallocate buffer size. Call first to set buffer size. Allow for alignment in your size</summary>
+        public void AllocateBytes(int bytessize, BufferUsageHint hint = BufferUsageHint.StaticDraw)  
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             if (bytessize > 0)                                               // can call twice - get fresh buffer each time
             {
                 Length = bytessize;
-                GL.NamedBufferData(Id, Length, (IntPtr)0, uh);               // set buffer size
+                GL.NamedBufferData(Id, Length, (IntPtr)0, hint);               // set buffer size
                 var err = GL.GetError();
                 System.Diagnostics.Debug.Assert(err == ErrorCode.NoError, $"GL NamedBuffer error {err}");        // check for any errors, always.
                 ResetPositions();
             }
         }
 
-        // note this results in a new GL Buffer, so any VertexArrays will need remaking
-        // also note the Positions are maintained, you may want to delete those manually.
-        public void Resize(int newlength, BufferUsageHint uh = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
+        /// <summary>
+        /// Resize the buffer. Note this results in a new GL Buffer, so any VertexArrays will need remaking. Also note the Positions are maintained, you may want to delete those manually.
+        /// </summary>
+        public void Resize(int newlength, BufferUsageHint hint = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             if (Length != newlength)
             {
                 GL.CreateBuffers(1, out int newid);
                 if (newlength > 0)
                 {
-                    GL.NamedBufferData(newid, newlength, (IntPtr)0, uh);               // set buffer size
+                    GL.NamedBufferData(newid, newlength, (IntPtr)0, hint);               // set buffer size
                     var err = GL.GetError();
                     System.Diagnostics.Debug.Assert(err == ErrorCode.NoError, $"GL NamedBuffer error {err}");        // check for any errors, always.
                     if (Length > 0)                                                    // if previous buffer had data
@@ -78,22 +87,33 @@ namespace GLOFC.GL4
             }
         }
 
-        // Other buffer must be Allocated to the size otherpos+length
-        public void CopyTo(GLBuffer other, int pos, int otherpos, int length, BufferUsageHint uh = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
+        /// <summary>
+        /// Copy to another buffer. Other buffer must be Allocated to the size otherpos+length
+        /// </summary>
+        /// <param name="other">Other buffer</param>
+        /// <param name="startpos">Start posiiton in buffer</param>
+        /// <param name="otherpos">Position to store it in other buffer</param>
+        /// <param name="length">Copy length</param>
+        /// <param name="hint"></param>
+        public void CopyTo(GLBuffer other, int startpos, int otherpos, int length, BufferUsageHint hint = BufferUsageHint.StaticDraw)      // newlength can be zero, meaning discard and go back to start
         {
-            int ourend = pos + length;
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
+            int ourend = startpos + length;
             int otherend = otherpos + length;
             System.Diagnostics.Debug.Assert(Length >= ourend && other.Length >= otherend);
-            GL.CopyNamedBufferSubData(Id, other.Id, (IntPtr)pos, (IntPtr)otherpos, length);
+            GL.CopyNamedBufferSubData(Id, other.Id, (IntPtr)startpos, (IntPtr)otherpos, length);
         }
 
+        /// <summary>Zero the buffer from this position and length</summary>
         public void Zero(int pos, int length)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos + length <= Length);
             GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
             GLStatics.Check();
         }
 
+        /// <summary>Zero the buffer</summary>
         public void ZeroBuffer()    // zero whole of buffer, clear positions
         {
             Zero(0, Length);
@@ -104,12 +124,13 @@ namespace GLOFC.GL4
 
         #region Fill - all perform alignment
 
+        /// <summary>Reset the fill position to this value</summary>
         public void ResetFillPos(int pos = 0)       // call to reset the current fill position to this value, then you can refill
         {
             CurrentPos = pos;
         }
 
-        // length = -1 use floats.length, else take a subset starting at zero index
+        /// <summary>Fill with floats. length = -1 use floats.length, else take a subset starting at zero index </summary>
         public void Fill(float[] floats, int length = -1)
         {
             length = (length == -1) ? floats.Length : length;
@@ -122,17 +143,20 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Fill with Matrix Array</summary>
         public void Fill(GLMatrixArray a)
         {
             Fill(a.MatrixArray, a.Count * 16);
         }
 
+        /// <summary>Allocate and fill with floats.</summary>
         public void AllocateFill(float[] vertices)
         {
             AllocateBytes(sizeof(float) * vertices.Length);
             Fill(vertices);
         }
 
+        /// <summary>Fill with vector2s, with a definable length.</summary>
         public void Fill(Vector2[] vertices, int length = -1)
         {
             length = (length == -1) ? vertices.Length : length;
@@ -145,14 +169,14 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with vector2s.</summary>
         public void AllocateFill(Vector2[] vertices)
         {
             AllocateBytes(Vec2size * vertices.Length);
             Fill(vertices);
         }
 
-        // no Vector3 on purpose, they don't work well with opengl
-
+        /// <summary>Allocate and fill with vector4s, with a definable length.</summary>
         public void Fill(Vector4[] vertices, int length = -1)
         {
             length = (length == -1) ? vertices.Length : length;
@@ -165,7 +189,7 @@ namespace GLOFC.GL4
             }
         }
 
-        // allowing a subset of the vertices to be filled
+        /// <summary>Allocate and fill with Vector4s, allowing a subset of the vertices to be filled</summary>
         public void Fill(Vector4[] vertices, int sourceoffset, int sourcelength)
         {
             if (sourcelength > 0)
@@ -187,12 +211,14 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with Vector4s</summary>
         public void AllocateFill(Vector4[] vertices)
         {
             AllocateBytes(Vec4size * vertices.Length);
             Fill(vertices);
         }
 
+        /// <summary>Allocate and fill with Vector4s and Vector2 text co-ords</summary>
         public void AllocateFill(Vector4[] vertices, Vector2[] tex)
         {
             AllocateBytes(Vec4size * vertices.Length + Vec2size * tex.Length);
@@ -200,6 +226,7 @@ namespace GLOFC.GL4
             Fill(tex);
         }
 
+        /// <summary>AFill with Matrix4s, with a definable length.</summary>
         public void Fill(Matrix4[] mats, int length = -1)
         {
             length = (length == -1) ? mats.Length : length;
@@ -212,7 +239,7 @@ namespace GLOFC.GL4
             }
         }
 
-        // allowing a subset of the matrices to be filled
+        /// <summary>Fill with Matrix4s, allowing a subset of the matrices to be filled</summary>
         public void Fill(Matrix4[] mats, int sourceoffset, int sourcelength)        
         {
             if (sourcelength > 0)
@@ -234,13 +261,15 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with Matrix4s</summary>
         public void AllocateFill(Matrix4[] mats)
         {
             AllocateBytes(Mat4size * mats.Length);
             Fill(mats);
         }
 
-        public void Fill(OpenTK.Graphics.Color4[] colours, int length = -1)        // entries can say repeat colours until filled to entries..
+        /// <summary>Fill with colours, with a definable length. Length can be bigger than colours. Entries can say repeat colours until filled to entries..</summary>
+        public void Fill(OpenTK.Graphics.Color4[] colours, int length = -1)     
         {
             if (length == -1)
                 length = colours.Length;
@@ -261,6 +290,7 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        /// <summary>Fill with ushort, with a definable length.</summary>
         public void Fill(ushort[] words, int length = -1)
         {
             length = (length == -1) ? words.Length : length;
@@ -273,12 +303,14 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with words.</summary>
         public void AllocateFill(ushort[] words)
         {
             AllocateBytes(sizeof(ushort) * words.Length);
             Fill(words);
         }
 
+        /// <summary>Allocate and fill with uints, with a definable length.</summary>
         public void Fill(uint[] data, int length = -1)
         {
             length = (length == -1) ? data.Length : length;
@@ -291,12 +323,14 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with uints</summary>
         public void AllocateFill(uint[] data)
         {
             AllocateBytes(sizeof(uint) * data.Length);
             Fill(data);
         }
 
+        /// <summary>Allocate and fill with bytes, with a definable length.</summary>
         public void Fill(byte[] data, int length = -1)      
         {
             length = (length == -1) ? data.Length : length;
@@ -309,15 +343,17 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary>Allocate and fill with bytes</summary>
         public void AllocateFill(byte[] data)
         {
             AllocateBytes(data.Length);
             Fill(data);
         }
 
+        /// <summary>Fill with packed Vector3s, with an offset and mult to scale them before compressing into 10:11:11 </summary>
         public void FillPacked2vec(Vector3[] vertices, Vector3 offsets, float mult)
         {
-            int p = 0;                                                                  // probably change to write directly into buffer..
+            int p = 0;                                                                  
             uint[] packeddata = new uint[vertices.Length * 2];
             for (int i = 0; i < vertices.Length; i++)
             {
@@ -329,6 +365,7 @@ namespace GLOFC.GL4
             Fill(packeddata);
         }
 
+        /// <summary>Fill with Rectangular byte indexes, reccount number with a restart between each one </summary>
         public void FillRectangularIndicesBytes(int reccount, uint restartindex = 0xff)        // rectangular indicies with restart
         {
             AllocateBytes(reccount * 5);
@@ -342,6 +379,7 @@ namespace GLOFC.GL4
             StopReadWrite();
         }
 
+        /// <summary>Fill with Rectangular short indexes, reccount number with a restart between each one </summary>
         public void FillRectangularIndicesShort(int reccount, uint restartindex = 0xffff)        // rectangular indicies with restart
         {
             AllocateBytes(reccount * 5 * sizeof(short));     // lets use short because we don't have a marshall copy ushort.. ignore the overflow
@@ -359,38 +397,43 @@ namespace GLOFC.GL4
 
         #region Map Read/Write Common
 
-        private enum MapMode { None, Write, Read};
+        private enum MapMode { None, Write, Read };
         private MapMode mapmode = MapMode.None;
         
-        // allocate and start write on buffer
+        /// <summary> Allocate and start write on buffer </summary>
         public void AllocateStartWrite(int datasize)        
         {
             AllocateBytes(datasize);
             StartWrite(0,datasize);
         }
 
-        // update the buffer with an area of updated cache on a write.. (datasize=0=all buffer).  
-        // Default is bam is to wipe the mapped area. Use 0 in bam not to do this. trap for young players here
-        public void StartWrite(int fillpos, int datasize = 0, BufferAccessMask bam = BufferAccessMask.MapInvalidateRangeBit)
+        ///<summary> Begin a write. Select position and size. (datasize=0=all buffer).  
+        /// Buffer access mask decides what to keep about the range, default is to wipe the mapped area. Use 0 in bam not to do this. Trap for young players here</summary>
+        public void StartWrite(int fillpos, int datasize = 0, BufferAccessMask bufferaccessmask = BufferAccessMask.MapInvalidateRangeBit)
         {
             if (datasize == 0)
                 datasize = Length - fillpos;
 
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
 
-            CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bam);
+            CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapWriteBit | bufferaccessmask);
 
             CurrentPos = fillpos;
             mapmode = MapMode.Write;
             GLStatics.Check();
         }
 
+        /// <summary>
+        /// Start read on definable area
+        /// </summary>
         public void StartRead(int fillpos, int datasize = 0)        // read the buffer (datasize=0=all buffer)
         {
             if (datasize == 0)
                 datasize = Length - fillpos;
 
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && fillpos >= 0 && fillpos + datasize <= Length); // catch double maps
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
 
             CurrentPtr = GL.MapNamedBufferRange(Id, (IntPtr)fillpos, datasize, BufferAccessMask.MapReadBit);
 
@@ -399,13 +442,16 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
+        /// <summary> Stop a read or write sequence, release buffer back to use </summary>
         public void StopReadWrite()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.UnmapNamedBuffer(Id);
             mapmode = MapMode.None;
             GLStatics.Check();
         }
 
+        /// <summary> Skip pointer forward </summary>
         public void Skip(int p)
         {
             System.Diagnostics.Debug.Assert(mapmode != MapMode.None);
@@ -415,19 +461,20 @@ namespace GLOFC.GL4
             GLStatics.Check();
         }
 
-        // move currentpos onto the alignment
-
+        /// <summary> Move currentpos onto the alignment </summary>
         public void AlignFloat()
         {
             AlignArrayPtr(sizeof(float), 0);
         }
 
+        /// <summary> Move currentpos onto the alignment </summary>
         public void AlignVec4()
         {
             AlignArrayPtr(Vec4size, 0);
         }
 
-        // std140 dictates mat4 are aligned on vec4 boundaries.  But if your using instance offsets inside a buffer (where your picking 0+instance*sizeofmat4), you may want to align to a Mat4.
+        /// <summary> Move currentpos onto the alignment.
+        /// std140 dictates mat4 are aligned on vec4 boundaries.  But if your using instance offsets inside a buffer (where your picking 0+instance*sizeofmat4), you may want to align to a Mat4. </summary>
         public void AlignMat4()
         {
             AlignArrayPtr(Mat4size, 0);
@@ -437,6 +484,7 @@ namespace GLOFC.GL4
 
         #region Write to map
 
+        /// <summary> Write to buffer with defined repeat</summary>
         public void Write(Matrix4 mat, int repeat = 1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -451,6 +499,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Write to buffer with defined repeat</summary>
         public void Write(Vector4 v4, int repeat = 1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -464,6 +513,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Write to buffer a rectangle as a Vector4 </summary>
         public void Write(System.Drawing.Rectangle r)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -472,6 +522,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);          
         }
 
+        /// <summary> Write to buffer a Vector4 with a Vector3 and a float </summary>
         public void Write(Vector3 mat, float vec4other)      // write vec3 as vec4.
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -480,6 +531,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, a.Length);          
         }
 
+        /// <summary> Write a float </summary>
         public void Write(float v)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -488,6 +540,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
+        /// <summary> Write to area with defined repeat</summary>
         public void Write(float[] a, int length = -1)
         {
             length = (length == -1) ? a.Length : length;
@@ -506,6 +559,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Write a float array of length and offset</summary>
         public void Write(float[] a, int length, int sourceoffset = 0)     // count in floats units, source offset in floats units
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -522,14 +576,16 @@ namespace GLOFC.GL4
             }
         }
 
-        public void Write(int offset, float[] a)                    // write to an arbitary offset from current pos, in bytes. CurrentPtr not changed
+        /// <summary>Write to buffer at an arbitary offset in the window a float array. Current position is not changed. </summary>
+        public void Write(int offset, float[] a)                    
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
             IntPtr p = CurrentPtr + offset;
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p, a.Length); // number of units
         }
 
-        public void WriteCont(float[] a, int length = -1)     // without checking for alignment/stride
+        /// <summary> Write to area without checking for alignment/stride a float array of defined length</summary>
+        public void WriteCont(float[] a, int length = -1)   
         {
             length = (length == -1) ? a.Length : length;
             System.Runtime.InteropServices.Marshal.Copy(a, 0, CurrentPtr, length);       // number of units, not byte length!
@@ -537,6 +593,7 @@ namespace GLOFC.GL4
             CurrentPos += sizeof(float) * length;
         }
 
+        /// <summary> Write an integer </summary>
         public void Write(int v)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -545,6 +602,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
+        /// <summary> Write an integer array with a defined length </summary>
         public void Write(int[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -563,6 +621,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Write a short </summary>
         public void Write(short v)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -571,6 +630,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
+        /// <summary>  Write an short array with a defined length </summary>
         public void Write(short[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -588,6 +648,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Wrire a long </summary>
         public void Write(long v)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -596,6 +657,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
+        /// <summary> Write an long array with a defined length  </summary>
         public void Write(long[] a, int length = -1)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -613,6 +675,7 @@ namespace GLOFC.GL4
             }
         }
 
+        /// <summary> Write a byte </summary>
         public void Write(byte v)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -621,6 +684,7 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, pos, a.Length);
         }
 
+        /// <summary>  Write an byte array with a defined length </summary>
         public void Write(byte[] a, int length = -1 )     // special , not aligned, as not normal glsl type.  Used mostly for element indexes
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Write);
@@ -629,10 +693,11 @@ namespace GLOFC.GL4
             System.Runtime.InteropServices.Marshal.Copy(a, 0, p.Item1, length);
         }
 
+        /// <summary>  Indirect array stride </summary>
         public const int WriteIndirectArrayStride = 16;
 
-        // write an Indirect Array draw command to the buffer
-        // if you use it, MultiDrawCountStride = 16
+        /// <summary> Write an Indirect Array draw command to the buffer
+        /// if you use it, MultiDrawCountStride = 16</summary>
         public void WriteIndirectArray(int vertexcount, int instancecount = 1, int firstvertex = 0, int baseinstance = 0)
         {
             int[] i = new int[] { vertexcount, instancecount, firstvertex, baseinstance };
@@ -640,10 +705,11 @@ namespace GLOFC.GL4
             Write(i);
         }
 
+        /// <summary>  Indirect Element stride </summary>
         public const int WriteIndirectElementsStride = 16;
 
-        // write an Indirect Element draw command to the buffer
-        // if you use it, MultiDrawCountStride = 20
+        /// <summary> Write an Indirect Element draw command to the buffer
+        /// if you use it, MultiDrawCountStride = 20</summary>
         public void WriteIndirectElements(int vertexcount, int instancecount = 1, int firstindex = 0, int basevertex = 0,int baseinstance = 0)
         {
             int[] i = new int[] { vertexcount, instancecount, firstindex, basevertex, baseinstance };
@@ -655,6 +721,7 @@ namespace GLOFC.GL4
 
         #region Reads - Map into memory and then read
 
+        /// <summary> Read number of bytes</summary>
         public byte[] ReadBytes(int size)                                               // read into a byte array. not aligned 
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -664,6 +731,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read number of integers. Optionally ignore std alignment</summary>
         public int[] ReadInts(int count, bool ignorestd130 = false)                    // read into a array, use ignorestd130 array spacing if required.
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -682,6 +750,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read Int</summary>
         public int ReadInt()
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -691,6 +760,7 @@ namespace GLOFC.GL4
             return data[0];
         }
 
+        /// <summary> Read number of longs. Optionally ignore std alignment</summary>
         public long[] ReadLongs(int count, bool ignorestd130 = false)                    
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -709,6 +779,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read Long</summary>
         public long ReadLong()
         {
             var data = new long[1];
@@ -717,6 +788,7 @@ namespace GLOFC.GL4
             return data[0];
         }
 
+        /// <summary> Read number of floats. Optionally ignore std alignment</summary>
         public float[] ReadFloats(int count, bool ignorestd130 = false)                    
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -735,6 +807,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read Float</summary>
         public float ReadFloat()
         {
             var data = new float[1];
@@ -743,6 +816,7 @@ namespace GLOFC.GL4
             return data[0];
         }
 
+        /// <summary> Read number of Vector2s</summary>
         public Vector2[] ReadVector2s(int count)
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -755,6 +829,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read number of Vector3s</summary>
         public Vector3[] ReadVector3s(int count)        // normal alignment of vector3 is on vector4 boundaries
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -767,7 +842,8 @@ namespace GLOFC.GL4
             return data;
         }
 
-        public Vector3[] ReadVector3sPacked(int count)      // varyings seem to write vector3 tightly packed
+        /// <summary> Read number of Vector3s packed into 12 byte strides. Varyings seem to write vector3 tightly packed</summary>
+        public Vector3[] ReadVector3sPacked(int count)     
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
             var p = AlignArrayPtr(1, count);                // no aligned
@@ -779,6 +855,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read number of Vector4s</summary>
         public Vector4[] ReadVector4s(int count)                    
         {
             System.Diagnostics.Debug.Assert(mapmode == MapMode.Read);
@@ -791,6 +868,7 @@ namespace GLOFC.GL4
             return data;
         }
 
+        /// <summary> Read Vector4</summary>
         public Vector4 ReadVector4()
         {
             var data = new float[4];
@@ -799,6 +877,7 @@ namespace GLOFC.GL4
             return new Vector4(data[0], data[1], data[2], data[3]);
         }
 
+        /// <summary> Read Matrix4</summary>
         public Matrix4 ReadMatrix4()
         {
             var data = new float[16];
@@ -808,6 +887,7 @@ namespace GLOFC.GL4
                                 data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
         }
 
+        /// <summary> Read number of Matrix4s</summary>
         public Matrix4[] ReadMatrix4s(int count)
         {
             var p = AlignArrayPtr(Vec4size, 4);
@@ -829,6 +909,7 @@ namespace GLOFC.GL4
 
         #region Fast Map and Read functions
 
+        /// <summary> Read buffer as bytes, at offset and len</summary>
         public byte[] ReadBuffer(int offset, int len)
         {
             StartRead(offset,len);
@@ -836,6 +917,8 @@ namespace GLOFC.GL4
             StopReadWrite();
             return v;
         }
+
+        /// <summary> Read buffer as a int</summary>
 
         public int ReadInt(int offset)
         {
@@ -845,6 +928,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as ints, at offset and number, with optionally ignoring alignment</summary>
         public int[] ReadInts(int offset, int number, bool ignorestd130 = false)
         {
             StartRead(offset);
@@ -853,6 +937,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as longs, at offset and number, with optionally ignoring alignment</summary>
         public long[] ReadLongs(int offset, int number, bool ignorestd130 = false)
         {
             StartRead(offset);
@@ -861,6 +946,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as floats, at offset and number, with optionally ignoring alignment</summary>
         public float[] ReadFloats(int offset, int number, bool ignorestd130 = false)
         {
             StartRead(offset);
@@ -869,6 +955,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as Vector2 arrays, at offset and number</summary>
         public Vector2[] ReadVector2s(int offset, int number)
         {
             StartRead(offset);
@@ -877,6 +964,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as Vector3 arrays (packed at Vector4 spacing), at offset and number</summary>
         public Vector3[] ReadVector3s(int offset, int number)
         {
             StartRead(offset);
@@ -885,7 +973,8 @@ namespace GLOFC.GL4
             return v;
         }
 
-        public Vector3[] ReadVector3sPacked(int offset, int number) // varyings seem to write vector3 packed
+        /// <summary> Read buffer as Vector3 arrays, packed at 12 spacing, at offset and number.  Varyings seem to write vector3 packed</summary>
+        public Vector3[] ReadVector3sPacked(int offset, int number)
         {
             StartRead(offset);
             var v = ReadVector3sPacked(number);
@@ -893,6 +982,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as Vector4 arrays, at offset and number</summary>
         public Vector4[] ReadVector4s(int offset, int number)
         {
             StartRead(offset);
@@ -901,6 +991,7 @@ namespace GLOFC.GL4
             return v;
         }
 
+        /// <summary> Read buffer as Matrix4 arrays, at offset and number</summary>
         public Matrix4[] ReadMatrix4s(int offset, int number)
         {
             StartRead(offset);
@@ -913,8 +1004,10 @@ namespace GLOFC.GL4
 
         #region Binding a buffer to target 
 
+        /// <summary>Bind buffer to vertext array at this bindingindex, with the start position stride and divisor</summary>
         public void Bind(GLVertexArray va, int bindingindex, int start, int stride, int divisor = 0)      // set buffer binding to a VA
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None);     // catch unmap missing. Since binding to VA can be done before buffer is full, then don't check BufferSize
             va.Bind();
             GL.BindVertexBuffer(bindingindex, Id, (IntPtr)start, stride);      // this buffer to binding index
@@ -925,8 +1018,10 @@ namespace GLOFC.GL4
 
         private static int elementbindindex = -1;       // static across renders and programs, like uniform buffers, so no need to keep on rebinding
 
+        /// <summary>Bind buffer to element binding point</summary>
         public void BindElement()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             //if (elementbindindex != Id) // removed for testing
             {
@@ -937,8 +1032,11 @@ namespace GLOFC.GL4
         }
 
         private static int indirectbindindex = -1;
+
+        /// <summary>Bind buffer to indirect binding point</summary>
         public void BindIndirect()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             //if (indirectbindindex != Id) // removed for testing
             {
@@ -949,8 +1047,10 @@ namespace GLOFC.GL4
         }
 
         private static int parameterbindindex = -1;
+        /// <summary>Bind buffer to parameter binding point</summary>
         public void BindParameter()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             // if (parameterbindindex != Id) // removed for testing
             {
@@ -960,27 +1060,37 @@ namespace GLOFC.GL4
             }
         }
 
-        // Bind to the default (xfb=0) or specific transform feedback buffer object
-
-        public void BindTransformFeedback(int index, int xfb = 0, int offset = 0, int size = -1)
+        /// <summary>
+        /// Bind buffer to the specific transform feedback buffer object at binding index
+        /// See <href>https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glTransformFeedbackBufferBase.xhtml</href>
+        /// </summary>
+        /// <param name="bindingindex">Index of binding point within xfb</param>
+        /// <param name="xfb">Name of the transformation feeback buffer object. 0 means default transform</param>
+        /// <param name="offset">Offset into buffer if size != -1</param>
+        /// <param name="size">Buffer area allocated. If size == -1, all of buffer</param>
+        public void BindTransformFeedback(int bindingindex, int xfb = 0, int offset = 0, int size = -1)
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             if ( size == -1 )
-                GL.TransformFeedbackBufferBase(xfb, index, Id);
+                GL.TransformFeedbackBufferBase(xfb, bindingindex, Id);
             else
-                GL.TransformFeedbackBufferRange(xfb, index, Id, (IntPtr)offset, size);
+                GL.TransformFeedbackBufferRange(xfb, bindingindex, Id, (IntPtr)offset, size);
             GLStatics.Check();
         }
 
-        // unbind from the default (xfb=0) or specific transform feedback buffer object
+        ///<summary> Unbind from the default (xfb=0) or specific transform feedback buffer object </summary>
         static public void UnbindTransformFeedback(int index, int xfb = 0)
         {
             GL.TransformFeedbackBufferBase(xfb, index, 0); // 0 is the unbind value
         }
 
         private static int querybindindex = -1;
+
+        ///<summary> Bind to query buffer</summary>
         public void BindQuery()
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None && Length > 0);     // catch unmap missing or nothing in buffer
             if (querybindindex != Id)
             {
@@ -990,6 +1100,7 @@ namespace GLOFC.GL4
             }
         }
 
+        ///<summary> Unbinds from query buffer</summary>
         static public void UnbindQuery()
         {
             if (querybindindex != -1)
@@ -1000,9 +1111,10 @@ namespace GLOFC.GL4
             }
         }
 
-
-        public void Bind(int bindingindex,  BufferRangeTarget tgr)                           // Bind to a arbitary buffer target
+        ///<summary> Bing to buffer range target at this binding index</summary>
+        public void Bind(int bindingindex,  BufferRangeTarget tgr)                           
         {
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.BindBufferBase(tgr, bindingindex, Id);       // binding point set to tgr
         }
 
@@ -1010,6 +1122,7 @@ namespace GLOFC.GL4
 
         #region Implementation
 
+        ///<summary> Dispose buffer on end of use</summary>
         public void Dispose()           // you can double dispose.
         {
             if (Id != -1)

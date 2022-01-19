@@ -15,6 +15,9 @@
 using OpenTK;
 using System;
 
+// no xml needed 
+#pragma warning disable 1591
+
 namespace GLOFC
 {
     // idea is to hold this as a float array

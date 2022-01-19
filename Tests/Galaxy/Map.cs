@@ -17,6 +17,12 @@ using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
 using GLOFC.GL4.Controls;
+using GLOFC.GL4.Shaders;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.Shaders.Basic;
+using GLOFC.GL4.Shaders.Compute;
+using GLOFC.GL4.Shaders.Fragment;
+using GLOFC.Utils;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -25,6 +31,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using GLOFC.GL4.Shaders.Sprites;
+using GLOFC.GL4.Operations;
+using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -134,7 +144,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("LINEYELLOW"),
                 GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
 
-                items.Add(new GLColorShaderWithWorldCoord(), "COS-1L");
+                items.Add(new GLColorShaderWorld(), "COS-1L");
 
                 float h = 0;
 
@@ -239,7 +249,7 @@ namespace TestOpenTk
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
-                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: BitMapHelpers.BitmapFunction.HeatMap);
+                Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: GLOFC.Utils.BitMapHelpers.BitmapFunction.HeatMap);
                 heat.Save(@"c:\code\heatmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
                 Random rnd = new Random(23);
@@ -393,7 +403,7 @@ namespace TestOpenTk
                         var nl = NameLocationDescription(rightclickmenu.Tag);
                         System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
                             // logical name is important as menu uses it to close down
-                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation,null, 
+                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation, 
                                 nl.Item3, $"{nl.Item1} @ {nl.Item2.X:#.#},{nl.Item2.Y:#.#},{nl.Item2.Z:#.#}", GLMessageBox.MessageBoxButtons.OK, null , 
                                         Color.FromArgb(220, 60, 60, 70), Color.DarkOrange);
                         }
@@ -533,7 +543,7 @@ namespace TestOpenTk
 
             if (false)          // enable for debug
             {
-                items.Add(new GLColorShaderWithObjectTranslation(), "COSOT");
+                items.Add(new GLColorShaderObjectTranslation(), "COSOT");
                 GLRenderState rc = GLRenderState.Tri(cullface: false);
                 rc.DepthTest = false;
 
@@ -627,7 +637,7 @@ namespace TestOpenTk
             long t2 = hptimer.ElapsedTicks;
 
             GLMatrixCalcUniformBlock mcb = ((GLMatrixCalcUniformBlock)items.UB("MCUB"));
-            mcb.SetText(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+            mcb.SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 
             // set up the grid shader size
 

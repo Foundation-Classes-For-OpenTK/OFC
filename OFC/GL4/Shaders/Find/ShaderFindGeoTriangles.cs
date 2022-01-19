@@ -17,22 +17,101 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 
-namespace GLOFC.GL4
+namespace GLOFC.GL4.Shaders.Geo
 {
-    // Geo shader, find triangle under cursor
-    // combine with your chosen vertex shader feeding in ProjectionModelMatrix values
-    // using a RenderableItem
-    // call SetScreenCoords before render executes 
-    // optional call SetGroup to pass in a group number for the results to pass it back out
-    // call GetResult after Executing the shader/RI combo
-    // Inputs gl_in positions triangles
-    // Inputs (2) instance[] instance number. 
-    // Inputs (4) drawid[] instance number. 
-    // output to buffer bound structure Positions
+    /// <summary>
+    /// This namespace contains pipeline geo shaders.
+    /// </summary>
+    internal static class NamespaceDoc { } // just for documentation purposes
+
+
+    /// <summary>
+    /// Geo shader, find triangle under cursor. Combine with your chosen vertex shader feeding in ProjectionModelMatrix values
+    /// using a RenderableItem. Call SetScreenCoords before render executes 
+    /// Optional call SetGroup to pass in a group number for the results to pass it back out
+    /// Call GetResult after Executing the shader/RI combo. 
+    /// Requires:
+    ///     gl_in positions triangles
+    ///     2 : instance[] instance number. 
+    ///     4 : drawid[] instance number. 
+    /// output to buffer bound structure Positions
+    /// </summary>
 
     public class GLPLGeoShaderFindTriangles : GLShaderPipelineComponentShadersBase
     {
-        public string Code(bool passthru)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="buffer">Storage Buffer to place results in</param>
+        /// <param name="maximumresultsp">Maximum number of results</param>
+        /// <param name="forwardfacing">Triangles are forward facing</param>
+
+        public GLPLGeoShaderFindTriangles(GLStorageBlock buffer, int maximumresultsp, bool forwardfacing = true)
+        {
+            maximumresults = maximumresultsp;
+            int sizeneeded = 16 + sizeof(float) * 4 * maximumresults;
+            if (buffer.Length < sizeneeded)
+                buffer.AllocateBytes(sizeneeded);
+            vecoutbuffer = buffer;
+            CompileLink(ShaderType.GeometryShader, Code(false), auxname: GetType().Name,
+                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing });
+        }
+
+        /// <summary>
+        /// Set up screen coords ready for renderitem execute
+        /// </summary>
+        /// <param name="cursorpos">Cursor position in viewport</param>
+        /// <param name="windowsize">Size of window</param>
+        /// <param name="margin">Size of find margin, the wider, the less accurate the position needs to be</param>
+        // Set up screen coords for find
+        public void SetScreenCoords(Point cursorpos, Size windowsize, int margin = 10)
+        {
+            Vector4 v = new Vector4((float)cursorpos.X / (windowsize.Width / 2) - 1.0f, 1.0f - (float)cursorpos.Y / (windowsize.Height / 2), 0, 0);   // convert to clip space
+            GL.ProgramUniform4(Id, 10, v);
+            float pixd = (float)(margin / (float)((windowsize.Width + windowsize.Height) / 2 / 2));
+            //   System.Diagnostics.Debug.WriteLine("Set CP {0} Pixd {1}", v , pixd);
+            GL.ProgramUniform1(Id, 11, pixd);
+        }
+
+        /// <summary>
+        /// Setting this value OR in this group ID with the index to return extra info 
+        /// </summary>
+        public void SetGroup(int g)
+        {
+            GL.ProgramUniform1(Id, 12, g);
+        }
+
+        /// <summary> Start shader, called by execute </summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+            vecoutbuffer.ZeroBuffer();
+        }
+
+        /// <summary>
+        /// Get results
+        /// </summary>
+        /// <returns>null or vec4 array. Each vec4: PrimitiveID, InstanceID, average Z of triangle points, draw ID | group</returns>
+        public Vector4[] GetResult()
+        {
+            GLMemoryBarrier.All();
+
+            vecoutbuffer.StartRead(0);
+            int count = Math.Min(vecoutbuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
+
+            Vector4[] d = null;
+
+            if (count > 0)
+            {
+                d = vecoutbuffer.ReadVector4s(count);      // align 16 for vec4
+                Array.Sort(d, delegate (Vector4 left, Vector4 right) { return left.Z.CompareTo(right.Z); });
+            }
+
+            vecoutbuffer.StopReadWrite();
+            return d;
+        }
+
+        private string Code(bool passthru)
         {
             return
 @"
@@ -86,7 +165,7 @@ const bool forwardsfacing = true;   // compiler overriden
 
 void main(void)
 {
-" + ((passthru) ? // pass thru is for testing purposes only
+" + (passthru ? // pass thru is for testing purposes only
 @"
         gl_Position = gl_in[0].gl_Position;
         MPOUT.modelpos =modelpos[0];
@@ -143,81 +222,9 @@ void main(void)
 ";
         }
 
-        // creates a find block for you, with maximum results
 
-        public GLPLGeoShaderFindTriangles(int resultoutbufferbinding, int maximumresultsp, bool forwardfacing = true)   
-        {
-            vecoutbuffer = new GLStorageBlock(resultoutbufferbinding);      // buffer is disposed by overriden dispose below.
-            ownvecoutblock = true;
-            Create(maximumresultsp, forwardfacing);
-        }
-
-        // give an existing storage block for finding
-        public GLPLGeoShaderFindTriangles(GLStorageBlock res, int maximumresultsp, bool forwardfacing = true)
-        {
-            vecoutbuffer = res;
-            Create(maximumresultsp, forwardfacing);
-        }
-
-        // Set up screen coords for find
-        public void SetScreenCoords(Point p, Size s, int margin = 10)
-        {
-            Vector4 v = new Vector4(((float)p.X) / (s.Width / 2) - 1.0f, (1.0f - (float)p.Y / (s.Height / 2)), 0, 0);   // convert to clip space
-            GL.ProgramUniform4(Id, 10, v);
-            float pixd = (float)(margin / (float)((s.Width+s.Height)/2/2));
-         //   System.Diagnostics.Debug.WriteLine("Set CP {0} Pixd {1}", v , pixd);
-            GL.ProgramUniform1(Id, 11, pixd);
-        }
-
-        // OR in this group ID with this value to return extra info
-        public void SetGroup(int g)
-        {
-            GL.ProgramUniform1(Id, 12, g);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-            vecoutbuffer.ZeroBuffer();
-        }
-
-        // returns null or vec4: PrimitiveID, InstanceID, average Z of triangle points, draw ID | group 
-        public Vector4[] GetResult()
-        {
-            GLMemoryBarrier.All();
-
-            vecoutbuffer.StartRead(0);
-            int count = Math.Min(vecoutbuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
-
-            Vector4[] d = null;
-
-            if (count > 0)
-            {
-                d = vecoutbuffer.ReadVector4s(count);      // align 16 for vec4
-                Array.Sort(d, delegate (Vector4 left, Vector4 right) { return left.Z.CompareTo(right.Z); });
-            }
-
-            vecoutbuffer.StopReadWrite();
-            return d;
-        }
-
-        public override void Dispose()
-        {
-            if ( ownvecoutblock )
-                vecoutbuffer.Dispose();
-            base.Dispose();
-        }
-
-        private void Create(int maximumresultsp, bool forwardfacing)
-        {
-            maximumresults = maximumresultsp;
-            vecoutbuffer.AllocateBytes(16 + sizeof(float) * 4 * maximumresults);
-            CompileLink(ShaderType.GeometryShader, Code(false), auxname: GetType().Name,
-                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing });
-        }
 
         private GLStorageBlock vecoutbuffer;
-        private bool ownvecoutblock;
         private int maximumresults;
     }
 
