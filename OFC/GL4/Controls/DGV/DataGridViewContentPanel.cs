@@ -23,7 +23,6 @@ using System.Linq;
 
 namespace GLOFC.GL4.Controls
 {
-
     public class GLDataGridViewContentPanel : GLPanel
     {
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row (-1 outside bounds), col = -1 for row header
@@ -505,12 +504,17 @@ namespace GLOFC.GL4.Controls
             }
             else if ( e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                if (dgv.ContextPanelContent != null)
+                if (dgv.ContextMenuGrid != null)
                 {
                     if (g == null)      // out of cell, return pos of click
                         g = new GLDataGridView.RowColPos() { Column = -1, Row = -1, Location = e.Location };
+                    else
+                    {
+                        if (dgv.SelectRowOnRightClick)
+                            dgv.Rows[g.Row].Selected = true;
+                    }
 
-                    dgv.ContextPanelContent.Show(FindDisplay(), e.ScreenCoord, opentag:g);
+                    dgv.ContextMenuGrid.Show(FindDisplay(), e.ScreenCoord, opentag:g);
                 }
             }
         }

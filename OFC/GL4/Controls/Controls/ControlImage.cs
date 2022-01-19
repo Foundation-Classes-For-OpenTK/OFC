@@ -23,7 +23,7 @@ namespace GLOFC.GL4.Controls
     /// </summary>
     public abstract class GLImageBase : GLBaseControl
     {
-        /// <summary> Image to display </summary>
+        /// <summary> Image to display.</summary>
         public Image Image { get { return image; } set { image = value; Invalidate(); } }
         /// <summary> If to stretch the image to the control size </summary>
         public bool ImageStretch { get { return imagestretch; } set { imagestretch = value; Invalidate(); } }
@@ -69,13 +69,16 @@ namespace GLOFC.GL4.Controls
 
         private protected void DrawImage(Image image, Rectangle box, Graphics g, System.Drawing.Imaging.ImageAttributes imgattr )
         {
-            Size isize = ImageStretch ? box.Size : image.Size;
-            Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize, true, true);
+            if (image != null)
+            {
+                Size isize = ImageStretch ? box.Size : image.Size;
+                Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize, true, true);
 
-            if (imgattr != null)
-                g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, imgattr);
-            else
-                g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+                if (imgattr != null)
+                    g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, imgattr);
+                else
+                    g.DrawImage(image, drawarea, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel);
+            }
         }
 
         /// <summary> Dispose of control </summary>
@@ -94,6 +97,7 @@ namespace GLOFC.GL4.Controls
     {
         /// <summary>
         /// Create an image control
+        /// Image may be null, in which case you will get a empty square of BackColor, which may be useful.
         /// </summary>
         /// <param name="name">Control name</param>
         /// <param name="location">Bounds of control</param>
@@ -115,7 +119,7 @@ namespace GLOFC.GL4.Controls
         {
             base.SizeControl(parentsize);
 
-            if (AutoSize)
+            if (AutoSize && Image != null)
             {
                 SetNI(clientsize: Image.Size);
             }

@@ -158,7 +158,7 @@ namespace GLOFC
         /// <param name="camerarotation">Camera rotation in degrees. 0 is upright</param>
         public void CalculateModelMatrix(Vector3 lookat, Vector3 eyeposition, float camerarotation)
         {
-            System.Diagnostics.Debug.WriteLine($"Calculate model matrix lookat {lookat} from {eyeposition} rot {camerarotation}");
+            //System.Diagnostics.Debug.WriteLine($"Calculate model matrix lookat {lookat} from {eyeposition} rot {camerarotation} ");
 
             LookAt = lookat;      // record for shader use
             EyePosition = eyeposition;

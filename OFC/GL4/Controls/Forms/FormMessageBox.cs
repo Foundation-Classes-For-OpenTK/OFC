@@ -102,7 +102,6 @@ namespace GLOFC.GL4.Controls
             int availableheightforclient = availablespace.Height - windowsextraheight - windowmargin * 2;
 
             var estsize = tb.CalculateTextArea(new Size(20, 24), new Size(availablewidthforclient, availableheightforclient));
-
             tb.Bounds = new Rectangle(textmargin, textoffsettop, estsize.Item1.Width, estsize.Item1.Height);
             tb.EnableHorizontalScrollBar = estsize.Item2;
 
@@ -111,30 +110,30 @@ namespace GLOFC.GL4.Controls
 
             if (buttons == MessageBoxButtons.AbortRetryIgnore)
             {
-                cf.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Ignore) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Ignore", typeof(GLButton), "Ignore", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Ignore) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
                 cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.Retry) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.OKCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Cancel) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Cancel) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.RetryCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Retry) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
-                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Retry", typeof(GLButton), "Retry", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Retry) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("OK", typeof(GLButton), "OK", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.OK) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.YesNo)
             {
-                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.No) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
-                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.Yes) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.No) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.Yes) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
             }
             else if (buttons == MessageBoxButtons.YesNoCancel)
             {
-                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Cancel) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Cancel", typeof(GLButton), "Cancel", new Point(butright, butline), new Size(butwidth, butheight), null, DialogResultEnum.Cancel) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
                 cf.Add(new GLFormConfigurable.Entry("No", typeof(GLButton), "No", new Point(butright - butwidth - butxspacing, butline), new Size(butwidth, butheight), null, DialogResultEnum.No) { TabOrder = 1, Anchor = AnchorType.AutoPlacement });
-                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResultEnum.Yes) { TabOrder = 0, Anchor = AnchorType.AutoPlacement });
+                cf.Add(new GLFormConfigurable.Entry("Yes", typeof(GLButton), "Yes", new Point(butright - (butwidth + butxspacing) * 2, butline), new Size(butwidth, butheight), null, DialogResultEnum.Yes) { TabOrder = 2, Anchor = AnchorType.AutoPlacement });
             }
             else
             {

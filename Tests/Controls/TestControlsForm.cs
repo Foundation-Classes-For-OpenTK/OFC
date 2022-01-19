@@ -316,50 +316,6 @@ namespace TestOpenTk
 
                 if (true)
                 {
-                    string l = "";
-                    for (int i = 0; i < 5; i++)
-                    {
-                        string s = string.Format("Line " + i);
-                        if (i == 0)
-                            s += "And a much much longer Line which should break the width";
-                        l += s + "\r\n";
-                    }
-                    l += "trail ";
-                    // l = "";
-
-                    GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(0, 400, 400, 200), l);
-                    mtb.Font = new Font("Ms Sans Serif", 16);
-                    mtb.LineColor = Color.Green;
-                    mtb.EnableVerticalScrollBar = true;
-                    mtb.EnableHorizontalScrollBar = true;
-                    mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    mtb.TabOrder = taborder++;
-                    mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
-                    pform.Add(mtb);
-                    //mtb.FlashingCursor = false;
-                    //mtb.ReadOnly = true;
-
-                    GLMultiLineTextBox mtb2 = new GLMultiLineTextBox("mltb2", new Rectangle(500, 400, 495, 200), l);
-                    mtb2.Font = new Font("Ms Sans Serif", 11);
-                    mtb2.LineColor = Color.Green;
-                    mtb2.EnableVerticalScrollBar = true;
-                    mtb2.EnableHorizontalScrollBar = true;
-                    mtb2.SetSelection(16 * 2 + 2, 16 * 3 + 4);
-                    mtb2.TabOrder = taborder++;
-                    mtb2.RightClickMenuFont = new Font("Arial", 14f);
-                    pform.Add(mtb2);
-                }
-
-                if (true)
-                {
-                    GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 500, 150, 40), "Text Data Which is a very long string of very many many characters");
-                    tb1.Font = new Font("Arial", 12);
-                    tb1.TabOrder = taborder++;
-                    pform.Add(tb1);
-                }
-
-                if (true)
-                {
                     GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 600, 26, 46));
                     upc1.TabOrder = taborder++;
                     pform.Add(upc1);

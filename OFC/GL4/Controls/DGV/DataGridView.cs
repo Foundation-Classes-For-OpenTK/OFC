@@ -93,8 +93,10 @@ namespace GLOFC.GL4.Controls
         public bool AllowUserToSelectCells { get; set; } = true;
         /// <summary> Allow user to drag cell selection to create a selection area</summary>
         public bool AllowUserToDragSelectCells { get; set; } = true;
-        /// <summary> Clicking on a cell in a row selects the whole row </summary>
+        /// <summary> Left clicking on a cell in a row selects the whole row </summary>
         public bool SelectCellSelectsRow { get; set; } = false;
+        /// <summary> Right clicking on a cell in a row selects the whole row </summary>
+        public bool SelectRowOnRightClick { get; set; } = false;
 
 
         /// <summary> Callback when a row is selected or unselected (bool indicates)</summary>
@@ -158,15 +160,15 @@ namespace GLOFC.GL4.Controls
         /// </summary>
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;
 
-        /// <summary> Context menu for content panel.
+        /// <summary> Context menu for the grid
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what cell and location has been clicked on (row=col=-1 if none)</summary>
-        public GLContextMenu ContextPanelContent;
+        public GLContextMenu ContextMenuGrid;
         /// <summary> Context menu for column headers
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what column and location has been clicked on. (col=-1 for top left)</summary>
-        public GLContextMenu ContextPanelColumnHeaders;     
+        public GLContextMenu ContextMenuColumnHeaders;     
         /// <summary> Context menu for row headers.
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what row and location has been clicked on. </summary>
-        public GLContextMenu ContextPanelRowHeaders;      
+        public GLContextMenu ContextMenuRowHeaders;      
 
         /// <summary> Construct with name and bounds</summary>
         public GLDataGridView(string name, Rectangle location) : base(name, location)
@@ -221,7 +223,7 @@ namespace GLOFC.GL4.Controls
 
             colheaderpanel.MouseClickColumnHeader += (col, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
+                //System.Diagnostics.Debug.WriteLine($"Click on {col} {SortColumn} {SortAscending}");
                 if (AllowUserToSortColumns)
                     Sort(col, !SortAscending);
                 else
@@ -230,18 +232,18 @@ namespace GLOFC.GL4.Controls
 
             topleftpanel.MouseClickColumnHeader += (e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Click on top left");
+                //System.Diagnostics.Debug.WriteLine($"Click on top left");
                 MouseClickOnGrid?.Invoke(-2, -2, e);
             };
 
             rowheaderpanel.MouseClickRowHeader += (row, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Click on row header {row}");
+                //System.Diagnostics.Debug.WriteLine($"Click on row header {row}");
                 MouseClickOnGrid?.Invoke(row, -1, e);
             };
             contentpanel.MouseClickOnGrid += (row, col, e) =>
             {
-                System.Diagnostics.Debug.WriteLine($"Click on grid {row} {col}");
+                //System.Diagnostics.Debug.WriteLine($"Click on grid {row} {col}");
                 MouseClickOnGrid?.Invoke(row, col, e);
             };
 

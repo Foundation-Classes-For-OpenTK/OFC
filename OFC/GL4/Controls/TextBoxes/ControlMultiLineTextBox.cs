@@ -91,12 +91,16 @@ namespace GLOFC.GL4.Controls
         /// <summary> Disable autosize, not supported. See CalculateTextArea for a method for external auto sizing </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> Calculated height of lines  </summary>
+        public int LineHeight { get; private set; }     // Line height
+
         /// <summary> Construct with name, bounds and text contents </summary>
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
         {
             Focusable = true;
             this.text = text;
             cursortimer.Tick += CursorTick;
+            CalcLineHeight();
             CalculateTextParameters();
             Finish(false, false, false);
             foreColor = DefaultTextBoxForeColor;
@@ -125,6 +129,7 @@ namespace GLOFC.GL4.Controls
                             }
                         }
                     );
+
         }
 
         /// <summary> Default Constructor </summary>
@@ -543,7 +548,7 @@ namespace GLOFC.GL4.Controls
 
             SizeF area = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font);
 
-            int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + Font.Height/2));       // add a nerf based on font height
+            int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + LineHeight / 2));       // add a nerf based on font height
             width += TextBoundary.TotalWidth;
 
             if (width > max.Width)
@@ -552,7 +557,7 @@ namespace GLOFC.GL4.Controls
                 horzscroll = true;
             }
 
-            int height = Font.Height * NumberOfLines ;
+            int height = LineHeight * NumberOfLines ;
             height += TextBoundary.TotalHeight;
 
             if (height > max.Height)
@@ -724,7 +729,7 @@ namespace GLOFC.GL4.Controls
                                 sfmt.SetMeasurableCharacterRanges(characterRanges);
                                 var rect = gr.MeasureCharacterRanges(cursorline + "@", Font, measurearea, sfmt)[0].GetBounds(gr);    // ensure at least 1 char
                                                                                                                                      //System.Diagnostics.Debug.WriteLine("{0} {1} {2}", startx, cursoroffset, rect);
-                                if ((int)(rect.Width + 1) > usablearea.Width - Font.Height)      // Font.Height is to allow for an overlap  
+                                if ((int)(rect.Width + 1) > usablearea.Width - LineHeight)      // Font.Height is to allow for an overlap  
                                 {
                                     //System.Diagnostics.Debug.WriteLine("Display start move right");
                                     displaystartx++;
@@ -896,6 +901,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
+            CalcLineHeight();
             Finish(invalidate: false, clearselection: false, restarttimer: false);        // no need to invalidate again, it will
         }
 
@@ -962,7 +968,7 @@ namespace GLOFC.GL4.Controls
 
             if (!MultiLineMode)     // if we are in no LF mode (ie. Textbox) then use TextAlign to format area
             {
-                usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, Font.Height));
+                usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, LineHeight));
             }
 
             return usablearea;
@@ -1003,7 +1009,7 @@ namespace GLOFC.GL4.Controls
                     pfmt.FormatFlags = StringFormatFlags.NoWrap;
 
                     int bottom = usablearea.Bottom;
-                    usablearea.Height = Font.Height;        // move the area down the screen progressively
+                    usablearea.Height = LineHeight;        // move the area down the screen progressively
 
                     while (usablearea.Top < bottom)       // paint each line
                     {
@@ -1059,9 +1065,8 @@ namespace GLOFC.GL4.Controls
 
                         if (s.Length > 0)
                         {
-                            //System.Diagnostics.Debug.WriteLine($"Text: '{s}'");
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
-
+                           // System.Diagnostics.Debug.WriteLine($"Draw '{s}' into text box {usablearea} cr {ClientRectangle} b { Bounds} font {Font.ToString()}");
                             // useful for debug
 
                             //Pen pr = new Pen(Color.Red);
@@ -1126,14 +1131,14 @@ namespace GLOFC.GL4.Controls
                                 {
                                     using (Brush b = new SolidBrush(Color.FromArgb(64, this.ForeColor)))        // overwrite mode paints forecolor over the char with low alpha
                                     {
-                                        gr.FillRectangle(b, new Rectangle(cursorxpos, usablearea.Y, charwidth, Font.Height - 2));
+                                        gr.FillRectangle(b, new Rectangle(cursorxpos, usablearea.Y, charwidth, LineHeight - 2));
                                     }
                                 }
                                 else
                                 {
                                     using (Pen p = new Pen(this.ForeColor))     // a solid bar
                                     {
-                                        gr.DrawLine(p, new Point(cursorxpos, usablearea.Y), new Point(cursorxpos, usablearea.Y + Font.Height - 2));
+                                        gr.DrawLine(p, new Point(cursorxpos, usablearea.Y), new Point(cursorxpos, usablearea.Y + LineHeight - 2));
                                     }
                                 }
                             }
@@ -1143,7 +1148,7 @@ namespace GLOFC.GL4.Controls
                             break;
 
                         cpos += linelengths[lineno];
-                        usablearea.Y += Font.Height;
+                        usablearea.Y += LineHeight;
                         lineno++;
                     }
                 }
@@ -1271,7 +1276,7 @@ namespace GLOFC.GL4.Controls
 
             // calculate line and limit to number of lines
             // if clicking below last line its the same as clicking the last one
-            int lineclicked = Math.Min(firstline + (click.Y - usablearea.Y) / Font.Height, linelengths.Count - 1); 
+            int lineclicked = Math.Min(firstline + (click.Y - usablearea.Y) / LineHeight, linelengths.Count - 1); 
 
             lineno = 0;
             cpos = 0;
@@ -1461,10 +1466,18 @@ namespace GLOFC.GL4.Controls
                 vertscroller.Padding = new PaddingType(0, 0, 0, horz ? ScrollBarWidth : 0);
         }
 
+        private void CalcLineHeight()
+        {
+            // so MS sand serif at 8.25 or 12 if you just rely on Font.Height cuts the bottom off. So use a bit of text to find the mininum. Seems ok with Arial/MS Sans Serif
+            var area = BitMapHelpers.MeasureStringInBitmap("AAjjqqyyy", Font);
+            LineHeight = Math.Max(Font.Height+1,(int)(area.Height+0.4999));
+          //  System.Diagnostics.Debug.WriteLine($"Line {area} {Font.Height} {Font.ToString()} = {LineHeight}");
+        }
+
         #endregion
 
-        private int CurrentDisplayableLines { get { return ((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / Font.Height); } }
-        private int MaxDisplayableLines { get { return ClientRectangle.Height / Font.Height; } }
+        private int CurrentDisplayableLines { get { return ((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / LineHeight); } }
+        private int MaxDisplayableLines { get { return ClientRectangle.Height / LineHeight; } }
 
         // cursor and marker info
 

@@ -250,10 +250,10 @@ namespace GLOFC.GL4.Controls
             }
             else if ( e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                if (g != null && dgv.ContextPanelRowHeaders != null)
+                if (g != null && dgv.ContextMenuRowHeaders != null)
                 {
                     g.Column = -1;
-                    dgv.ContextPanelRowHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: g);
+                    dgv.ContextMenuRowHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: g);
                 }
             }
         }

@@ -347,7 +347,9 @@ namespace GLOFC.Utils
                     if (measurementbox == null)
                         measurementbox = new Size(20000, 20000);
                     g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-                    return g.MeasureString(text, font, measurementbox.Value, textformat);
+                    var ret = g.MeasureString(text, font, measurementbox.Value, textformat);
+                  //  System.Diagnostics.Debug.WriteLine($"Measure '{text}' in font {font.ToString()} size {ret}");
+                    return ret;
                 }
             }
         }

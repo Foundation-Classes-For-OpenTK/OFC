@@ -121,9 +121,9 @@ namespace GLOFC.GL4.Controls
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
                 GLDataGridView dgv = Parent as GLDataGridView;
-                if (dgv.ContextPanelColumnHeaders != null)
+                if (dgv.ContextMenuColumnHeaders != null)
                 {
-                    dgv.ContextPanelColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = -1, Row = -1, Location = e.Location });
+                    dgv.ContextMenuColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = -1, Row = -1, Location = e.Location });
                 }
             }
         }

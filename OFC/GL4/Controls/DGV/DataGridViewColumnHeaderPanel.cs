@@ -152,13 +152,13 @@ namespace GLOFC.GL4.Controls
             else if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
                 GLDataGridView dgv = Parent as GLDataGridView;
-                if (dgv.ContextPanelColumnHeaders != null)
+                if (dgv.ContextMenuColumnHeaders != null)
                 {
                     var over = Over(e.Location);
 
                     if (over != null && over.Item1 == ClickOn.Header)
                     {
-                        dgv.ContextPanelColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = over.Item2, Row = -1, Location = over.Item3 });
+                        dgv.ContextMenuColumnHeaders.Show(FindDisplay(), e.ScreenCoord, opentag: new GLDataGridView.RowColPos() { Column = over.Item2, Row = -1, Location = over.Item3 });
                     }
                 }
             }

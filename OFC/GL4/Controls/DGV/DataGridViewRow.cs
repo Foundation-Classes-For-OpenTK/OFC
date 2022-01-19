@@ -49,6 +49,8 @@ namespace GLOFC.GL4.Controls
         public bool ShowHeaderText { get { return showtext; } set { showtext = value; Changed?.Invoke(this); } }
         /// <summary> Whole row selected </summary>
         public bool Selected { get { return selected; } set { if (value != selected) { selected = value; foreach (var c in cells) c.SelectedNI = value; SelectionChanged(this, -1); } } }
+        /// <summary> User tag</summary>
+        public object Tag { get; set; }
 
         /// <summary> Default constructor. Note DO NOT construct, use GLDataGridView.CreateRow</summary>
         public GLDataGridViewRow()

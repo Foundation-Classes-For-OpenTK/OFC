@@ -59,6 +59,12 @@
     <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\xml.cs" />
+    <Compile Include="Controls\TestControlsTextBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Controls\TestControlsTextBox.designer.cs">
+      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TestControlsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -366,6 +372,9 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Controls\TestControlsTextBox.resx">
+      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Controls\TestControlsForm.resx">
       <DependentUpon>TestControlsForm.cs</DependentUpon>
     </EmbeddedResource>

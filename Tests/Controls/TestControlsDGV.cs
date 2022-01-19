@@ -143,6 +143,7 @@ namespace TestOpenTk
                 dgv.Dock = DockingType.Fill;
                 dgv.DefaultAltRowCellStyle.BackColor = Color.FromArgb(255, 240, 240, 240);
                 dgv.DefaultAltRowCellStyle.ForeColor = Color.DarkBlue;
+                dgv.SelectRowOnRightClick = true;
 
                 // dgv.ColumnFillMode = GLDataGridView.ColFillMode.FillWidth;
                 var col0 = dgv.CreateColumn();
@@ -166,6 +167,8 @@ namespace TestOpenTk
 
                 pform.BackColor = Color.FromArgb(128, 128, 128, 128);
                 pform.ForeColor = Color.DarkOrange;
+
+                dgv.DefaultCellStyle.Padding = new PaddingType(5);
 
                 dgv.BackColor = Color.FromArgb(128, 60, 60, 0);
                 dgv.DefaultColumnHeaderStyle.ForeColor = dgv.DefaultRowHeaderStyle.ForeColor =
@@ -227,13 +230,13 @@ namespace TestOpenTk
                         System.Diagnostics.Debug.WriteLine($"Open menu content at {g.Row} {g.Column} {g.Location}");
                     };
 
-                    dgv.ContextPanelContent = cm;
+                    dgv.ContextMenuGrid = cm;
                 }
 
                 {
                     GLContextMenu cm = new GLContextMenu("CMColheader");
-                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1-ColMenu");
-                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Colheader1");
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "ColHeader2");
                     cm.Add(cm1);
                     cm.Add(cm2);
                     cm.Opening += (e1, tag) =>
@@ -242,13 +245,18 @@ namespace TestOpenTk
                         System.Diagnostics.Debug.WriteLine($"Open menu col header at {g.Row} {g.Column} {g.Location}");
                     };
 
-                    dgv.ContextPanelColumnHeaders = cm;
+                    dgv.ContextMenuColumnHeaders = cm;
                 }
 
                 {
                     GLContextMenu cm = new GLContextMenu("CMRowheader");
-                    GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1-RowMenu");
-                    GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
+                    GLMenuItem cm1 = new GLMenuItem("CM1A", "RowHeader-1");
+                    cm1.Click = (ctrlb) =>
+                    {
+                        GLMessageBox msg = new GLMessageBox("Confirm", displaycontrol, new Point(int.MinValue, 0), "Ag", "Warning",
+                                        GLMessageBox.MessageBoxButtons.OKCancel);
+                    };
+                    GLMenuItem cm2 = new GLMenuItem("CM1B", "RowHeader-2");
                     cm.Add(cm1);
                     cm.Add(cm2);
                     cm.Opening += (e1, tag) =>
@@ -257,10 +265,11 @@ namespace TestOpenTk
                         System.Diagnostics.Debug.WriteLine($"Open menu row header at {g.Row} {g.Column} {g.Location}");
                     };
 
-                    dgv.ContextPanelRowHeaders = cm;
+                    dgv.ContextMenuRowHeaders = cm;
                 }
 
                 dgv.MouseClickOnGrid += (r, c, e1) => { System.Diagnostics.Debug.WriteLine($"Mouse click on grid {r} {c}"); };
+
                 dgv.SelectedRow += (rw, state) => {
                     System.Diagnostics.Debug.WriteLine($"Row Selected {rw.Index} {state}");
                     var rowset = dgv.GetSelectedRows();
