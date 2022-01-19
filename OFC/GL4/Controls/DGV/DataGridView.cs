@@ -83,6 +83,8 @@ namespace GLOFC.GL4.Controls
         public bool RowHeaderEnable { get { return rowheaderenable; } set { rowheaderenable = value; rowheaderpanel.Visible = value; topleftpanel.Visible = colheaderpanel.Visible && rowheaderpanel.Visible;  ContentInvalidateLayout(); } }
         /// <summary> Row header width </summary>
         public int RowHeaderWidth { get { return rowheaderwidth; } set { rowheaderwidth = value; InvalidateLayout(); } }
+        /// <summary> Row count offset to add to RowIndex when showing row count </summary>
+        public int RowCountOffset { get { return rowcountoffset; } set { rowcountoffset = value; rowheaderpanel.Invalidate(); } }
         /// <summary> Allow user to resize rows (if row is not autosized) </summary>
         public bool AllowUserToResizeRows { get; set; } = true;
         /// <summary> Allow user to select rows by clicking on header</summary>
@@ -697,6 +699,7 @@ namespace GLOFC.GL4.Controls
 
         private int rowheaderwidth = 40;
         private bool rowheaderenable = true;
+        private int rowcountoffset = 1;
 
         private Color cellbordercolor;
         private Color upperleftbackcolor;

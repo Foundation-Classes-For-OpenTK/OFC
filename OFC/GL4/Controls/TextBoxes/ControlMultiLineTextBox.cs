@@ -91,8 +91,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Disable autosize, not supported. See CalculateTextArea for a method for external auto sizing </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
-        /// <summary> Calculated height of lines  </summary>
-        public int LineHeight { get; private set; }     // Line height
+        /// <summary> Height of lines. Note changing Font changes this</summary>
+        public int LineHeight { get { return lineheight; } set { lineheight = value; Invalidate(); } }     // Line height
 
         /// <summary> Construct with name, bounds and text contents </summary>
         public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
@@ -1470,7 +1470,7 @@ namespace GLOFC.GL4.Controls
         {
             // so MS sand serif at 8.25 or 12 if you just rely on Font.Height cuts the bottom off. So use a bit of text to find the mininum. Seems ok with Arial/MS Sans Serif
             var area = BitMapHelpers.MeasureStringInBitmap("AAjjqqyyy", Font);
-            LineHeight = Math.Max(Font.Height+1,(int)(area.Height+0.4999));
+            lineheight = Math.Max(Font.Height+1,(int)(area.Height+0.4999));
           //  System.Diagnostics.Debug.WriteLine($"Line {area} {Font.Height} {Font.ToString()} = {LineHeight}");
         }
 
@@ -1496,12 +1496,15 @@ namespace GLOFC.GL4.Controls
         private int cursorlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
         private int startlinecpos;   // computed on text set, updated by all moves/inserts, start of current line
 
+
         // Display
 
         private Color highlightColor { get; set; } = DefaultTextBoxHighlightColor;
         private Color lineColor { get; set; } = Color.Transparent;
         private Color backerrorcolor { get; set; } = DefaultTextBoxErrorColor;
         private bool inerror = false;
+
+        private int lineheight;
 
         private int scrollbarwidth = 20;
 
@@ -1515,6 +1518,7 @@ namespace GLOFC.GL4.Controls
         private GLContextMenu rightclickmenu;
 
         private bool insert = true;
+
 
         //bool pone = false;      // debugging only
 

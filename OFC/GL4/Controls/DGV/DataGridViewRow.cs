@@ -170,7 +170,7 @@ namespace GLOFC.GL4.Controls
                     //System.Diagnostics.Debug.WriteLine($"Draw {Text} {Enabled} {ForeDisabledScaling}");
                     using (Brush textb = new SolidBrush(HeaderStyle.ForeColor))
                     {
-                        gr.DrawString(rowno.ToString(), HeaderStyle.Font, textb, area, fmt);
+                        gr.DrawString((rowno+Parent.RowCountOffset).ToString(), HeaderStyle.Font, textb, area, fmt);
                     }
                 }
             }
