@@ -226,16 +226,16 @@ namespace TestOpenTk
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
             
-            var azel = gl3dcontroller.PosCamera.EyePosition.AzEl(gl3dcontroller.PosCamera.LookAt, true);
-
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " from " + gl3dcontroller.MatrixCalc.EyePosition + " cdir " + gl3dcontroller.PosCamera.CameraDirection + " azel " + azel + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " from " + gl3dcontroller.MatrixCalc.EyePosition + 
+                               " cdir " + gl3dcontroller.PosCamera.CameraDirection + " zoom " + gl3dcontroller.PosCamera.ZoomFactor + 
+                                " dist " + gl3dcontroller.MatrixCalc.EyeDistance + " FOV " + gl3dcontroller.MatrixCalc.FovDeg;
 
         }
 
         private void SystemTick(object sender, EventArgs e )
         {
-            gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
-            gl3dcontroller.Redraw();
+            if ( gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys) )
+                gl3dcontroller.Redraw();
         }
 
         private void OtherKeys( GLOFC.Controller.KeyboardMonitor kb )

@@ -96,15 +96,15 @@ namespace TestOpenTk
 
             // render state for triangles
 
-            GLRenderState rc = GLRenderState.Tri();
-            rc.CullFace = false;
+GLRenderState rc = GLRenderState.Tri();
+rc.CullFace = false;
 
-            rObjects.Add(items.Shader("COSOT"), "scopen",
-                        GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
-                                        GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
-                                        new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
-                                        new GLRenderDataTranslationRotation(new Vector3(-10, 0, -10))
-                        ));
+rObjects.Add(items.Shader("COSOT"), "scopen",
+            GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
+                            GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
+                            new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
+                            new GLRenderDataTranslationRotation(new Vector3(-10, 0, -10))
+            ));
 
             rObjects.Add(items.Shader("COSOT"), "scopen2",
                         GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
@@ -135,15 +135,15 @@ namespace TestOpenTk
         }
 
         // called on Paint of scene
-        private void Draw(object mc, ulong unused)
-        {
-            //System.Diagnostics.Debug.WriteLine("Draw");
+private void Draw(object mc, ulong unused)
+{
+    //System.Diagnostics.Debug.WriteLine("Draw");
 
-            GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
-            mcub.SetFull(matrixcalc);       // need to store the matrixcalc information into the uniform block
+    var mcub = items.Get<GLMatrixCalcUniformBlock>("MCUB");
+    mcub.SetFull(matrixcalc);       // need to store the matrixcalc information into the uniform block
 
-            rObjects.Render(glwfc.RenderState, matrixcalc); // execute render
-        }
+    rObjects.Render(glwfc.RenderState, matrixcalc); // execute render
+}
     }
 }
 

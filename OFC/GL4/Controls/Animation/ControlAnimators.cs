@@ -20,7 +20,7 @@ namespace GLOFC.GL4.Controls
     /// Animator to move control
     /// </summary>
 
-    public class AnimateTranslate : AnimateTimeBase
+    public class GLControlAnimateTranslate : GLControlAnimateTimeBase
     {
         /// <summary> Target point to go to</summary>
         public Point Target { get; set; }
@@ -36,20 +36,20 @@ namespace GLOFC.GL4.Controls
         /// <param name="target">Target point to go</param>
         /// <param name="begin">Optional beginning point. If null, animate from current control position</param>
         /// <param name="removeafterend">Remove animation from control at end</param>
-        public AnimateTranslate(ulong starttime, ulong endtime, bool deltatime, Point target, Point? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
+        public GLControlAnimateTranslate(ulong starttime, ulong endtime, bool deltatime, Point target, Point? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Start(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Start(GLBaseControl)"/>
         protected override void Start(GLBaseControl cs)
         {
             if ( Begin == null)
                 Begin = cs.Location;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Middle(GLBaseControl, double)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Middle(GLBaseControl, double)"/>
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var p = new Point((int)(Begin.Value.X + (double)(Target.X - Begin.Value.X) * delta), (int)(Begin.Value.Y + (double)(Target.Y - Begin.Value.Y) * delta));
@@ -59,7 +59,7 @@ namespace GLOFC.GL4.Controls
             cs.Location = p;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.End(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.End(GLBaseControl)"/>
         protected override void End(GLBaseControl cs)
         {
             cs.Location = Target;
@@ -69,7 +69,7 @@ namespace GLOFC.GL4.Controls
     /// <summary>
     /// Animator for size
     /// </summary>
-    public class AnimateSize : AnimateTimeBase
+    public class GLControlAnimateSize : GLControlAnimateTimeBase
     {
         /// <summary> Target size to go to</summary>
         public Size Target { get; set; }
@@ -85,20 +85,20 @@ namespace GLOFC.GL4.Controls
         /// <param name="target">Target size to go to</param>
         /// <param name="begin">Optional beginning size. If null, animate from current control size</param>
         /// <param name="removeafterend">Remove animation from control at end</param>
-        public AnimateSize(ulong starttime, ulong endtime, bool deltatime, Size target, Size? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
+        public GLControlAnimateSize(ulong starttime, ulong endtime, bool deltatime, Size target, Size? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Start(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Start(GLBaseControl)"/>
         protected override void Start(GLBaseControl cs)
         {
             if ( Begin == null)
                 Begin = cs.Size;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Middle(GLBaseControl, double)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Middle(GLBaseControl, double)"/>
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var s = new Size((int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta), (int)(Begin.Value.Width + (double)(Target.Width - Begin.Value.Width) * delta));
@@ -108,7 +108,7 @@ namespace GLOFC.GL4.Controls
             cs.Size = s;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.End(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.End(GLBaseControl)"/>
         protected override void End(GLBaseControl cs)
         {
             cs.Size = Target;
@@ -118,7 +118,7 @@ namespace GLOFC.GL4.Controls
     /// <summary>
     /// Animator for ScaleWindow. Top level controls only.
     /// </summary>
-    public class AnimateScale : AnimateTimeBase
+    public class GLControlAnimateScale : GLControlAnimateTimeBase
     {
         /// <summary> Target scale to go to</summary>
         public SizeF Target { get; set; }
@@ -134,20 +134,20 @@ namespace GLOFC.GL4.Controls
         /// <param name="target">Target scale to go to</param>
         /// <param name="begin">Optional beginning scale. If null, animate from current control scale</param>
         /// <param name="removeafterend">Remove animation from control at end</param>
-        public AnimateScale(ulong starttime, ulong endtime, bool deltatime, SizeF target, SizeF? begin = null, bool removeafterend = false) : base(starttime, endtime,deltatime, removeafterend)
+        public GLControlAnimateScale(ulong starttime, ulong endtime, bool deltatime, SizeF target, SizeF? begin = null, bool removeafterend = false) : base(starttime, endtime,deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Start(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Start(GLBaseControl)"/>
         protected override void Start(GLBaseControl cs)
         {
             if (Begin == null)
                 Begin = cs.ScaleWindow ?? new SizeF(1, 1);
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Middle(GLBaseControl, double)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Middle(GLBaseControl, double)"/>
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var s = new SizeF(Begin.Value.Width + (Target.Width - Begin.Value.Width) * (float)delta,
@@ -157,7 +157,7 @@ namespace GLOFC.GL4.Controls
             cs.ScaleWindow = s;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.End(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.End(GLBaseControl)"/>
         protected override void End(GLBaseControl cs)
         {
             cs.ScaleWindow = Target;
@@ -166,7 +166,7 @@ namespace GLOFC.GL4.Controls
     /// <summary>
     /// Animator for Opacity. Top level controls only.
     /// </summary>
-    public class AnimateOpacity : AnimateTimeBase
+    public class GLControlAnimateOpacity : GLControlAnimateTimeBase
     {
         /// <summary> Target opacity to go to</summary>
         public float Target { get; set; }
@@ -182,13 +182,13 @@ namespace GLOFC.GL4.Controls
         /// <param name="target">Target opacity to go to</param>
         /// <param name="begin">Optional beginning opacity. If null, animate from current control opacity</param>
         /// <param name="removeafterend">Remove animation from control at end</param>
-        public AnimateOpacity(ulong starttime, ulong endtime, bool deltatime, float target, float? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
+        public GLControlAnimateOpacity(ulong starttime, ulong endtime, bool deltatime, float target, float? begin = null, bool removeafterend = false) : base(starttime, endtime, deltatime, removeafterend)
         {
             Target = target;
             Begin = begin;
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Start(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Start(GLBaseControl)"/>
         protected override void Start(GLBaseControl cs)
         {
             if (Begin == null)
@@ -197,7 +197,7 @@ namespace GLOFC.GL4.Controls
             //System.Diagnostics.Debug.WriteLine("Animate {0} begin {1}", cs.Name, cs.Opacity);
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.Middle(GLBaseControl, double)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.Middle(GLBaseControl, double)"/>
         protected override void Middle(GLBaseControl cs, double delta)
         {
             var s = Begin.Value + (Target - Begin.Value) * (float)delta;
@@ -206,7 +206,7 @@ namespace GLOFC.GL4.Controls
 //            System.Diagnostics.Debug.WriteLine("Animate {0} to opacity {1}", cs.Name, cs.Opacity);
         }
 
-        /// <inheritdoc cref="GLOFC.GL4.Controls.AnimateTimeBase.End(GLBaseControl)"/>
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLControlAnimateTimeBase.End(GLBaseControl)"/>
         protected override void End(GLBaseControl cs)
         {
             cs.Opacity = Target;

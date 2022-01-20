@@ -19,20 +19,20 @@ namespace GLOFC.GL4.Controls
     /// <summary>
     /// Interface for Animators
     /// </summary>
-    public interface IControlAnimation
+    public interface IGLControlAnimation
     {
         /// <summary> Perform animation on control at this time.</summary>
         void Animate(GLBaseControl cs, ulong timems);       
         /// <summary> Called at start of animation </summary>
-        Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; } 
+        Action<IGLControlAnimation, GLBaseControl, ulong> StartAction { get; set; } 
         /// <summary> Called on removal/end of animation</summary>
-        Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
+        Action<IGLControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
     }
 
     /// <summary>
     /// Animation Time Base class to provide most of the animation control logic
     /// </summary>
-    public abstract class AnimateTimeBase : IControlAnimation
+    public abstract class GLControlAnimateTimeBase : IGLControlAnimation
     {
         /// <summary> Start time of animation. 
         /// After the first tick it is absolute time, before can be delta from now, or absolute
@@ -48,9 +48,9 @@ namespace GLOFC.GL4.Controls
         public bool RemoveAfterEnd { get; set; } = false;
 
         /// <summary> Callback, called on start animation with animator, control and current time </summary>
-        public Action<IControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
+        public Action<IGLControlAnimation, GLBaseControl, ulong> StartAction { get; set; }
         /// <summary> Callback, called on end animation with animator, control and current time</summary>
-        public Action<IControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
+        public Action<IGLControlAnimation, GLBaseControl, ulong> FinishAction { get; set; }
 
         /// <summary> Animation state</summary>
         public enum StateType {
@@ -70,7 +70,7 @@ namespace GLOFC.GL4.Controls
         /// <param name="endtime">End time, either absolute or delta from next tick</param>
         /// <param name="deltatime">Delta time indicator, true if times are delta from next tick</param>
         /// <param name="removeafterend">True to remove animator from control at end of animation</param>
-        public AnimateTimeBase(ulong startime, ulong endtime, bool deltatime, bool removeafterend = false)
+        public GLControlAnimateTimeBase(ulong startime, ulong endtime, bool deltatime, bool removeafterend = false)
         {
             StartTime = startime; EndTime = endtime; DeltaTime = deltatime; RemoveAfterEnd = removeafterend;
         }

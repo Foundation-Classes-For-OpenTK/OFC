@@ -149,7 +149,7 @@ namespace GLOFC.GL4.Controls
                 var controlslist = new List<GLBaseControl>(childreniz); // animators may close/remove the control, so we need to take a copy so we have a collection which does not change.
                 foreach (var c in controlslist)
                     c.Animate(ts);
-                var animators = new List<IControlAnimation>(Animators); // animators may remove themselves from the animation list, so we need to take a copy
+                var animators = new List<IGLControlAnimation>(Animators); // animators may remove themselves from the animation list, so we need to take a copy
                 foreach (var a in animators)
                     a.Animate(this, ts);
             }

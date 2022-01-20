@@ -167,7 +167,7 @@ namespace GLOFC.GL4.Controls
 
         // list of attached animators.
         /// <summary> List of animators for this control </summary>
-        public List<IControlAnimation> Animators { get; set; } = new List<IControlAnimation>();
+        public List<IGLControlAnimation> Animators { get; set; } = new List<IGLControlAnimation>();
 
         // tooltips
         /// <summary> Tool tip text to display for this control </summary>

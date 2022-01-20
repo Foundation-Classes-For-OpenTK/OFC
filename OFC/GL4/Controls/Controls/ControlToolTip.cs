@@ -73,7 +73,7 @@ namespace GLOFC.GL4.Controls
                     if (FadeInTime > 0)     // if we are attached to control display, and we are fading in, do it
                     {
                         Opacity = 0;
-                        Animators.Add(new AnimateOpacity(0, FadeInTime, true, ShownOpacity, 0.0f, true));   // note delta time
+                        Animators.Add(new GLControlAnimateOpacity(0, FadeInTime, true, ShownOpacity, 0.0f, true));   // note delta time
                     }
                     else
                         Opacity = ShownOpacity;
@@ -88,7 +88,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (Parent is GLControlDisplay && FadeOutTime > 0)
                 {
-                    var animate = new AnimateOpacity(0, FadeOutTime, true, 0.0f, Opacity, true);
+                    var animate = new GLControlAnimateOpacity(0, FadeOutTime, true, 0.0f, Opacity, true);
                     animate.FinishAction = (an, ctrl, time) =>
                     {
                         ctrl.Visible = false;
