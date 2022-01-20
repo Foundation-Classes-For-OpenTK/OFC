@@ -7,7 +7,9 @@ This repository holds a set of c# class wrappers which wrap the OpenTK GL API in
 
 These make drawing objects to GL much easier to perform.
 
-The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc.
+Check out the [Wiki](../../wiki) for help.
+
+The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc. See [Class List](../../wiki/index)
 
 It has a render list which allows the rendering of all objects to be executed in one call.
 
