@@ -14,6 +14,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <DefaultDocumentationAssemblyPageName>GLOFC-Class-List</DefaultDocumentationAssemblyPageName>
     <DefaultDocumentationGeneratedPages>Classes,Delegates,Interfaces</DefaultDocumentationGeneratedPages>
     <DefaultDocumentationFileNameMode>FullName</DefaultDocumentationFileNameMode>
     <DefaultDocumentationFolder>bin\mddoc</DefaultDocumentationFolder>
