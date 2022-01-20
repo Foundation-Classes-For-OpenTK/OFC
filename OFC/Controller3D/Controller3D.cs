@@ -45,7 +45,34 @@ namespace GLOFC.Controller
         /// <summary> Position camera object for this controller </summary>
         public PositionCamera PosCamera { get; private set; } = new PositionCamera();
 
-        /// <summary> Start the class with this matrixcalc and position camera. Pass the GL window control, and the initial lookat/cameradirection and zoom </summary>
+        /// <summary> Start the class with this matrixcalc and position camera. Pass the GL window control, and the initial lookat/cameradirection and zoom 
+        /// The controller implements the following eye and lookat control:
+        /// Mouse:
+        /// Left Hold and drag: Rotate camera in Elevation and Azimuth
+        /// Right Hold and drag: Translate Lookat/Eye on the XZ plane (left/right/forward/backwards)
+        /// Left+Right Hold and drag: Translate Lookat/Eye on the YX plane (up/down)
+        /// Key mapping for Translate:
+        /// * Ctrl M = Change Y hold mode
+        /// * Left Key, A = Left (X)
+        /// * Right Key, D = Right (X)
+        /// * Up Key, W = Forward (Z)
+        /// * Down Key, S = Backward (Z)
+        /// * Page Up Key, R = Up (Y)
+        /// * Page Down Key, F = Down (Y)
+        /// Shift doubles the speed when combined.
+        /// Key mapping for Zoom:
+        /// * Numpad +, M = Zoom in
+        /// * Numpad -, N = Zoom out
+        /// * Ctrl 1-9 Zoom to set distance
+        /// Key mapping for camera:
+        /// * Numpad 8, T = Pitch up (Elevation)
+        /// * Numpad 2, G = Pitch down (Elevation)
+        /// * Numpad 4, Q = Turn left (Azimuth)
+        /// * Numpad 6, E = Turn right (Azimuth)
+        /// * Numpad 9 Rotate camera left
+        /// * Numpad 3 Rotate camera right
+        /// Shift doubles the speed when combined.     
+        /// </summary>
         public void Start(GLMatrixCalc mc, PositionCamera pc, GLWindowControl win, Vector3 lookat, Vector3 cameradirdegrees, float zoomn)
         {
             MatrixCalc = mc;

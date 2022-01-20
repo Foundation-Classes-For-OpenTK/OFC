@@ -21,7 +21,7 @@ using System.Windows.Forms;
 namespace GLOFC.Controller
 {
     /// <summary>
-    /// base class for 3dControllers - handles mouse and keyboard 
+    /// Base class for 3dControllers - handles mouse and keyboard 
     /// </summary>
 
     public abstract class Controller3DBase
