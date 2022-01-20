@@ -47,10 +47,12 @@ namespace GLOFC.Controller
 
         /// <summary> Start the class with this matrixcalc and position camera. Pass the GL window control, and the initial lookat/cameradirection and zoom 
         /// The controller implements the following eye and lookat control:
+        /// 
         /// Mouse:
-        /// Left Hold and drag: Rotate camera in Elevation and Azimuth
-        /// Right Hold and drag: Translate Lookat/Eye on the XZ plane (left/right/forward/backwards)
-        /// Left+Right Hold and drag: Translate Lookat/Eye on the YX plane (up/down)
+        /// * Left Hold and drag: Rotate camera in Elevation and Azimuth
+        /// * Right Hold and drag: Translate Lookat/Eye on the XZ plane (left/right/forward/backwards)
+        /// * Left+Right Hold and drag: Translate Lookat/Eye on the YX plane (up/down)
+        /// 
         /// Key mapping for Translate:
         /// * Ctrl M = Change Y hold mode
         /// * Left Key, A = Left (X)
@@ -60,10 +62,12 @@ namespace GLOFC.Controller
         /// * Page Up Key, R = Up (Y)
         /// * Page Down Key, F = Down (Y)
         /// Shift doubles the speed when combined.
+        /// 
         /// Key mapping for Zoom:
         /// * Numpad +, M = Zoom in
         /// * Numpad -, N = Zoom out
         /// * Ctrl 1-9 Zoom to set distance
+        /// 
         /// Key mapping for camera:
         /// * Numpad 8, T = Pitch up (Elevation)
         /// * Numpad 2, G = Pitch down (Elevation)
