@@ -23,15 +23,16 @@ namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
     /// Shader, No extra translation, direct move, but with posibility of using external Y
-    /// Requires:
-    ///      location 0 : vec4 positions (W ignored)
-    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
-    ///      uniform 22 : float Y optional
     /// </summary>
 
     public class GLPLVertexShaderWorldCoord : GLShaderPipelineComponentShadersBase
     {
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : vec4 positions (W ignored)
+        ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+        ///      uniform 22 : float Y optional
+        /// </summary>
         /// <param name="yfromuniform">True to take Y from uniform 22</param>
         public GLPLVertexShaderWorldCoord(bool yfromuniform = false)
         {

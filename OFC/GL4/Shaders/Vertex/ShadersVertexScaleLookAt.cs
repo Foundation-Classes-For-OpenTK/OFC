@@ -22,23 +22,23 @@ namespace GLOFC.GL4.Shaders.Vertex
     ///  Vertex look at with autoscale, optional uniform common transform, optional generate world pos
     ///  output is either model scaled + worldpos, for use by a tes shader
     ///  or projectionmodelmatrix * (model+worldpos) for use directly by a frag shader
-    ///  Input
-    ///       location 0 : model position: vec4 vertex array of positions model coords, w is ignored. Scaled/autorotated. Optionally used to compute gl_Position
-    ///       location 1 : worldpositions - passed thru to world pos, optionally used to compute gl_Position.
-    ///       location 2 : texcoords optionally passed thru to 0
-    ///       uniform buffer 0 : GL MatrixCalc
-    ///       uniform configurable: objecttransform: mat4 transform of model before world applied (for rotation/scaling)
-    ///  Out:
-    ///       gl_Position: either model position passed thru scaled/rotated, or if generateworldpos = true then projmodelmatrix * (modelpos+worldpos)
-    ///       location 0 : optional tex coords generated
-    ///       location 1 : worldpos copied
-    ///       location 2 : instance id
     /// </summary>
 
     public class GLPLVertexScaleLookat : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        ///  Input
+        ///       location 0 : model position: vec4 vertex array of positions model coords, w is ignored. Scaled/autorotated. Optionally used to compute gl_Position
+        ///       location 1 : worldpositions - passed thru to world pos, optionally used to compute gl_Position.
+        ///       location 2 : texcoords optionally passed thru to 0
+        ///       uniform buffer 0 : GL MatrixCalc
+        ///       uniform configurable: objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        ///  Out:
+        ///       gl_Position: either model position passed thru scaled/rotated, or if generateworldpos = true then projmodelmatrix * (modelpos+worldpos)
+        ///       location 0 : optional tex coords generated
+        ///       location 1 : worldpos copied
+        ///       location 2 : instance id
         /// </summary>
         /// <param name="rotatetoviewer">True to rotate in azimuth to viewer</param>
         /// <param name="rotateelevation">True to rotate in elevation to viewer</param>

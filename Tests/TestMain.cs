@@ -475,64 +475,6 @@ namespace TestOpenTk
 
             #endregion
 
-            #region Tape
-
-            {
-                var pls = new GLShaderPipeline(new GLPLVertexShaderWorldTextureTriStrip(),
-                                    new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0)));
-                items.Add(pls, "tapeshader");
-            }
-
-            if ( (ctrl & (1<<11)) != 0)
-            {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(0, 5, 50), new Vector3(100, 50, 100), 4, 20, 80F.Radians());
-
-                items.Add( new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "tapelogo");
-
-                items.Tex("tapelogo").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-                GLRenderState rts = GLRenderState.Tri();
-                rts.CullFace = false;
-
-                rObjects.Add(items.Shader("tapeshader"), "tape1", GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p , new GLRenderDataTexture(items.Tex("tapelogo"))));
-            }
-
-            if( (ctrl & (1<<12)) != 0)
-            {
-                var p = GLTapeObjectFactory.CreateTape(new Vector3(-0, 5, 50), new Vector3(-100, 50, 100), 4, 20, 80F.Radians());
-
-                items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "tapelogo2");
-
-                items.Tex("tapelogo2").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-                GLRenderState rts = GLRenderState.Tri();
-                rts.CullFace = false;
-
-                rObjects.Add(items.Shader("tapeshader"), "tape2", GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, new GLRenderDataTexture(items.Tex("tapelogo2"))));
-            }
-
-            if( (ctrl & (1<<13)) != 0)
-            {
-                // tape goes right to left, demoing a 4 point, 6 point, more tape
-
-                Vector4[] points = new Vector4[] { new Vector4(5, 5, 40, 0), new Vector4(0, 5, 40, 0), new Vector4(-25,5,40,0), new Vector4(-35,5,40,0), new Vector4(-100,5,40,0)};
-                Color[] colours = new Color[] { Color.Red, Color.Green, Color.Blue, Color.White };
-                var tape = GLTapeObjectFactory.CreateTape(points.ToArray(), colours, 1, 10f, 90F.Radians(), margin:1f, modulo:4);
-
-                items.Add( new GLTexture2D(Properties.Resources.chevron, SizedInternalFormat.Rgba8), "tapelogo3");
-                items.Tex("tapelogo3").SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
-
-                GLRenderState rts = GLRenderState.Tri(tape.Item3);     // sets primitive restart value to Item3 draw type
-                rts.CullFace = false;
-
-                GLRenderableItem ri = GLRenderableItem.CreateVector4(items,PrimitiveType.TriangleStrip, rts, tape.Item1.ToArray(), new GLRenderDataTexture(items.Tex("tapelogo3")));
-                ri.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3);
-
-                rObjects.Add(items.Shader("tapeshader"), "tape3", ri);
-            }
-
-
-            #endregion
 
             #region Screen coords
             // fixed point on screen

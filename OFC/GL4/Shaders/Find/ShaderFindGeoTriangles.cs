@@ -28,19 +28,20 @@ namespace GLOFC.GL4.Shaders.Geo
     /// <summary>
     /// Geo shader, find triangle under cursor. Combine with your chosen vertex shader feeding in ProjectionModelMatrix values
     /// using a RenderableItem. Call SetScreenCoords before render executes 
-    /// Optional call SetGroup to pass in a group number for the results to pass it back out
-    /// Call GetResult after Executing the shader/RI combo. 
-    /// Requires:
-    ///     gl_in positions triangles
-    ///     2 : instance[] instance number. 
-    ///     4 : drawid[] instance number. 
-    /// output to buffer bound structure Positions
     /// </summary>
 
     public class GLPLGeoShaderFindTriangles : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///     gl_in positions triangles
+        ///     2 : instance[] instance number. 
+        ///     4 : drawid[] instance number. 
+        /// output:
+        ///     To buffer bound structure Positions
+        /// Optional call SetGroup to pass in a group number for the results to pass it back out
+        /// Call GetResult after Executing the shader/RI combo. 
         /// </summary>
         /// <param name="buffer">Storage Buffer to place results in</param>
         /// <param name="maximumresultsp">Maximum number of results</param>

@@ -26,18 +26,19 @@ namespace GLOFC.GL4.Shaders.Vertex
 
     /// <summary>
     /// Shader, Translation, Modelpos, transform
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions model coords, W is ignored
-    ///      uniform buffer 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 array of transforms
-    /// Out:
-    ///      gl_Position
-    ///      location 1: modelpos
     /// </summary>
 
     public class GLPLVertexShaderModelObjectTranslation : GLShaderPipelineComponentShadersBase
     {
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords, W is ignored
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 array of transforms
+        /// Out:
+        ///      gl_Position
+        ///      location 1: modelpos
+        /// </summary>
         public GLPLVertexShaderModelObjectTranslation()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);

@@ -23,19 +23,20 @@ namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
     /// Shader with colour input
-    /// Requires:
-    ///      location 0 : vec4 positions in world space (W ignored)
-    ///      location 1 : vec4 color components
-    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
-    ///      uniform 22 : optional offset
-    /// Out:
-    ///      location 0: vs_color
-    ///      gl_Position
     /// </summary>
 
     public class GLPLVertexShaderColorWorldCoord : GLShaderPipelineComponentShadersBase
     {
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : vec4 positions in world space (W ignored)
+        ///      location 1 : vec4 color components
+        ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+        ///      uniform 22 : optional offset
+        /// Out:
+        ///      location 0: vs_color
+        ///      gl_Position
+        /// </summary>
         /// <param name="useoffset">Use vector 4 offset from uniform 22 and add</param>
         public GLPLVertexShaderColorWorldCoord(bool useoffset = false)
         {
@@ -86,18 +87,18 @@ void main(void)
 
     /// <summary>
     /// Shader Colours
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of world positions, w = colour image index,  fixed Y if required
-    ///      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
-    /// Out:
-    ///      location 0: vs_color
-    ///      gl_Position
     /// </summary>
 
     public class GLPLVertexShaderWorldPalletColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Contructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of world positions, w = colour image index,  fixed Y if required
+        ///      uniform buffer 0 : GL MatrixCalc with ScreenMatrix set up
+        /// Out:
+        ///      location 0: vs_color
+        ///      gl_Position
         /// </summary>
         /// <param name="colourarray">Array of colours as vec4</param>
         /// <param name="yfromuniform">True to take Y from uniform 22</param>

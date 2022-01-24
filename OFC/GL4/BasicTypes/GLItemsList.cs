@@ -57,6 +57,13 @@ namespace GLOFC.GL4
             return (IGLPipelineComponentShader)items[name];
         }
 
+        /// <summary> Get a pipeline shader of this type from the GLShaderPipeline of this name, will except if not found or wrong type </summary>
+        public T GetPLComponent<T>(string name, ShaderType t)
+        {
+            var item = (GLShaderPipeline)items[name];
+            return (T)item.GetShader(t);
+        }
+
         /// <summary> Find by name this type, will except if not found or wrong type  </summary>
         public GLVertexArray VA(string name)
         {

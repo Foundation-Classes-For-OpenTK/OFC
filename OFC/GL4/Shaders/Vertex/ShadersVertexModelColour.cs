@@ -23,21 +23,21 @@ namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
     /// Shader, Translation, Colour, Modelpos, transform
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions model coords. W is ignored
-    ///      location 1 : vec4 colour
-    ///      uniform buffer 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 array of transforms
-    /// Out:
-    ///      gl_Position
-    ///      location 0 : vs_color
-    ///      location 1 : modelpos
     /// </summary>
 
     public class GLPLVertexShaderColorModelObjectTranslation : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         ///  Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords. W is ignored
+        ///      location 1 : vec4 colour
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 array of transforms
+        /// Out:
+        ///      gl_Position
+        ///      location 0 : vs_color
+        ///      location 1 : modelpos
         /// </summary>
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
@@ -90,23 +90,24 @@ void main(void)
     /// <summary>
     /// Pipeline shader, Common Model Translation, Seperate World pos, transform, autoscaling of model due to eyedistance
     /// colour is given by an array of basecolours, and the world position.W selectes the base colour
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions model coords
-    ///      location 1 : world-position: vec4 vertex array of world pos for model, instanced.
-    ///                   W>=0 selects the base colour to present, W less or equal to -1 disables the model at this position
-    ///      uniform buffer 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
-    /// Out:
-    ///      gl_Position
-    ///      location 1 modelpos
-    ///      location 2 instance id
-    ///      location 3 basecolor for fragment shader
-    ///      location 4 drawid (4.6) for multidraws
     /// </summary>
 
     public class GLPLVertexShaderModelCoordWorldAutoscale : GLShaderPipelineComponentShadersBase
     {
-        /// <summary>Translation matrix to rotate all models</summary>
+        /// <summary>Translation matrix to rotate all models
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords
+        ///      location 1 : world-position: vec4 vertex array of world pos for model, instanced.
+        ///                   W>=0 selects the base colour to present, W less or equal to -1 disables the model at this position
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        /// Out:
+        ///      gl_Position
+        ///      location 1 modelpos
+        ///      location 2 instance id
+        ///      location 3 basecolor for fragment shader
+        ///      location 4 drawid (4.6) for multidraws
+        /// </summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
         /// <summary>
@@ -209,24 +210,25 @@ void main(void)
     /// <summary>
     /// Shader, Common Model Translation, Seperate World pos as a matrix, transform of model, common worldpos offset from matrix
     /// base colour taken from transform for colour shader
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions model coords. 
-    ///      vertex 4-7 : transform: mat4 array of transforms, one per instance. Row[3,0-3] = xyz
-    ///              [col=3,row=1] -1 means cull primitive, else used to lookup in colour array and passed to fragment shader as basecolour
-    ///      uniform buffer 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
-    ///      uniform 23 : common transform to move/scale objects
-    /// Out:
-    ///      gl_Position
-    ///      location 1 modelpos
-    ///      location 2 instance id
-    ///      location 3 basecolour
     /// </summary>
 
 
     public class GLPLVertexShaderModelMatrix : GLShaderPipelineComponentShadersBase
     {
-        /// <summary>Translation matrix to rotate all models</summary>
+        /// <summary>Translation matrix to rotate all models
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords. 
+        ///      vertex 4-7 : transform: mat4 array of transforms, one per instance. Row[3,0-3] = xyz
+        ///              [col=3,row=1] -1 means cull primitive, else used to lookup in colour array and passed to fragment shader as basecolour
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        ///      uniform 23 : common transform to move/scale objects
+        /// Out:
+        ///      gl_Position
+        ///      location 1 modelpos
+        ///      location 2 instance id
+        ///      location 3 basecolour
+        /// </summary>
         public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
 
         /// <summary> World offset to shift all objects </summary>
@@ -309,19 +311,20 @@ void main(void)
 
     /// <summary>
     /// Shader, Matrix Translation, instanced ID colour
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions of model
-    ///      location 4 : transform: mat4 array of transforms.. 
-    ///      uniform buffer 0 : GL MatrixCalc
-    /// Out:
-    ///      gl_Position
-    ///      location 0 : vs_color is based on instance ID (this is used mostly for debugging)
-    ///      location 1 : modelpos
     /// </summary>
 
     public class GLPLVertexShaderModelMatrixColor : GLShaderPipelineComponentShadersBase
     {
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions of model
+        ///      location 4 : transform: mat4 array of transforms.. 
+        ///      uniform buffer 0 : GL MatrixCalc
+        /// Out:
+        ///      gl_Position
+        ///      location 0 : vs_color is based on instance ID (this is used mostly for debugging)
+        ///      location 1 : modelpos
+        /// </summary>
         public GLPLVertexShaderModelMatrixColor()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
@@ -357,15 +360,6 @@ void main(void)
 
     /// <summary>
     /// Shader, Translation, Color, Common transform, Object transform
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of model positions
-    ///      location 1 : vec4 colours of vertexs
-    ///      uniform 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 array of transforms
-    ///      uniform 23 : commontransform: mat4 array of transforms
-    /// Out:
-    ///      location 0 : vs_textureCoordinate
-    ///      gl_Position
     /// </summary>
 
 
@@ -374,7 +368,17 @@ void main(void)
         /// <summary> Common transform for rotation </summary>
         public GLRenderDataTranslationRotation Transform { get; set; }           // only use this for rotation - position set by object data
 
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of model positions
+        ///      location 1 : vec4 colours of vertexs
+        ///      uniform 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 array of transforms
+        ///      uniform 23 : commontransform: mat4 array of transforms
+        /// Out:
+        ///      location 0 : vs_textureCoordinate
+        ///      gl_Position
+        /// </summary>
         public GLPLVertexShaderModelCommonObjectColor()
         {
             Transform = new GLRenderDataTranslationRotation();
@@ -425,22 +429,22 @@ void main(void)
     /// <summary>
     /// Shader, Model co-ords with uniform 22 being set up by render list with world offset
     /// colour is given by an array of basecolours, and the world position.W selectes the base colour
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions model coords
-    ///      uniform buffer 0 : GL MatrixCalc
-    ///      uniform 22 : World position offset, W selects base colour, -1 turns off 
-    /// Out:
-    ///      gl_Position
-    ///      location 1 modelpos
-    ///      location 2 instance id
-    ///      location 3 basecolor for fragment shader
-    ///      location 4 drawid (4.6) for multidraws
     /// </summary>
 
     public class GLPLVertexShaderModelWorldUniform : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : World position offset, W selects base colour, -1 turns off 
+        /// Out:
+        ///      gl_Position
+        ///      location 1 modelpos
+        ///      location 2 instance id
+        ///      location 3 basecolor for fragment shader
+        ///      location 4 drawid (4.6) for multidraws
         /// </summary>
         /// <param name="basecolours">Optional, set of basecolours for fragment shader, worldpos.W picks colour</param>
         public GLPLVertexShaderModelWorldUniform(System.Drawing.Color[] basecolours = null)

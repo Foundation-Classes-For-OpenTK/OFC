@@ -162,6 +162,7 @@
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexWorldColour.cs" />
     <Compile Include="GL4\ShapeFactory\FactoryCylinder.cs" />
     <Compile Include="GL4\BitMaps\GLBitmaps.cs" />
+    <Compile Include="GL4\ShapeFactory\FactoryTapeNormal.cs" />
     <Compile Include="GL4\Textures\Texture1DArray.cs" />
     <Compile Include="GL4\WavefrontObj\GLWavefrontObjRenderCreator.cs" />
     <Compile Include="GL\GLEventArguments.cs" />

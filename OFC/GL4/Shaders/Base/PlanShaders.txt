@@ -25,6 +25,7 @@ Uniforms - these are per shader, so this is a guide.
 24 = vec2 texture co-ord offset to apply.
 25 = vec4 uniform colour for fragment shader
 26 = phase
+27 = scale
 30 = blend
 
 

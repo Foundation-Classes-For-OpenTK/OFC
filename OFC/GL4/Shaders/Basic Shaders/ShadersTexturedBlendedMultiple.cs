@@ -29,10 +29,6 @@ namespace GLOFC.GL4.Shaders.Basic
 
     public class GLMultipleTexturedBlended : GLShaderStandard
     {
-        // 0 : vec4 of model positions (w not read)
-        // 1 : vec2 of texture positions
-        // 2 : vec4 of instance positions w = image to display, -1 disable
-
         string vertpos =
         @"
 #version 450 core
@@ -172,7 +168,12 @@ void main(void)
         /// </summary>
         public GLRenderDataTranslationRotation CommonTransform { get; set; }           //
 
-        /// <summary> Constructor. Matrix determines if using matrix or vector4 for position. Blendimages gives the number of images to blend, 0 for not </summary>
+        /// <summary> Constructor. Matrix determines if using matrix or vector4 for position. Blendimages gives the number of images to blend, 0 for not 
+        /// Requires:
+        /// 0 : vec4 of model positions (w not read)
+        /// 1 : vec2 of texture positions
+        /// 2 : vec4 of instance positions w = image to display, -1 disable
+        /// </summary>
         public GLMultipleTexturedBlended(bool matrix, int blendimages)
         {
             CompileLink(vertex: matrix ? vertmat : vertpos, frag: frag, geo: geo);

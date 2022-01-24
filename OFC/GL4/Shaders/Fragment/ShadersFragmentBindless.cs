@@ -27,13 +27,7 @@ namespace GLOFC.GL4.Shaders.Fragment
     /// <summary>
     /// Pipeline shader, texture shader,
     /// renders an texture ARB dependent either on primitive number/2 (so to be used with a triangle strip) or image id in location 2
-    /// with alphablending and discard if transparent
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    ///      location 3 : flat in wvalue for opacity control (if enabled by usealphablending)
-    ///      location 4 : image id (if useprimidover2=false)
-    ///      uniform binding config: ARB bindless texture handles, int 64s
-    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// With alphablending and discard if transparent
     /// </summary>
 
     public class GLPLFragmentShaderBindlessTexture : GLShaderPipelineComponentShadersBase
@@ -43,6 +37,12 @@ namespace GLOFC.GL4.Shaders.Fragment
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+        ///      location 3 : flat in wvalue for opacity control (if enabled by usealphablending)
+        ///      location 4 : image id (if useprimidover2=false)
+        ///      uniform binding config: ARB bindless texture handles, int 64s
+        ///      location 24 : uniform of texture offset (written by start automatically)
         /// </summary>
         /// <param name="arbblock">Binding number of ARB Block</param>
         /// <param name="usealphablending">Alpha blend on/off</param>

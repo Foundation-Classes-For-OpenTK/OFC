@@ -25,20 +25,20 @@ namespace GLOFC.GL4.Shaders.Tesselation
 
     /// <summary>
     /// Shader, Tesselation , select tess level
-    /// Requires:
-    ///     gl_in
-    ///     1: worldposinstance
-    ///     2: instance
-    /// Output:
-    ///     gl_out
-    ///     1: tcs_worldposinstance
-    ///     2: tcs_instance 
     /// </summary>
 
     public class GLPLTesselationControl : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///     gl_in
+        ///     1: worldposinstance
+        ///     2: instance
+        /// Output:
+        ///     gl_out
+        ///     1: tcs_worldposinstance
+        ///     2: tcs_instance 
         /// </summary>
         /// <param name="tess">Tesselation level</param>
         public GLPLTesselationControl(float tess)

@@ -20,14 +20,15 @@ namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
     /// Shader, Vertex have already been modelview transformed. Perform projection view. Co-ords are in model view values
-    /// Requires:
-    ///      location 0 : vec4 positions
-    ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
     /// </summary>
 
     public class GLPLVertexShaderViewSpace : GLShaderPipelineComponentShadersBase
     {
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : vec4 positions
+        ///      uniform buffer 0 : standard Matrix uniform block GLMatrixCalcUniformBlock
+        /// </summary>
         public GLPLVertexShaderViewSpace()
         {
             CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);

@@ -110,7 +110,7 @@ namespace TestOpenTk
             float seglen = tapesize * 10;
 
             // a tape is a set of points (item1) and indexes to select them (item2), so we need an element index in the renderer to use.
-            var tape = GLTapeObjectFactory.CreateTape(positionsv4, colours, tapesize, seglen, 0F.Radians(), margin: sunsize * 1.2f);
+            var tape = GLTapeNormalObjectFactory.CreateTape(positionsv4, colours, seglen, 0F.Radians(), margin: sunsize * 1.2f);
 
             if (ritape == null) // first time..
             {
@@ -120,20 +120,22 @@ namespace TestOpenTk
                 items.Add(tapetex);
                 tapetex.SetSamplerMode(OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat, OpenTK.Graphics.OpenGL4.TextureWrapMode.Repeat);
 
-                tapefrag = new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0));
-                var vert = new GLPLVertexShaderWorldTextureTriStrip();
+                tapefrag = new GLPLFragmentShaderTextureTriStripColorReplace(1, Color.FromArgb(255, 206, 0, 0),300);
+                var vert = new GLPLVertexShaderWorldTextureTriStripNorm(500,1,10000);
+                vert.SetWidth(tapesize);
                 tapeshader = new GLShaderPipeline(vert, tapefrag);
                 items.Add(tapeshader);
 
-                GLRenderState rts = GLRenderState.Tri(tape.Item3, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
+                GLRenderState rts = GLRenderState.Tri(tape.Item4, cullface: false);        // set up a Tri strip, primitive restart value set from tape, no culling
                 rts.DepthTest = depthtest;  // no depth test so always appears
 
+                var empty = new Vector4[] { Vector4.Zero };
                 // now the renderer, set up with the render control, tape as the points, and bind a RenderDataTexture so the texture gets binded each time
-                ritape = GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rts, tape.Item1.ToArray(), new GLRenderDataTexture(tapetex));
+                ritape = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rts, empty, empty, new GLRenderDataTexture(tapetex));
                 tapepointbuf = items.LastBuffer();  // keep buffer for refill
                 ritape.Visible = tape.Item1.Count > 0;      // no items, set not visible, so it won't except over the BIND with nothing in the element buffer
 
-                ritape.CreateElementIndex(items.NewBuffer(), tape.Item2.ToArray(), tape.Item3); // finally, we are using index to select vertexes, so create an index
+                ritape.CreateElementIndex(items.NewBuffer(), tape.Item3.ToArray(), tape.Item4); // finally, we are using index to select vertexes, so create an index
 
                 rObjects.Add(tapeshader, "travelpath-tape", ritape);   // add render to object list
 
@@ -168,18 +170,22 @@ namespace TestOpenTk
                 items.Add(textrenderer);
 
             }
-            else
-            {
-                tapepointbuf.AllocateFill(tape.Item1.ToArray());        // replace the points with a new one
-                ritape.RenderState.PrimitiveRestart = GL4Statics.DrawElementsRestartValue(tape.Item3);        // IMPORTANT missing bit Robert, must set the primitive restart value to the new tape size
-                ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item2.ToArray(), tape.Item3);       // update the element buffer
-                ritape.Visible = tape.Item1.Count > 0;
 
-                starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
-                renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
+            // update the vertexes
 
-                rifind.InstanceCount = positionsv4.Length;  // update the find list
-            }
+            tapepointbuf.AllocateBytes(GLBuffer.Vec4size * (tape.Item1.Count + tape.Item2.Count));
+            tapepointbuf.Fill(tape.Item1.ToArray());        // replace the points with a new one
+            tapepointbuf.Fill(tape.Item2.ToArray());        // replace the points with a new one
+            tapepointbuf.Bind(ritape.VertexArray, 1, tapepointbuf.Positions[1], 16);  // for the second one, need to update and rebind positions. First one always at zero
+
+            ritape.RenderState.PrimitiveRestart = GL4Statics.DrawElementsRestartValue(tape.Item4);        // IMPORTANT missing bit Robert, must set the primitive restart value to the new tape size
+            ritape.CreateElementIndex(ritape.ElementBuffer, tape.Item3.ToArray(), tape.Item4);       // update the element buffer
+            ritape.Visible = tape.Item1.Count > 0;
+
+            starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
+            renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
+
+            rifind.InstanceCount = positionsv4.Length;  // update the find list
 
             // name bitmaps
 
@@ -214,7 +220,8 @@ namespace TestOpenTk
             float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
             //System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
             sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
-            tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
+            //if ( eyedistance < 2000)
+                tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
         // Find at point, return found and z point

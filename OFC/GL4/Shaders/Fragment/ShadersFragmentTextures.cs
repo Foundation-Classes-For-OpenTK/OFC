@@ -22,15 +22,15 @@ namespace GLOFC.GL4.Shaders.Fragment
 {
     /// <summary>
     /// Shader for a 2D texture bound with 2D vertexes
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      texture : 2D texture bound on binding point
     /// </summary>
 
     public class GLPLFragmentShaderTexture : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      texture : 2D texture bound on binding point
         /// </summary>
         /// <param name="binding">Binding of texture</param>
         public GLPLFragmentShaderTexture(int binding = 1)
@@ -59,18 +59,16 @@ void main(void)
     }
     /// <summary>
     /// Shader for a 2D array texture with discard
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      location 1 : flat in imageno to select, less than 0 discard
-    ///      texture : 2D texture bound on binding point
     /// </summary>
 
     public class GLPLFragmentShaderTexture2DDiscard : GLShaderPipelineComponentShadersBase
     {
-        // alphazerocolor 
-
         /// <summary>
-        /// 
+        /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      location 1 : flat in imageno to select, less than 0 discard
+        ///      texture : 2D texture bound on binding point
         /// </summary>
         /// <param name="binding">Binding of texture</param>
         /// <param name="alphazerocolour">Allows a default colour to show for low alpha samples</param>
@@ -120,17 +118,17 @@ void main(void)
     /// <summary>
     /// Shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
     /// discard if alpha is too small or replace with colour
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      location 2 : vs_in.vs_instance - instance id to pick texture (added by offset in constructor)E. 
-    ///      location 3 : alpha (if alpha blend enabled) float
-    ///      tex binding : textureObject : 2D Array texture
     /// </summary>
 
     public class GLPLFragmentShaderTexture2DIndexed : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      location 2 : vs_in.vs_instance - instance id to pick texture (added by offset in constructor)E. 
+        ///      location 3 : alpha (if alpha blend enabled) float
+        ///      tex binding : textureObject : 2D Array texture
         /// </summary>
         /// <param name="offset">Ofsset into texture array as base</param>
         /// <param name="binding">Texture binding point</param>
@@ -189,22 +187,20 @@ void main(void)
     }
 
     /// <summary>
-    /// Shader for an array of 2D Array textures.
-    /// vs_instance input is used to pick array and 2d depth image
-    /// Discard if small alpha
-    /// Use with GLVertexShaderTextureMatrixTransform
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      location 2 : vs_in.vs_instance - instance id/texture offset. 
-    ///                  bits 0..15 = image index in texture array, bits 16.. texture array to pick 
-    ///      location 3 : alpha (if alpha blend enabled) float
-    ///      tex binding [N..] : textureObject : 2D textures, multiple ones. select
+    /// Shader for an array of 2D Array textures. vs_instance input is used to pick array and 2d depth image
+    /// Discard if small alpha, use with GLVertexShaderTextureMatrixTransform
     /// </summary>
 
     public class GLPLFragmentShaderTexture2DIndexMulti : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor. 
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      location 2 : vs_in.vs_instance - instance id/texture offset. 
+        ///                  bits 0..15 = image index in texture array, bits 16.. texture array to pick 
+        ///      location 3 : alpha (if alpha blend enabled) float
+        ///      tex binding [N..] : textureObject : 2D textures, multiple ones. select
         /// </summary>
         /// <param name="offset">Image offset in all texture array to start from</param>
         /// <param name="binding">Texture binding start for first of the 2D Textures bound</param>
@@ -262,10 +258,6 @@ void main(void)
 
     ///<summary>
     /// Shader, 2d texture array (0,1), 2d co-ords, with blend between them via a uniform
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    ///      location 30 : uniform float blend between the two texture
     ///</summary>
 
     public class GLPLFragmentShaderTexture2DBlend : GLShaderPipelineComponentShadersBase
@@ -275,6 +267,10 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+        ///      location 30 : uniform float blend between the two texture
         /// </summary>
         /// <param name="binding">Tex binding number</param>
         public GLPLFragmentShaderTexture2DBlend(int binding = 1)
@@ -311,14 +307,6 @@ void main(void)
     }
     /// <summary>
     /// Shader for a 2D texture bound with a variable texture offset
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-    ///      tex binding X : textureObject : 2D texture
-    /// Pipeline shader, Co-ords are from a triangle strip
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    ///      location 24 : uniform of texture offset (written by start automatically)
     /// </summary>
 
     public class GLPLFragmentShaderTextureOffset : GLShaderPipelineComponentShadersBase
@@ -328,6 +316,14 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      tex binding X : textureObject : 2D texture
+        /// Pipeline shader, Co-ords are from a triangle strip
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+        ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
+        ///      location 24 : uniform of texture offset (written by start automatically)
         /// </summary>
         /// <param name="binding">Tex binding</param>
         public GLPLFragmentShaderTextureOffset(int binding = 1)

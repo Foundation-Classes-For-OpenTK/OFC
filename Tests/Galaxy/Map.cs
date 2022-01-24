@@ -361,7 +361,7 @@ namespace TestOpenTk
                 Color[] colors = new Color[] { Color.Red, Color.Green, Color.Blue, Color.White, Color.Black, Color.Purple, Color.Yellow };
                 for (int j = 0; j <= 200; j++)
                 {
-                    Color jc = colors[j % colors.Length];
+                    Color jc = colors[(j/30) % colors.Length];
                     int i = j * 10;
                     string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
@@ -437,7 +437,7 @@ namespace TestOpenTk
             {
                 bookmarks = new Bookmarks();
                 var syslist = new List<SystemClass> { new SystemClass("bk1", 1000, 0, 0), new SystemClass("bk1", 1000, 0, 2000), };
-                bookmarks.Create(items, rObjects, syslist, 10, findresults, false);
+                bookmarks.Create(items, rObjects, syslist, 3, findresults, false);
             }
             // Matrix calc holding transform info
 

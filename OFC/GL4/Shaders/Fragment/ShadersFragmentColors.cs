@@ -19,7 +19,6 @@ namespace GLOFC.GL4.Shaders.Fragment
 {
     /// <summary>
     /// Pipeline shader, Fixed Colour fragment shader
-    /// Requires: No inputs 
     /// </summary>
 
     public class GLPLFragmentShaderFixedColor : GLShaderPipelineComponentShadersBase
@@ -28,6 +27,7 @@ namespace GLOFC.GL4.Shaders.Fragment
 
         /// <summary>
         /// Construcor for fixed colour shader
+        /// Requires: No inputs 
         /// </summary>
         /// <param name="color">Color to paint</param>
         /// <param name="saveable">Make it saveable</param>
@@ -55,14 +55,14 @@ void main(void)
 
     /// <summary>
     /// Pipeline shader, uniform decides colour, use GLRenderDataTranslationRotationColour or similar to set the uniform on a per draw basis
-    /// Requires:
-    ///      uniform : vec4 of colour
     /// </summary>
 
     public class GLPLFragmentShaderUniformColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      uniform : vec4 of colour
         /// </summary>
         /// <param name="uniform">Uniform number to get colour from</param>
         /// <param name="saveable">Make it saveable</param>
@@ -91,13 +91,13 @@ void main(void)
 
     /// <summary>
     /// Vertex shader colour pass to it 
-    /// Requires:
-    ///      location 0 : vec4 of colour
     /// </summary>
     public class GLPLFragmentShaderVSColor : GLShaderPipelineComponentShadersBase
     {
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vec4 of colour
         /// </summary>
         /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentShaderVSColor(bool saveable = false)

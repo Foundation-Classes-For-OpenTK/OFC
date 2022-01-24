@@ -18,23 +18,23 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Tesselation
 {
     /// <summary>
-    /// Shader, Tesselation Control, with sinewave
-    /// Requires:
-    ///     gl_in
-    ///     1: tcs_worldposinstance - w holds the image no. image no bit16 = don't animate.
-    ///     2: tcs_instance
-    /// Output:
-    ///     0: vs_textureCoordinate
-    ///     1: imageno - from w in tcs_worldposinstance
-    ///      2: instance number from first vertex of primitive
+    /// Shader, Tesselation Evaluation, with sinewave
     /// </summary>
     public class GLPLTesselationEvaluateSinewave : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Phase, 0-1, use this to animate the sinewave </summary>
-        public float Phase { get; set; } = 0;                
+        public float Phase { get; set; } = 0;
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///     gl_in
+        ///     1: tcs_worldposinstance - w holds the image no. image no bit16 = don't animate.
+        ///     2: tcs_instance
+        /// Output:
+        ///     0: vs_textureCoordinate
+        ///     1: imageno - from w in tcs_worldposinstance
+        ///      2: instance number from first vertex of primitive
         /// </summary>
         /// <param name="amplitude">Amplitude of sinewave</param>
         /// <param name="repeats">Number of repeats across the object</param>

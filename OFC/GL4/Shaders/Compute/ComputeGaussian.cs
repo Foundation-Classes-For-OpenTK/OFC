@@ -25,8 +25,6 @@ namespace GLOFC.GL4.Shaders.Compute
 
     /// <summary>
     /// Compute shader, 1D gaussian distribution, 8x8x8 multiple 
-    /// Requires:
-    ///      1D texture to write to, bound on binding point
     /// </summary>
 
     public class ComputeShaderGaussian : GLShaderCompute
@@ -61,6 +59,8 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      1D texture to write to, bound on binding point
         /// </summary>
         /// <param name="points">Number of points, must be a multiple of 8 </param>
         /// <param name="centre">Centre noise value (example 2) of guassian distribution</param>

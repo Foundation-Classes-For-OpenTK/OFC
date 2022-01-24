@@ -22,17 +22,17 @@ namespace GLOFC.GL4.Shaders.Basic
 {
     /// <summary>
     /// Texture, world co-ords
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions world coords
-    ///      location 1 : vec2 texture co-ords
-    ///      tex binding 1 : textureObject : 2D 
-    ///      uniform 0 : GL MatrixCalc
     /// </summary>
 
     public class GLTexturedShaderWorld : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions world coords
+        ///      location 1 : vec2 texture co-ords
+        ///      tex binding 1 : textureObject : 2D 
+        ///      uniform 0 : GL MatrixCalc
         /// </summary>
         public GLTexturedShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
@@ -42,18 +42,18 @@ namespace GLOFC.GL4.Shaders.Basic
 
     /// <summary>
     /// Texture, translation
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions
-    ///      location 1 : vec2 texture co-ords
-    ///      tex binding 1 : textureObject : 2D 
-    ///      uniform 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 transform
     /// </summary>
 
     public class GLTexturedShaderObjectTranslation : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions
+        ///      location 1 : vec2 texture co-ords
+        ///      tex binding 1 : textureObject : 2D 
+        ///      uniform 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform
         /// </summary>
         public GLTexturedShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
@@ -63,19 +63,19 @@ namespace GLOFC.GL4.Shaders.Basic
 
     /// <summary>
     /// Texture, translation, common translation
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions
-    ///      location 1 : vec2 texture co-ords
-    ///      tex binding 1 : textureObject : 2D 
-    ///      uniform block 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 transform
-    ///      uniform 23 : commontransform: mat4 transform
     /// </summary>
 
     public class GLTexturedShaderObjectCommonTranslation : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions
+        ///      location 1 : vec2 texture co-ords
+        ///      tex binding 1 : textureObject : 2D 
+        ///      uniform block 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform
+        ///      uniform 23 : commontransform: mat4 transform
         /// </summary>
         public GLTexturedShaderObjectCommonTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
@@ -85,19 +85,19 @@ namespace GLOFC.GL4.Shaders.Basic
 
     /// <summary>
     /// Texture, translation, 2d blend
-    /// Requires:
-    ///      location 0 : position: vec4 vertex array of positions
-    ///      location 1 : vec2 texture co-ords
-    ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    ///      uniform block 0 : GL MatrixCalc
-    ///      uniform 22 : objecttransform: mat4 transform
-    ///      uniform 30 : uniform float blend between the two texture
     /// </summary>
 
     public class GLTexturedShader2DBlendWorld : GLShaderPipeline
     {
         /// <summary>
         ///  Constructor
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions
+        ///      location 1 : vec2 texture co-ords
+        ///      tex binding 1 : textureObject : 2D array texture of two bitmaps, 0 and 1.
+        ///      uniform block 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform
+        ///      uniform 30 : uniform float blend between the two texture
         /// </summary>
         public GLTexturedShader2DBlendWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {

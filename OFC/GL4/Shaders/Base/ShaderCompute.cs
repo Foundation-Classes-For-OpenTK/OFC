@@ -24,6 +24,18 @@ namespace GLOFC.GL4.Shaders
     /// * Pipeline - all pipeline component shaders are attached to this class to form a pipeline shader
     /// * ShaderPipelineComponentShaderBase - all pipeline shader components (vertex, fragment etc) inherit from this class so they can be inserted into the pipeline class
     /// * ShaderStandard - all standard shaders inherit from this class. Standard shaders are unitary and have all the shaders types inside them and are compiled as a whole.
+    /// 
+    /// Also included is a set of GLSL functions, incorporated into your code using #include Shaders.Functions.funcfile.glsl, replace funcfile with:
+    /// * colors.glsl : A set of color functions
+    /// * distribution.glsl : Gaussian distributions
+    /// * mat4.glsl : Matrix4 helpers
+    /// * noise2.glsl : Noise functions Vector 2
+    /// * noise3.glsl : Noise functions Vector 3
+    /// * random.glsl : Random numbers
+    /// * snoise3.glsl : Noise functions Vector 3
+    /// * snoise4.glsl : Noise functions Vector 4
+    /// * trig.glsl : Tri funcs
+    /// * vec4.glsl : Vector4 helpers
     /// </summary>
     internal static class NamespaceDoc { } // just for documentation purposes
 

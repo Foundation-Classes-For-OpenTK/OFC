@@ -25,8 +25,6 @@ namespace GLOFC.GL4.Shaders.Compute
 {
     /// <summary>
     /// Compute shader, 3d noise, 8x8x8 multiple
-    /// Requires:
-    ///     3D texture to write to, bound on binding point
     /// </summary>
     public class ComputeShaderNoise3D : GLShaderCompute
     {
@@ -67,6 +65,8 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///     3D texture to write to, bound on binding point
         /// </summary>
         /// <param name="width">Width of 3d texture, must be a multiple of 8 </param>
         /// <param name="height">Height of 3d texture, must be a multiple of 8</param>

@@ -1005,7 +1005,7 @@ namespace GLOFC.GL4
         #region Binding a buffer to target 
 
         /// <summary>Bind buffer to vertext array at this bindingindex, with the start position stride and divisor</summary>
-        public void Bind(GLVertexArray va, int bindingindex, int start, int stride, int divisor = 0)      // set buffer binding to a VA
+        public void Bind(IGLVertexArray va, int bindingindex, int start, int stride, int divisor = 0)      // set buffer binding to a VA
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(mapmode == MapMode.None);     // catch unmap missing. Since binding to VA can be done before buffer is full, then don't check BufferSize

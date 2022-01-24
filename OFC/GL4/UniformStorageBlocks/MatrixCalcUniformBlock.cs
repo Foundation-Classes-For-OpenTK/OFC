@@ -18,16 +18,6 @@ namespace GLOFC.GL4
 {
     /// <summary>
     /// Matrix uniform block stored into uniform buffer 0 (fixed). The uniform block is formatted as follows:
-    /// layout(std140, binding=0) uniform MatrixCalc
-    /// {
-    /// mat4 ProjectionModelMatrix;
-    /// mat4 ProjectionMatrix;
-    /// mat4 ModelMatrix;
-    /// vec4 TargetPosition;		// vertex position, before ModelMatrix
-    /// vec4 EyePosition;			// vertex position, before ModelMatrix
-    /// float EyeDistance;          // between eye and target
-    /// mat4 ScreenMatrix;			// for co-ordinate transforms between screen coords and display coords
-    /// } mc;
     /// </summary>
 
     public class GLMatrixCalcUniformBlock : GLUniformBlock 
@@ -39,7 +29,19 @@ namespace GLOFC.GL4
         public const int BindingPoint = 0;// 0 is the fixed binding block for matrixcal
 
         /// <summary>
-        /// Construct and make the block
+        /// Construct and make the block of this layout:
+        /// layout(std140, binding=0) uniform MatrixCalc
+        /// {
+        /// mat4 ProjectionModelMatrix;
+        /// mat4 ProjectionMatrix;
+        /// mat4 ModelMatrix;
+        /// vec4 TargetPosition;		// vertex position, before ModelMatrix
+        /// vec4 EyePosition;			// vertex position, before ModelMatrix
+        /// float EyeDistance;          // between eye and target
+        /// mat4 ScreenMatrix;			// for co-ordinate transforms between screen coords and display coords
+        /// } mc;
+        /// 
+        /// Include in your project by #include UniformStorageBlocks.matrixcalc.glsl
         /// </summary>
         public GLMatrixCalcUniformBlock() : base(BindingPoint)         
         {

@@ -115,6 +115,8 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires
+        /// 0 : Vertex positions
         /// </summary>
         /// <param name="tesselation">Tesselation amount</param>
         /// <param name="amplitude">Amplitude value</param>

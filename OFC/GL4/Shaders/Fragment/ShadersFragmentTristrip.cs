@@ -23,20 +23,20 @@ namespace GLOFC.GL4.Shaders.Fragment
     /// <summary>
     /// Shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
     /// vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
-    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    ///      location 24 : uniform of texture offset (written by start automatically)
     /// </summary>
 
     public class GLPLFragmentShaderTextureTriStrip : GLShaderPipelineComponentShadersBase
     {
         /// <summary> Offset into texture, 0-1 </summary>
-        public Vector2 TexOffset { get; set; } = Vector2.Zero;                   
+        public Vector2 TexOffset { get; set; } = Vector2.Zero;
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+        ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
+        ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+        ///      location 24 : uniform of texture offset (written by start automatically)
         /// </summary>
         /// <param name="binding">Binding point of texture</param>
         public GLPLFragmentShaderTextureTriStrip(int binding = 1)
@@ -95,14 +95,9 @@ void main(void)
     }
 
     /// <summary>
-    /// Shader, Co-ords are from a triangle strip, with a vertexid which must be modulo 4 aligned for the first primitive. 
+    /// Shader, Triangle strip co-ords, vertexid which must be modulo 4 aligned
     /// vertexid allows the shader to adjust to the front/back nature of the auto coords fed to it (00 01 10 11 .. 00 01 10 11)
-    /// Requires:
-    ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
-    ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
-    ///      location 3 : colour for the replacement value
-    ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
-    ///      location 24 : uniform of texture offset (written by start automatically)
+    /// With colour replace, and eye distance option to set all pixels to color replace
     /// </summary>
 
     public class GLPLFragmentShaderTextureTriStripColorReplace : GLShaderPipelineComponentShadersBase
@@ -112,12 +107,19 @@ void main(void)
 
         /// <summary>
         /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord 
+        ///      location 2 : flat in vertexid, used to work out the primitive.  vertex's id starts must be module 4 aligned
+        ///      location 3 : colour for the replacement value
+        ///      tex binding : textureObject : 2D array texture of two bitmaps, 0 and 1.
+        ///      location 24 : uniform of texture offset (written by start automatically)
         /// </summary>
         /// <param name="binding">Texture binding point</param>
-        /// <param name="replace">Colour to replace with replacement colour</param>
-        public GLPLFragmentShaderTextureTriStripColorReplace(int binding, Color replace)
+        /// <param name="replace">Colour to replace with replacement colour from location 3</param>
+        /// <param name="eyedistancetomakealllcolorreplace">if non zero, eye distance above which all pixels become location 3</param>
+        public GLPLFragmentShaderTextureTriStripColorReplace(int binding, Color replace, float eyedistancetomakealllcolorreplace = 0)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), constvalues: new object[] { "replace", replace }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), constvalues: new object[] { "replace", replace , "eyedistancetomakealllcolorin", eyedistancetomakealllcolorreplace }, auxname: GetType().Name);
         }
 
         /// <summary> </summary>
@@ -128,6 +130,9 @@ void main(void)
 
         private string Code(int binding) => @"
 #version 450 core
+
+#include UniformStorageBlocks.matrixcalc.glsl
+
 layout (location=0) in vec2 vs_textureCoordinate;
 layout (location=2) flat in int vertexid;
 layout (location=3) flat in vec4 colorin;
@@ -136,22 +141,31 @@ layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureO
 layout (location = 24) uniform  vec2 offset;
 
 const vec4 replace = vec4(0,0,0,0);
+const float eyedistancetomakealllcolorin = 0;
 out vec4 color;
 
 void main(void)
 {
-    if ( (vertexid & 2) !=0 )   // vertex modulo 0/1 are backwards, 2/3 forwards
+    if ( eyedistancetomakealllcolorin > 0 && mc.EyeDistance >= eyedistancetomakealllcolorin )   // if eyedistance > this, all pixels are this color
     {
-        color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f, texture co-ords are forwards
+        color = colorin;
     }
-    else    
+    else
     {
-        color = texture(textureObject, vec2(1.0-vs_textureCoordinate.x,vs_textureCoordinate.y)+offset);       // texture co-ords backwards in x
+        if ( (vertexid & 2) !=0 )   // vertex modulo 0/1 are backwards, 2/3 forwards
+        {
+            color = texture(textureObject, vs_textureCoordinate+offset);       // vs_texture coords normalised 0 to 1.0f, texture co-ords are forwards
+        }
+        else    
+        {
+            color = texture(textureObject, vec2(1.0-vs_textureCoordinate.x,vs_textureCoordinate.y)+offset);       // texture co-ords backwards in x
+        }
+
+        vec4 deltac = color - replace;     // floats are not precise, find the difference
+        if ( deltac.x*deltac.x+deltac.y*deltac.y+deltac.z*deltac.z<0.001)       // if close, square wise (not using length(v) due to speed)
+            color = colorin;
     }
 
-    vec4 deltac = color - replace;     // floats are not precise, find the difference
-    if ( deltac.x*deltac.x+deltac.y*deltac.y+deltac.z*deltac.z<0.001)       // if close, square wise (not using length(v) due to speed)
-        color = colorin;
 
 }";
 

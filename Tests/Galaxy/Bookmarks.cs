@@ -44,7 +44,7 @@ namespace EliteDangerousCore.EDSM
                 //                                                          
                 //                var vert = new GLPLVertexShaderWorldCoord();
                 var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
-                                                                autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
+                                                                autoscale: 500, autoscalemin: 1f, autoscalemax: 3f); // below 500, 1f, above 500, scale up to 20x
 
 
                 const int texbindingpoint = 1;

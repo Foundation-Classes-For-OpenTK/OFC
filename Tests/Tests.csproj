@@ -234,6 +234,12 @@
     <Compile Include="Sync\TestSync.designer.cs">
       <DependentUpon>TestSync.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tape\TestTape.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Tape\TestTape.designer.cs">
+      <DependentUpon>TestTape.cs</DependentUpon>
+    </Compile>
     <Compile Include="TestRender.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -451,6 +457,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Sync\TestSync.resx">
       <DependentUpon>TestSync.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tape\TestTape.resx">
+      <DependentUpon>TestTape.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TestRender.resx">
       <DependentUpon>TestRender.cs</DependentUpon>
