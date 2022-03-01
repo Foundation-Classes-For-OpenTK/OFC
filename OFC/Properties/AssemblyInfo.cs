@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Open Foundation Classes for OpenTK GL 4.6")]
-[assembly: AssemblyDescription("A set of classes which build on OpenTK GL to encapsulate the OpenGL API in a more friendly manner. Contains example shaders for you to build on. Allows render queues to be build.  Encapsulates global GL flags so the render queue handles changing global state.")]
+[assembly: AssemblyDescription("A set of classes which build on OpenTK GL to encapsulate the OpenGL API in a more friendly manner. Contains example shaders for you to build on. Allows render queues to be build.  Encapsulates global GL flags so the render queue handles changing global state. Allows UI to be built.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("robbyxp1 @ github.com")]
 [assembly: AssemblyProduct("GLOFC")]
-[assembly: AssemblyCopyright("Copyright 2021 robbyxp1 @ github.com")]
+[assembly: AssemblyCopyright("Copyright 2021-2022 robbyxp1 @ github.com")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.8.0.0")]
-[assembly: AssemblyFileVersion("0.8.0.0")]
+[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyFileVersion("0.9.0.0")]

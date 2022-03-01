@@ -1,15 +1,15 @@
 # OFC
 Open Foundation Classes for OpenTK/OpenGL.
 
-This site is not associated with OpenTK project. 
+This site is not associated with OpenTK project.
 
-This repository holds a set of c# class wrappers which wrap the OpenTK GL API interface (which is a thin shim on top of OpenGL) into more useable c# classes.  
+This repository holds a set of c# class wrappers which wrap the OpenTK GL API interface (which is a thin shim on top of OpenGL) into more useable c# classes.
 
 These make drawing objects to GL much easier to perform.
 
-Check out the [Wiki](../../wiki) for help.
+Check out the [Wiki](https://github.com/Foundation-Classes-For-OpenTK/OFC/wiki) for help.
 
-The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc. See [Class List](../../wiki/index)
+The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc. See [Class List on the github wiki](https://github.com/Foundation-Classes-For-OpenTK/OFC/wiki/index)
 
 It has a render list which allows the rendering of all objects to be executed in one call.
 
@@ -17,7 +17,7 @@ A 3dcontroller is present to allow you to move the eye/target position through t
 
 A basic set of shape factories allow some basic shapes to be turned into vertex lists.
 
-Also present is a WINFORM style set of classes to allow a UI to be presented in GL, allowing creation of Forms, Buttons, Labels, Comboboxes, drop down lists, panels, data grid views, etc.
+Also present is a WINFORM style set of classes to allow a UI to be presented in GL, allowing creation of Forms, Buttons, Labels, Comboboxes, Data grid views, drop down lists, panels, data grid views, etc.
 
 This code was written for the EDDiscovery project and so is orientated for that use.
 

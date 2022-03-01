@@ -489,6 +489,7 @@ namespace TestOpenTk
             cform.AutoSize = false;
             cform.Moveable = true;
             cform.Resizeable = true;
+            cform.DialogResultChanged += (f, c) => { System.Diagnostics.Debug.WriteLine($"Dialog result {c}"); };
             tb.Width = cform.ClientWidth - 10 * 2;
             System.Diagnostics.Debug.WriteLine($"Autosize {cform.AutoSize}");
         }

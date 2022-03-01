@@ -230,7 +230,12 @@ namespace GLOFC.GL4.Controls
                     cfg.DialogResult = DialogResultEnum.OK;
                     Close();
                 }
-                else if (controlname == "Close" || controlname == "Escape" || controlname == "Cancel")
+                else if (controlname == "Close")        // close can get called due to Close() being called, or by X.  if by X, dialogresult won't be set so its must be indicated
+                {
+                    if ( cfg.DialogResult == DialogResultEnum.None )
+                        cfg.DialogResult = DialogResultEnum.Cancel;
+                }
+                else if( controlname == "Escape" || controlname == "Cancel")
                 {
                     cfg.DialogResult = DialogResultEnum.Cancel;
                     Close();

@@ -9,9 +9,12 @@
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Initial Release.</releaseNotes>
+    <releaseNotes>Release 0.9.0 fixes an issue with FormConfigurable and the close icon.</releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>OpenGL OpenTK GL GLOFC</tags>
+    <readme>docs\README.md</readme>
   </metadata>
-  <files />
+  <files>
+      <file src="..\README.md" target="docs\" />
+  </files>
 </package>
