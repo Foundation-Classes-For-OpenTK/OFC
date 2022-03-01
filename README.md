@@ -9,7 +9,7 @@ These make drawing objects to GL much easier to perform.
 
 Check out the [Wiki](https://github.com/Foundation-Classes-For-OpenTK/OFC/wiki) for help.
 
-The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc. See [Class List on the github wiki](https://github.com/Foundation-Classes-For-OpenTK/OFC/wiki/index)
+The classes cover the major GL objects: Buffer, Vertexes, Program, Shaders, Textures, Uniforms, etc. See [Class List on the github wiki](https://github.com/Foundation-Classes-For-OpenTK/OFC/wiki/Class-List)
 
 It has a render list which allows the rendering of all objects to be executed in one call.
 
