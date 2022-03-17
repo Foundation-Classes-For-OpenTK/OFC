@@ -26,11 +26,14 @@ namespace TestOpenTk
         static void Main(string[] stringargs)
         {
             GLOFC.CommandArgs args = new GLOFC.CommandArgs(stringargs);
+            if (args.Left == 0)
+                args = new GLOFC.CommandArgs(new string[] { "TestMain" });
 
             using (OpenTK.Toolkit.Init(new OpenTK.ToolkitOptions { EnableHighResolution = false, Backend = OpenTK.PlatformBackend.PreferNative }))
             {
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
+
 
                 while (args.Left > 0)
                 {
