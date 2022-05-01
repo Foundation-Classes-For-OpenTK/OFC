@@ -56,14 +56,14 @@ namespace GLOFC.GL4
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { PrimitiveRestart = GL4Statics.DrawElementsRestartValue(primitiverestarttype), FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-
-        // same as Tri, but just kept for naming purposes 
-        /// <summary> Render setup for primitive Quads, with optional control over various parameters of the primitive </summary>
+        /// <summary> Render setup for primitive Quads, with optional control over various parameters of the primitive
+        /// Compatibility profile only </summary>
         static public GLRenderState Quads(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        /// <summary> Render setup for primitive Quads from a previous RS, with optional control over various parameters of the primitive </summary>
+        /// <summary> Render setup for primitive Quads from a previous RS, with optional control over various parameters of the primitive 
+        /// Compatibility profile only </summary>
         static public GLRenderState Quads(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
@@ -81,13 +81,13 @@ namespace GLOFC.GL4
         static public GLRenderState PointsByProgram()
         { return new GLRenderState() { PointSize = 0 }; }
 
-        /// <summary> Render setup for primitive Point sprites, with optional control over various parameters of the primitive </summary>
-        static public GLRenderState PointSprites()
+        /// <summary> Render setup for primitive Point sprites in compatibility profile </summary>
+        static public GLRenderState PointSpritesCompatibility()
         { return new GLRenderState() { PointSize = 0, PointSprite = true }; }
 
-        /// <summary> Render setup for primitive Point sprites from a previous RS, with optional control over various parameters of the primitive </summary>
-        static public GLRenderState PointSprites(GLRenderState prev)
-        { return new GLRenderState(prev) { PointSize = 0, PointSprite = true }; }
+        /// <summary> Render setup for primitive Point sprites in Core profile</summary>
+        static public GLRenderState PointSprites()
+        { return new GLRenderState() { PointSize = 0}; }
 
         /// <summary> Render setup for primitive Patches, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Patches(int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
@@ -97,13 +97,20 @@ namespace GLOFC.GL4
         static public GLRenderState Patches(GLRenderState prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
         { return new GLRenderState(prev) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
-        /// <summary> Render setup for primitive Lines, with optional control over various parameters of the primitive </summary>
+        /// <summary> Render setup for primitive Lines, with optional control over various parameters of the primitive 
+        /// Compatibility profile only </summary>
         static public GLRenderState Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
         { return new GLRenderState() { LineWidth = linewidth, LineSmooth = smooth }; }
 
-        /// <summary> Render setup for primitive Lines from a previous RS, with optional control over various parameters of the primitive </summary>
+        /// <summary> Render setup for primitive Lines from a previous RS, with optional control over various parameters of the primitive
+        /// Compatibility profile only </summary>
         static public GLRenderState Lines(GLRenderState prev, float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
         { return new GLRenderState(prev) { LineWidth = linewidth, LineSmooth = smooth }; }
+
+        /// <summary> Render setup for primitive Lines
+        /// Core profile </summary>
+        static public GLRenderState Lines()     // do not set linewidth or smooth
+        { return new GLRenderState(); }
 
 
         // creators
@@ -134,7 +141,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary> Called by WinFormControl, this sets up the initial render state </summary>
-        static public GLRenderState Start()
+        static public GLRenderState Start(GLControlBase.GLProfile profile)
         {
             var startstate = new GLRenderState()        // Set the default state we want to be in at start (some state defaults are at bottom)
             {
@@ -168,6 +175,14 @@ namespace GLOFC.GL4
                 ColorMasking = 0,
                 Discard = true,
             };
+
+            if ( profile == GLControlBase.GLProfile.Core) //core disables
+            {
+                startstate.PointSprite = null;      // point sprite control - its always set to enabled
+                startstate.PointSmooth = null;      // not available
+                startstate.LineSmooth = null;
+                startstate.PolygonSmooth = null;
+            }
 
             curstate.ApplyState(startstate);        // from curstate, apply state
 
@@ -309,13 +324,13 @@ namespace GLOFC.GL4
                 PointSize = newstate.PointSize;
             }
 
-            if (newstate.PointSprite.HasValue && PointSprite != newstate.PointSprite)
+            if (newstate.PointSprite.HasValue && PointSprite != newstate.PointSprite)   // Compatibility only, CORE always has it turned on
             {
                 PointSprite = newstate.PointSprite;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PointSprite, PointSprite.Value);
             }
 
-            if (newstate.PointSmooth.HasValue && PointSmooth != newstate.PointSmooth)
+            if (newstate.PointSmooth.HasValue && PointSmooth != newstate.PointSmooth)   // Compatibility only
             {
                 PointSmooth = newstate.PointSmooth;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PointSmooth, PointSmooth.Value);
@@ -323,13 +338,13 @@ namespace GLOFC.GL4
 
             // lines
 
-            if (newstate.LineWidth.HasValue && LineWidth != newstate.LineWidth)
+            if (newstate.LineWidth.HasValue && LineWidth != newstate.LineWidth)         // CORE only allows 1.0
             {
                 LineWidth = newstate.LineWidth;
                 GL.LineWidth(LineWidth.Value);
             }
 
-            if (newstate.LineSmooth.HasValue && LineSmooth != newstate.LineSmooth)
+            if (newstate.LineSmooth.HasValue && LineSmooth != newstate.LineSmooth)      // Compatibility only
             {
                 LineSmooth = newstate.LineSmooth;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.LineSmooth, LineSmooth.Value);
@@ -343,11 +358,11 @@ namespace GLOFC.GL4
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonModeFrontAndBack.Value);
             }
 
-            if (newstate.PolygonSmooth.HasValue && PolygonSmooth != newstate.PolygonSmooth)
-            {
-                PolygonSmooth = newstate.PolygonSmooth;
-                GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PolygonSmooth, PolygonSmooth.Value);
-            }
+            //if (newstate.PolygonSmooth.HasValue && PolygonSmooth != newstate.PolygonSmooth)
+            //{
+            //    PolygonSmooth = newstate.PolygonSmooth;
+            //    GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PolygonSmooth, PolygonSmooth.Value);
+            //}
 
             if (newstate.CullFace.HasValue && CullFace != newstate.CullFace)
             {
@@ -370,17 +385,17 @@ namespace GLOFC.GL4
         public int? PatchSize { get; set; } = null;                 // patches (Geo shaders)
         /// <summary> Point size </summary>
         public float? PointSize { get; set; } = null;               // points
-        /// <summary> Point sprite on/off </summary>
+        /// <summary> Point sprite on/off. Compatibility Profile only </summary>
         public bool? PointSprite { get; set; } = null;              // points
-        /// <summary> Point smooth on/off</summary>
+        /// <summary> Point smooth on/off. Compatibility Profile only</summary>
         public bool? PointSmooth { get; set; } = null;              // points
-        /// <summary> Line Width</summary>
+        /// <summary> Line Width. Values >1 is for Compatibility Profile only</summary>
         public float? LineWidth { get; set; } = null;               // lines
-        /// <summary> Line Smooth on/off</summary>
+        /// <summary> Line Smooth on/off. Compatibility Profile only</summary>
         public bool? LineSmooth { get; set; } = null;               // lines
         /// <summary> Poly Mode - Point, Line or Fill</summary>
         public PolygonMode? PolygonModeFrontAndBack { get; set; } = null;        // triangles/quads
-        /// <summary> Polygon Smooth on/off</summary>
+        /// <summary> Polygon Smooth on/off. Compatibility Profile only</summary>
         public bool? PolygonSmooth { get; set; } = null;            // triangles/quads, not normally set
         /// <summary> Cull Face on/off</summary>
         public bool? CullFace { get; set; } = null;                 // triangles/quads

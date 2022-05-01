@@ -341,7 +341,7 @@ namespace GLOFC.WinForm
 
             if (RenderState == null)
             {
-                RenderState = GL4.GLRenderState.Start();
+                RenderState = GL4.GLRenderState.Start(Profile);
                 GLStatics.Check();
             }
 

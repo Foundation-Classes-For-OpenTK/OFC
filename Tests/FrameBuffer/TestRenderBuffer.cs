@@ -187,7 +187,7 @@ namespace TestOpenTk
 
                 ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(mc);
 
-                var renderState = GLRenderState.Start();
+                var renderState = GLRenderState.Start(glwfc.Profile);
 
                 Vector4[] p = new Vector4[4];
 

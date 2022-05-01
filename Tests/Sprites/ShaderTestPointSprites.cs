@@ -39,7 +39,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -130,7 +130,7 @@ void main(void)
             #region coloured lines
 
             {
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
                 rObjects.Add(items.Shader("COS"),    // horizontal
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
