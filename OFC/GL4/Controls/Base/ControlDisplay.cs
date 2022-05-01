@@ -48,7 +48,7 @@ namespace GLOFC.GL4.Controls
         // Resize implemented by GLBaseControl, as is Key/Mouse events
 
         /// <summary> Paint call back. ulong is elapsed time in ms </summary>
-        public new Action<Object, ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
+        public new Action<GLControlBase, ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
 
         /// <summary> Invalidate the window </summary>
         public override void Invalidate()   {base.Invalidate(); glwin.Invalidate(); }
@@ -439,7 +439,7 @@ namespace GLOFC.GL4.Controls
         }
 
         // window is painting - hooked up to GLWindowControl Paint function. ts is elapsed time in ms.
-        private void Gc_Paint(object sender,ulong ts)
+        private void Gc_Paint(GLControlBase sender, ulong ts)
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
             Paint?.Invoke(sender,ts);

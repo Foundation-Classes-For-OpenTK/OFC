@@ -63,7 +63,7 @@ namespace GLOFC.GL4
         /// <param name="codelisting">The code</param>
         /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        /// <returns>Null string if sucessful, or error text</returns>
+        /// <returns>Null string if successful, or error text</returns>
         public string Compile( ShaderType shadertype, string codelisting, Object[] constvalues = null, string completeoutfile = null )        
         {
             GLShader shader = new GLShader(shadertype);
@@ -87,7 +87,7 @@ namespace GLOFC.GL4
         /// <param name="varyings">List of varyings to report. See <href>https://www.khronos.org/opengl/wiki/Transform_Feedback</href> for details on how you can send varying to various binding indexes</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="wantbinary">Set to true to allow GetBinary to work</param>
-        /// <returns></returns>
+        /// <returns>Null string if successful, or error text</returns>
 
         public string Link( bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool wantbinary= false)            // link, seperable or not.  Disposes of shaders. null if okay
         {

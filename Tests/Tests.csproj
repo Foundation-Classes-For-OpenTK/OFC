@@ -59,53 +59,11 @@
     <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\xml.cs" />
-    <Compile Include="Controls\TestControlsTextBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\TestControlsTextBox.designer.cs">
-      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\TestControlsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\TestControlsForm.designer.cs">
-      <DependentUpon>TestControlsForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\TestControlsMenu.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\TestControlsMenu.designer.cs">
-      <DependentUpon>TestControlsMenu.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\TestControlsDGV.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\TestControlsDGV.designer.cs">
-      <DependentUpon>TestControlsDGV.cs</DependentUpon>
-    </Compile>
     <Compile Include="FrameBuffer\TestRenderBuffer.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrameBuffer\TestRenderBuffer.designer.cs">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Galaxy\Bookmarks.cs" />
-    <Compile Include="Galaxy\GalaxyStars.cs" />
-    <Compile Include="Orrery\KeplerOrbitElements.cs" />
-    <Compile Include="Orrery\StarNodes.cs" />
-    <Compile Include="Orrery\OrbitalBodyInformation.cs" />
-    <Compile Include="Orrery\Orrery.cs" />
-    <Compile Include="Orrery\TestOrreryImport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Orrery\TestOrreryImport.designer.cs">
-      <DependentUpon>TestOrreryImport.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Orrery\TestOrrery.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Orrery\TestOrrery.designer.cs">
-      <DependentUpon>TestOrrery.cs</DependentUpon>
     </Compile>
     <Compile Include="MultiWindow\Window2.cs">
       <SubType>Form</SubType>
@@ -160,54 +118,13 @@
     <Compile Include="Compute\ShaderTestVertexCompute.Designer.cs">
       <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
     </Compile>
-    <Compile Include="Controls\TestControlsPanels.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Controls\TestControlsPanels.designer.cs">
-      <DependentUpon>TestControlsPanels.cs</DependentUpon>
-    </Compile>
     <Compile Include="FrameBuffer\TestFrameBuffer.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="FrameBuffer\TestFrameBuffer.designer.cs">
       <DependentUpon>TestFrameBuffer.cs</DependentUpon>
     </Compile>
-    <Compile Include="Galaxy\GalMapRegions.cs" />
-    <Compile Include="Galaxy\GalMap\GalacticMapObject.cs" />
-    <Compile Include="Galaxy\GalMap\GalacticMapping.cs" />
-    <Compile Include="Galaxy\GalMap\GalMapType.cs" />
     <Compile Include="BaseUtils\Jsonext.cs" />
-    <Compile Include="Galaxy\Map.cs" />
-    <Compile Include="Galaxy\MapMenu.cs" />
-    <Compile Include="Galaxy\GalMapObjects.cs" />
-    <Compile Include="Galaxy\TravelPath.cs" />
-    <Compile Include="Galaxy\ShaderStarDots.cs" />
-    <Compile Include="GalaxyDemo\TestDynamicGrid.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GalaxyDemo\TestDynamicGrid.designer.cs">
-      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Galaxy\TestGalaxy.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Galaxy\TestGalaxy.designer.cs">
-      <DependentUpon>TestGalaxy.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GalaxyDemo\TestGalaxyDemo2.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GalaxyDemo\TestGalaxyDemo2.designer.cs">
-      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="GalaxyDemo\TestGalaxyDemo1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GalaxyDemo\TestGalaxyDemo1.designer.cs">
-      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Galaxy\ShaderGalaxy.cs" />
-    <Compile Include="Galaxy\ShaderGrid.cs" />
     <Compile Include="Geometry\ShaderTestGeoFind.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -378,18 +295,6 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Controls\TestControlsTextBox.resx">
-      <DependentUpon>TestControlsTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TestControlsForm.resx">
-      <DependentUpon>TestControlsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TestControlsMenu.resx">
-      <DependentUpon>TestControlsMenu.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TestControlsDGV.resx">
-      <DependentUpon>TestControlsDGV.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FrameBuffer\TestRenderBuffer.resx">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
     </EmbeddedResource>
@@ -399,35 +304,14 @@
     <EmbeddedResource Include="Compute\ShaderTestVertexCompute.resx">
       <DependentUpon>ShaderTestVertexCompute.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Controls\TestControlsPanels.resx">
-      <DependentUpon>TestControlsPanels.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FrameBuffer\TestFrameBuffer.resx">
       <DependentUpon>TestFrameBuffer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GalaxyDemo\TestDynamicGrid.resx">
-      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Galaxy\TestGalaxy.resx">
-      <DependentUpon>TestGalaxy.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo2.resx">
-      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo1.resx">
-      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Geometry\ShaderTestGeoFind.resx">
       <DependentUpon>ShaderTestGeoFind.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Geometry\ShaderTestGeoTest1.resx">
       <DependentUpon>ShaderTestGeoTest1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Orrery\TestOrreryImport.resx">
-      <DependentUpon>TestOrreryImport.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Orrery\TestOrrery.resx">
-      <DependentUpon>TestOrrery.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MultiWindow\Window2.resx">
       <DependentUpon>Window2.cs</DependentUpon>

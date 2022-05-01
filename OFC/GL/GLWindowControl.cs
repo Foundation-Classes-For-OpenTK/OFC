@@ -28,6 +28,24 @@ namespace GLOFC
     internal static class NamespaceDoc { } // just for documentation purposes
 
     /// <summary>
+    /// This is the base interface for a GL control entity
+    /// </summary>
+
+    public interface GLControlBase
+    {
+        /// <summary> GL Profile Type </summary>
+        public enum GLProfile {
+            /// <summary> Compatibility Profile </summary>
+            Compatibility,
+            /// <summary> Core Profile </summary>
+            Core
+        };
+
+        /// <summary> GL Profile </summary>
+        public GLProfile Profile { get; }
+    }
+
+    /// <summary>
     /// This is the base interface which feed thru events from the window driving to consumers
     /// GLWinFormControl is based on it, and uses OpenTk.GLControl as the winforms control to receive all key/mouse events from
     /// GLControlDisplay is a class based on it so that it can dispatch events in the same way
@@ -50,36 +68,39 @@ namespace GLOFC
         Size Size { get; }
         /// <summary> Is GL window focused? </summary>
         bool Focused { get; }
+        /// <summary> GL profile </summary>
+        public GLControlBase.GLProfile Profile { get ; }
+
         /// <summary> Is context current to opengl </summary>
         bool IsCurrent();
 
-
         /// <summary> Resize call back </summary>
         Action<Object> Resize { get; set; }
+
         /// <summary> Paint call back. ulong is elapsed time in ms </summary>
-        Action<Object,ulong> Paint { get; set; }
+        Action<ulong> Paint { get; set; }
         /// <summary>Mouse down call back </summary>
-        Action<Object, GLMouseEventArgs> MouseDown { get; set; }
+        Action<object, GLMouseEventArgs> MouseDown { get; set; }
         /// <summary>Mouse up call back </summary>
-        Action<Object, GLMouseEventArgs> MouseUp { get; set; }
+        Action<object, GLMouseEventArgs> MouseUp { get; set; }
         /// <summary> Mouse move call back</summary>
-        Action<Object, GLMouseEventArgs> MouseMove { get; set; }
+        Action<object, GLMouseEventArgs> MouseMove { get; set; }
         /// <summary> Mouse enter call back</summary>
-        Action<Object, GLMouseEventArgs> MouseEnter { get; set; }
+        Action<object, GLMouseEventArgs> MouseEnter { get; set; }
         /// <summary>Mouse leave call back </summary>
-        Action<Object, GLMouseEventArgs> MouseLeave { get; set; }
+        Action<object, GLMouseEventArgs> MouseLeave { get; set; }
         /// <summary> Mouse click call back</summary>
-        Action<Object, GLMouseEventArgs> MouseClick { get; set; }
+        Action<object, GLMouseEventArgs> MouseClick { get; set; }
         /// <summary> Mouse double click call back</summary>
-        Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; }
+        Action<object, GLMouseEventArgs> MouseDoubleClick { get; set; }
         /// <summary> Mouse wheel call back</summary>
-        Action<Object, GLMouseEventArgs> MouseWheel { get; set; }
+        Action<object, GLMouseEventArgs> MouseWheel { get; set; }
         /// <summary> Key down call back</summary>
-        Action<Object, GLKeyEventArgs> KeyDown { get; set; }
+        Action<object, GLKeyEventArgs> KeyDown { get; set; }
         /// <summary> Key up call back</summary>
-        Action<Object, GLKeyEventArgs> KeyUp { get; set; }
+        Action<object, GLKeyEventArgs> KeyUp { get; set; }
         /// <summary> Key press call back</summary>
-        Action<Object, GLKeyEventArgs> KeyPress { get; set; }
+        Action<object, GLKeyEventArgs> KeyPress { get; set; }
         /// <summary> </summary>
 
 

@@ -45,16 +45,28 @@ namespace GLOFC.GL4.Shaders
         /// <param name="saveable">True if want to save to binary</param>
         /// <param name="auxname">For reporting purposes on error, name to give to shader </param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        protected void CompileLink(ShaderType shadertype, string codelisting,
+        /// <param name="assertonerror">If set, trace assert on error</param>
+        /// <returns>Null string if successful, or error text, if assert is disabled</returns>
+        protected string CompileLink(ShaderType shadertype, string codelisting,
                                         object[] constvalues = null, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs,
                                         bool saveable = false,
-                                        string auxname = "", string completeoutfile = null)
+                                        string auxname = "", string completeoutfile = null, bool assertonerror = true)
         {
             Program = new GLProgram();
             string ret = Program.Compile(shadertype, codelisting, constvalues, completeoutfile);
-            System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
+
+            if (assertonerror)
+                System.Diagnostics.Trace.Assert(ret == null, auxname, ret);     // note use of trace so its asserts even in release
+
+            if (ret != null)
+                return ret;
+
             ret = Program.Link(separable: true, varyings, varymode, saveable);
-            System.Diagnostics.Debug.Assert(ret == null, auxname, ret);
+
+            if (assertonerror)
+                System.Diagnostics.Trace.Assert(ret == null, auxname, ret);
+
+            return ret;
         }
 
         /// <summary>Get the binary of the shader. Must have linked with wantbinary </summary>

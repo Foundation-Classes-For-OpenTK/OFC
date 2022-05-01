@@ -58,7 +58,7 @@ namespace TestOpenTk
             matrixcalc.CalculateModelMatrix(new Vector3(0, 0, 0), new Vector2(135, 0), 50, 0);  // set up the lookat position, the camera direction, the distance and rotation
             matrixcalc.CalculateProjectionMatrix();                     // and set the project matrix
 
-            glwfc.Paint += Draw;    // register for draw
+            glwfc.Paint += ControllerDraw;    // register for draw
 
             // disposable items are stored in GLItemsList, so they can be cleanly disposed of at the end
 
@@ -135,7 +135,7 @@ rObjects.Add(items.Shader("COSOT"), "scopen",
         }
 
         // called on Paint of scene
-private void Draw(object mc, ulong unused)
+private void ControllerDraw(ulong unused)
 {
     //System.Diagnostics.Debug.WriteLine("Draw");
 

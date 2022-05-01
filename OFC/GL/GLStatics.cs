@@ -191,6 +191,66 @@ namespace GLOFC
             return GL.GetString(StringName.Extensions).Split(' ');
         }
 
+        /// <summary> Return open GL vendor. OpenGL: The format of the VENDOR string is implementation-dependent.</summary>
+        public static string GetVendor()
+        {
+            return GL.GetString(StringName.Vendor);
+        }
+
+        /// <summary> Return open GL renderer. OpenGL: The format of the RENDERER string is implementation-dependent </summary>
+        public static string GetRenderer()
+        {
+            return GL.GetString(StringName.Renderer);
+        }
+
+
+        /// <summary> Return open GL shading language string
+        /// OpenGL 22.2: The SHADING_LANGUAGE_VERSION string is laid out as follows: version number space vendor-specific information
+        /// The version number is either of the form major number.minor number or major number.minor number.release number, where the numbers all have one or more digits.
+        /// The minor number for SHADING_LANGUAGE_VERSION is always two digits, matching the OpenGL Shading Language Specification release number.
+        /// The release number and vendor specific information are optional.However, if present, then they pertain to the server and their format and contents are implementation-dependent.
+        /// </summary>
+        public static string GetShadingLanguageVersionString()
+        {
+            return GL.GetString(StringName.ShadingLanguageVersion);
+        }
+
+        /// <summary> Return open GL shader version as a Version. Note since the shader language always has a zero on the end, it will be 4.60, not 4.6
+        /// </summary>
+        public static Version GetShaderLanguageVersion()
+        {
+            string s = GL.GetString(StringName.ShadingLanguageVersion);
+            int space = s.IndexOf(' ');
+            if (space >= 0)
+                s = s.Substring(0, space);
+            s = s.Trim();
+            var v = new Version(s);
+            return v;
+        }
+
+
+        /// <summary> Return open GL version
+        /// OpenGL 22.2: The VERSION string is laid out as follows: version number space vendor-specific information
+        /// The version number is either of the form major number.minor number or major number.minor number.release number, where the numbers all have one or more digits.
+        /// The release number and vendor specific information are optional. However, if present, then they pertain to the server and their format and contents are implementation-dependent.
+        /// </summary>
+        public static string GetVersionString()
+        {
+            return GL.GetString(StringName.Version);
+        }
+        /// <summary> Return open GL version as a Version. It will be 4.6, not 4.60 as per the shader language
+        /// </summary>
+        public static Version GetVersion()
+        {
+            string s = GL.GetString(StringName.Version);
+            int space = s.IndexOf(' ');
+            if (space >= 0)
+                s = s.Substring(0, space);
+            s = s.Trim();
+            var v = new Version(s);
+            return v;
+        }
+
         /// <summary>
         /// Has GL got this extension?
         /// </summary>

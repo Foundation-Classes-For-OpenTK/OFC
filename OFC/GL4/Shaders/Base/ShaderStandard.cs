@@ -79,10 +79,12 @@ namespace GLOFC.GL4.Shaders
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
+        /// <param name="assertonerror">If set, trace assert on error</param>
+        /// <returns>Null string if successful, or error text, if assert is disabled</returns>/// 
 
-        public void CompileLink(string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
+        public string CompileLink(string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
                                  object[] vertexconstvars = null, object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
-                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
+                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false, bool assertonerror = true
                                 )
         {
             Program = new GLProgram();
@@ -92,38 +94,56 @@ namespace GLOFC.GL4.Shaders
             if (vertex != null)
             {
                 ret = Program.Compile(ShaderType.VertexShader, vertex, vertexconstvars);
-                System.Diagnostics.Debug.Assert(ret == null, "Vertex Shader", ret);
+                if (assertonerror)
+                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+                if (ret != null)
+                    return ret;
             }
 
             if (tcs != null)
             {
                 ret = Program.Compile(ShaderType.TessControlShader, tcs, tcsconstvars);
-                System.Diagnostics.Debug.Assert(ret == null, "Tesselation Control Shader", ret);
+                if (assertonerror)
+                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+                if (ret != null)
+                    return ret;
             }
 
             if (tes != null)
             {
                 ret = Program.Compile(ShaderType.TessEvaluationShader, tes, tesconstvars);
-                System.Diagnostics.Debug.Assert(ret == null, "Tesselation Evaluation Shader", ret);
+                if (assertonerror)
+                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+                if (ret != null)
+                    return ret;
             }
 
             if (geo != null)
             {
                 ret = Program.Compile(ShaderType.GeometryShader, geo, geoconstvars);
-                System.Diagnostics.Debug.Assert(ret == null, "Geometry shader", ret);
+                if (assertonerror)
+                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+                if (ret != null)
+                    return ret;
             }
 
             if (frag != null)
             {
                 ret = Program.Compile(ShaderType.FragmentShader, frag, fragconstvars);
-                System.Diagnostics.Debug.Assert(ret == null, "Fragment Shader", ret);
+                if (assertonerror)
+                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+                if (ret != null)
+                    return ret;
             }
-
 
             ret = Program.Link(false, varyings, varymode, saveable);
             System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
 
+            if (assertonerror)
+                System.Diagnostics.Trace.Assert(ret == null, "", ret);
+
             GLStatics.Check();
+            return ret;
         }
 
         /// <summary> Get the binary of the shader.  Must have linked with wantbinary</summary>

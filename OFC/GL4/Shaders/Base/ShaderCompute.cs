@@ -102,15 +102,27 @@ namespace GLOFC.GL4.Shaders
         /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="saveable">True if want to save to binary</param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
+        /// <param name="assertonerror">If set, trace assert on error</param>
+        /// <returns>Null string if successful, or error text, if assert is disabled</returns>/// 
 
-        public void CompileLink(string codelisting, object[] constvalues = null, bool saveable = false, string completeoutfile = null)
+        public string CompileLink(string codelisting, object[] constvalues = null, bool saveable = false, string completeoutfile = null, bool assertonerror = true)
         {
             Program = new GLProgram();
             string ret = Program.Compile(ShaderType.ComputeShader, codelisting, constvalues, completeoutfile);
-            System.Diagnostics.Debug.Assert(ret == null, "Compute Shader", ret);
+
+            if (assertonerror)
+                System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+
+            if (ret != null)
+                return ret;
+
             ret = Program.Link(wantbinary: saveable);
-            System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
+
+            if (assertonerror)
+                System.Diagnostics.Trace.Assert(ret == null, "", ret);
+
             GLStatics.Check();
+            return ret;
         }
 
         /// <summary> Get binary. Must have linked with wantbinary</summary>

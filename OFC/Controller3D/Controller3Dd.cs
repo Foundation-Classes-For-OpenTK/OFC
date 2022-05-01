@@ -26,6 +26,9 @@ namespace GLOFC.Controller
 
     public class Controller3Dd : Controller3DBase
     {
+        /// <summary> Get attached GLWindowControl </summary>
+        public GLWindowControl Window { get { return glwin; } }
+
         /// <summary> Get or set zoom distance </summary>
         public double ZoomDistance { get { return PosCamera.Zoom1Distance; } set { PosCamera.Zoom1Distance = value; } }
 
@@ -131,18 +134,6 @@ namespace GLOFC.Controller
         /// <summary> Redraw scene </summary>
         public void Redraw() { glwin.Invalidate(); }          
 
-        /// <summary> Debug only - redraw these number of times and return time in ms</summary>
-        public long Redraw(int times)                               
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            for (int i = 0; i < times; i++)
-                glControl_Paint(null, (ulong)sw.ElapsedMilliseconds);
-            long time = sw.ElapsedMilliseconds;
-            sw.Stop();
-            return time;
-        }
-
         /// <summary>
         /// Owner should call this at regular intervals.
         /// Handle keyboard, handle other keys if required
@@ -203,7 +194,7 @@ namespace GLOFC.Controller
 
         // Paint the scene - just pass the call down to the installed PaintObjects
         // gl paint hook, invoke paint objects for 3d
-        private void glControl_Paint(Object obj, ulong ts)
+        private void glControl_Paint(ulong ts)
         {
             PaintObjects?.Invoke(this, ts);
         }
