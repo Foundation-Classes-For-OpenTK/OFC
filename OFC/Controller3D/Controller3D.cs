@@ -106,24 +106,12 @@ namespace GLOFC.Controller
             win.Resize += glControl_Resize;
             win.Paint += glControl_Paint;
 
-            if (registermouseui)
-            {
-                win.MouseDown += MouseDown;
-                win.MouseUp += MouseUp;
-                win.MouseMove += MouseMove;
-                win.MouseWheel += MouseWheel;
-            }
+            Hook(glwin, registermouseui, registerkeyui);
 
-            if ( registerkeyui )
-            { 
-                win.KeyDown += KeyDown;
-                win.KeyUp += KeyUp;
-            }
-
-            MatrixCalc.ResizeViewPort(this,win.Size);               // inform matrix calc of window size
+            MatrixCalc.ResizeViewPort(this, win.Size);               // inform matrix calc of window size
 
             PosCamera.SetPositionZoom(lookat, new Vector2(cameradirdegrees.X, cameradirdegrees.Y), zoomn, cameradirdegrees.Z);
-            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition,  PosCamera.CameraRotation);
+            MatrixCalc.CalculateModelMatrix(PosCamera.LookAt, PosCamera.EyePosition, PosCamera.CameraRotation);
             MatrixCalc.CalculateProjectionMatrix();
         }
 

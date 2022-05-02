@@ -40,20 +40,49 @@ namespace GLOFC.Controller
         /// <summary> Optional set to scale camera key rotation commands given this time interval</summary>
         public Func<int, float> KeyboardRotateSpeed;                             
         /// <summary> Optional set to scale zoom speed commands given this time interval</summary>
-        public Func<int, float> KeyboardZoomSpeed;                               
+        public Func<int, float> KeyboardZoomSpeed;
 
         /// <summary> Matrix Calc to use </summary>
         public GLMatrixCalc MatrixCalc { get; set; } = new GLMatrixCalc();
 
+        /// <summary> Hook glwindow control to our handlers </summary>
+        public void Hook(GLWindowControl win, bool registermouseui = true, bool registerkeyui = true)
+        {
+            if (registermouseui)
+            {
+                win.MouseDown += MouseDown;
+                win.MouseUp += MouseUp;
+                win.MouseMove += MouseMove;
+                win.MouseWheel += MouseWheel;
+            }
+
+            if (registerkeyui)
+            {
+                win.KeyDown += KeyDown;
+                win.KeyUp += KeyUp;
+            }
+        }
+
+        /// <summary> Hook a GL base control to our handlers </summary>
+        public void Hook(GL4.Controls.GLBaseControl c, GLWindowControl wc)
+        {
+            c.MouseDown += (bc, ev) => { MouseDown(wc, ev); };
+            c.MouseUp += (bc, ev) => { MouseUp(wc, ev); };
+            c.MouseMove += (bc, ev) => { MouseMove(wc, ev); };
+            c.MouseWheel += (bc, ev) => { MouseWheel(wc, ev); };
+            c.KeyDown += (bc, ka) => { KeyDown(wc, ka); };
+            c.KeyUp += (bc, ka) => { KeyUp(wc, ka); };
+        }
+
         /// <summary> Mouse Down handler - hook to GLWindowControl </summary>
-        public void MouseDown(object sender, GLMouseEventArgs e)
+        public void MouseDown(GLWindowControl sender, GLMouseEventArgs e)
         {
             mouseDownPos = MatrixCalc.AdjustWindowCoordToViewPortCoord(e.WindowLocation);
             //System.Diagnostics.Debug.WriteLine($"Mouse down {e.WindowLocation} -> {mouseDownPos}");
         }
 
         /// <summary> Mouse Up handler - hook to GLWindowControl</summary>
-        public void MouseUp(object sender, GLMouseEventArgs e)
+        public void MouseUp(GLWindowControl sender, GLMouseEventArgs e)
         {
             // System.Diagnostics.Debug.WriteLine($"Mouse Up");
             mouseDeltaPos = mouseDownPos = new Point(int.MinValue, int.MinValue);
@@ -72,7 +101,7 @@ namespace GLOFC.Controller
         }
 
         /// <summary> Mouse Move handler - hook to GLWindowControl</summary>
-        public void MouseMove(object sender, GLMouseEventArgs e)
+        public void MouseMove(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (mouseDownPos.X == int.MinValue)
                 return;
@@ -155,7 +184,7 @@ namespace GLOFC.Controller
         }
 
         /// <summary> Mouse Wheel handler - hook to GLWindowControl</summary>
-        public void MouseWheel(object sender, GLMouseEventArgs e)
+        public void MouseWheel(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (e.Delta != 0)
             {
@@ -175,12 +204,12 @@ namespace GLOFC.Controller
         }
 
         /// <summary> Key Down handler - hook to GLWindowControl </summary>
-        public void KeyDown(object sender, GLKeyEventArgs e)
+        public void KeyDown(GLWindowControl sender, GLKeyEventArgs e)
         {
             keyboard.KeyDown(e.Control, e.Shift, e.Alt, e.KeyCode);
         }
         /// <summary> Key Up handler - hook to GLWindowControl</summary>
-        public void KeyUp(object sender, GLKeyEventArgs e)
+        public void KeyUp(GLWindowControl sender, GLKeyEventArgs e)
         {
             keyboard.KeyUp(e.Control, e.Shift, e.Alt, e.KeyCode);
         }

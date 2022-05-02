@@ -130,15 +130,29 @@ namespace TestOpenTk
 
             if (true)
             {
-                bool testform1 = true;
-
                 mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
-                displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
-                displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-                displaycontrol.Name = "displaycontrol";
+                // a display control
 
-                if (testform1)
+                displaycontrol = new GLControlDisplay(items, glwfc, mc);     // start class but don't hook
+                displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
+                displaycontrol.Font = new Font("Times", 8);
+                displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+
+                gl3dcontroller = new Controller3D();
+                gl3dcontroller.ZoomDistance = 5000F;
+                gl3dcontroller.YHoldMovement = true;
+                gl3dcontroller.PaintObjects = Controller3dDraw;
+                gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) => { return (float)ms * 10.0f; };
+                gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
+
+                // start hooks the glwfc paint function up, first, so it gets to go first
+                // No ui events from glwfc.
+                gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+                gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+                displaycontrol.Hook();  // now we hook up display control to glwin, and paint
+
+                if (true)
                 {
                     GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
                     displaycontrol.Add(pform);
@@ -158,7 +172,7 @@ namespace TestOpenTk
                         GLMenuItem l1b = new GLMenuItem("A-2", "MenuA-2");
                         l1b.CheckOnClick = true;
                         l1b.Checked = true;
-                        GLMenuItem l1c = new GLMenuItem("A-3", "MenuA-3") { Image = Properties.Resources.GoToHomeSystem };
+                        GLMenuItem l1c = new GLMenuItem("A-3", "MenuA-3") { Image = TestControls.Properties.Resources.GoToHomeSystem };
                         l1c.CheckOnClick = true;
                         l1.SubMenuItems = new List<GLBaseControl>() { l1a, l1b, l1c };
 
@@ -250,31 +264,6 @@ namespace TestOpenTk
                     };
                 }
             }
-
-            gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.YHoldMovement = true;
-            gl3dcontroller.PaintObjects = Controller3dDraw;
-
-            gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
-            {
-                return (float)ms * 10.0f;
-            };
-
-            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
-
-            if ( displaycontrol != null )
-            {
-                gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
-
-                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {                                 
-                    displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
-                };
-
-            }
-            else
-                gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

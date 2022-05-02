@@ -129,9 +129,23 @@ namespace TestOpenTk
 
             mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
-            displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
+            displaycontrol = new GLControlDisplay(items, glwfc, mc);     // start class but don't hook
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-            displaycontrol.Name = "displaycontrol";
+            displaycontrol.Font = new Font("Times", 8);
+            displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+
+            gl3dcontroller = new Controller3D();
+            gl3dcontroller.ZoomDistance = 5000F;
+            gl3dcontroller.YHoldMovement = true;
+            gl3dcontroller.PaintObjects = Controller3dDraw;
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) => { return (float)ms * 10.0f; };
+            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
+
+            // start hooks the glwfc paint function up, first, so it gets to go first
+            // No ui events from glwfc.
+            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
             pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(10, 10, 700, 800));
 
@@ -195,7 +209,7 @@ namespace TestOpenTk
                     var row = dgv.CreateRow();
                     if (i < 2 || i > 5) row.AutoSize = true;
                     string prefix = char.ConvertFromUtf32(i + 65);
-                    var imgcell = new GLDataGridViewCellImage(Properties.Resources.GoBackward);
+                    var imgcell = new GLDataGridViewCellImage(TestControls.Properties.Resources.GoBackward);
                     imgcell.Style.ContentAlignment = ContentAlignment.MiddleLeft;
                     imgcell.Size = new Size(16, 16);
                     row.AddCell(imgcell);
@@ -291,32 +305,6 @@ namespace TestOpenTk
                 GLToolTip tip = new GLToolTip("ToolTip");
                 displaycontrol.Add(tip);
             }
-
-            gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.YHoldMovement = true;
-            gl3dcontroller.PaintObjects = Controller3dDraw;
-
-            gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
-            {
-                return (float)ms * 10.0f;
-            };
-
-            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
-
-            if ( displaycontrol != null )
-            {
-                gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
-
-                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {
-                    //System.Diagnostics.Debug.WriteLine(ts + " Render");
-                    displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
-                };
-
-            }
-            else
-                gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

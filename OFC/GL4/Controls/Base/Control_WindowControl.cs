@@ -94,7 +94,7 @@ namespace GLOFC.GL4.Controls
                 currentmouseover = null;
         }
 
-        protected void Gc_MouseEnter(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseEnter(GLWindowControl sender, GLMouseEventArgs e)
         {
             Gc_MouseLeave(sender, e);       // leave current
 
@@ -114,7 +114,7 @@ namespace GLOFC.GL4.Controls
                     currentmouseover.OnMouseEnter(e);
             }
         }
-        protected void Gc_MouseLeave(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseLeave(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (currentmouseover != null)
             {
@@ -133,7 +133,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void Gc_MouseMove(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseMove(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
             //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} MousePos {3}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, FindDisplay().MouseWindowPosition);
@@ -213,7 +213,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void Gc_MouseDown(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseDown(GLWindowControl sender, GLMouseEventArgs e)
         {
             // System.Diagnostics.Debug.WriteLine("GC Mouse down");
             if (currentmouseover != null)
@@ -241,7 +241,7 @@ namespace GLOFC.GL4.Controls
                     this.OnMouseDown(e);
             }
         }
-        protected void Gc_MouseUp(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseUp(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
 
@@ -263,7 +263,7 @@ namespace GLOFC.GL4.Controls
             mousedowninitialcontrol = null;
         }
 
-        protected void Gc_MouseClick(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseClick(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
 
@@ -291,7 +291,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void Gc_MouseDoubleClick(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseDoubleClick(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
 
@@ -318,7 +318,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected void Gc_MouseWheel(object sender, GLMouseEventArgs e)
+        protected void Gc_MouseWheel(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (currentmouseover != null && currentmouseover.Enabled)
             {
@@ -383,7 +383,7 @@ namespace GLOFC.GL4.Controls
 
         // feed keys to focus is present and enabled, else the control display gets them
 
-        protected void Gc_KeyUp(object sender, GLKeyEventArgs e)
+        protected void Gc_KeyUp(GLWindowControl sender, GLKeyEventArgs e)
         {
             if (currentfocus != null && currentfocus.Enabled)
             {
@@ -397,7 +397,7 @@ namespace GLOFC.GL4.Controls
                 OnKeyUp(e);
         }
 
-        protected void Gc_KeyDown(object sender, GLKeyEventArgs e)
+        protected void Gc_KeyDown(GLWindowControl sender, GLKeyEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Control keydown " + e.KeyCode + " on " + currentfocus?.Name);
             if (currentfocus != null && currentfocus.Enabled)
@@ -412,7 +412,7 @@ namespace GLOFC.GL4.Controls
                 OnKeyDown(e);
         }
 
-        protected void Gc_KeyPress(object sender, GLKeyEventArgs e)
+        protected void Gc_KeyPress(GLWindowControl sender, GLKeyEventArgs e)
         {
             if (currentfocus != null && currentfocus.Enabled)
             {

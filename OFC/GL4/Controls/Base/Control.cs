@@ -236,27 +236,27 @@ namespace GLOFC.GL4.Controls
         // events
 
         /// <summary> Mouse down action. Passed control and mouse events arguments. </summary>
-        public Action<Object, GLMouseEventArgs> MouseDown { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseDown { get; set; } = null;
         /// <summary> Mouse up action. Passed control and mouse events arguments. </summary>
-        public Action<Object, GLMouseEventArgs> MouseUp { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseUp { get; set; } = null;
         /// <summary> Mouse move action. Passed control and mouse events arguments.  </summary>
-        public Action<Object, GLMouseEventArgs> MouseMove { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseMove { get; set; } = null;
         /// <summary> Mouse mouse click action. Passed control and mouse events arguments.  </summary>
-        public Action<Object, GLMouseEventArgs> MouseClick { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseClick { get; set; } = null;
         /// <summary> Mouse double click action. Passed control and mouse events arguments. </summary>
-        public Action<Object, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
         /// <summary> Mouse wheel click action. Passed control and mouse events arguments. </summary>
-        public Action<Object, GLMouseEventArgs> MouseWheel { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseWheel { get; set; } = null;
         /// <summary> Mouse enter action. Passed control and mouse events arguments. </summary>
-        public Action<Object, GLMouseEventArgs> MouseEnter { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseEnter { get; set; } = null;
         /// <summary> Mouse leave action. Passed control and mouse events arguments</summary>
-        public Action<Object, GLMouseEventArgs> MouseLeave { get; set; } = null;
+        public Action<GLBaseControl, GLMouseEventArgs> MouseLeave { get; set; } = null;
         /// <summary> Key down action. Passed control and key events arguments</summary>
-        public Action<Object, GLKeyEventArgs> KeyDown { get; set; } = null;
+        public Action<GLBaseControl, GLKeyEventArgs> KeyDown { get; set; } = null;
         /// <summary> Key up action. Passed control and key events arguments</summary>
-        public Action<Object, GLKeyEventArgs> KeyUp { get; set; } = null;
+        public Action<GLBaseControl, GLKeyEventArgs> KeyUp { get; set; } = null;
         /// <summary> Key press action. Passed control and key events arguments</summary>
-        public Action<Object, GLKeyEventArgs> KeyPress { get; set; } = null;
+        public Action<GLBaseControl, GLKeyEventArgs> KeyPress { get; set; } = null;
         
         /// <summary> Focus event type </summary>
         public enum FocusEvent {
@@ -270,13 +270,13 @@ namespace GLOFC.GL4.Controls
             ChildDeactive
         };
         /// <summary>Focus of control or child of control has changed </summary>
-        public Action<Object, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;     
+        public Action<GLBaseControl, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;     
         /// <summary>Font has changed</summary>
-        public Action<Object> FontChanged { get; set; } = null;
+        public Action<GLBaseControl> FontChanged { get; set; } = null;
         /// <summary>Control has changed size </summary>
-        public Action<Object> Resize { get; set; } = null;
+        public Action<GLBaseControl> Resize { get; set; } = null;
         /// <summary>Control has moved </summary>
-        public Action<Object> Moved { get; set; } = null;
+        public Action<GLBaseControl> Moved { get; set; } = null;
 
         /// <summary> Control has been added. 
         /// Called first on parent with Para1=parent, Para2=child added.  

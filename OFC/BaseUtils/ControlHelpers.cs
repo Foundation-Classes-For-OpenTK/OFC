@@ -98,7 +98,7 @@ namespace GLOFC.Utils
             {
                 SizeF drawnsize = g.MeasureString(text, fnt, new Point(0, 0), fmt);
 
-                if ((int)(drawnsize.Width + 0.99f) <= textarea.Width && (int)(drawnsize.Height + 0.99f) <= textarea.Height)
+                if (fnt.Size <= 1 ||( (int)(drawnsize.Width + 0.99f) <= textarea.Width && (int)(drawnsize.Height + 0.99f) <= textarea.Height ))
                     return fnt;
 
                 if (ownfont)

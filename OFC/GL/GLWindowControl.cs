@@ -28,24 +28,6 @@ namespace GLOFC
     internal static class NamespaceDoc { } // just for documentation purposes
 
     /// <summary>
-    /// This is the base interface for a GL control entity
-    /// </summary>
-
-    public interface GLControlBase
-    {
-        /// <summary> GL Profile Type </summary>
-        public enum GLProfile {
-            /// <summary> Compatibility Profile </summary>
-            Compatibility,
-            /// <summary> Core Profile </summary>
-            Core
-        };
-
-        /// <summary> GL Profile </summary>
-        public GLProfile Profile { get; }
-    }
-
-    /// <summary>
     /// This is the base interface which feed thru events from the window driving to consumers
     /// GLWinFormControl is based on it, and uses OpenTk.GLControl as the winforms control to receive all key/mouse events from
     /// GLControlDisplay is a class based on it so that it can dispatch events in the same way
@@ -68,39 +50,49 @@ namespace GLOFC
         Size Size { get; }
         /// <summary> Is GL window focused? </summary>
         bool Focused { get; }
+
+        /// <summary> GL Profile Type dependant on GL version requested </summary>
+        public enum GLProfile
+        {
+            /// <summary> Compatibility Profile </summary>
+            Compatibility,
+            /// <summary> Core Profile (3.1+) </summary>
+            Core
+        };
+
         /// <summary> GL profile </summary>
-        public GLControlBase.GLProfile Profile { get ; }
+        public GLProfile Profile { get ; }
 
         /// <summary> Is context current to opengl </summary>
         bool IsCurrent();
 
         /// <summary> Resize call back </summary>
-        Action<Object> Resize { get; set; }
+        Action<GLWindowControl> Resize { get; set; }
 
         /// <summary> Paint call back. ulong is elapsed time in ms </summary>
         Action<ulong> Paint { get; set; }
         /// <summary>Mouse down call back </summary>
-        Action<object, GLMouseEventArgs> MouseDown { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseDown { get; set; }
         /// <summary>Mouse up call back </summary>
-        Action<object, GLMouseEventArgs> MouseUp { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseUp { get; set; }
         /// <summary> Mouse move call back</summary>
-        Action<object, GLMouseEventArgs> MouseMove { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseMove { get; set; }
         /// <summary> Mouse enter call back</summary>
-        Action<object, GLMouseEventArgs> MouseEnter { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseEnter { get; set; }
         /// <summary>Mouse leave call back </summary>
-        Action<object, GLMouseEventArgs> MouseLeave { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseLeave { get; set; }
         /// <summary> Mouse click call back</summary>
-        Action<object, GLMouseEventArgs> MouseClick { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseClick { get; set; }
         /// <summary> Mouse double click call back</summary>
-        Action<object, GLMouseEventArgs> MouseDoubleClick { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseDoubleClick { get; set; }
         /// <summary> Mouse wheel call back</summary>
-        Action<object, GLMouseEventArgs> MouseWheel { get; set; }
+        Action<GLWindowControl, GLMouseEventArgs> MouseWheel { get; set; }
         /// <summary> Key down call back</summary>
-        Action<object, GLKeyEventArgs> KeyDown { get; set; }
+        Action<GLWindowControl, GLKeyEventArgs> KeyDown { get; set; }
         /// <summary> Key up call back</summary>
-        Action<object, GLKeyEventArgs> KeyUp { get; set; }
+        Action<GLWindowControl, GLKeyEventArgs> KeyUp { get; set; }
         /// <summary> Key press call back</summary>
-        Action<object, GLKeyEventArgs> KeyPress { get; set; }
+        Action<GLWindowControl, GLKeyEventArgs> KeyPress { get; set; }
         /// <summary> </summary>
 
 

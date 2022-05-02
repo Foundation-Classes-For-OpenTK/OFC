@@ -440,10 +440,14 @@ namespace GLOFC.GL4.Controls
                 backgr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
                 backgr.TranslateTransform(bounds.X, bounds.Y);   // move to client 0,0
 
-                //System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
-                DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
+                if (Width > 0 && Height > 0)        // no point drawing nothing
+                {
+                    //System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
+                    DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
-                DrawBorder(backgr, BorderColor, BorderWidth);
+                    DrawBorder(backgr, BorderColor, BorderWidth);
+                }
+
                 backgr.ResetTransform();
             }
             else
@@ -524,8 +528,9 @@ namespace GLOFC.GL4.Controls
 
             // if we need drawing..
             // will be set if NeedRedrawn or forceredrawn.  Draw in the backgr, which is the current bitmap
+            // no point drawing nothing either
 
-            if (forceredraw)       
+            if (forceredraw && ClientRectangle.Width>0 && ClientRectangle.Height>0)       
             {
                 backgr.SetClip(cliparea);   // set graphics to the clip area, which is the visible area of the ClientRectangle
                     

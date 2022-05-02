@@ -49,37 +49,37 @@ namespace GLOFC.WinForm
         /// <summary> Is Focused </summary>
         public bool Focused { get { return glControl.Focused; } }
         /// <summary> GL profile </summary>
-        public GLControlBase.GLProfile Profile { get { return glControl.Profile; } }
+        public GLWindowControl.GLProfile Profile { get { return glControl.Profile; } }
 
         /// <summary> Is GL context ours? </summary>
         public bool IsCurrent() { var ctx = GLStatics.GetContext(); return glControl.Context.IsCurrent && ctx == context; }
 
         /// <summary> Resize call back </summary>
-        public Action<Object> Resize { get; set; } = null;
+        public Action<GLWindowControl> Resize { get; set; } = null;
         /// <summary> Paint call back. ulong is elapsed time in ms </summary>
         public Action<ulong> Paint { get; set; } = null;  
         /// <summary> Mouse down call back </summary>
-        public Action<object, GLMouseEventArgs> MouseDown { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseDown { get; set; } = null;
         /// <summary>Mouse up call back </summary>
-        public Action<object, GLMouseEventArgs> MouseUp { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseUp { get; set; } = null;
         /// <summary> Mouse move call back</summary>
-        public Action<object, GLMouseEventArgs> MouseMove { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseMove { get; set; } = null;
         /// <summary> Mouse enter call back</summary>
-        public Action<object, GLMouseEventArgs> MouseEnter { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseEnter { get; set; } = null;
         /// <summary>Mouse leave call back </summary>
-        public Action<object, GLMouseEventArgs> MouseLeave { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseLeave { get; set; } = null;
         /// <summary> Mouse click call back</summary>
-        public Action<object, GLMouseEventArgs> MouseClick { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseClick { get; set; } = null;
         /// <summary> Mouse double click call back</summary>
-        public Action<object, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseDoubleClick { get; set; } = null;
         /// <summary> Mouse wheel call back</summary>
-        public Action<object, GLMouseEventArgs> MouseWheel { get; set; } = null;
+        public Action<GLWindowControl, GLMouseEventArgs> MouseWheel { get; set; } = null;
         /// <summary> Key down call back</summary>
-        public Action<object, GLKeyEventArgs> KeyDown { get; set; } = null;
+        public Action<GLWindowControl, GLKeyEventArgs> KeyDown { get; set; } = null;
         /// <summary> Key up call back</summary>
-        public Action<object, GLKeyEventArgs> KeyUp { get; set; } = null;
+        public Action<GLWindowControl, GLKeyEventArgs> KeyUp { get; set; } = null;
         /// <summary> Key press call back</summary>
-        public Action<object, GLKeyEventArgs> KeyPress { get; set; } = null;
+        public Action<GLWindowControl, GLKeyEventArgs> KeyPress { get; set; } = null;
 
         /// <summary> Ensure this context is current </summary>
         public void EnsureCurrentContext() { glControl.MakeCurrent(); }
@@ -381,16 +381,16 @@ namespace GLOFC.WinForm
     /// <summary>
     /// GLControl specialised to override key handling
     /// </summary>
-    public class GLControlKeyOverride : OpenTK.GLControl, GLControlBase
+    public class GLControlKeyOverride : OpenTK.GLControl
     {
         /// <summary> Constructor </summary>
         public GLControlKeyOverride(OpenTK.Graphics.GraphicsMode m, int major, int minor, OpenTK.Graphics.GraphicsContextFlags flags) : base(m,major,minor,flags)
         {
-            Profile = (major >= 4 || (major >= 3 && minor >= 1)) ? GLControlBase.GLProfile.Core : GLControlBase.GLProfile.Compatibility;
+            Profile = (major >= 4 || (major >= 3 && minor >= 1)) ? GLWindowControl.GLProfile.Core : GLWindowControl.GLProfile.Compatibility;
         }
 
         /// <summary> GL profile </summary>
-        public GLControlBase.GLProfile Profile { get; private set; }
+        public GLWindowControl.GLProfile Profile { get; private set; }
 
         /// <summary> Override key handling </summary>
         protected override bool IsInputKey(Keys keyData)    // disable normal windows control change

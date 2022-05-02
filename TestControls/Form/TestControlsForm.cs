@@ -137,8 +137,22 @@ namespace TestOpenTk
 
             displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-            displaycontrol.Name = "displaycontrol";
             displaycontrol.Font = new Font("Times", 8);
+            displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+
+            gl3dcontroller = new Controller3D();
+            gl3dcontroller.ZoomDistance = 5000F;
+            gl3dcontroller.YHoldMovement = true;
+            gl3dcontroller.PaintObjects = Controller3dDraw;
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) => { return (float)ms * 10.0f; };
+            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
+
+
+            // start hooks the glwfc paint function up. No ui events from glwfc.
+            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
+
 
             GLForm pform;
 
@@ -174,7 +188,7 @@ namespace TestOpenTk
                     pform.Add(b1);
 
                     GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Msg1");
-                    b2.Image = Properties.Resources.ImportSphere;
+                    b2.Image = TestControls.Properties.Resources.ImportSphere;
                     b2.TabOrder = taborder++;
                     b2.ImageAlign = ContentAlignment.MiddleLeft;
                     b2.TextAlign = ContentAlignment.MiddleRight;
@@ -187,7 +201,8 @@ namespace TestOpenTk
                     b3.TabOrder = taborder++;
                     b3.Padding = new PaddingType(5);
                     b3.ToolTipText = "Button 3 tip\r\nLine 2 of it";
-                    b3.Click += (c, ev) => {
+                    b3.Click += (c, ev) =>
+                    {
                         displaycontrol.Font = new Font("Times", 12);
                     };
                     pform.Add(b3);
@@ -333,7 +348,7 @@ namespace TestOpenTk
                 }
 
                 if (true)
-                { 
+                {
                     GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
                     glf.BackColor = Color.AliceBlue;
                     glf.TabOrder = taborder++;
@@ -341,7 +356,7 @@ namespace TestOpenTk
                     glf.Minimum = -1000;
                     glf.Maximum = 1000;
                     glf.ValueChanged += (a) => { System.Diagnostics.Debug.WriteLine("GLF value changed"); };
-                    glf.ValidityChanged += (a,b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
+                    glf.ValidityChanged += (a, b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
                     pform.Add(glf);
 
                     GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(610, 250, 40, 15), "Value");
@@ -354,7 +369,7 @@ namespace TestOpenTk
                     gla.PerformAutoCompleteInThread += (s, a, set) =>
                     {
                         var r = new List<string>() { "one", "two", "three" };
-                        foreach(var x in r)
+                        foreach (var x in r)
                         {
                             if (x.StartsWith(s) || s.IsEmpty())
                                 set.Add(x);
@@ -412,34 +427,20 @@ namespace TestOpenTk
             };
 
 
-
-            gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.YHoldMovement = true;
-            gl3dcontroller.PaintObjects = Controller3dDraw;
-
-            gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
-            {
-                return (float)ms * 10.0f;
-            };
-
-            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
-
-            if ( displaycontrol != null )
-            {
-                gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
-
-                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {                                 
-                    displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
-                };
-
-            }
-            else
-                gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
-
             systemtimer.Start();
         }
+
+        private void Controller3dDraw(Controller3D mc, ulong unused)
+        {
+            System.Diagnostics.Debug.WriteLine("Paint controller");
+
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
+        }
+
 
         private void FormDialog()
         {
@@ -528,14 +529,6 @@ namespace TestOpenTk
         }
 
 
-        private void Controller3dDraw(Controller3D mc, ulong unused)
-        {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
-
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
-        }
 
         private void SystemTick(object sender, EventArgs e)
         {

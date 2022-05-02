@@ -141,7 +141,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary> Called by WinFormControl, this sets up the initial render state </summary>
-        static public GLRenderState Start(GLControlBase.GLProfile profile)
+        static public GLRenderState Start(GLWindowControl.GLProfile profile)
         {
             var startstate = new GLRenderState()        // Set the default state we want to be in at start (some state defaults are at bottom)
             {
@@ -176,7 +176,7 @@ namespace GLOFC.GL4
                 Discard = true,
             };
 
-            if ( profile == GLControlBase.GLProfile.Core) //core disables
+            if ( profile == GLWindowControl.GLProfile.Core) //core disables
             {
                 startstate.PointSprite = null;      // point sprite control - its always set to enabled
                 startstate.PointSmooth = null;      // not available

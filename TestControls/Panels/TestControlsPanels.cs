@@ -154,7 +154,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
-                items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
+                items.Add(new GLTexture2D(TestControls.Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
 
                 GLRenderState rt = GLRenderState.Tri();
 
@@ -185,9 +185,26 @@ namespace TestOpenTk
 
             mc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
-            displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
+            // a display control
+
+            displaycontrol = new GLControlDisplay(items, glwfc, mc);     // start class but don't hook
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-            displaycontrol.Name = "displaycontrol";
+            displaycontrol.Font = new Font("Times", 8);
+            displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+
+            gl3dcontroller = new Controller3D();
+            gl3dcontroller.ZoomDistance = 5000F;
+            gl3dcontroller.YHoldMovement = true;
+            gl3dcontroller.PaintObjects = Controller3dDraw;
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) => { return (float)ms * 10.0f; };
+            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
+
+            // start hooks the glwfc paint function up, first, so it gets to go first
+            // No ui events from glwfc.
+            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
+
 
             GLForm pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(0, 0, 1000, 850));
             // pform.BackColor = Color.FromArgb(200, Color.Red);
@@ -212,16 +229,16 @@ namespace TestOpenTk
                 ptable.Rows = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
                 ptable.Columns = new List<GLTableLayoutPanel.Style> { new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50), new GLTableLayoutPanel.Style(GLTableLayoutPanel.Style.SizeTypeEnum.Weight, 50) };
                 pform.Add(ptable);
-                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
+                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), TestControls.Properties.Resources.dotted);
                 pti1.Column = 0; pti1.Row = 0; pti1.Dock = DockingType.Fill;
                 ptable.Add(pti1);
-                GLImage pti2 = new GLImage("PTI2", new Rectangle(100, 0, 24, 24), Properties.Resources.dotted2);
+                GLImage pti2 = new GLImage("PTI2", new Rectangle(100, 0, 24, 24), TestControls.Properties.Resources.dotted2);
                 pti2.Column = 1; pti1.Row = 0;
                 ptable.Add(pti2);
-                GLImage pti3 = new GLImage("PTI3", new Rectangle(100, 0, 48, 48), Properties.Resources.ImportSphere);
+                GLImage pti3 = new GLImage("PTI3", new Rectangle(100, 0, 48, 48), TestControls.Properties.Resources.ImportSphere);
                 pti3.Column = 0; pti3.Row = 1; pti3.Dock = DockingType.LeftCenter; pti3.ImageStretch = true;
                 ptable.Add(pti3);
-                GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), Properties.Resources.Logo8bpp);
+                GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), TestControls.Properties.Resources.Logo8bpp);
                 pti4.Column = 1; pti4.Row = 1; pti4.Dock = DockingType.Center;
                 ptable.Add(pti4);
             }
@@ -232,13 +249,13 @@ namespace TestOpenTk
                 pflow1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pflow1.FlowPadding = new PaddingType(10, 5, 0, 0);
                 pform.Add(pflow1);
-                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted);
+                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), TestControls.Properties.Resources.dotted);
                 pflow1.Add(pti1);
-                GLImage pti2 = new GLImage("PTI2", new Rectangle(100, 0, 32, 32), Properties.Resources.dotted2);
+                GLImage pti2 = new GLImage("PTI2", new Rectangle(100, 0, 32, 32), TestControls.Properties.Resources.dotted2);
                 pflow1.Add(pti2);
-                GLImage pti3 = new GLImage("PTI3", new Rectangle(100, 0, 48, 48), Properties.Resources.ImportSphere);
+                GLImage pti3 = new GLImage("PTI3", new Rectangle(100, 0, 48, 48), TestControls.Properties.Resources.ImportSphere);
                 pflow1.Add(pti3);
-                GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), Properties.Resources.Logo8bpp);
+                GLImage pti4 = new GLImage("PTI4", new Rectangle(100, 0, 64, 64), TestControls.Properties.Resources.Logo8bpp);
                 pflow1.Add(pti4);
             }
 
@@ -249,11 +266,11 @@ namespace TestOpenTk
                 sp1.BackColor = Color.Yellow;
                // sp1.SetMarginBorderWidth(new Margin(2), 1, Color.Black, new GLOFC.GL4.Controls.Padding(2));
                 pform.Add(sp1);
-                GLImage sp1i1 = new GLImage("SP1I1", new Rectangle(0, 0, 190, 100), Properties.Resources.dotted);
+                GLImage sp1i1 = new GLImage("SP1I1", new Rectangle(0, 0, 190, 100), TestControls.Properties.Resources.dotted);
                 sp1.Add(sp1i1);
-                GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
+                GLImage sp1i2 = new GLImage("SP1I22", new Rectangle(10, 150, 100, 100), TestControls.Properties.Resources.dotted);
                 sp1.Add(sp1i2);
-                GLImage sp1i3 = new GLImage("SP1I23", new Rectangle(100, 100, 200, 200), Properties.Resources.dotted2);
+                GLImage sp1i3 = new GLImage("SP1I23", new Rectangle(100, 100, 200, 200), TestControls.Properties.Resources.dotted2);
                 sp1.Add(sp1i3);
                 sp1.VertScrollPos = 0;
                 sp1.HorzScrollPos = 0;
@@ -275,12 +292,12 @@ namespace TestOpenTk
                 spb1.ScrollBackColor = Color.Yellow;
                 spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
-                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), TestControls.Properties.Resources.dotted);
                 spb1.Add(spb1i1);
                 GLButton but = new GLButton("SPB1BUT1", new Rectangle(40, 120, 40, 20), "But1");
                 but.Click += (en, eb) => { System.Diagnostics.Debug.WriteLine("Click on SP Button"); };
                 spb1.Add(but);
-                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 150, 100, 100), Properties.Resources.dotted);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 150, 100, 100), TestControls.Properties.Resources.dotted);
                 spb1.Add(spb1i2);
                 spb1.EnableHorzScrolling = false;
             }
@@ -299,11 +316,11 @@ namespace TestOpenTk
                 spb1.ScrollBarTheme.ThumbButtonColor = Color.Red;
                 spb1.SetMarginBorderWidth(new MarginType(2), 1, Color.Black, new PaddingType(2));
                 pform.Add(spb1);
-                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), TestControls.Properties.Resources.dotted);
                 spb1.Add(spb1i1);
-                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), Properties.Resources.dotted);
+                GLImage spb1i2 = new GLImage("SPB1I2", new Rectangle(10, 120, 100, 100), TestControls.Properties.Resources.dotted);
                 spb1.Add(spb1i2);
-                GLImage spb1i3 = new GLImage("SPB1I3", new Rectangle(150, 50, 100, 100), Properties.Resources.dotted2);
+                GLImage spb1i3 = new GLImage("SPB1I3", new Rectangle(150, 50, 100, 100), TestControls.Properties.Resources.dotted2);
                 spb1.Add(spb1i3);
 
             }
@@ -314,7 +331,7 @@ namespace TestOpenTk
                 GLGroupBox p3 = new GLGroupBox("GB1", "Group Box", new Rectangle(col2,200,190,190));
                 p3.TextAlign = ContentAlignment.MiddleRight;
                 p3.AutoSize = true;
-                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), Properties.Resources.dotted);
+                GLImage spb1i1 = new GLImage("SPB1I1", new Rectangle(10, 10, 100, 100), TestControls.Properties.Resources.dotted);
                 p3.Add(spb1i1);
                 pform.Add(p3);
             }
@@ -370,16 +387,16 @@ namespace TestOpenTk
                 pflow2.BorderWidth = 1;
                 pflow2.FlowPadding = new PaddingType(10, 5, 0, 5);
 
-                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), Properties.Resources.dotted2);
+                GLImage pti1 = new GLImage("PTI1", new Rectangle(0, 0, 24, 24), TestControls.Properties.Resources.dotted2);
                 pflow2.Add(pti1);
-                GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), Properties.Resources.dotted2);
+                GLImage pti2 = new GLImage("PTI2", new Rectangle(0, 0, 32, 32), TestControls.Properties.Resources.dotted2);
                 pflow2.Add(pti2);
-                GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), Properties.Resources.ImportSphere);
+                GLImage pti3 = new GLImage("PTI3", new Rectangle(0, 0, 48, 48), TestControls.Properties.Resources.ImportSphere);
                 pflow2.Add(pti3);
 
                 for (int i = 0; i < 5; i++)
                 {
-                    GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), Properties.Resources.Logo8bpp);
+                    GLImage pti4 = new GLImage("PTI00" + i, new Rectangle(0, 0, 64, 64), TestControls.Properties.Resources.Logo8bpp);
                     pflow2.Add(pti4);
                 }
 
@@ -391,32 +408,6 @@ namespace TestOpenTk
                 GLToolTip tip = new GLToolTip("ToolTip");
                 displaycontrol.Add(tip);
             }
-
-            gl3dcontroller = new Controller3D();
-            gl3dcontroller.ZoomDistance = 5000F;
-            gl3dcontroller.YHoldMovement = true;
-            gl3dcontroller.PaintObjects = Controller3dDraw;
-
-            gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
-            {
-                return (float)ms * 10.0f;
-            };
-
-            gl3dcontroller.MatrixCalc.InPerspectiveMode = true;
-
-            if ( displaycontrol != null )
-            {
-                gl3dcontroller.Start(mc , displaycontrol, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
-
-                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {
-                    //System.Diagnostics.Debug.WriteLine(ts + " Render");
-                    displaycontrol.Render(glwfc.RenderState,ts);       // we use the same matrix calc as done in controller 3d draw
-                };
-
-            }
-            else
-                gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F);     // HOOK the 3dcontroller to the form so it gets Form events
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

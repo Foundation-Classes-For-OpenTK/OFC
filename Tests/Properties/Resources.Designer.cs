@@ -163,6 +163,16 @@ namespace TestOpenTk.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap dotted1 {
+            get {
+                object obj = ResourceManager.GetObject("dotted1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap dotted2 {
             get {
                 object obj = ResourceManager.GetObject("dotted2", resourceCulture);
@@ -316,16 +326,6 @@ namespace TestOpenTk.Properties {
         internal static System.Drawing.Bitmap historicalLocation {
             get {
                 object obj = ResourceManager.GetObject("historicalLocation", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap ImportSphere {
-            get {
-                object obj = ResourceManager.GetObject("ImportSphere", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -29,7 +29,7 @@ namespace GLOFC.GL4.Controls
     /// And implements the top level control which holds all other controls as children.
     /// </summary>
 
-    public class GLControlDisplay : GLBaseControl, GLWindowControl
+    public class GLControlDisplay : GLBaseControl
     {
         #region Implement GLWindowControl interface
 
@@ -48,7 +48,7 @@ namespace GLOFC.GL4.Controls
         // Resize implemented by GLBaseControl, as is Key/Mouse events
 
         /// <summary> Paint call back. ulong is elapsed time in ms </summary>
-        public new Action<GLControlBase, ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
+        public new Action<ulong> Paint { get; set; } = null;             // override to get a paint event, ulong is elapsed time in ms
 
         /// <summary> Invalidate the window </summary>
         public override void Invalidate()   {base.Invalidate(); glwin.Invalidate(); }
@@ -95,13 +95,13 @@ namespace GLOFC.GL4.Controls
             glwin = win;
             MatrixCalc = mc;
             context = GLStatics.GetContext();
-            
+
             this.items = items;
 
             vertexes = items.NewBuffer();
 
-            vertexarray = items.NewVertexArray();   
-            vertexes.Bind(vertexarray,0, 0, vertexesperentry * sizeof(float));             // bind to 0, from 0, 2xfloats. Must bind after vertexarray is made as its bound during construction
+            vertexarray = items.NewVertexArray();
+            vertexes.Bind(vertexarray, 0, 0, vertexesperentry * sizeof(float));             // bind to 0, from 0, 2xfloats. Must bind after vertexarray is made as its bound during construction
 
             vertexarray.Attribute(0, 0, vertexesperentry, OpenTK.Graphics.OpenGL4.VertexAttribType.Float); // bind 0 on attr 0, 2 components per vertex
 
@@ -112,11 +112,11 @@ namespace GLOFC.GL4.Controls
             this.startz = startz;
             this.deltaz = deltaz;
 
-            ri = new GLRenderableItem(PrimitiveType.TriangleStrip,rc, 0, vertexarray);     // create a renderable item
+            ri = new GLRenderableItem(PrimitiveType.TriangleStrip, rc, 0, vertexarray);     // create a renderable item
             ri.CreateRectangleElementIndexByte(items.NewBuffer(), 255 / 5);             // note this limits top level controls number to 255/5.
             ri.DrawCount = 0;                               // nothing to draw at this point
 
-            shader = new GLShaderPipeline( new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderBindlessTexture(arbbufferid,true, discardiftransparent:true));
+            shader = new GLShaderPipeline(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderBindlessTexture(arbbufferid, true, discardiftransparent: true));
             items.Add(shader);
 
             textures = new Dictionary<GLBaseControl, GLTexture2D>();
@@ -124,7 +124,11 @@ namespace GLOFC.GL4.Controls
             visible = new Dictionary<GLBaseControl, bool>();
 
             texturebinds = items.NewBindlessTextureHandleBlock(arbbufferid);
+        }
 
+        /// <summary> Manual hook to GLWindowsControl </summary>
+        public void Hook()
+        { 
             glwin.MouseMove += Gc_MouseMove;
             glwin.MouseClick += Gc_MouseClick;
             glwin.MouseDoubleClick += Gc_MouseDoubleClick;
@@ -275,7 +279,7 @@ namespace GLOFC.GL4.Controls
         {
             // On control add, to display, we need to do more work to set textures up and note the bitmap size
             // textures will be updated on invalidatelayout
-            System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
+         // TBD   System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
 
             textures[child] = items.NewTexture2D(null);                // we make a texture per top level control to render with
             size[child] = child.Size;
@@ -439,10 +443,10 @@ namespace GLOFC.GL4.Controls
         }
 
         // window is painting - hooked up to GLWindowControl Paint function. ts is elapsed time in ms.
-        private void Gc_Paint(GLControlBase sender, ulong ts)
+        private void Gc_Paint(ulong ts)
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
-            Paint?.Invoke(sender,ts);
+            Paint?.Invoke(ts);
         }
 
         const int vertexesperentry = 4;

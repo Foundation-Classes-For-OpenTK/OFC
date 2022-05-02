@@ -67,19 +67,7 @@ namespace GLOFC.Controller
             win.Resize += glControl_Resize;
             win.Paint += glControl_Paint;
 
-            if (registermouseui)
-            {
-                win.MouseDown += MouseDown;
-                win.MouseUp += MouseUp;
-                win.MouseMove += MouseMove;
-                win.MouseWheel += MouseWheel;
-            }
-
-            if (registerkeyui)
-            {
-                win.KeyDown += KeyDown;
-                win.KeyUp += KeyUp;
-            }
+            Hook(glwin, registermouseui, registerkeyui);
 
             MatrixCalc.ResizeViewPort(this, win.Size);               // inform matrix calc of window size
 
