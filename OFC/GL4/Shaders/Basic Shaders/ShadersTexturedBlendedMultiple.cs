@@ -201,7 +201,7 @@ void main(void)
 
             // System.Diagnostics.Debug.WriteLine("Blend " + image1 + " to " + image2 + " Mix of" + mix);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
     }
 }

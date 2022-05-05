@@ -61,7 +61,7 @@ namespace GLOFC.GL4.Shaders.Stars
             GL.ProgramUniform1(Id, 15, TimeDeltaSurface);
             GL.ProgramUniform1(Id, 16, TimeDeltaSpots);
 
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private string Fragment()

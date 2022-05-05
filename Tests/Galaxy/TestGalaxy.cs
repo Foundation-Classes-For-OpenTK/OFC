@@ -22,7 +22,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 32;
             systemtimer.Tick += new EventHandler(SystemTick);

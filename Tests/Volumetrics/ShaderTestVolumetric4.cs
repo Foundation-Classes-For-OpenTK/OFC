@@ -45,11 +45,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -134,7 +131,7 @@ void main(void)
 
 
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines();
 
             {
 
@@ -174,13 +171,14 @@ void main(void)
                 items.Add(array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(1.0f), GLShapeObjectFactory.TexQuadCW, numberpos, rt,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(1.0f, 1.0f), GLShapeObjectFactory.TexTriStripQuad, numberpos, rt,
                                                 numberpos.Length));
+
             }
 
 
@@ -243,6 +241,11 @@ void main(void)
             };
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
+
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
+
         }
 
         int slices =10;

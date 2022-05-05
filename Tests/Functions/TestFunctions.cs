@@ -41,7 +41,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -206,7 +206,7 @@ void main(void)
             // this bit is eye candy just to show its working
 
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl = GLRenderState.Lines(1);
+            GLRenderState rl = GLRenderState.Lines();
 
             rObjects.Add(items.Shader("COSW"),
                          GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,

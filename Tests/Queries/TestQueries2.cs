@@ -48,7 +48,7 @@ namespace TestOpenTk
             InitializeComponent();
             var mode = new OpenTK.Graphics.GraphicsMode(32, 24, 8, 0, 0, 2, false);     // combined 32 max of depth/stencil
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -96,13 +96,11 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderState def = new GLRenderState() { DepthTest = true };      // set up default state for fixed values - no depth test, rely on stencil
-
             #region Coloured triangles
             if (true)
             {
-                GLRenderState rc = GLRenderState.Tri(def);
-                rc.CullFace = true;
+                GLRenderState rc = GLRenderState.Tri();
+                rc.DepthTest = false;
 
                 var q1 = new GLOperationQuery(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0, true);
                 q1.FinishAction += (t) => { System.Diagnostics.Debug.WriteLine($"What is Query for Primities Gen? {GLOperationQuery.GetQueryName(OpenTK.Graphics.OpenGL4.QueryTarget.PrimitivesGenerated, 0)}"); };
@@ -150,7 +148,7 @@ namespace TestOpenTk
 
             for ( int i = 0; i < 1; i++ )//if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(def,5);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -158,21 +156,19 @@ namespace TestOpenTk
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderState lines2 = GLRenderState.Lines(def,1);
-
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Orange, Color.Blue, Color.DarkRed, Color.DarkRed }));
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
@@ -267,16 +263,6 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("kb check");
 
         }
-
-
-        public class GLDirect : GLShaderPipeline
-        {
-            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-            {
-                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
-            }
-        }
-
 
     }
 

@@ -150,33 +150,6 @@ namespace GLOFC.GL4.ShapeFactory
             return vertices1;
         }
 
-        /// <summary>
-        /// Create a Quad (--,+-,-+,++) for tristrips
-        /// </summary>
-        /// <param name="width">Width required</param>
-        /// <param name="height">Height required</param>
-        /// <param name="rotationradians">Any rotation</param>
-        /// <param name="pos">World position</param>
-        /// <param name="scale">Any sizing for both axis</param>
-        /// <returns>Quad</returns>
-        public static Vector4[] CreateQuadTriStrip(float width, float height, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f)
-        {
-            width = width / 2.0f * scale;
-            height = height / 2.0f * scale;
-
-            Vector4[] vertices2 =
-            {
-               new Vector4(-width, 0, -height, 1.0f),      //BL
-               new Vector4(+width, 0, -height, 1.0f),      //BR
-               new Vector4(-width, 0, +height, 1.0f),      //TL
-               new Vector4(+width, 0, +height, 1.0f),      //TR
-            };
-
-            GLStaticsVector4.RotPos(ref vertices2, rotationradians, pos);
-
-            return vertices2;
-        }
-
         /// <summary> A Tex Quad (-+,++,+-,--) clockwise winding</summary>
         static public Vector2[] TexQuadCW { get; set; } = new Vector2[]
         {
@@ -195,6 +168,76 @@ namespace GLOFC.GL4.ShapeFactory
             new Vector2(0, 1.0f),
         };
 
+        /// <summary>
+        /// Create Quad (--,+-,-+,++) for tristrips for bitmaps, scaling height to bitmap height/width ratio. (--,+-,++,-+) winding anticlockwise
+        /// </summary>
+        /// <param name="width">Width required</param>
+        /// <param name="bitmapwidth">Width of bitmap</param>
+        /// <param name="bitmapheight">Height of bitmap</param>
+        /// <param name="rotationradians">Any rotation</param>
+        /// <param name="pos">World position</param>
+        /// <param name="scale">Any sizing for both axis</param>
+        /// <param name="ccw">Counter clock wise winding</param>
+        /// <returns>Quad</returns>
+        public static Vector4[] CreateQuadTriStrip(float width, int bitmapwidth, int bitmapheight, Vector3? rotationradians = null, Vector3? pos = null, 
+                        float scale = 1.0f, bool ccw = true)
+        {
+            return CreateQuadTriStrip(width, width * bitmapheight / bitmapwidth, rotationradians, pos, scale, ccw);
+        }
+
+        /// <summary>
+        /// Create a Quad (--,+-,-+,++) for tristrips. Use TexTriStripQuad for tex co-ordinates
+        /// </summary>
+        /// <param name="width">Width required</param>
+        /// <param name="height">Height required</param>
+        /// <param name="rotationradians">Any rotation</param>
+        /// <param name="pos">World position</param>
+        /// <param name="scale">Any sizing for both axis</param>
+        /// <param name="ccw">Counter clock wise winding</param>
+        /// <returns>Quad Tri Strip</returns>
+        public static Vector4[] CreateQuadTriStrip(float width, float height, Vector3? rotationradians = null, Vector3? pos = null, float scale = 1.0f, bool ccw = true)
+        {
+            width = width / 2.0f * scale;
+            height = height / 2.0f * scale;
+
+            Vector4[] vertices2;
+
+            if (ccw)
+            {
+                vertices2 = new Vector4[]
+                {
+                   new Vector4(-width, 0, -height, 1.0f),      
+                   new Vector4(+width, 0, -height, 1.0f),      
+                   new Vector4(-width, 0, +height, 1.0f),      
+                   new Vector4(+width, 0, +height, 1.0f),      
+                };
+            }
+            else
+            {
+                vertices2 = new Vector4[]
+                {
+                   new Vector4(-width, 0, +height, 1.0f),      
+                   new Vector4(+width, 0, +height, 1.0f),      
+                   new Vector4(-width, 0, -height, 1.0f),      
+                   new Vector4(+width, 0, -height, 1.0f),      
+                };
+            }
+
+            GLStaticsVector4.RotPos(ref vertices2, rotationradians, pos);
+
+            return vertices2;
+        }
+
+        /// <summary> A Tex Tri strip Quad (-+,++,--,+-) 
+        /// Pair this with CreateQuadTriStrip to make a quad surface for 3.1+</summary>
+        static public Vector2[] TexTriStripQuad { get; set; } = new Vector2[]
+        {
+            new Vector2(0, 1.0f),
+            new Vector2(1f, 1f),
+            new Vector2(0f, 0f),
+            new Vector2(1f, 0f),
+        };
+
         /// <summary> A Tex Tri strip Quad inverted (--,+-,-+,++) winding</summary>
         static public Vector2[] TexTriStripQuadInv { get; set; } = new Vector2[]
         {
@@ -203,16 +246,6 @@ namespace GLOFC.GL4.ShapeFactory
             new Vector2(0f, 1.0f),
             new Vector2(1.0f, 1.0f),
         };
-
-        /// <summary> A Tex Tri strip Quad (-+,++,--,+-) </summary>
-        static public Vector2[] TexTriStripQuad { get; set; } = new Vector2[]        
-        {
-            new Vector2(0, 1.0f),
-            new Vector2(1f, 1f),
-            new Vector2(0f, 0f),
-            new Vector2(1f, 0f),
-        };
-
 
     }
 }

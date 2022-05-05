@@ -25,13 +25,13 @@ using GLOFC.GL4.Textures;
 namespace GLOFC.GL4.Controls
 {
     /// <summary>
-    /// Control display implements a GLWindowControl interface to hook to GLWinFormControl
-    /// And implements the top level control which holds all other controls as children.
+    /// Control display is the top level windows covering the open gl surface
+    /// Holds all other controls as children. See control examples for how to instance the class
     /// </summary>
 
     public class GLControlDisplay : GLBaseControl
     {
-        #region Implement GLWindowControl interface
+        #region Implement similar interface to GLWindowControl 
 
         /// <inheritdoc cref="GLOFC.GLWindowControl.GLWindowControlScreenRectangle"/>
         public Rectangle GLWindowControlScreenRectangle { get { return glwin.GLWindowControlScreenRectangle; } }
@@ -58,7 +58,6 @@ namespace GLOFC.GL4.Controls
 
         /// <summary> Get elapsed time in ms </summary>
         public ulong ElapsedTimems { get { return glwin.ElapsedTimems; } }
-
 
         #endregion
 
@@ -126,7 +125,7 @@ namespace GLOFC.GL4.Controls
             texturebinds = items.NewBindlessTextureHandleBlock(arbbufferid);
         }
 
-        /// <summary> Manual hook to GLWindowsControl </summary>
+        /// <summary> Hook to GLWindowsControl </summary>
         public void Hook()
         { 
             glwin.MouseMove += Gc_MouseMove;
@@ -147,7 +146,7 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary>
-        /// Called by an override to GLWinFormControl Paint or other to render the controls
+        /// Render controls. Called by an override to GLWinFormControl Paint or other method.
         /// </summary>
         /// <param name="currentstate">Render state</param>
         /// <param name="ts">Time stamp from Paint</param>
@@ -197,7 +196,7 @@ namespace GLOFC.GL4.Controls
                 GL.UseProgram(0);           // final clean up
                 GL.BindProgramPipeline(0);
                 GLScissors.Disable(0);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
                 foreach (var c in ControlsIZ)
                 {
@@ -214,7 +213,7 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary>
-        /// Call during system tick to perform window animation
+        /// Performs window animation. Call during a system tick or paint callback
         /// </summary>
         /// <param name="ts">Timestamp, obtained from window control</param>
         public new void Animate(ulong ts)
@@ -279,7 +278,8 @@ namespace GLOFC.GL4.Controls
         {
             // On control add, to display, we need to do more work to set textures up and note the bitmap size
             // textures will be updated on invalidatelayout
-         // TBD   System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
+          
+            System.Diagnostics.Debug.Assert(child is GLScrollPanel == false, "GLScrollPanel must not be a child of GLForm");
 
             textures[child] = items.NewTexture2D(null);                // we make a texture per top level control to render with
             size[child] = child.Size;
@@ -395,7 +395,7 @@ namespace GLOFC.GL4.Controls
                 }
 
                 vertexes.StopReadWrite();
-                GLOFC.GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
                 if (changedtlist)     // update if anything has changed
                 {
@@ -413,13 +413,20 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary> Do not use on control display </summary>
-        public new void SuspendLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        [Obsolete("Do not use this call on displaycontrol", true)]
+        public new void SuspendLayout() { }
+
         /// <summary> Do not use on control display </summary>
-        public new void ResumeLayout() { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        [Obsolete("Do not use this call on displaycontrol", true)]
+        public new void ResumeLayout() {  }
+
         /// <summary> Do not use on control display </summary>
-        public override void Layout(ref Rectangle parentarea) { System.Diagnostics.Debug.Assert(false, "Should not happen - bug if it does"); }
+        [Obsolete("Do not use this call on displaycontrol", true)]
+        public new void Layout(ref Rectangle parentarea) {  }
+
         /// <summary> Do not use on control display </summary>
-        protected override void SetPos(int left, int top, int width, int height) { System.Diagnostics.Debug.Assert(false, "Not on control display"); }
+        [Obsolete("Do not use this call on displaycontrol", true)]
+        protected new void SetPos(int left, int top, int width, int height) {  }
 
         /// <summary> Internal interface do not use </summary>
         public void SetCursor(GLWindowControl.GLCursorType t)

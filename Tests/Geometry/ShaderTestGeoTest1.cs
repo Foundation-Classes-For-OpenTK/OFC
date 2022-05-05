@@ -36,7 +36,7 @@ namespace TestOpenTk
         public ShaderTestGeoTest1()
         {
             InitializeComponent();
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -167,7 +167,7 @@ void main(void)
             storagebuffer.AllocateFill(vertexes);
 
             items.Add(new ShaderT3(), "Shader");            // geo shader
-            GLRenderState ri = GLRenderState.Points();
+            GLRenderState ri = GLRenderState.Points(3);
             rObjects.Add(items.Shader("Shader"), "T1", new GLRenderableItem(PrimitiveType.Points, ri, vertexes.Length, null, null, 1));
 
             // list of rejected by geoshader above

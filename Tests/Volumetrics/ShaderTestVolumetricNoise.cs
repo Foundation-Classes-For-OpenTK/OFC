@@ -41,11 +41,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
 
@@ -104,7 +101,7 @@ namespace TestOpenTk
 
 
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines();
 
             float h = -1;
             if ( h != -1 )
@@ -205,17 +202,17 @@ namespace TestOpenTk
                 items.Add(array, "Nums");
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0)), "IC-2");
 
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(500.0f,500.0f), GLShapeObjectFactory.TexTriStripQuad, numberpos,
                                                 rt, numberpos.Length));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b2",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos2,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(500.0f,500.0f), GLShapeObjectFactory.TexTriStripQuad, numberpos2,
                                                 rt, numberpos.Length));
             }
 
@@ -266,6 +263,11 @@ namespace TestOpenTk
             GLComputeShaderList p = new GLComputeShaderList();      // demonstrate a render list holding a compute shader.
             p.Add(csn);
             p.Run();        // run the shader to compute into the noise3d block the noise.
+
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
+
         }
 
         private void ControllerDraw(Controller3D mc, ulong unused)

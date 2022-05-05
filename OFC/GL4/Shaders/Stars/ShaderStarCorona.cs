@@ -45,7 +45,7 @@ namespace GLOFC.GL4.Shaders.Stars
             base.Start(c);
 
             GL.ProgramUniform1(Id, 15, TimeDelta);
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private string Vertex()

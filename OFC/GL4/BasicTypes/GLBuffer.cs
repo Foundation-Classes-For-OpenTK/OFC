@@ -35,7 +35,7 @@ namespace GLOFC.GL4
         {
             GL.CreateBuffers(1, out int id);     // this actually makes the buffer, GenBuffer does not - just gets a name
             GLStatics.RegisterAllocation(typeof(GLBuffer));
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             Id = id;
             context = GLStatics.GetContext();
         }
@@ -77,10 +77,14 @@ namespace GLOFC.GL4
                     var err = GL.GetError();
                     System.Diagnostics.Debug.Assert(err == ErrorCode.NoError, $"GL NamedBuffer error {err}");        // check for any errors, always.
                     if (Length > 0)                                                    // if previous buffer had data
+                    {
                         GL.CopyNamedBufferSubData(Id, newid, (IntPtr)0, (IntPtr)0, Math.Min(Length, newlength));
+                        System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
+                    }
                 }
 
                 GL.DeleteBuffer(Id);        // delete old buffer
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
                 Id = newid;                 // swap to new
                 Length = newlength;
@@ -102,6 +106,7 @@ namespace GLOFC.GL4
             int otherend = otherpos + length;
             System.Diagnostics.Debug.Assert(Length >= ourend && other.Length >= otherend);
             GL.CopyNamedBufferSubData(Id, other.Id, (IntPtr)startpos, (IntPtr)otherpos, length);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>Zero the buffer from this position and length</summary>
@@ -110,7 +115,7 @@ namespace GLOFC.GL4
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             System.Diagnostics.Debug.Assert(Length != 0 && pos >= 0 && length <= Length && pos + length <= Length);
             GL.ClearNamedBufferSubData(Id, PixelInternalFormat.R32ui, (IntPtr)pos, length, PixelFormat.RedInteger, PixelType.UnsignedInt, (IntPtr)0);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>Zero the buffer</summary>
@@ -139,7 +144,7 @@ namespace GLOFC.GL4
                 int datasize = length * sizeof(float);
                 int posv = AlignArray(sizeof(float), datasize);
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, floats);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -165,7 +170,7 @@ namespace GLOFC.GL4
             if (vertices.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, vertices);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -207,7 +212,7 @@ namespace GLOFC.GL4
                     Array.Copy(vertices, sourceoffset, subset, 0, sourcelength);
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
                 }
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -235,7 +240,7 @@ namespace GLOFC.GL4
             if (mats.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, mats);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -257,7 +262,7 @@ namespace GLOFC.GL4
                     Array.Copy(mats, sourceoffset, subset, 0, sourcelength);    // copy seems to be the quickest solution - at least its inside the system
                     GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, subset);
                 }
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -287,7 +292,7 @@ namespace GLOFC.GL4
                 colstogo -= take;
                 colp += take * 16;
             }
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>Fill with ushort, with a definable length.</summary>
@@ -299,7 +304,7 @@ namespace GLOFC.GL4
             if (words.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)posv, datasize, words);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -319,7 +324,7 @@ namespace GLOFC.GL4
             if (data.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)pos, datasize, data);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -339,7 +344,7 @@ namespace GLOFC.GL4
             if (data.Length > 0)
             {
                 GL.NamedBufferSubData(Id, (IntPtr)pos, datasize, data);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -421,7 +426,7 @@ namespace GLOFC.GL4
 
             CurrentPos = fillpos;
             mapmode = MapMode.Write;
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -439,7 +444,7 @@ namespace GLOFC.GL4
 
             CurrentPos = fillpos;
             mapmode = MapMode.Read;
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Stop a read or write sequence, release buffer back to use </summary>
@@ -448,7 +453,7 @@ namespace GLOFC.GL4
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.UnmapNamedBuffer(Id);
             mapmode = MapMode.None;
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Skip pointer forward </summary>
@@ -458,7 +463,7 @@ namespace GLOFC.GL4
             CurrentPtr += p;
             CurrentPos += p;
             System.Diagnostics.Debug.Assert(CurrentPos <= Length);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Move currentpos onto the alignment </summary>
@@ -1012,7 +1017,7 @@ namespace GLOFC.GL4
             va.Bind();
             GL.BindVertexBuffer(bindingindex, Id, (IntPtr)start, stride);      // this buffer to binding index
             GL.VertexBindingDivisor(bindingindex, divisor);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             //System.Diagnostics.Debug.WriteLine("BUFBIND " + bindingindex + " To B" + Id + " pos " + start + " stride " + stride + " divisor " + divisor);
         }
 
@@ -1026,7 +1031,7 @@ namespace GLOFC.GL4
             //if (elementbindindex != Id) // removed for testing
             {
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, Id);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 elementbindindex = Id;
             }
         }
@@ -1041,7 +1046,7 @@ namespace GLOFC.GL4
             //if (indirectbindindex != Id) // removed for testing
             {
                 GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Id);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 indirectbindindex = Id;
             }
         }
@@ -1055,7 +1060,7 @@ namespace GLOFC.GL4
             // if (parameterbindindex != Id) // removed for testing
             {
                 GL.BindBuffer((BufferTarget)0x80ee, Id);        // fudge due to ID not being there in 3.3.2
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 parameterbindindex = Id;
             }
         }
@@ -1076,7 +1081,7 @@ namespace GLOFC.GL4
                 GL.TransformFeedbackBufferBase(xfb, bindingindex, Id);
             else
                 GL.TransformFeedbackBufferRange(xfb, bindingindex, Id, (IntPtr)offset, size);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Unbind from the default (xfb=0) or specific transform feedback buffer object </summary>
@@ -1095,7 +1100,7 @@ namespace GLOFC.GL4
             if (querybindindex != Id)
             {
                 GL.BindBuffer(BufferTarget.QueryBuffer, Id);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 querybindindex = Id;
             }
         }
@@ -1106,7 +1111,7 @@ namespace GLOFC.GL4
             if (querybindindex != -1)
             {
                 GL.BindBuffer(BufferTarget.QueryBuffer, 0); // 0 is the unbind value
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 querybindindex = -1;
             }
         }

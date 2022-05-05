@@ -120,7 +120,7 @@ namespace TestOpenTk
             rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, GLRenderState.Patches(4), modelworldbuffer, modelpos, ridisplay.DrawCount,
                                                                             modelworldbuffer, worldpos, null, ic: 0, seconddivisor: 1);
           
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             // Text renderer for the labels
 
@@ -218,7 +218,7 @@ namespace TestOpenTk
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(loc, viewportsize);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             rifind.Execute(findshader, state); // execute. Geoshader discards geometry by not outputting anything
 

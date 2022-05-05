@@ -48,7 +48,7 @@ namespace GLOFC.GL4
             Width = tex.Width;
             Height = tex.Height;
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, tex.Id, mipmaplevel);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Attach a 2D Array texture to frame buffer on colourtarget and mipmaplevel </summary>
@@ -58,7 +58,7 @@ namespace GLOFC.GL4
             Width = tex.Width;
             Height = tex.Height;
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, tex.Id, mipmaplevel);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Attach a 2D texture to frame buffer on colourtarget and mipmaplevel, to a specific layer </summary>
@@ -68,28 +68,28 @@ namespace GLOFC.GL4
             Width = tex.Width;
             Height = tex.Height;
             GL.NamedFramebufferTextureLayer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, tex.Id, mipmaplevel, layer);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Attach a 2D texture for the depth buffer, on mipmaplevel </summary>
         public void AttachDepth(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthAttachment, tex.Id, mipmaplevel);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Attach a 2D texture for the stencil buffer, on mipmaplevel </summary>
         public void AttachStensil(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.StencilAttachment, tex.Id, mipmaplevel);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Attach a 2D texture for the stencil and depth buffer, on mipmaplevel </summary>
         public void AttachDepthStensil(GLTexture2D tex, int mipmaplevel = 0)
         {
             GL.NamedFramebufferTexture(Id, FramebufferAttachment.DepthStencilAttachment, tex.Id, mipmaplevel);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary>  Attach a render buffer on colourtarget </summary>
@@ -97,28 +97,28 @@ namespace GLOFC.GL4
         {
             ColorTarget = colourtarget;
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.ColorAttachment0 + ColorTarget, RenderbufferTarget.Renderbuffer, r.Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary>  Attach a render buffer for the depth buffer</summary>
         public void AttachDepth(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthAttachment, RenderbufferTarget.Renderbuffer, r.Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary>  Attach a render buffer for the stencil buffer </summary>
         public void AttachStensil(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.StencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary>  Attach a render buffer for the depth and stencil buffer</summary>
         public void AttachDepthStensil(GLRenderBuffer r)
         {
             GL.NamedFramebufferRenderbuffer(Id, FramebufferAttachment.DepthStencilAttachment, RenderbufferTarget.Renderbuffer, r.Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
 
@@ -142,7 +142,7 @@ namespace GLOFC.GL4
             GL.Viewport(new System.Drawing.Rectangle(0, 0, Width, Height)); // set the viewport
             GL.ClearColor(colourback);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);  // clear the FB
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Unbind this framebuffer for rendering </summary>
@@ -166,7 +166,7 @@ namespace GLOFC.GL4
         {
             GL.NamedFramebufferReadBuffer(read.Id, src);
             GL.BlitNamedFramebuffer(read.Id, Id, x0, y0, x1, y1, dx0, dy0, dx1, dy1, mask, filt);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         // 
@@ -176,7 +176,7 @@ namespace GLOFC.GL4
             GL.ReadBuffer(src);
             byte[] array = new byte[bufsize];
             GL.ReadnPixels(x0, y0, x1, y1, format, type, array.Length, array);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         ///<summary> Dispose of the frame buffer </summary>

@@ -39,7 +39,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -111,7 +111,7 @@ void main(void)
 
 
             items.Add( new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines();
 
             {
 
@@ -134,11 +134,11 @@ void main(void)
 
             items.Add(new GLGalShader(), "TEX-NC");
 
-            GLRenderState rg = GLRenderState.Quads(cullface: false);
+            GLRenderState rg = GLRenderState.Tri(cullface: false);
 
             rObjects.Add(items.Shader("TEX-NC"),
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rg,
-                        GLShapeObjectFactory.CreateQuad(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rg,
+                        GLShapeObjectFactory.CreateQuadTriStrip(200.0f, 200.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("gal"), new Vector3(0, 0, 0))
                         ));
 

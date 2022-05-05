@@ -58,7 +58,7 @@ namespace GLOFC.GL4.Operations
             GLStatics.RegisterAllocation(typeof(GLOperationQuery));
 
             System.Diagnostics.Debug.Assert(id != 0);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             this.Id = id;
         }
 
@@ -69,7 +69,7 @@ namespace GLOFC.GL4.Operations
                 QueryBuffer.BindQuery();
 
             GL.BeginQueryIndexed(Target, Index, Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Dispose of the query </summary>
@@ -81,7 +81,7 @@ namespace GLOFC.GL4.Operations
                 GL.DeleteQuery(Id);
                 GLStatics.RegisterDeallocation(typeof(GLOperationQuery));
                 Id = -1;
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
             else
                 System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");
@@ -98,7 +98,7 @@ namespace GLOFC.GL4.Operations
         static public int GetQueryName(QueryTarget target, int index, GetQueryParam param = GetQueryParam.CurrentQuery) 
         {
             GL.GetQueryIndexed(target, index, param, out int res);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             return res;
         }
 
@@ -153,7 +153,7 @@ namespace GLOFC.GL4.Operations
         public int GetQuery(GetQueryObjectParam pname = GetQueryObjectParam.QueryResult)
         {
             GL.GetQueryObject(Query.Id, pname, out int res);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             return res;
         }
 
@@ -197,7 +197,7 @@ namespace GLOFC.GL4.Operations
         public void UpdateBuffer(int offset, QueryObjectParameterName pname  = QueryObjectParameterName.QueryResult)     // store in buffer at offset the result
         {
             GL.GetQueryBufferObject(Query.Id, Query.QueryBuffer.Id, pname, (IntPtr)offset);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Begin a conditional section conditioned on the result of this query 
@@ -235,7 +235,7 @@ namespace GLOFC.GL4.Operations
             this.Id = GL.GenQuery();
             System.Diagnostics.Debug.Assert(Id != 0);
             GLStatics.RegisterAllocation(typeof(GLOperationQueryTimeStamp));
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Called by render list and executes the operation </summary>
@@ -253,7 +253,7 @@ namespace GLOFC.GL4.Operations
                 GL.DeleteQuery(Id);
                 Id = -1;
                 GLStatics.RegisterDeallocation(typeof(GLOperationQueryTimeStamp));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
             else
                 System.Diagnostics.Trace.WriteLine($"OFC Warning - double disposing of ${this.GetType().FullName}");

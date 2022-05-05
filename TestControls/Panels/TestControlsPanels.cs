@@ -44,7 +44,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -122,7 +122,7 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
             };
 
-            GLRenderState rl = GLRenderState.Lines(1);
+            GLRenderState rl = GLRenderState.Lines();
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
@@ -169,14 +169,14 @@ namespace TestOpenTk
                 items.Add(new GLFixedColorShaderWorld(Color.FromArgb(150, Color.Green)), "FCS1");
                 items.Add(new GLFixedColorShaderWorld(Color.FromArgb(80, Color.Red)), "FCS2");
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("FCS1"),
-                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(1000, pos: new Vector3(4000, 500, 0))));
+                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(1000, 1000, pos: new Vector3(4000, 500, 0))));
                 rObjects.Add(items.Shader("FCS2"),
-                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(1000, pos: new Vector3(4000, 1000, 0))));
+                    GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(1000, 1000, pos: new Vector3(4000, 1000, 0))));
             }
 
             MatrixCalcSpecial mc = new MatrixCalcSpecial();

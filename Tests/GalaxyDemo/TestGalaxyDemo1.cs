@@ -45,11 +45,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -64,19 +61,6 @@ namespace TestOpenTk
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
-        }
-
-        private void ControllerDraw(Controller3D mc, ulong unused)
-        {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
-
-            if (galaxy != null)
-                galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
-
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-
-
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
         }
 
         public class GLFixedShader : GLShaderPipeline
@@ -143,12 +127,13 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow),"LINEYELLOW") ;
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
                 rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
             Bitmap[] numbitmaps = new Bitmap[116];
 
+            if ( true)
             {
                 Font fnt = new Font("Arial", 20);
                 for (int i = 0; i < numbitmaps.Length; i++)
@@ -172,12 +157,12 @@ namespace TestOpenTk
                 GLShaderPipeline numshaderx = new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
                 items.Add(numshaderx, "IC-X");
 
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));
 
                 rObjects.Add(numshaderx, "xnum",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberposx,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(500.0f,500.0f), GLShapeObjectFactory.TexTriStripQuad, numberposx,
                                                 rt, numberposx.Length));
 
                 Matrix4[] numberposz = new Matrix4[(back - front) / 1000 + 1];
@@ -192,8 +177,8 @@ namespace TestOpenTk
                 items.Add(numshaderz, "IC-Z");
 
                 rObjects.Add(numshaderz, "ynum",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberposz,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(500.0f,500.0f), GLShapeObjectFactory.TexTriStripQuad, numberposz,
                                                 rt, numberposz.Length));
             }
 
@@ -202,7 +187,7 @@ namespace TestOpenTk
             float h = 50;
             if (h != -1)
             {
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
 
                 int dist = 1000;
                 //20?
@@ -221,35 +206,36 @@ namespace TestOpenTk
 
             }
 
+            if ( true )
             {
-                items.Add( new GLTexture2D(numbitmaps[45], SizedInternalFormat.Rgba8), "solmarker");
+                items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "solmarker");
                 items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, 1000, 0))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, -1000, 0))
                              ));
                 items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "sag");
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, 2000, 25899))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, -2000, 25899))
                              ));
                 items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8),"bp" );
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("bp"), new Vector3(-1111f, 0, 65269))
                              ));
             }
@@ -425,13 +411,9 @@ namespace TestOpenTk
                     items.Add(new GalaxyStarDots(),"SD");
                     GLRenderState rp = GLRenderState.Points(1);
                     rp.DepthTest = false;
-                    rObjects.Add(items.Shader("SD"),
-                                 GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, buf, points));
+                    rObjects.Add(items.Shader("SD"), GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, buf, points));
                     System.Diagnostics.Debug.WriteLine("Stars " + points);
                 }
-
-
-
 
 
             }
@@ -443,15 +425,29 @@ namespace TestOpenTk
                 int dist = 20000;
                 var p = GLPointsFactory.RandomStars4(100, -dist, dist, 25899 - dist, 25899 + dist, 2000, -2000);
 
-                GLRenderState rps = GLRenderState.PointSprites();
+                GLRenderState rps = GLRenderState.PointsByProgram();
                 rps.DepthTest = false;
 
-                rObjects.Add(items.Shader("PS1"),
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
+                rObjects.Add(items.Shader("PS1"),GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
 
             }
 
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
+        }
 
+        private void ControllerDraw(Controller3D mc, ulong unused)
+        {
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+
+            if (galaxy != null)
+                galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+
+
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
         }
 
         private void SystemTick(object sender, EventArgs e)

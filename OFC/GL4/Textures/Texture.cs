@@ -76,7 +76,7 @@ namespace GLOFC.GL4.Textures
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindTextureUnit(bindingpoint, Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Bind a single image level to specific bindingpoint for the purpose of reading and writing it from shaders
@@ -92,7 +92,7 @@ namespace GLOFC.GL4.Textures
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindImageTexture(bindingpoint, Id, level, layered, layer, tx, sioverride != null ? sioverride.Value : InternalFormat);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>Bind Image to bindingpoint using level 0</summary>
@@ -100,7 +100,7 @@ namespace GLOFC.GL4.Textures
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.BindImageTexture(bindingpoint, Id, 0, true, 0, TextureAccess.ReadWrite, InternalFormat);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private long arbid = -1;
@@ -256,7 +256,7 @@ namespace GLOFC.GL4.Textures
 
             GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);      // back to off for safety
             bmp.UnlockBits(bmpdata);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             if (ownbmp || KeepBitmapList)           // if we own the bmp, or we want to keep records..
             {
@@ -328,7 +328,7 @@ namespace GLOFC.GL4.Textures
             Marshal.Copy(a, 0, pnt, a.Length);
             GL.ClearTexImage(Id, level, PixelFormat.Rgba, PixelType.Float, pnt);
             Marshal.FreeHGlobal(pnt);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -345,7 +345,7 @@ namespace GLOFC.GL4.Textures
             System.Diagnostics.Debug.Assert(this is GLTexture1D);
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage1D(Id, miplevel, xoffset, x,y, width);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace GLOFC.GL4.Textures
             System.Diagnostics.Debug.Assert(this is GLTexture1DArray || this is GLTexture2D);
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage2D(Id, miplevel, xoffset, yoffset, x, y, width, height);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -384,7 +384,7 @@ namespace GLOFC.GL4.Textures
             System.Diagnostics.Debug.Assert(this is GLTexture2DArray || this is GLTexture3D);
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");
             GL.CopyTextureSubImage3D(Id, miplevel, xoffset, yoffset, zoffset, x, y, width, height);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace GLOFC.GL4.Textures
             ImageTarget it = this is GLTexture2D ? ImageTarget.Texture2D : this is GLTexture2DArray ? ImageTarget.Texture2DArray : this is GLTexture1D ? ImageTarget.Texture1D : ImageTarget.Texture3D;
             GL.CopyImageSubData(srcid, srcTarget, srcmiplevel, sx, sy, sz,
                                     Id, it, dmiplevel, dx, dy, dz, width, height, 1);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> 
@@ -549,7 +549,7 @@ namespace GLOFC.GL4.Textures
             Marshal.Copy(a, 0, pnt, a.Length);
             GL.ClearTexSubImage(Id, level, x, y, z, width, height, depth, PixelFormat.Rgba, PixelType.Float, pnt);
             Marshal.FreeHGlobal(pnt);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>
@@ -577,7 +577,7 @@ namespace GLOFC.GL4.Textures
 
             IntPtr unmanagedPointer = Marshal.AllocHGlobal(bufsize); // get an unmanaged buffer
             GL.GetTextureImage(Id, level, pxformatback, elementsizeT == 4 ? PixelType.Float : PixelType.UnsignedByte, bufsize, unmanagedPointer);  // fill
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             if (elementsizeT == 4)
             {

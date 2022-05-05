@@ -41,27 +41,22 @@ namespace GLOFC
 
         /// <summary>
         /// Call to check that the GL system is okay. GL stores errors in GetError() and you must explicitly check.
+        /// Normally wrapped in a Debug.Assert as System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         /// </summary>
-        [System.Diagnostics.Conditional("DEBUG")]
-        public static void Check([CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
+        /// <param name="errmsg">Error message to report, if returns false</param>
+        /// <returns>true if okay, false if error</returns>
+        public static bool CheckGL(out string errmsg)
         {
-            string errmsg = "";
-
             OpenTK.Graphics.OpenGL4.ErrorCode ec;
+            errmsg = "";
 
             while ((ec = OpenTK.Graphics.OpenGL4.GL.GetError()) != OpenTK.Graphics.OpenGL4.ErrorCode.NoError)     // call until no error
             {
-                if (errmsg.IsEmpty())
-                    errmsg += sourceFilePath + ":" + sourceLineNumber + Environment.NewLine;
-
-                errmsg += "Error : " + ec.ToString() + Environment.NewLine;
+                errmsg = errmsg.AppendPrePad($"Error {ec.ToString()}" + Environment.NewLine);
                 System.Diagnostics.Debug.WriteLine("GL error " + ec.ToString());
             }
 
-            if (errmsg.HasChars())
-            {
-                System.Diagnostics.Debug.Assert(false, errmsg);
-            }
+            return !errmsg.HasChars();
         }
 
         // Allocation tracking, for debug mode, to check we are disposing correctly
@@ -183,14 +178,6 @@ namespace GLOFC
             GL.ColorMask(red, green, blue, alpha);
         }
 
-        /// <summary>
-        /// Return list of extensions
-        /// </summary>
-        public static string[] Extensions()
-        {
-            return GL.GetString(StringName.Extensions).Split(' ');
-        }
-
         /// <summary> Return open GL vendor. OpenGL: The format of the VENDOR string is implementation-dependent.</summary>
         public static string GetVendor()
         {
@@ -252,11 +239,16 @@ namespace GLOFC
         }
 
         /// <summary>
-        /// Has GL got this extension?
+        /// Return list of extensions. Note core removes GlString(Extensions) so has to be done iteratively
         /// </summary>
-        public static bool HasExtensions(string s)
+        public static string[] Extensions()
         {
-            return Array.IndexOf(Extensions(), s) >= 0;
+            int noext = GL.GetInteger(GetPName.NumExtensions);
+            string[] ext = new string[noext];
+            for (int i = 0; i < noext; i++)
+                ext[i] = GL.GetString(StringNameIndexed.Extensions, i);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            return ext;
         }
 
         // public delegate void DebugProc(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam);
@@ -264,22 +256,15 @@ namespace GLOFC
         /// <summary>
         /// Enable GL debug proc and vector to this function
         /// </summary>
-        public static bool EnableDebug(DebugProc callback)
+        public static void EnableDebug(DebugProc callback)
         {
-            if (HasExtensions("GL_KHR_debug"))
-            {
-                GL.Enable(EnableCap.DebugOutput);
-                GL.Enable(EnableCap.DebugOutputSynchronous);
+            GL.Enable(EnableCap.DebugOutput);
+            GL.Enable(EnableCap.DebugOutputSynchronous);
 
-                GL.DebugMessageCallback(callback, IntPtr.Zero);
-                GL.DebugMessageControl(DebugSourceControl.DontCare, DebugTypeControl.DontCare, DebugSeverityControl.DontCare, 0, new int[0], true);
+            GL.DebugMessageCallback(callback, IntPtr.Zero);
+            GL.DebugMessageControl(DebugSourceControl.DontCare, DebugTypeControl.DontCare, DebugSeverityControl.DontCare, 0, new int[0], true);
 
-                GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeMarker, 0, DebugSeverity.DebugSeverityNotification, -1, "Debug output enabled");
-
-                return true;
-            }
-            else
-                return false;
+            GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeMarker, 0, DebugSeverity.DebugSeverityNotification, -1, "Debug output enabled");
         }
     }
 }

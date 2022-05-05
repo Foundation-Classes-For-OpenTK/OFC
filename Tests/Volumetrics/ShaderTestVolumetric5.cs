@@ -44,11 +44,8 @@ namespace TestOpenTk
         public ShaderTestVolumetric5()
         {
             InitializeComponent();
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -101,7 +98,7 @@ namespace TestOpenTk
             gl3dcontroller.Start(glwfc,new Vector3(0, 0, 0), new Vector3(135f, 0, 0), 0.01F);
 
             items.Add( new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rl1 = GLRenderState.Lines();
 
             float h = 0;
             {
@@ -141,8 +138,7 @@ namespace TestOpenTk
                 };
 
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-                rObjects.Add(items.Shader("LINEYELLOW"),
-                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, lines2));
+                rObjects.Add(items.Shader("LINEYELLOW"),GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, lines2));
             }
 
             {
@@ -169,12 +165,12 @@ namespace TestOpenTk
 
                 // investigate why its wrapping when we asked for it TexQUAD 1 which should interpolate over surface..
 
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("Nums"));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(500.0f), GLShapeObjectFactory.TexQuadCW, numberpos, rt,
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(500.0f, 250.0f), GLShapeObjectFactory.TexTriStripQuad, numberpos, rt,
                                                 numberpos.Length));
             }
 
@@ -214,6 +210,9 @@ namespace TestOpenTk
 
 
 
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
 
 
 

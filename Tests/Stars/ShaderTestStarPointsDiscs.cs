@@ -43,7 +43,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -144,7 +144,7 @@ void main(void)
 
             {
                 items.Add( new GLColorShaderWorld(), "COS");
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COS"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
                             GLShapeObjectFactory.CreateBox(400, 200, 40, new Vector3(0, 0, 0), new Vector3(0, 0, 0)),
@@ -164,14 +164,14 @@ void main(void)
                     items.Add(new GLTexture2D(bmp, SizedInternalFormat.Rgba8), "-200,-100");
                 }
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
-                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(20.0f, 10.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("200,100"), new Vector3(200, 0, 100))));
 
-                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                rObjects.Add(items.Shader("TEX"), GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(20.0f, 10.0f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("-200,-100"), new Vector3(-200, 0, -100))));
             }
 
@@ -181,6 +181,7 @@ void main(void)
                 Vector3[] stars = GLPointsFactory.RandomStars(10000, -200, 200, -100, 100, 20, -20);
 
                 GLRenderState rp = GLRenderState.PointsByProgram();
+                //GLRenderState rp = GLRenderState.PointsByProgramCompatibility(); // for 1.0, produces correct square pixels. 
 
                 rObjects.Add(items.Shader("STARS"), "Stars", GLRenderableItem.CreateVector3Packed2(items, PrimitiveType.Points, rp,
                                             stars, new Vector3(50000, 50000, 50000), 16));

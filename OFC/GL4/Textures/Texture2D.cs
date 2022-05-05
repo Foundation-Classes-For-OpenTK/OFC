@@ -75,7 +75,7 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisample : TextureTarget.Texture2D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture2D));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 if (MultiSample > 0)
@@ -89,7 +89,7 @@ namespace GLOFC.GL4.Textures
 
                 SetMinMagFilter();
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
             }
         }
 
@@ -118,14 +118,14 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(TextureTarget.Texture2D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture2D));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 GL.BindTexture(TextureTarget.Texture2D, Id);
 
                 GL.TexImage2D(TextureTarget.Texture2D, 0, pixelinternalformat, width, height, 0, pixelformat, pixeltype, (IntPtr)0);     // we don't actually load data in, so its a null ptr.
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
             }
         }
 
@@ -171,7 +171,7 @@ namespace GLOFC.GL4.Textures
             if (bmpmipmaplevels == 1 && wantedmipmaplevels > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             // float[] tex = GetTextureImageAsFloats(end:100);
         }
@@ -191,7 +191,7 @@ namespace GLOFC.GL4.Textures
         {
             GL.CopyImageSubData(rb.Id, ImageTarget.Renderbuffer, 0, sx, sy, 0,
                                     Id, ImageTarget.Texture2D, dmiplevel, dx, dy, 0, width, height, 1);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
     }
 }

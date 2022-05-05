@@ -54,14 +54,14 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(TextureTarget.Texture1DArray, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture2DArray));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 GL.TextureStorage2D(Id, wantedmipmaplevels, InternalFormat, Width, Height);
 
                 SetMinMagFilter();
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
             }
         }
     }

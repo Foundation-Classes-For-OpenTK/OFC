@@ -65,7 +65,7 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(MultiSample>0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture3D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture3D));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 if (MultiSample > 0)
@@ -79,7 +79,7 @@ namespace GLOFC.GL4.Textures
 
                 SetMinMagFilter();
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
             }
         }
     }

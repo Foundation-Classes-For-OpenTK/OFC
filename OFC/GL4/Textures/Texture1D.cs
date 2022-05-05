@@ -59,7 +59,7 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(TextureTarget.Texture1D, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture1D));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 GL.TextureStorage1D( Id, levels,InternalFormat, Width);

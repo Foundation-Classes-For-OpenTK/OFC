@@ -133,7 +133,7 @@ void main(void)
         {
             base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary>

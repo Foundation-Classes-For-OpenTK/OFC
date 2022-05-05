@@ -57,7 +57,7 @@ namespace GLOFC.GL4.Operations
         public override void Execute(GLMatrixCalc c)
         {
             TransformFeedback.Bind();  // bind this transformfeedback to target transform feedback
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             // bind these buffer at offset/set and binding index starting at 0
             for (int i = 0; i < VaryingBuffers.Length; i++)
@@ -66,10 +66,10 @@ namespace GLOFC.GL4.Operations
                 VaryingBuffers[i].BindTransformFeedback(i, TransformFeedback.Id, Offsets == null ? 0 : Offsets[i], Sizes == null ? 0 : Sizes[i]);
             }
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
 
             GLTransformFeedback.Begin(PrimitiveType);       // and start
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr3), glasserterr3);
         }
     }
 
@@ -99,9 +99,9 @@ namespace GLOFC.GL4.Operations
                 //System.Diagnostics.Debug.WriteLine($"TF {TransformFeedbackOperation.Id} bp {i}");
                 GLBuffer.UnbindTransformFeedback(i, TransformFeedbackOperation.Id);
             }
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             GLTransformFeedback.UnBind();
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
         }
     }
 

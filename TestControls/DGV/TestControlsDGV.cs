@@ -94,7 +94,7 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
             };
 
-            GLRenderState rl = GLRenderState.Lines(1);
+            GLRenderState rl = GLRenderState.Lines();
 
             {
                 items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");

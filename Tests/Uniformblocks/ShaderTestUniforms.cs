@@ -38,7 +38,7 @@ namespace TestOpenTk
         public ShaderTestUniforms()
         {
             InitializeComponent();
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer, null ,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -117,7 +117,7 @@ void main(void)
             {
                 Matrix4 a = ModelTranslation;
                 GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-                GLOFC.GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
         }
 
@@ -142,7 +142,7 @@ void main(void)
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 items.Add(new GLColorShaderWorld(), "COSW");
 

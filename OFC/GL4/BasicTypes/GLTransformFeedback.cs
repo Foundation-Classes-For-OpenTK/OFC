@@ -32,7 +32,7 @@ namespace GLOFC.GL4
         {
             Id = GL.GenTransformFeedback();
             GLStatics.RegisterAllocation(typeof(GLTransformFeedback));
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Bind this object to the transform feeback binding point
@@ -56,7 +56,7 @@ namespace GLOFC.GL4
             {
                 GL.DeleteTransformFeedback(Id);
                 GLStatics.RegisterDeallocation(typeof(GLTransformFeedback));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = -1;
             }
             else
@@ -69,22 +69,26 @@ namespace GLOFC.GL4
         public static void Begin(TransformFeedbackPrimitiveType t)
         {
             GL.BeginTransformFeedback(t);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> End feedback </summary>
         public static void End()
         {
             GL.EndTransformFeedback();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
         /// <summary> Pause feedback </summary>
         public static void Pause()
         {
             GL.PauseTransformFeedback();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
         /// <summary> Resume from pause </summary>
         public static void Resume()
         {
             GL.ResumeTransformFeedback();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
     }

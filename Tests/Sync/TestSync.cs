@@ -48,7 +48,7 @@ namespace TestOpenTk
             InitializeComponent();
             var mode = new OpenTK.Graphics.GraphicsMode(32, 24, 8, 0, 0, 2, false);     // combined 32 max of depth/stencil
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -86,14 +86,13 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderState def = new GLRenderState() { DepthTest = true };      // set up default state for fixed values - no depth test, rely on stencil
-
             sync = new GLOperationFenceSync();
 
             #region Coloured triangles
             if (true)
             {
-                GLRenderState rc = GLRenderState.Tri(def);
+                GLRenderState rc = GLRenderState.Tri();
+                rc.DepthTest = false;
                 rc.CullFace = true;
 
 
@@ -109,7 +108,8 @@ namespace TestOpenTk
 
             for ( int i = 0; i < 1000; i++ )
             {
-                GLRenderState lines = GLRenderState.Lines(def,5);
+                GLRenderState lines = GLRenderState.Lines();
+                lines.DepthTest = false;
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -117,21 +117,19 @@ namespace TestOpenTk
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderState lines2 = GLRenderState.Lines(def,1);
-
                 rObjects.Add(items.Shader("COSW"),
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Orange, Color.Blue, Color.DarkRed, Color.DarkRed }));
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(-100, 10, 100), new Vector3(10, 0, 0), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
 
                 rObjects.Add(items.Shader("COSW"), 
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 10, -100), new Vector3(100, 10, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Yellow, Color.Orange, Color.Yellow, Color.Orange })
                                    );
@@ -166,7 +164,7 @@ namespace TestOpenTk
 
             rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             //GLStatics.Flush();
 
@@ -233,16 +231,6 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("kb check");
 
         }
-
-
-        public class GLDirect : GLShaderPipeline
-        {
-            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-            {
-                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
-            }
-        }
-
 
     }
 

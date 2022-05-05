@@ -225,7 +225,7 @@ void main(void)
             base.Start(c);
             Matrix4 t = Transform.Transform;
             GL.ProgramUniformMatrix4(Id, 23, false, ref t);
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private string Code()
@@ -312,7 +312,7 @@ void main(void)
         {
             Matrix4 a = ModelTranslation;
             GL.ProgramUniformMatrix4(Id, 22, false, ref a);
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private string Code()       // with transform, object needs to pass in uniform 22 the transform

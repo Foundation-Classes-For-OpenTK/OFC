@@ -53,7 +53,7 @@ namespace GLOFC.GL4.Textures
             }
 
             StopReadWrite();
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
     }
 }

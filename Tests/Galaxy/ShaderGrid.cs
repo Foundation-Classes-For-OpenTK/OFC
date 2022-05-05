@@ -78,7 +78,7 @@ namespace TestOpenTk
             GL.ProgramUniform1(this.Id, 10, lines);
             GL.ProgramUniform1(this.Id, 11, gridwidth);
             GL.ProgramUniform3(this.Id, 12, ref start);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         string vcode()

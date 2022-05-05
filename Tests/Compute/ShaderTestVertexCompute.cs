@@ -41,7 +41,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -134,7 +134,7 @@ void main(void)
             // this bit is eye candy just to show its working
 
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl = GLRenderState.Lines(1);
+            GLRenderState rl = GLRenderState.Lines();
 
             rObjects.Add(items.Shader("COSW"),
                          GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
@@ -175,7 +175,7 @@ void main(void)
 
             Vector4[] data = GLSphereObjectFactory.CreateSphereFromTriangles(0, 1.0f);
 
-            GLRenderState rp = GLRenderState.Points();
+            GLRenderState rp = GLRenderState.PointsByProgram();
             rObjects.Add(items.Shader("N1"), GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, data));
 
             for (double ang = -Math.PI / 2; ang <= Math.PI / 2 + 0.1; ang += 0.1)

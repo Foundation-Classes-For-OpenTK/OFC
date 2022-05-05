@@ -58,35 +58,27 @@ namespace GLOFC.GL4
 
         /// <summary> Render setup for primitive Quads, with optional control over various parameters of the primitive
         /// Compatibility profile only </summary>
-        static public GLRenderState Quads(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
+        static public GLRenderState QuadCompatibility(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
         { return new GLRenderState() { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
 
-        /// <summary> Render setup for primitive Quads from a previous RS, with optional control over various parameters of the primitive 
+        /// <summary> Render setup for primitive Points, with optional control over various parameters of the primitive. 
         /// Compatibility profile only </summary>
-        static public GLRenderState Quads(GLRenderState prev, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
-                                                                PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
-        { return new GLRenderState(prev) { FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode, PolygonSmooth = polysmooth }; }
-
-
-        /// <summary> Render setup for primitive Points, with optional control over various parameters of the primitive </summary>
-        static public GLRenderState Points(float pointsize = 1, bool smooth = true)
+        static public GLRenderState PointsCompatibility(float pointsize, bool smooth)
         { return new GLRenderState() { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
 
-        /// <summary> Render setup for primitive Points from a previous RS, with optional control over various parameters of the primitive </summary>
-        static public GLRenderState Points(GLRenderState prev, float pointsize = 1, bool smooth = true)
-        { return new GLRenderState(prev) { PointSize = pointsize, PointSprite = false, PointSmooth = smooth }; }
-
-        /// <summary> Render setup for primitive Points by Program, with optional control over various parameters of the primitive </summary>
-        static public GLRenderState PointsByProgram()
-        { return new GLRenderState() { PointSize = 0 }; }
-
-        /// <summary> Render setup for primitive Point sprites in compatibility profile </summary>
-        static public GLRenderState PointSpritesCompatibility()
+        /// <summary> Render setup for primitive points by program.
+        /// Compatibility profile only </summary>
+        static public GLRenderState PointsByProgramCompatibility()
         { return new GLRenderState() { PointSize = 0, PointSprite = true }; }
 
-        /// <summary> Render setup for primitive Point sprites in Core profile</summary>
-        static public GLRenderState PointSprites()
+        /// <summary> Render setup for primitive Points, with explicit point size in Core Profile 
+        /// Core, having removed point smooth, means the points are square. Shader needs to compensate</summary>
+        static public GLRenderState Points(float pointsize = 1)
+        { return new GLRenderState() { PointSize = pointsize }; }
+
+        /// <summary> Render setup for primitive points by program in Core profile</summary>
+        static public GLRenderState PointsByProgram()
         { return new GLRenderState() { PointSize = 0}; }
 
         /// <summary> Render setup for primitive Patches, with optional control over various parameters of the primitive </summary>
@@ -97,23 +89,18 @@ namespace GLOFC.GL4
         static public GLRenderState Patches(GLRenderState prev, int patchsize = 4, FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true, PolygonMode polygonmode = PolygonMode.Fill)
         { return new GLRenderState(prev) { PatchSize = patchsize, FrontFace = frontface, CullFace = cullface, PolygonModeFrontAndBack = polygonmode }; }
 
+        /// <summary> Render setup for primitive Lines 
+        /// Core profile - line width is always 1 
+        /// Compatibility profile if you want line width to be the default (1) and you have not changed the line width anywhere else</summary>
+        static public GLRenderState Lines()
+        { return new GLRenderState() { }; }
+
         /// <summary> Render setup for primitive Lines, with optional control over various parameters of the primitive 
         /// Compatibility profile only </summary>
-        static public GLRenderState Lines(float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
+        static public GLRenderState LinesCompatibility(float linewidth, bool smooth = true)       
         { return new GLRenderState() { LineWidth = linewidth, LineSmooth = smooth }; }
 
-        /// <summary> Render setup for primitive Lines from a previous RS, with optional control over various parameters of the primitive
-        /// Compatibility profile only </summary>
-        static public GLRenderState Lines(GLRenderState prev, float linewidth = 1, bool smooth = true)        // vertex 0/1 line, 2/3 line
-        { return new GLRenderState(prev) { LineWidth = linewidth, LineSmooth = smooth }; }
-
-        /// <summary> Render setup for primitive Lines
-        /// Core profile </summary>
-        static public GLRenderState Lines()     // do not set linewidth or smooth
-        { return new GLRenderState(); }
-
-
-        // creators
+           // creators
 
         /// <summary> Create a default render state </summary>
         public GLRenderState()                                          // fully default 
@@ -176,21 +163,21 @@ namespace GLOFC.GL4
                 Discard = true,
             };
 
-            if ( profile == GLWindowControl.GLProfile.Core) //core disables
+            if ( profile == GLWindowControl.GLProfile.Core) //core disables these so don't set by default.
             {
                 startstate.PointSprite = null;      // point sprite control - its always set to enabled
-                startstate.PointSmooth = null;      // not available
-                startstate.LineSmooth = null;
-                startstate.PolygonSmooth = null;
+                startstate.PointSmooth = null;      // not supported. This means points with large point size are square in core
+                startstate.LineSmooth = null;       // not supported
+                startstate.PolygonSmooth = null;    // not supported
             }
 
-            curstate.ApplyState(startstate);        // from curstate, apply state
+            curstate.ApplyState(startstate,"Start");        // from curstate, apply state
 
             return startstate;
         }
 
         /// <summary> This sets the GL state variables to the render state this object requires. Called by RenderableItem</summary>
-        public void ApplyState(GLRenderState newstate)      // apply deltas to GL
+        public void ApplyState(GLRenderState newstate, string debuginfo)      // apply deltas to GL
         {
             // general
 
@@ -306,7 +293,7 @@ namespace GLOFC.GL4
                 GL.PatchParameter(PatchParameterInt.PatchVertices, PatchSize.Value);
             }
 
-            // points
+            // points and points by program
 
             if (newstate.PointSize.HasValue && PointSize != newstate.PointSize)
             {
@@ -328,12 +315,14 @@ namespace GLOFC.GL4
             {
                 PointSprite = newstate.PointSprite;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PointSprite, PointSprite.Value);
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr3), glasserterr3+debuginfo);
             }
 
             if (newstate.PointSmooth.HasValue && PointSmooth != newstate.PointSmooth)   // Compatibility only
             {
                 PointSmooth = newstate.PointSmooth;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PointSmooth, PointSmooth.Value);
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2+debuginfo);
             }
 
             // lines
@@ -341,13 +330,15 @@ namespace GLOFC.GL4
             if (newstate.LineWidth.HasValue && LineWidth != newstate.LineWidth)         // CORE only allows 1.0
             {
                 LineWidth = newstate.LineWidth;
-                GL.LineWidth(LineWidth.Value);
+                GL.LineWidth(LineWidth.Value);      // seems not to except on nvidia even if 4.6 is selected
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2+debuginfo);
             }
 
             if (newstate.LineSmooth.HasValue && LineSmooth != newstate.LineSmooth)      // Compatibility only
             {
                 LineSmooth = newstate.LineSmooth;
                 GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.LineSmooth, LineSmooth.Value);
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2+debuginfo);
             }
 
             // triangles
@@ -355,14 +346,14 @@ namespace GLOFC.GL4
             if (newstate.PolygonModeFrontAndBack.HasValue && PolygonModeFrontAndBack != newstate.PolygonModeFrontAndBack)
             {
                 PolygonModeFrontAndBack = newstate.PolygonModeFrontAndBack;
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonModeFrontAndBack.Value);
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonModeFrontAndBack.Value);       // Core depreciates MaterialFace.Front/Back
             }
 
-            //if (newstate.PolygonSmooth.HasValue && PolygonSmooth != newstate.PolygonSmooth)
-            //{
-            //    PolygonSmooth = newstate.PolygonSmooth;
-            //    GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PolygonSmooth, PolygonSmooth.Value);
-            //}
+            if (newstate.PolygonSmooth.HasValue && PolygonSmooth != newstate.PolygonSmooth)
+            {
+                PolygonSmooth = newstate.PolygonSmooth;
+                GLStatics.SetEnable(OpenTK.Graphics.OpenGL.EnableCap.PolygonSmooth, PolygonSmooth.Value);
+            }
 
             if (newstate.CullFace.HasValue && CullFace != newstate.CullFace)
             {
@@ -377,13 +368,14 @@ namespace GLOFC.GL4
                 GL.FrontFace(FrontFace.Value);
             }
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr+debuginfo);
         }
 
         // these are only set for particular primitive types - so the default construction is don't care.
 
         /// <summary> Patch size, number of</summary>
         public int? PatchSize { get; set; } = null;                 // patches (Geo shaders)
-        /// <summary> Point size </summary>
+        /// <summary> Point size. 0 means by program (gl_PointSize in shader) or explicit point size </summary>
         public float? PointSize { get; set; } = null;               // points
         /// <summary> Point sprite on/off. Compatibility Profile only </summary>
         public bool? PointSprite { get; set; } = null;              // points
@@ -395,7 +387,7 @@ namespace GLOFC.GL4
         public bool? LineSmooth { get; set; } = null;               // lines
         /// <summary> Poly Mode - Point, Line or Fill</summary>
         public PolygonMode? PolygonModeFrontAndBack { get; set; } = null;        // triangles/quads
-        /// <summary> Polygon Smooth on/off. Compatibility Profile only</summary>
+        /// <summary> Polygon Smooth on/off. Compatibility Profile only. A smooth point is round</summary>
         public bool? PolygonSmooth { get; set; } = null;            // triangles/quads, not normally set
         /// <summary> Cull Face on/off</summary>
         public bool? CullFace { get; set; } = null;                 // triangles/quads

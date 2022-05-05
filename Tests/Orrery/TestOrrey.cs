@@ -32,7 +32,7 @@ using System.Windows.Forms;
 
 namespace TestOpenTk
 {
-    public partial class TestOrreryImport : Form
+    public partial class TestOrrery : Form
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
 
@@ -40,7 +40,7 @@ namespace TestOpenTk
 
         Orrery orrery;
 
-        public TestOrreryImport()
+        public TestOrrery()
         {
             InitializeComponent();
 

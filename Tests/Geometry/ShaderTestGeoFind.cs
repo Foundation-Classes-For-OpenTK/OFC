@@ -40,7 +40,7 @@ namespace TestOpenTk
         public ShaderTestGeoFind()
         {
             InitializeComponent();
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -71,7 +71,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 items.Add(new GLColorShaderWorld(),"COSW" );
 

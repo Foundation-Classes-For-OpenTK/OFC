@@ -57,19 +57,11 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer, null, 4, 6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
             systemtimer.Start();
-        }
-
-        class TextShader : GLShaderPipeline
-        {
-            public TextShader(int texunitspergroup)
-            {
-                AddVertexFragment(new GLPLVertexShaderMatrixQuadTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
-            }
         }
 
         protected override void OnLoad(EventArgs e)
@@ -97,7 +89,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -111,11 +103,11 @@ namespace TestOpenTk
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(100, -0, -100), new Vector3(0, 0, 10), 21),
                                                         new Color4[] { Color.Red, Color.Red, Color.DarkRed, Color.DarkRed }));
             }
- 
+
             #endregion
 
             #region Coloured triangles
-            if (true)
+            if (false)
             {
                 GLRenderState rc = GLRenderState.Tri();
                 rc.CullFace = false;
@@ -131,24 +123,30 @@ namespace TestOpenTk
 
             #endregion
 
+            // sunshader needs vertex of globe
+
             var sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
             items.Add(sunvertex);
             var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
             items.Add(sunshader);
-            var shapebuf = new GLBuffer();
-            items.Add(shapebuf);
+            var starshapebuf = new GLBuffer();
+            items.Add(starshapebuf);
             var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
-            shapebuf.AllocateFill(shape);
+            starshapebuf.AllocateFill(shape);
+
+            int texunitspergroup = 16;      // opengl minimum texture units per frag shader
+            // text shader uses a precomputed vertex shader (no vertex needed) expecting four draw points
+            var textshader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
+            items.Add(textshader);
+            
+
 
             GLStorageBlock block = new GLStorageBlock(20);
             findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16), null, null, null);
 
-            int texunitspergroup = 16;      // opengl minimum texture units per frag shader
-
-            //var textshader = new GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
-            var textshader = new TextShader(texunitspergroup);
-            items.Add(textshader);
             Font fnt = new Font("MS sans serif", 16f);
+
+            // DEMO Indirect command buffer manually set up
 
             if ( true )
             {
@@ -159,34 +157,43 @@ namespace TestOpenTk
 
                 int SectorSize = 10;
 
+                if (true)
                 {
+                    // fill buffer with Vector4, store indirects into 0
+
                     Vector3 pos = new Vector3(-20, 0, -15);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
+                    {
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                    }
                     dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
 
+                    // fill buffer with Matrix4, store indirects into 1
+
                     Matrix4[] matrix = new Matrix4[array.Length];
-                    for( int i = 0; i < array.Length; i++ )
+                    for (int i = 0; i < array.Length; i++)
                     {
                         int imgpos = textarray.DepthIndex;
                         textarray.DrawText("A" + i, fnt, Color.White, Color.Blue, -1);
                         var mat = GLPLVertexShaderMatrixQuadTexture.CreateMatrix(new Vector3(array[i].X, array[i].Y + 0.6f, array[i].Z),
                                         new Vector3(1, 0, 0.2f),
                                         new Vector3(-90F.Radians(), 0, 0),
-                                        imagepos:imgpos);
+                                        imagepos: imgpos);
                         matrix[i] = mat;
                     }
 
                     dataindirectbuffer.Vertex.AlignMat4();          // instancing counts in mat4 sizes (mat4 0 @0, mat4 1 @ 64 etc) so align to it
-                    dataindirectbuffer.Fill(matrix, 0, matrix.Length, 1, 4, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(matrix, 0, matrix.Length, 1,    // write to indirect 1
+                                            4, 0, array.Length, -1);        // command is to draw 4 vertex, base index, instance repeat of array length
                 }
 
                 if (true)
                 {
-                    Vector3 pos = new Vector3(-20, 0, 0);
-                    Vector4[] array = new Vector4[5];
+                    // fill in more vector4 into indirect 0
+                    Vector3 pos = new Vector3(-30, 0, 0);
+                    Vector4[] array = new Vector4[20];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
@@ -195,12 +202,15 @@ namespace TestOpenTk
 
                 if (true)
                 {
+                    // add in some more into indirect 0
                     Vector3 pos = new Vector3(-20, 0, 15);
                     Vector4[] array = new Vector4[10];
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
+
+                    // and 1
 
                     Matrix4[] matrix = new Matrix4[array.Length];
                     for (int i = 0; i < array.Length; i++)
@@ -219,61 +229,68 @@ namespace TestOpenTk
                 }
 
 
-                int[] indirectints0 = dataindirectbuffer.Indirects[0].ReadInts(0, 12);
-                int[] indirectints1 = dataindirectbuffer.Indirects[1].ReadInts(0, 4);
-                float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
+                if ( true )
+                { 
+                    // draw from indirect 0
 
-                if (true)
-                {
                     GLRenderState rt = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                     rt.DepthTest = true;
                     rt.DepthClamp = true;
 
                     var renderer = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt,
-                                                                                shapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
+                                                                                starshapebuf, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count 
                                                                                 dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
                                                                                 null, 0, 1);        // no ic, second divisor 1
                     renderer.IndirectBuffer = dataindirectbuffer.Indirects[0];
                     renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-                    renderer.DrawCount = 3;
+                    renderer.DrawCount = dataindirectbuffer.Indirects[0].Length / 16; // Set no of para sets filled
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
+                    // sunshader requires triangles vertexes
                     rObjects.Add(sunshader, "sunshader", renderer);
                 }
 
                 if (true)
                 {
+                    // draw from buffer 1 using GLPLVertexShaderMatrixTriStripTexture the text labels
 
-                    var rc = GLRenderState.Quads();
-                    rc.CullFace = true;
-                    rc.DepthTest = true;
+                    var rc = GLRenderState.Tri();
+                    rc.CullFace = true;     // check we are facing the correct way
+                    rc.DepthTest = false;
                     rc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
-                    var renderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.Quads, rc, 
+                    var renderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.TriangleStrip, rc,
                                                                         dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
-                                                                         new GLRenderDataTexture(textarray,0), 
-                                                                         0,1);     //no ic, and matrix divide so 1 matrix per vertex set
+                                                                         new GLRenderDataTexture(textarray, 0),
+                                                                         0, 1);     //no ic, and matrix divide so 1 matrix per vertex set
                     renderer.IndirectBuffer = dataindirectbuffer.Indirects[1];
                     renderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
-                    renderer.DrawCount = 2;
+                    renderer.DrawCount = dataindirectbuffer.Indirects[1].Length / 16; // Set no of para sets filled
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
                     rObjects.Add(textshader, "textshader", renderer);
                 }
+
+                //int[] indirectints0 = dataindirectbuffer.Indirects[0].ReadInts(0, 12);        // debug
+                //int[] indirectints1 = dataindirectbuffer.Indirects[1].ReadInts(0, 4);
+                //float[] worldpos = dataindirectbuffer.Vertex.ReadFloats(0, 3*2*4);
+
             }
 
+            // DEMO Object with Labels
+
             if (true)
-            {
+            { 
                 GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
 
-                var textrc = GLRenderState.Quads();
+                var textrc = GLRenderState.Tri();       // text render is triangles are going to cull primitives which are deleted
                 textrc.DepthTest = true;
-                textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
+                textrc.ClipDistanceEnable = 1;  
 
                 sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 50, shapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 3);
+                var ris = sl.Create(texunitspergroup, 50, 50, starshapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 3);
                 rObjects.Add(sunshader, "SLsunshade", ris.Item1);
                 rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
@@ -337,13 +354,13 @@ namespace TestOpenTk
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
 
-                var textrc = GLRenderState.Quads();
+                var textrc = GLRenderState.Tri();
                 textrc.DepthTest = true;
                 textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
                 slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup,
                                                             50, 10,
-                                                            sunshader, shapebuf, shape.Length, starrc, PrimitiveType.Triangles,
+                                                            sunshader, starshapebuf, shape.Length, starrc, PrimitiveType.Triangles,
                                                             textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8,
                                                             3);
                 items.Add(slset);

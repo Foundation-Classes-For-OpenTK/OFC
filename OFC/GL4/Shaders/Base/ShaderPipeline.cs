@@ -140,7 +140,7 @@ namespace GLOFC.GL4.Shaders
             shaders[shadertype] = pipelineshader;
             pipelineshader.References++;
             GL.UseProgramStages(pipelineid, convmask[shadertype], pipelineshader.Id);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Get the binary of the shader.  Must have linked with wantbinary</summary>
@@ -149,7 +149,7 @@ namespace GLOFC.GL4.Shaders
             GL.GetProgram(pipelineid, (GetProgramParameterName)0x8741, out int len);
             byte[] array = new byte[len];
             GL.GetProgramBinary(pipelineid, len, out int binlen, out binformat, array);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             return array;
         }
 
@@ -157,7 +157,7 @@ namespace GLOFC.GL4.Shaders
         public void Load(byte[] bin, BinaryFormat binformat)    // load program direct from bin
         {
             GL.ProgramBinary(pipelineid, binformat, bin, bin.Length);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Start the shader. Bind the program and call Start on each sumcomponent.  Then invoke StartAction</summary>

@@ -69,7 +69,7 @@ namespace TestOpenTk
 
                 if (map.displaycontrol["Galmenu"]!= null && (ctrl == null || !map.displaycontrol["Galmenu"].IsThisOrChildOf(ctrl)))       
                 {
-                    ((GLForm)map.displaycontrol["Galmenu"]).Close();
+                   ((GLForm)map.displaycontrol["Galmenu"]).Close();
                 }
             };
 
@@ -309,16 +309,12 @@ namespace TestOpenTk
             map.displaycontrol.Add(pform);
         }
 
-        public void UpdateCoords(GLOFC.GLMatrixCalc c, float zoom)
+        public void UpdateCoords(GLOFC.Controller.Controller3D pc)
         {
-            status.Text = c.LookAt.X.ToStringInvariant("N1") + " ," + c.LookAt.Y.ToStringInvariant("N1") + " ,"
-                         + c.LookAt.Z.ToStringInvariant("N1") + " Dist " + c.EyeDistance.ToStringInvariant("N1") + " Eye " +
-                         c.EyePosition.X.ToStringInvariant("N1") + " ," + c.EyePosition.Y.ToStringInvariant("N1") + " ," + c.EyePosition.Z.ToStringInvariant("N1") + " z " + zoom;
-        }
-
-        public void DebugStatusText(string s)
-        {
-            status.Text = s;
+            status.Text = pc.PosCamera.LookAt.X.ToStringInvariant("N1") + " ," + pc.PosCamera.LookAt.Y.ToStringInvariant("N1") + " ,"
+                         + pc.PosCamera.LookAt.Z.ToStringInvariant("N1") + " Dist " + pc.PosCamera.EyeDistance.ToStringInvariant("N1") + " Eye " +
+                         pc.PosCamera.EyePosition.X.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Y.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Z.ToStringInvariant("N1");
+            //+ " ! " + pc.PosCamera.CameraDirection + " R " + pc.PosCamera.CameraRotation;
         }
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it

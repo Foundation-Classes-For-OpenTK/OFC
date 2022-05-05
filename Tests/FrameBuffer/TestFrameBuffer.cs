@@ -48,11 +48,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -91,7 +87,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(5);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -99,7 +95,7 @@ namespace TestOpenTk
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderState lines2 = GLRenderState.Lines(1);
+                GLRenderState lines2 = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
@@ -108,7 +104,7 @@ namespace TestOpenTk
             }
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -206,7 +202,7 @@ namespace TestOpenTk
                 var ri = GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip, rts, p, rdt);
                 ri.Execute(items.Shader("fbds1"), renderState, mc);
 
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 var l1 = GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21),
@@ -238,11 +234,11 @@ namespace TestOpenTk
                                             new GLRenderDataTranslationRotation(new Vector3(10, 3, 20)));
                 ri2.Execute(items.Shader("COSOT"), renderState, mc);
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
                 
-                var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
-                        new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))  );
+                var ri3 = GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                        GLShapeObjectFactory.CreateQuadTriStrip(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
+                        new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 2,0))  );
 
                 ri3.Execute(items.Shader("TEXOT"), renderState, mc);
 
@@ -278,25 +274,25 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
-                float width = 20F;
-                float height = 20F / ctex.Width * ctex.Height;
+                float width = 30F;
+                float height = 30F / ctex.Width * ctex.Height;
 
                 // TexQuadInv corrects for the inverted FB texture
                 rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCCW,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                        GLShapeObjectFactory.CreateQuadTriStrip(width, height, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                         new GLRenderDataTranslationRotationTexture(ctex, new Vector3(-15, 0, 10))
                         ));
             }
 
             if (true)
             {
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
                 rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                        GLShapeObjectFactory.CreateQuadTriStrip(5f, 5f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(10, 0, 0))
                         ));
             }
@@ -305,6 +301,9 @@ namespace TestOpenTk
             dataoutbuffer = items.NewStorageBlock(5);
             dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back
 
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
         private void ShaderTest_Closed(object sender, EventArgs e)
@@ -374,16 +373,6 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("kb check");
 
         }
-
-
-        public class GLDirect : GLShaderPipeline
-        {
-            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-            {
-                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
-            }
-        }
-
 
     }
 

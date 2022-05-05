@@ -48,7 +48,7 @@ namespace GLOFC.GL4.Shaders.Tesselation
         {
             base.Start(c);
             GL.ProgramUniform1(Id, 26, Phase);
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private string TES()

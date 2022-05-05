@@ -119,7 +119,7 @@ namespace GLOFC.GL4.Buffers
                 objectcount -= maxtextper2darray;
             }
 
-            TextRenderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.Quads, textrc,
+            TextRenderer = GLRenderableItem.CreateMatrix4(items, PrimitiveType.TriangleStrip, textrc,
                                                                 dataindirectbuffer.Vertex, 0, 0, //attach buffer with matrices, no draw count
                                                                 new GLRenderDataTexture(this.textures,0),        // binding 0 assign to our texture 2d
                                                                 0, 1);     //no ic, and matrix divide so 1 matrix per vertex set
@@ -153,7 +153,7 @@ namespace GLOFC.GL4.Buffers
                                 StringFormat textformat, float backscale, Vector3 textoffset, List<BlockRef> blocklist)
         {
             var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(LabelSize, text, font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, forecolor, backcolor, backscale, false, textformat);
-            var mats = GLPLVertexShaderMatrixQuadTexture.CreateMatrices(worldpositions, textoffset, size, rotationradians, rotatetoviewer, rotateelevation,0,0,0,true);
+            var mats = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(worldpositions, textoffset, size, rotationradians, rotatetoviewer, rotateelevation,0,0,0,true);
             int v = Add(worldpositions, mats, bmps, blocklist);
             GLOFC.Utils.BitMapHelpers.Dispose(bmps);
             return v;

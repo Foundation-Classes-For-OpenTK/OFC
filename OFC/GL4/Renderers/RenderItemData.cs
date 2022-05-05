@@ -120,7 +120,7 @@ namespace GLOFC.GL4
                 GL.ProgramUniformMatrix4(sid, LookAtUniform, false, ref tx2);
             }
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private Vector3 pos;
@@ -156,7 +156,7 @@ namespace GLOFC.GL4
         {
             base.Bind(ri, shader, c);
             Texture.Bind(TextureBind);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private IGLTexture Texture;                      // set to bind texture.
@@ -188,7 +188,7 @@ namespace GLOFC.GL4
         {
             base.Bind(ri, shader, c);
             GL.ProgramUniform4(shader.GetShader(ShaderType.FragmentShader).Id,ColorBind, col.ToVector4());
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private System.Drawing.Color col;
@@ -246,7 +246,7 @@ namespace GLOFC.GL4
         public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)
         {
             GL.ProgramUniform4(shader.GetShader(ShaderType.FragmentShader).Id, ColorBind, col.ToVector4());
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         private System.Drawing.Color col;

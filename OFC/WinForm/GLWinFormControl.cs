@@ -144,7 +144,7 @@ namespace GLOFC.WinForm
 
             glControl.MakeCurrent();        // make sure GLControl is current context selected, in case operating with multiples
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             glControl.Dock = DockStyle.Fill;
             glControl.BackColor = System.Drawing.Color.Black;
@@ -342,7 +342,7 @@ namespace GLOFC.WinForm
             if (RenderState == null)
             {
                 RenderState = GL4.GLRenderState.Start(Profile);
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             }
 
             // set up initial conditions

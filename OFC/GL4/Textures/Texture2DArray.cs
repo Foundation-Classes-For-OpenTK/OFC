@@ -87,7 +87,7 @@ namespace GLOFC.GL4.Textures
 
                 GL.CreateTextures(MultiSample > 0 ? TextureTarget.Texture2DMultisampleArray : TextureTarget.Texture2DArray, 1, out int id);
                 GLStatics.RegisterAllocation(typeof(GLTexture2DArray));
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
                 Id = id;
 
                 if (MultiSample > 0)
@@ -101,7 +101,7 @@ namespace GLOFC.GL4.Textures
 
                 SetMinMagFilter();
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
             }
         }
 
@@ -136,7 +136,7 @@ namespace GLOFC.GL4.Textures
             if (bmpmipmaplevels == 1 && wantedmipmaplevels > 1)     // single level mipmaps with genmipmap levels > 1 get auto gen
                 GL.GenerateTextureMipmap(Id);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
     }
 }

@@ -118,13 +118,15 @@ namespace GLOFC.GL4
         public void Bind(GLRenderState currentstate, IGLProgramShader shader, GLMatrixCalc matrixcalc)      
         {
             if (currentstate != null && RenderState != null)    // if either null, it means the last render state applied is the same as our render state, so no need to apply
-                currentstate.ApplyState(RenderState);           // else go to this state
+                currentstate.ApplyState(RenderState,shader.Name);           // else go to this state
 
             VertexArray?.Bind();                                // give the VA a chance to bind to GL
             RenderData?.Bind(this,shader,matrixcalc);           // optional render data supplied by the user to bind
             ElementBuffer?.BindElement();                       // if we have an element buffer, give it a chance to bind
             IndirectBuffer?.BindIndirect();                     // if we have an indirect buffer, give it a chance to bind
             ParameterBuffer?.BindParameter();                   // if we have a parameter buffer, give it a chance to bind
+
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2+shader.Name);
         }
 
         /// <summary>Render - submit a draw to GL with the render data provided.  Parameters select the draw type submitted.
@@ -140,11 +142,11 @@ namespace GLOFC.GL4
             }
             else if ( ElementBuffer != null )                            // we are picking the GL call, dependent on what is bound to the render
             {
-                System.Diagnostics.Trace.Assert(GL.GetInteger(GetPName.ElementArrayBufferBinding) == ElementBuffer.Id);
+                System.Diagnostics.Debug.Assert(GL.GetInteger(GetPName.ElementArrayBufferBinding) == ElementBuffer.Id);
 
                 if (IndirectBuffer != null)                         // IE or ICE indirect element index
                 {
-                    System.Diagnostics.Trace.Assert(GL.GetInteger(GetPName.DrawIndirectBufferBinding) == IndirectBuffer.Id);
+                    System.Diagnostics.Debug.Assert(GL.GetInteger(GetPName.DrawIndirectBufferBinding) == IndirectBuffer.Id);
 
                     if (ParameterBuffer != null)                    // 4.6 feature ICE
                     {
@@ -172,7 +174,7 @@ namespace GLOFC.GL4
             {
                 if (IndirectBuffer != null)                         // IA or ICA indirect buffer
                 {
-                    System.Diagnostics.Trace.Assert(GL.GetInteger(GetPName.DrawIndirectBufferBinding) == IndirectBuffer.Id);
+                    System.Diagnostics.Debug.Assert(GL.GetInteger(GetPName.DrawIndirectBufferBinding) == IndirectBuffer.Id);
 
                     if (ParameterBuffer != null)                    // 4.6 feature ICA
                     {

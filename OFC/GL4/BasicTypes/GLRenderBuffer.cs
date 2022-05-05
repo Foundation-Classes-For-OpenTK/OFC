@@ -46,7 +46,7 @@ namespace GLOFC.GL4
             Height = height;
             GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, Id);
             GL.NamedRenderbufferStorage(Id, storage, Width, Height);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Allocate a multisample buffer of width, height, and samples depth, and bind to target Renderbuffer </summary>
@@ -57,7 +57,7 @@ namespace GLOFC.GL4
             Samples = samples;
             GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, Id);
             GL.NamedRenderbufferStorageMultisample(Id,Samples, storage, Width, Height);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Unbind the buffer from the render buffer target </summary>
@@ -70,7 +70,7 @@ namespace GLOFC.GL4
         public void CopyFrom(int srcid, ImageTarget srctype, int srcmiplevel, int sx, int sy, int sz,       int dx, int dy, int width, int height)
         {
             GL.CopyImageSubData(srcid, srctype, srcmiplevel, sx, sy, sz, Id, ImageTarget.Renderbuffer, 0, dx, dy, 0, width, height, 1);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Dispose of the buffer </summary>

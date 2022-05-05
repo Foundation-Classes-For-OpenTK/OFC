@@ -40,7 +40,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -77,7 +77,7 @@ namespace TestOpenTk
 
             {
                 items.Add(new GLColorShaderWorld(), "COS");
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COS"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
@@ -122,11 +122,11 @@ namespace TestOpenTk
 
                 items.Add( new GLShaderStarCorona(), "CORONA");
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
-                rObjects.Add(items.Shader("CORONA"), GLRenderableItem.CreateVector4(items, PrimitiveType.Quads,
+                rObjects.Add(items.Shader("CORONA"), GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleStrip,
                                         rq,
-                                        GLShapeObjectFactory.CreateQuad(1f),
+                                        GLShapeObjectFactory.CreateQuadTriStrip(1f,1f),
                                         new GLRenderDataTranslationRotation(new Vector3(20, 0, 0), new Vector3(0, 0, 0), 20f, calclookat:true)));
             }
 
@@ -148,7 +148,7 @@ namespace TestOpenTk
                 rObjects.Add(shader, ri);
             }
 
-             GLOFC.GLStatics.Check();
+             System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
             GL.Enable(EnableCap.DepthClamp);
         }

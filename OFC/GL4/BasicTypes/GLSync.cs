@@ -45,7 +45,7 @@ namespace GLOFC.GL4
         {
             int[] array = new int[20];
             GL.GetSync(Id, paraname, array.Length, out int len, array);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             int[] res = new int[len];
             Array.Copy(array, res, len);
             return res;

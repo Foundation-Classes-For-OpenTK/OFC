@@ -84,18 +84,24 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
-            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc);       // hook form to the window - its the master, it takes its size from mc.ScreenCoordMax
+            System.Diagnostics.Debug.Assert(false, "Need to be retested after GL4 shift");
+
+            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f, 0.00001f);       // hook form to the window - its the master
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-            displaycontrol.Name = "displaycontrol";
             displaycontrol.Font = new Font("Arial", 12);
+            displaycontrol.Paint += (ts) => {
+                displaycontrol.Animate(glwfc.ElapsedTimems);
+                GLStatics.ClearDepthBuffer();         // clear the depth buffer, so we are on top of all previous renders.
+                displaycontrol.Render(glwfc.RenderState, ts);
+            };
+            displaycontrol.SetFocus();
 
             gl3dcontroller = new Controller3Dd();
-            gl3dcontroller.PaintObjects = ControllerDraw;
-            gl3dcontroller.ZoomDistance = 20e6*1000*mscaling;       // zoom 1 is X km
+            gl3dcontroller.ZoomDistance = 20e6 * 1000 * mscaling;       // zoom 1 is X km
             gl3dcontroller.PosCamera.ZoomMin = 0.001f;
             gl3dcontroller.PosCamera.ZoomMax = 300f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.08f;
-            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0f), 0.025F, registermouseui: false, registerkeyui: true);
+            gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
                 double eyedistr = Math.Pow(eyedist, 1.0);
@@ -104,25 +110,23 @@ namespace TestOpenTk
                 return (float)ms * v;
             };
 
-            for( int i = 1; i <= 10; i++ )
+            // start hooks the glwfc paint function up, first, so it gets to go first
+            // No ui events from glwfc.
+            gl3dcontroller.Start(matrixcalc, glwfc, new Vector3d(0, 0, 0), new Vector3d(135f, 0, 0), 0.025F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
+
+            displaycontrol.MouseClick += MouseClickOnMap;       // grab mouse UI
+
+            // begin
+
+            for ( int i = 1; i <= 10; i++ )
             {
                 int v = i * i;
                 double f = (gl3dcontroller.PosCamera.ZoomMax - gl3dcontroller.PosCamera.ZoomMin) * v / 100.0 + gl3dcontroller.PosCamera.ZoomMin;
                 System.Diagnostics.Debug.WriteLine($"{i} {v} {f}");
             }
 
-            displaycontrol.Paint += (o, ts) =>        // subscribing after Controller start means we paint over the scene
-            {
-                // MCUB set up by Controller3DDraw which did the work first
-                //     System.Diagnostics.Debug.WriteLine("Controls Draw");
-                displaycontrol.Render(glwfc.RenderState, ts);
-            };
-
-            displaycontrol.MouseClick += MouseClickOnMap;       // grab mouse UI
-            displaycontrol.MouseUp += MouseUpOnMap;
-            displaycontrol.MouseDown += MouseDownOnMap;
-            displaycontrol.MouseMove += MouseMoveOnMap;
-            displaycontrol.MouseWheel += MouseWheelOnMap;
 
             double startspeed = 60 * 60 * 6; // in sec
             GLImage minus = new GLImage("timeplus1y", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
@@ -232,7 +236,7 @@ namespace TestOpenTk
                 var shader = new GLColorShaderWorld();
                 items.Add(shader);
 
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
                 lines.DepthTest = false;
 
                 int gridsize = (int)(worldsize * mscaling);
@@ -365,7 +369,7 @@ namespace TestOpenTk
                 if (o.kepler != null)
                 {
                     Vector4[] orbit = o.kepler.Orbit(currentjd, 0.1, mscaling);
-                    GLRenderState lines = GLRenderState.Lines(1);
+                    GLRenderState lines = GLRenderState.Lines();
                     lines.DepthTest = false;
 
                     o.orbitpos.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
@@ -373,12 +377,13 @@ namespace TestOpenTk
                     var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.orbitpos);
                     rBodyObjects.Add(orbitlineshader, riol);
 
-                    GLRenderState quad = GLRenderState.Quads(cullface: false);
-                    quad.DepthTest = false;
-                    var s = 100000e3f * mscaling;
-                    var quadpos = new Vector4[] { new Vector4(-s, 0, -s, 1), new Vector4(-s, 0, +s, 1), new Vector4(+s, 0, +s, 1), new Vector4(+s, 0, -s, 1) };
-                    var plane = GLRenderableItem.CreateVector4(items, PrimitiveType.Quads, quad, quadpos, o.bodypos);
-                    rBodyObjects.Add(bodyplaneshader, plane);
+// TBD TURN BACK ON
+                    //GLRenderState quad = GLRenderState.Quads(cullface: false);
+                    //quad.DepthTest = false;
+                    //var s = 100000e3f * mscaling;
+                    //var quadpos = new Vector4[] { new Vector4(-s, 0, -s, 1), new Vector4(-s, 0, +s, 1), new Vector4(+s, 0, +s, 1), new Vector4(+s, 0, -s, 1) };
+                    //var plane = GLRenderableItem.CreateVector4(items, PrimitiveType.Quads, quad, quadpos, o.bodypos);
+                    //rBodyObjects.Add(bodyplaneshader, plane);
                 }
             }
 
@@ -506,22 +511,7 @@ namespace TestOpenTk
 
         #region UI
 
-        private void MouseDownOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseDown(s, e);
-        }
-
-        private void MouseUpOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseUp(s, e);
-        }
-
-        private void MouseMoveOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseMove(s, e);
-        }
-
-        private void MouseClickOnMap(Object s, GLMouseEventArgs e)
+        private void MouseClickOnMap(GLBaseControl s, GLMouseEventArgs e)
         {
             int distmovedsq = gl3dcontroller.MouseMovedSq(e);        //3dcontroller is monitoring mouse movements
             if (distmovedsq < 4)
@@ -554,11 +544,6 @@ namespace TestOpenTk
                     }
                 }
             }
-        }
-
-        private void MouseWheelOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseWheel(s, e);
         }
 
         private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)

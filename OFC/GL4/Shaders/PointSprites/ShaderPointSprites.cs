@@ -82,13 +82,15 @@ namespace GLOFC.GL4.Shaders.Sprites
         void main(void)
         {
             if ( calc_size < 2 )
-                color = vs_color * 0.5;
+            {
+                discard;
+            }
             else
             {
                 vec4 texcol =texture(texin, gl_PointCoord);
                 float l = texcol.x*texcol.x+texcol.y*texcol.y+texcol.z*texcol.z;
 
-                if ( l< 0.05)
+                if ( l< 0.05 || texcol.w <= 0.1)
                     discard;
                 else
                     color = texcol * vs_color;

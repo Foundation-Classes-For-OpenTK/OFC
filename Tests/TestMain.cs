@@ -51,11 +51,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -77,6 +74,14 @@ namespace TestOpenTk
             };
 
             {
+                System.Diagnostics.Debug.WriteLine($"Version  {GLStatics.GetVersion()}");
+                System.Diagnostics.Debug.WriteLine($"Version  {GLStatics.GetVersionString()}");
+                System.Diagnostics.Debug.WriteLine($"Vendor  {GLStatics.GetVendor()}");
+                System.Diagnostics.Debug.WriteLine($"Shading lang {GLStatics.GetShaderLanguageVersion()}");
+                System.Diagnostics.Debug.WriteLine($"Shading lang {GLStatics.GetShadingLanguageVersionString()}");
+                var ext = GLStatics.Extensions();
+                System.Diagnostics.Debug.WriteLine($"Extension {string.Join(",", ext)}");
+
                 System.Diagnostics.Debug.WriteLine($"UBS={GL4Statics.GetMaxUniformBlockSize()}");
                 GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
                 System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
@@ -108,12 +113,8 @@ namespace TestOpenTk
 
 
             ulong ctrl = 0xffffffff;
-            ctrl = (1<<13) | (1<<12) | (1<<11);
-            ctrl |= 1;
-            ctrl |= 0xffffffff;
-          //  ctrl = (1 << 25);
-
-
+            //ctrl = (1<<13) | (1<<12) | (1<<11);
+            //ctrl = 1<<23 | 1;
 
             #region coloured lines
 
@@ -121,7 +122,7 @@ namespace TestOpenTk
             {
                 rObjects.Add(new GLOperationClearDepthBuffer());     // demo the operation via the shader interface
 
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"), new GLOperationClearDepthBuffer());     // demo a RI operation inside a particular shader
 
@@ -139,7 +140,7 @@ namespace TestOpenTk
             }
             if( (ctrl & (1<<1)) != 0)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -273,7 +274,7 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("TEXOT"),
                         GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Triangles, rt,
                                 GLCubeObjectFactory.CreateSolidCubeFromTriangles(1f), GLCubeObjectFactory.CreateCubeTexTriangles(),
-                                new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 30, 0))
+                                new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 20, 0))
                                 ));
 
 
@@ -289,37 +290,38 @@ namespace TestOpenTk
                             new GLRenderDataTranslationRotationTexture(items.Tex("wooden"), new Vector3(-2, 2, -4))
                             ));
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("TEXOT"),
-                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 3, -6))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                        GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(-2, 4, -8))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(1.0f, 1.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 5, -10))
                             ));
 
-                GLRenderState rqnc = GLRenderState.Quads(cullface: false);
+                GLRenderState rqnc = GLRenderState.Tri(cullface: false);
 
                 rObjects.Add(items.Shader("TEXOT"), "EDDFlat",
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                    GLShapeObjectFactory.CreateQuad(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rqnc,
+                    GLShapeObjectFactory.CreateQuadTriStrip(2.0f, items.Tex("logo8bpp").Width, items.Tex("logo8bpp").Height, new Vector3(-0, 0, 0)), 
+                        GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("logo8bpp"), new Vector3(0, 0, 0))
                             ));
 
                 rObjects.Add(items.Shader("TEXOT"),
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rqnc,
-                            GLShapeObjectFactory.CreateQuad(1.5f, new Vector3( -90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rqnc,
+                            GLShapeObjectFactory.CreateQuadTriStrip(1.5f, 1.5f, new Vector3(-90f.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("smile"), new Vector3(0, 0, -2))
                            ));
 
@@ -353,7 +355,7 @@ namespace TestOpenTk
                             new GLRenderDataTranslationRotationTexture(items.Tex("golden"), new Vector3(0, 0, -12))
                             ));
 
-                var cyl = GLCylinderObjectFactory.CreateCylinderFromTriangles(3, 20, 20, 2, caps:true);
+                var cyl = GLCylinderObjectFactory.CreateCylinderFromTriangles(3, 20, 20, 2, caps: true);
 
                 GLRenderState rtri = GLRenderState.Tri();
                 rObjects.Add(items.Shader("TEXOTNoRot"), "cylinder1",
@@ -363,7 +365,7 @@ namespace TestOpenTk
 
                 // for this one, demo indexes and draw with CW to show it works.  Note we are not using primitive restart
 
-                var cyl2 = GLCylinderObjectFactory.CreateCylinderFromTrianglesIndexes(3, 10, 20, 2, caps: true, ccw:false);
+                var cyl2 = GLCylinderObjectFactory.CreateCylinderFromTrianglesIndexes(3, 10, 20, 2, caps: true, ccw: false);
 
                 rObjectscw.Add(items.Shader("TEXOTNoRot"), "cylinder2",
                         GLRenderableItem.CreateVector4Vector2Indexed(items, PrimitiveType.Triangles, rtri, cyl2,
@@ -376,16 +378,16 @@ namespace TestOpenTk
             #endregion
 
             #region 2dArrays
-            if( (ctrl & (1<<7)) != 0)
+            if ( (ctrl & (1<<7)) != 0)
             {
                 items.Add( new GLTexturedShader2DBlendWorld(), "TEX2DA");
                 items.Add(new GLTexture2DArray(new Bitmap[] { Properties.Resources.mipmap2, Properties.Resources.mipmap3 }, SizedInternalFormat.Rgba8, 9), "2DArray2");
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("TEX2DA"), "2DA",
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(2.0f), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(2.0f,2.0f), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("2DArray2"), new Vector3(-8, 0, 2))
                         ));
 
@@ -393,8 +395,8 @@ namespace TestOpenTk
                 items.Add( new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted, Properties.Resources.dotted2 }, SizedInternalFormat.Rgba8), "2DArray2-1");
 
                 rObjects.Add(items.Shader("TEX2DA"), "2DA-1",
-                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                                    GLShapeObjectFactory.CreateQuad(2.0f), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                                    GLShapeObjectFactory.CreateQuadTriStrip(2.0f,2.0f), GLShapeObjectFactory.TexTriStripQuad,
                                 new GLRenderDataTranslationRotationTexture(items.Tex("2DArray2-1"), new Vector3(-8, 0, -2))
                         ));
             }
@@ -428,16 +430,16 @@ namespace TestOpenTk
                 pos2[2] = Matrix4.CreateRotationZ(-60f.Radians());
                 pos2[2] *= Matrix4.CreateTranslation(new Vector3(20, 10, 10));
 
-                items.Add( new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture()),"IC-2");
+                items.Add(new GLShaderPipeline(new GLPLVertexShaderModelMatrixTexture(), new GLPLFragmentShaderTexture()), "IC-2");
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
                 rq.CullFace = false;
 
                 GLRenderDataTexture rdt = new GLRenderDataTexture(items.Tex("wooden"));
 
                 rObjects.Add(items.Shader("IC-2"), "1-b",
-                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                                                GLShapeObjectFactory.CreateQuad(2.0f), GLShapeObjectFactory.TexQuadCW, pos2, 
+                                        GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                                                GLShapeObjectFactory.CreateQuadTriStrip(2.0f, 2.0f), GLShapeObjectFactory.TexTriStripQuad, pos2,
                                                 rdt, pos2.Length));
             }
             #endregion
@@ -622,7 +624,7 @@ namespace TestOpenTk
 
                 GLBindlessTextureHandleBlock bl = new GLBindlessTextureHandleBlock(11,btextures);
 
-                GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
                 float X = -10, Z = -14;
                 float X2 = -9, Z2 = -15;
@@ -760,7 +762,7 @@ namespace TestOpenTk
                 var texarray = new GLTexture2DArray(new Bitmap[] { Properties.Resources.dotted2, Properties.Resources.planetaryNebula, Properties.Resources.wooden }, SizedInternalFormat.Rgba8);
                 items.Add(texarray);
 
-                var shader = new GLShaderPipeline(new GLPLVertexShaderMatrixQuadTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
+                var shader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexed(0));
                 items.Add(shader);
 
                 shader.StartAction += (s,m) => { texarray.Bind(1); };
@@ -779,10 +781,10 @@ namespace TestOpenTk
                 pos[2] *= Matrix4.CreateTranslation(new Vector3(-20, 10, -10));
                 pos[2][0, 3] = 2;
                 pos[2][1, 3] = 2;   // lookat control
-                GLRenderState rp = GLRenderState.Quads();
+                GLRenderState rp = GLRenderState.Tri();
 
                 rObjects.Add(shader, "1-atex2",
-                                        GLRenderableItem.CreateMatrix4(items, PrimitiveType.Quads, rp, pos, 4, ic: 3, matrixdivisor: 1));
+                                        GLRenderableItem.CreateMatrix4(items, PrimitiveType.TriangleStrip, rp, pos, 4, ic: 3, matrixdivisor: 1));
 
             }
 
@@ -885,6 +887,10 @@ namespace TestOpenTk
             dataoutbuffer = items.NewStorageBlock(5);
             dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);    // 32 vec4 back
 
+
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
         private void ShaderTest_Closed(object sender, EventArgs e)
@@ -946,11 +952,11 @@ namespace TestOpenTk
             if (items.Contains("TESIx2"))
                 ((GLTesselationShaderSinewaveAutoscale)items.Shader("TESIx2")).Phase = degrees / 360.0f;
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetFull(gl3dcontroller.MatrixCalc);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
 
             GL.FrontFace(FrontFaceDirection.Cw);
             rObjectscw.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
@@ -970,7 +976,8 @@ namespace TestOpenTk
             //   // databack[i].Y = gl3dcontroller.glControl.Height - databack[i].Y * gl3dcontroller.glControl.Height;
             //    System.Diagnostics.Debug.WriteLine("{0}={1}", i, databack[i].ToStringVec(true));
             //}
-            //GLStatics.Check();
+            //System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+
 
         }
 

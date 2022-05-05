@@ -121,7 +121,7 @@ namespace GLOFC.GL4.Shaders
             if (assertonerror)
                 System.Diagnostics.Trace.Assert(ret == null, "", ret);
 
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             return ret;
         }
 

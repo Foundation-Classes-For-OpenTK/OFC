@@ -43,11 +43,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -56,6 +53,8 @@ namespace TestOpenTk
         GLVolumetricUniformBlock volumetricblock;
         GLRenderableItem galaxy;
         GLTexture2DArray gridtexcoords;
+        float lasteyedistance = 100000000;
+        int lastgridwidth;
 
         /// ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -63,53 +62,6 @@ namespace TestOpenTk
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
-        }
-
-        float lasteyedistance = 100000000;
-        int lastgridwidth;
-
-        private void ControllerDraw(Controller3D c3d, ulong unused)
-        {
-            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
-
-            IGLRenderableItem i = rObjects["DYNGRIDRENDER"];
-            DynamicGridVertexShader s = items.PLShader("PLGRIDVertShader") as DynamicGridVertexShader;
-
-            if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis
-            {
-                i.InstanceCount = s.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
-                lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
-            }
-
-            s.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, i.InstanceCount);
-
-            float dist = c3d.MatrixCalc.EyeDistance;
-            float d1 = dist - lastgridwidth;
-            float suc = d1 / (9.0f * lastgridwidth);
-            float cf = 1.0f - suc.Clamp(0f, 1f);
-            float a = 0.7f * cf;
-
-            float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
-            Color coordscol = Color.FromArgb(coordfade<0.05 ? 0 : 150, Color.Cyan);
-
-            System.Diagnostics.Debug.WriteLine("Dist {0} grid {1} suc {2} cf {3} a {4} coord {5} {6}", dist, lastgridwidth, suc, cf, a , coordfade, coordscol);
-
-            DynamicGridCoordVertexShader bs = items.PLShader("PLGRIDBitmapVertShader") as DynamicGridCoordVertexShader;
-            bs.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
-
-            if (galaxy != null)
-            {
-                galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
-
-                IGLProgramShader p = items.Shader("Galaxy");
-                var fsgalaxy = p.GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
-                fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
-            }
-
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
-
-
-            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
         }
 
         public class GLFixedShader : GLShaderPipeline
@@ -178,7 +130,7 @@ namespace TestOpenTk
 
             {
                 items.Add( new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
                 rObjects.Add(items.Shader("LINEYELLOW"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, displaylines));
             }
 
@@ -186,37 +138,38 @@ namespace TestOpenTk
             {
                 items.Add(new GLTexture2D(Properties.Resources.golden, SizedInternalFormat.Rgba8), "solmarker");
                 items.Add(new GLTexturedShaderObjectTranslation(), "TEX");
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, 1000, 0))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("solmarker"), new Vector3(0, -1000, 0))
                              ));
-                items.Add( new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "sag");
+                items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "sag");
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, 2000, 25899))
                              ));
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("sag"), new Vector3(25.2f, -2000, 25899))
                              ));
                 items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "bp");
                 rObjects.Add(items.Shader("TEX"),
-                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                             GLShapeObjectFactory.CreateQuad(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                             GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                             GLShapeObjectFactory.CreateQuadTriStrip(1000.0f, 1000.0f, new Vector3(0, 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                              new GLRenderDataTranslationRotationTexture(items.Tex("bp"), new Vector3(-1111f, 0, 65269))
                              ));
+
             }
 
-            if (false) // galaxy
+            if (true) // galaxy
             {
                 volumetricblock = new GLVolumetricUniformBlock();
                 items.Add(volumetricblock, "VB");
@@ -238,14 +191,6 @@ namespace TestOpenTk
                 gsn.Run();      // compute noise
 
                 GL.MemoryBarrier(MemoryBarrierFlags.AllBarrierBits);
-
-                //float[] gdata = gaussiantex.GetTextureImageAsFloats(OpenTK.Graphics.OpenGL4.PixelFormat.Red); // read back check
-                //for( int i = 0; i < gdata.Length; i++  )
-                //{
-                //    double v = ((float)i / gdata.Length-0.5)*2*2;
-                //    double r = ObjectExtensionsNumbersBool.GaussianDist(v, 2, 1.4);
-                // //   System.Diagnostics.Debug.WriteLine(i + ":" + gdata[i] + ": " +  r);
-                //}
 
                 // load one upside down and horz flipped, because the volumetric co-ords are 0,0,0 bottom left, 1,1,1 top right
                 GLTexture2D galtex = new GLTexture2D(Properties.Resources.Galaxy_L180, SizedInternalFormat.Rgba8);
@@ -311,30 +256,30 @@ namespace TestOpenTk
                 items.Add(new GalaxyStarDots(), "SD");
                 GLRenderState rp = GLRenderState.Points(1);
                 rp.DepthTest = false;
-                rObjects.Add(items.Shader("SD"),
-                                GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, buf, points));
+                rObjects.Add(items.Shader("SD"), GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
             }
 
             if (true)  // point sprite
             {
-                items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
-                items.Add(new GLPointSpriteShader(items.Tex("lensflare"),64,40), "PS1");
-                var p = GLPointsFactory.RandomStars4(1000, 0, 25899, 10000, 1000, -1000);
+                items.Add(new GLTexture2D(Properties.Resources.star_grey64, SizedInternalFormat.Rgba8), "lensflare");
+                items.Add(new GLPointSpriteShader(items.Tex("lensflare")), "PS1");
+                int dist = 20000;
+                var p = GLPointsFactory.RandomStars4(100, -dist, dist, 25899 - dist, 25899 + dist, 2000, -2000);
 
-                GLRenderState rps = GLRenderState.PointSprites();
+                GLRenderState rps = GLRenderState.PointsByProgram();
                 rps.DepthTest = false;
 
-                rObjects.Add(items.Shader("PS1"),
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
+                rObjects.Add(items.Shader("PS1"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
 
             }
 
+            if (true)
             {
                 items.Add(new DynamicGridVertexShader(Color.Cyan), "PLGRIDVertShader");
                 items.Add(new GLPLFragmentShaderVSColor(), "PLGRIDFragShader");
 
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
                 rl.DepthTest = false;
 
                 items.Add(new GLShaderPipeline(items.PLShader("PLGRIDVertShader"), items.PLShader("PLGRIDFragShader")), "DYNGRID");
@@ -342,7 +287,7 @@ namespace TestOpenTk
 
             }
 
-
+            if (true)
             {
                 items.Add(new DynamicGridCoordVertexShader(), "PLGRIDBitmapVertShader");
                 items.Add(new GLPLFragmentShaderTexture2DIndexed(0), "PLGRIDBitmapFragShader");     // binding
@@ -360,9 +305,54 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
-
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
+        private void ControllerDraw(Controller3D c3d, ulong unused)
+        {
+            ((GLMatrixCalcUniformBlock)items.UB("MCUB")).Set(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
+
+            IGLRenderableItem i = rObjects["DYNGRIDRENDER"];
+            DynamicGridVertexShader s = items.PLShader("PLGRIDVertShader") as DynamicGridVertexShader;
+
+            if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis
+            {
+                i.InstanceCount = s.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
+                lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
+            }
+
+            s.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, i.InstanceCount);
+
+            float dist = c3d.MatrixCalc.EyeDistance;
+            float d1 = dist - lastgridwidth;
+            float suc = d1 / (9.0f * lastgridwidth);
+            float cf = 1.0f - suc.Clamp(0f, 1f);
+            float a = 0.7f * cf;
+
+            float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
+            Color coordscol = Color.FromArgb(coordfade < 0.05 ? 0 : 150, Color.Cyan);
+
+            System.Diagnostics.Debug.WriteLine("Dist {0} grid {1} suc {2} cf {3} a {4} coord {5} {6}", dist, lastgridwidth, suc, cf, a, coordfade, coordscol);
+
+            DynamicGridCoordVertexShader bs = items.PLShader("PLGRIDBitmapVertShader") as DynamicGridCoordVertexShader;
+            bs.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
+
+            if (galaxy != null)
+            {
+                galaxy.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, boundingbox, 50.0f);        // set up the volumentric uniform
+
+                IGLProgramShader p = items.Shader("Galaxy");
+                var fsgalaxy = p.GetShader(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader) as GalaxyFragmentPipeline;
+                fsgalaxy.SetFader(c3d.MatrixCalc.EyeDistance);
+            }
+
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
+
+
+            this.Text = "Looking at " + gl3dcontroller.MatrixCalc.LookAt + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.PosCamera.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.PosCamera.ZoomFactor;
+        }
         private void SystemTick(object sender, EventArgs e)
         {
             var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);

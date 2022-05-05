@@ -138,7 +138,7 @@ namespace TestOpenTk
                 new Vector4(right,+vsize,front,1),     new Vector4(right,+vsize,back,1),
                    };
 
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
 
                 items.Add(new GLShaderPipeline(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(Color.Yellow)), "LINEYELLOW");
                 rObjects.Add(items.Shader("LINEYELLOW"),
@@ -311,9 +311,10 @@ namespace TestOpenTk
                 items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
                 var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
 
-                GLRenderState rps = GLRenderState.PointSprites();
-
-                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Points, rps, p, new Color4[] { Color.White }));
+                GLRenderState rps = GLRenderState.PointsByProgram();
+ 
+                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items,PrimitiveType.Points, rps, p, 
+                                        new Color4[] { Color.White }));
 
             }
 
@@ -324,7 +325,7 @@ namespace TestOpenTk
                 var frag = new GLPLFragmentShaderVSColor();
                 //items.Add(frag, "PLGRIDFragShader");
 
-                GLRenderState rl = GLRenderState.Lines(1);
+                GLRenderState rl = GLRenderState.Lines();
 
                 items.Add(new GLShaderPipeline(gridvertshader, frag), "DYNGRID");
 
@@ -450,8 +451,14 @@ namespace TestOpenTk
             // menu system
 
             displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f,0.00001f);       // hook form to the window - its the master
-            displaycontrol.Font = new Font("Arial", 10f);
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
+            displaycontrol.Font = new Font("Arial", 10f);
+            displaycontrol.Paint += (ts) => {
+                galaxymenu?.UpdateCoords(gl3dcontroller);
+                displaycontrol.Animate(glwfc.ElapsedTimems);
+                GLStatics.ClearDepthBuffer();         // clear the depth buffer, so we are on top of all previous renders.
+                displaycontrol.Render(glwfc.RenderState, ts); 
+            };
             displaycontrol.SetFocus();
 
             // 3d controller
@@ -471,27 +478,14 @@ namespace TestOpenTk
                 return (float)ms * v;
             };
 
-            // hook gl3dcontroller to display control - its the slave. Do not register mouse UI, we will deal with that.
-            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(140.75f, 0, 0), 0.5F, false, true);
-            //gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(90F, 0, 0), 0.5F, false, true);
-
-            if (displaycontrol != null)
-            {
-                displaycontrol.Paint += (o,ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {
-                    // MCUB set up by Controller3DDraw which did the work first
-                    galaxymenu.UpdateCoords(gl3dcontroller.MatrixCalc,gl3dcontroller.PosCamera.ZoomFactor);
-                        // debug this galaxymenu.DebugStatusText(gl3dcontroller.PosCamera.StringPositionCamera);  gl3dcontroller.PosCamera.SetPositionCamera(gl3dcontroller.PosCamera.StringPositionCamera);
-                    displaycontrol.Animate(glwfc.ElapsedTimems);
-                    displaycontrol.Render(glwfc.RenderState,ts);
-                };
-            }
+            // start hooks the glwfc paint function up, first, so it gets to go first
+            // No ui events from glwfc.
+            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
             displaycontrol.MouseClick += MouseClickOnMap;
-            displaycontrol.MouseUp += MouseUpOnMap;
-            displaycontrol.MouseDown += MouseDownOnMap;
-            displaycontrol.MouseMove += MouseMoveOnMap;
-            displaycontrol.MouseWheel += MouseWheelOnMap;
+
 
             galaxymenu = new MapMenu(this);
 
@@ -618,10 +612,8 @@ namespace TestOpenTk
 
         public void Systick()
         {
-            //if (displaycontrol != null && displaycontrol.RequestRender)
-              //  glwfc.Invalidate();
             var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
-            glwfc.Invalidate();
+             glwfc.Invalidate();
         }
 
         double fpsavg = 0;
@@ -661,9 +653,6 @@ namespace TestOpenTk
 
             if (elitemapregions != null)
                 elitemapregions.SetY(gl3dcontroller.PosCamera.LookAt.Y);
-
-            // set the coords fader
-
 
             // set the galaxy volumetric block
 
@@ -865,22 +854,7 @@ namespace TestOpenTk
 
         #region UI
 
-        private void MouseDownOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseDown(s, e);
-        }
-
-        private void MouseUpOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseUp(s, e);
-        }
-
-        private void MouseMoveOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseMove(s, e);
-        }
-
-        private void MouseClickOnMap(Object s, GLMouseEventArgs e)
+        private void MouseClickOnMap(GLBaseControl b, GLMouseEventArgs e)
         {
             int distmovedsq = gl3dcontroller.MouseMovedSq(e);
             if (distmovedsq >= 4)
@@ -908,11 +882,6 @@ namespace TestOpenTk
                     rightclickmenu.Show(displaycontrol, e.Location);
                 }
             }
-        }
-
-        private void MouseWheelOnMap(Object s, GLMouseEventArgs e)
-        {
-            gl3dcontroller.MouseWheel(s, e);
         }
 
         private void OtherKeys(GLOFC.Controller.KeyboardMonitor kb)

@@ -43,7 +43,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -73,7 +73,7 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
 
             // render state for lines
-            GLRenderState lines = GLRenderState.Lines(1);
+            GLRenderState lines = GLRenderState.Lines();
 
             // make a set of vertices from the shape factory
             var rs1 = GLShapeObjectFactory.CreateLines(new Vector3(-100, -0, -100), new Vector3(-100, -0, 100), new Vector3(10, 0, 0), 21);
@@ -96,10 +96,10 @@ namespace TestOpenTk
 
             // render state for triangles
 
-GLRenderState rc = GLRenderState.Tri();
-rc.CullFace = false;
+            GLRenderState rc = GLRenderState.Tri();
+            rc.CullFace = false;
 
-rObjects.Add(items.Shader("COSOT"), "scopen",
+            rObjects.Add(items.Shader("COSOT"), "scopen",
             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Triangles, rc,
                             GLCubeObjectFactory.CreateSolidCubeFromTriangles(5f),
                             new Color4[] { Color4.Red, Color4.Green, Color4.Blue, Color4.White, Color4.Cyan, Color4.Orange },
@@ -113,13 +113,15 @@ rObjects.Add(items.Shader("COSOT"), "scopen",
                                         new GLRenderDataTranslationRotation(new Vector3(10, 0, 10))
                         ));
 
-            // render state for quads
+            // render state for tristrip
 
-            GLRenderState rq = GLRenderState.Quads();
+            GLRenderState rq = GLRenderState.Tri();
+            rq.CullFace = false;
 
             rObjects.Add(items.Shader("TEXOT"),
-                        GLRenderableItem.CreateVector4Vector2(items,PrimitiveType.Quads, rq,
-                        GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3( 0f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                        GLRenderableItem.CreateVector4Vector2(items,PrimitiveType.TriangleStrip, rq,
+                        GLShapeObjectFactory.CreateQuadTriStrip(50.0f, 50.0f, new Vector3( 0f.Radians(), 0, 0)), 
+                        GLShapeObjectFactory.TexTriStripQuad,
                         new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0,0,0))
                         ));
 

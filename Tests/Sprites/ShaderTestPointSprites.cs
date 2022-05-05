@@ -154,7 +154,7 @@ void main(void)
 
             items.Add(new GLPointSprite(), "PS1");
 
-            GLRenderState rp = GLRenderState.PointSprites();     // by program
+            GLRenderState rp = GLRenderState.PointsByProgram();     // by program
 
             GLRenderDataTexture rt = new GLRenderDataTexture(items.Tex("lensflare"),4);
 

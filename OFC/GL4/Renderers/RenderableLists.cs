@@ -147,7 +147,7 @@ namespace GLOFC.GL4
         {
             if (verbose) System.Diagnostics.Trace.WriteLine("***Begin RList");
 
-            GLStatics.Check();      // ensure clear before start
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);      // ensure clear before start
 
             GLRenderState lastapplied = null;
             IGLProgramShader curshader = null;
@@ -191,35 +191,33 @@ namespace GLOFC.GL4
 
                         foreach (var g in shaderri.Item2)
                         {
-                            GLOFC.GLStatics.Check();
+                            var ri = g.Item2;
 
-                            if (g.Item2 != null && g.Item2.Visible)                    // Make sure its visible and not empty slot
+                            if (ri != null && ri.Visible)                    // Make sure its visible and not empty slot
                             {
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
-                                if (g.Item2.RenderState == null)                       // if no render control, do not change last applied.
+                                if (ri.RenderState == null)                       // if no render control, do not change last applied.
                                 {
-                                    g.Item2.Bind(null, shaderri.Item1, c);
+                                    ri.Bind(null, shaderri.Item1, c);
                                 }
-                                else if (object.ReferenceEquals(g.Item2.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                                else if (object.ReferenceEquals(ri.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                                 {
-                                    g.Item2.Bind(null, shaderri.Item1, c);
+                                    ri.Bind(null, shaderri.Item1, c);
                                 }
                                 else
                                 {
-                                    g.Item2.Bind(currentstate, shaderri.Item1, c);      // change and remember
-                                    lastapplied = g.Item2.RenderState;
+                                    ri.Bind(currentstate, shaderri.Item1, c);      // change and remember
+                                    lastapplied = ri.RenderState;
                                 }
 
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
-                                g.Item2.Render();
+                                ri.Render();
                                 //System.Diagnostics.Trace.WriteLine("....Render Over " + g.Item1);
                             }
                             else
                             {
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Not visible " + g.Item1 + " " + shaderri.Item1.GetType().Name);
                             }
-
-                            GLOFC.GLStatics.Check();
                         }
                     }
                     else

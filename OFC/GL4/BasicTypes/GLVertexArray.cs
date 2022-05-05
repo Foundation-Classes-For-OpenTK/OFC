@@ -44,7 +44,7 @@ namespace GLOFC.GL4
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
             GL.BindVertexArray(Id);                  // Bind vertex
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Dispose of the vertex array </summary>
@@ -89,7 +89,7 @@ namespace GLOFC.GL4
             GL.VertexArrayAttribBinding(Id, attribindex, bindingindex);     // bind atrib to binding    - do this after attrib format
             GL.EnableVertexArrayAttrib(Id, attribindex);
 
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
            // System.Diagnostics.Debug.WriteLine("ATTR " + attribindex + " to " + bindingindex + " Components " + components + " +" + reloffset + " divisor " + divisor);
         }
 
@@ -119,7 +119,7 @@ namespace GLOFC.GL4
             GL.VertexArrayAttribBinding(Id, attribindex, bindingindex);     // bind atrib to binding 
             GL.EnableVertexArrayAttrib(Id, attribindex);                    // enable attrib
 
-            GLOFC.GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
            // System.Diagnostics.Debug.WriteLine("ATTRI " + attribindex + " to " + bindingindex + " Components " + components + " +" + reloffset + " divisor " + divisor);
         }
 

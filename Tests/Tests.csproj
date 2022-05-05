@@ -65,6 +65,43 @@
     <Compile Include="FrameBuffer\TestRenderBuffer.designer.cs">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
     </Compile>
+    <Compile Include="GalaxyDemo\TestDynamicGrid.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestDynamicGrid.designer.cs">
+      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo1.designer.cs">
+      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GalaxyDemo\TestGalaxyDemo2.designer.cs">
+      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Galaxy\Bookmarks.cs" />
+    <Compile Include="Galaxy\GalaxyStars.cs" />
+    <Compile Include="Galaxy\GalMapObjects.cs" />
+    <Compile Include="Galaxy\GalMapRegions.cs" />
+    <Compile Include="Galaxy\GalMap\GalacticMapObject.cs" />
+    <Compile Include="Galaxy\GalMap\GalacticMapping.cs" />
+    <Compile Include="Galaxy\GalMap\GalMapType.cs" />
+    <Compile Include="Galaxy\Map.cs" />
+    <Compile Include="Galaxy\MapMenu.cs" />
+    <Compile Include="Galaxy\ShaderGalaxy.cs" />
+    <Compile Include="Galaxy\ShaderGrid.cs" />
+    <Compile Include="Galaxy\ShaderStarDots.cs" />
+    <Compile Include="Galaxy\TestGalaxy.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Galaxy\TestGalaxy.designer.cs">
+      <DependentUpon>TestGalaxy.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Galaxy\TravelPath.cs" />
     <Compile Include="MultiWindow\Window2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -76,6 +113,22 @@
     </Compile>
     <Compile Include="MultiWindow\TestMultiWindow.designer.cs">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BaseUtils\KeplerOrbitElements.cs" />
+    <Compile Include="Orrery\OrbitalBodyInformation.cs" />
+    <Compile Include="Orrery\Orrery.cs" />
+    <Compile Include="Orrery\StarNodes.cs" />
+    <Compile Include="Orrery\TestOrrey.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Orrery\TestOrrey.designer.cs">
+      <DependentUpon>TestOrrey.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SolOrrery\TestSolOrrery.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SolOrrery\TestSolOrrery.designer.cs">
+      <DependentUpon>TestSolOrrery.cs</DependentUpon>
     </Compile>
     <Compile Include="Program\TestProgram.cs">
       <SubType>Form</SubType>
@@ -307,6 +360,18 @@
     <EmbeddedResource Include="FrameBuffer\TestFrameBuffer.resx">
       <DependentUpon>TestFrameBuffer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestDynamicGrid.resx">
+      <DependentUpon>TestDynamicGrid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo1.resx">
+      <DependentUpon>TestGalaxyDemo1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GalaxyDemo\TestGalaxyDemo2.resx">
+      <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Galaxy\TestGalaxy.resx">
+      <DependentUpon>TestGalaxy.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Geometry\ShaderTestGeoFind.resx">
       <DependentUpon>ShaderTestGeoFind.cs</DependentUpon>
     </EmbeddedResource>
@@ -318,6 +383,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="MultiWindow\TestMultiWindow.resx">
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Orrery\TestOrrey.resx">
+      <DependentUpon>TestOrrey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SolOrrery\TestSolOrrery.resx">
+      <DependentUpon>TestSolOrrery.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Program\TestProgram.resx">
       <DependentUpon>TestProgram.cs</DependentUpon>
@@ -637,5 +708,9 @@
   <ItemGroup>
     <None Include="Resources\dotted1.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\star_grey64.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

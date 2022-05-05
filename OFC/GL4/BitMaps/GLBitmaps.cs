@@ -80,10 +80,10 @@ namespace GLOFC.GL4.Bitmaps
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderMatrixQuadTexture(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
+            shader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
-            renderstate = GLRenderState.Quads();      
+            renderstate = GLRenderState.Tri();      
             renderstate.CullFace = cullface;
             renderstate.DepthTest = depthtest;
             renderstate.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
@@ -168,7 +168,7 @@ namespace GLOFC.GL4.Bitmaps
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Bitmaps detected context incorrect");
 
-            Matrix4 mat = GLPLVertexShaderMatrixQuadTexture.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
+            Matrix4 mat = GLPLVertexShaderMatrixTriStripTexture.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);
@@ -217,7 +217,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <summary>Set Y if using Y hold</summary>
         public void SetY(float y)
         {
-            shader.GetShader<GLPLVertexShaderMatrixQuadTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            shader.GetShader<GLPLVertexShaderMatrixTriStripTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
         }
         /// <summary>Dispose of the bitmaps</summary>
         public virtual void Dispose()           // you can double dispose.
@@ -238,7 +238,7 @@ namespace GLOFC.GL4.Bitmaps
             grouptextureslist.Add(texture); // need to keep these for later addition
 
             var rd = new RenderData(texture);
-            var renderableItem = GLRenderableItem.CreateMatrix4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Quads, renderstate, matrixbuffer, 0, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader), ic will be set in Add.
+            var renderableItem = GLRenderableItem.CreateMatrix4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, renderstate, matrixbuffer, 0, 4, rd, ic: 0);     //drawcount=4 (4 vertexes made up by shader, in tristrip), ic will be set in Add.
             renderlist.Add(shader, name + ":" + groupno, renderableItem);
             grouprenderlist.Add(renderableItem);
         }
@@ -252,7 +252,7 @@ namespace GLOFC.GL4.Bitmaps
 
             public virtual void Bind(IGLRenderableItem ri, IGLProgramShader shader, GLMatrixCalc c)     // called per renderable item..
             {
-                GLOFC.GLStatics.Check();
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
                 if (texture.Id >= 0)
                 {
@@ -263,7 +263,7 @@ namespace GLOFC.GL4.Bitmaps
                     }
 
                     texture.Bind(1);
-                    GLOFC.GLStatics.Check();
+                    System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
                 }
             }
 

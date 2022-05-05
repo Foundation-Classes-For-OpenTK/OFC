@@ -42,11 +42,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -131,21 +127,20 @@ void main(void)
                 return (float)ms / 100.0f;
             };
 
-
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rll = GLRenderState.Lines();
 
             {
 
                 rObjects.Add(items.Shader("COSW"), "L1",   // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rll,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Gray })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rll,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Gray })
                                    );
@@ -186,8 +181,7 @@ void main(void)
             };
 
             items.Add(new GLFixedShader(System.Drawing.Color.Yellow), "LINEYELLOW");
-            rObjects.Add(items.Shader("LINEYELLOW"),
-                        GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, lines2));
+            rObjects.Add(items.Shader("LINEYELLOW"),  GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rll, lines2));
 
             dataoutbuffer = items.NewStorageBlock(5);
             dataoutbuffer.AllocateBytes(sizeof(float) * 4 * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicRead);
@@ -196,6 +190,10 @@ void main(void)
             atomicbuffer.AllocateBytes(sizeof(float) * 32, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
+
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
         GLStorageBlock dataoutbuffer;

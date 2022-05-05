@@ -29,11 +29,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-// A simpler main for demoing
 
 namespace TestOpenTk
 {
-    public partial class TestOrrery : Form
+    public partial class TestSolOrrery : Form
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
         private Controller3D gl3dcontroller;
@@ -62,17 +61,16 @@ namespace TestOpenTk
         double Msol = 1.989e30;
         double AU = 149597870.7;        // km https://en.wikipedia.org/wiki/Astronomical_unit
 
-        public TestOrrery()
+        public TestSolOrrery()
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
-
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
@@ -80,16 +78,30 @@ namespace TestOpenTk
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);
 
-            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
+            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f, 0.00001f);       // hook form to the window - its the master
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
-            displaycontrol.Name = "displaycontrol";
+            displaycontrol.Paint += (ts) => {
+                displaycontrol.Animate(glwfc.ElapsedTimems);
+                GLStatics.ClearDepthBuffer();         // clear the depth buffer, so we are on top of all previous renders.
+                displaycontrol.Render(glwfc.RenderState, ts);
+            };
+            displaycontrol.SetFocus();
 
-            displaycontrol.Paint += (o, ts) =>        // subscribing after start means we paint over the scene, letting transparency work
-                {
-                    // MCUB set up by Controller3DDraw which did the work first
-                    displaycontrol.Render(glwfc.RenderState, ts);
-                };
+            gl3dcontroller = new Controller3D();
+            gl3dcontroller.ZoomDistance = 3000F;
+            gl3dcontroller.PaintObjects = ControllerDraw;
+            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
+            {
+                return (float)ms * 100.0f;
+            };
 
+            // start hooks the glwfc paint function up, first, so it gets to go first
+            // No ui events from glwfc.
+            gl3dcontroller.Start(matrixcalc, glwfc, new Vector3(0, 0, 0), new Vector3(135f, 0, 0), 0.025F, false, false);
+            gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
+            displaycontrol.Hook();  // now we hook up display control to glwin, and paint
+
+            // construct display entities
 
             double startspeed = 60 * 60 * 6; // in sec
             GLImage minus = new GLImage("plus", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
@@ -113,15 +125,7 @@ namespace TestOpenTk
             datalabel.TextAlign = ContentAlignment.TopLeft;
             displaycontrol.Add(datalabel);
 
-
-            gl3dcontroller = new Controller3D();
-            gl3dcontroller.PaintObjects = ControllerDraw;
-            gl3dcontroller.ZoomDistance = 3000F;
-            gl3dcontroller.Start(matrixcalc, displaycontrol, new Vector3(0, 0, 0), new Vector3(135f, 0, 0f), 0.025F);
-            gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
-            {
-                return (float)ms * 100.0f;
-            };
+            // construct objects
 
             items.Add(new GLColorShaderWorld(), "COSW");
             items.Add(new GLTexturedShaderObjectCommonTranslation(), "TEXOCT");
@@ -135,7 +139,7 @@ namespace TestOpenTk
             int markers = gridsize / 20;
 
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 Color gridcolour = Color.FromArgb(255, 60, 60, 60);
                 rObjects.Add(items.Shader("COSW"),
@@ -229,7 +233,7 @@ namespace TestOpenTk
 
                 Vector4[] orbit = bodies[i].Orbit(currentjd, 1, mscaling);
 
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.LineStrip, lines, orbit, new Color4[] { Color.FromArgb(255,128,0,0) }));

@@ -44,7 +44,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -88,7 +88,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -104,7 +104,7 @@ namespace TestOpenTk
             }
             if (false)
             {
-                GLRenderState lines = GLRenderState.Lines(1);
+                GLRenderState lines = GLRenderState.Lines();
 
                 rObjects.Add(items.Shader("COSW"),
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -154,16 +154,16 @@ namespace TestOpenTk
                     Vector3 bannersize = new Vector3(20, 0, 0);
                     Font f = new Font("MS sans serif", 8f);
 
-                    tim = new GLBitmaps("bitmap1", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true, 2);      // group 2
+                    tim = new GLBitmaps("bitmap1x", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true, 2);      // group 2
                     items.Add(tim);
-                    tim.Add("T1", "SingleTest", f, Color.White, Color.Red, new Vector3(10, 10, 10),
+                    tim.Add("TT1", "SingleTest", f, Color.White, Color.Red, new Vector3(10, 10, 10),
                                             bannersize, new Vector3(0,0,0), fmt, alphafadescalar: 10, alphafadepos: 5, rotatetoviewer:true);
 
                 }
             }
 
 
-            if ( false)
+            if ( true)
             {
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 {
@@ -247,7 +247,7 @@ namespace TestOpenTk
             //   // databack[i].Y = gl3dcontroller.glControl.Height - databack[i].Y * gl3dcontroller.glControl.Height;
             //    System.Diagnostics.Debug.WriteLine("{0}={1}", i, databack[i].ToStringVec(true));
             //}
-            //GLStatics.Check();
+            //System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
 
         }
 

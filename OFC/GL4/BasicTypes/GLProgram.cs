@@ -122,7 +122,7 @@ namespace GLOFC.GL4
             GL.GetProgram(Id, (GetProgramParameterName)0x8741, out int len);
             byte[] array = new byte[len];
             GL.GetProgramBinary(Id, len, out int binlen, out binformat, array);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
             return array;
         }
 
@@ -130,7 +130,7 @@ namespace GLOFC.GL4
         public void Load(byte[] bin, BinaryFormat binformat)    // load program direct from bin
         {
             GL.ProgramBinary(Id, binformat, bin, bin.Length);
-            GLStatics.Check();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
 
         /// <summary> Use this program </summary>

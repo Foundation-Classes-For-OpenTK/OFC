@@ -47,7 +47,7 @@ namespace TestOpenTk
             InitializeComponent();
             var mode = new OpenTK.Graphics.GraphicsMode(32, 24, 8, 0, 0, 2, false);     // combined 32 max of depth/stencil
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,mode,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -90,19 +90,19 @@ namespace TestOpenTk
 
             #region coloured lines
 
-            GLRenderState def = new GLRenderState() { DepthTest = false };      // set up default state for fixed values - no depth test, rely on stencil
 
             if ( true )
             {
                 rObjects.Add(new GLOperationSetStencil());      // set default stencil
 
-                GLRenderState rq = GLRenderState.Quads(def);
+                GLRenderState rq = GLRenderState.Tri();
+                rq.DepthTest = false;
 
                 IGLProgramShader s = items.Shader("TEXOT");
 
                 rObjects.Add(s, "Quad",
-                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(5.0f, 5.0f, new Vector3(-90F.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted"), new Vector3(-2, 3, -6))
                             ));
 
@@ -112,7 +112,8 @@ namespace TestOpenTk
             #region Coloured triangles
             if (true)
             {
-                GLRenderState rc = GLRenderState.Tri(def);
+                GLRenderState rc = GLRenderState.Tri();
+                rc.DepthTest = false;
                 rc.CullFace = false;
 
                 rObjects.Add(items.Shader("COSOT"), "Tri",
@@ -125,7 +126,8 @@ namespace TestOpenTk
 
             if (true)
             {
-                GLRenderState lines = GLRenderState.Lines(def,5);
+                GLRenderState lines = GLRenderState.Lines();
+                lines.DepthTest = false;
 
                 rObjects.Add(items.Shader("COSW"), "L1",
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
@@ -133,7 +135,8 @@ namespace TestOpenTk
                                                         new Color4[] { Color.White, Color.Red, Color.DarkRed, Color.DarkRed })
                                    );
 
-                GLRenderState lines2 = GLRenderState.Lines(def,1);
+                GLRenderState lines2 = GLRenderState.Lines();
+                lines2.DepthTest = false;
 
                 rObjects.Add(items.Shader("COSW"), "L2",
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines2,
@@ -233,16 +236,6 @@ namespace TestOpenTk
             //System.Diagnostics.Debug.WriteLine("kb check");
 
         }
-
-
-        public class GLDirect : GLShaderPipeline
-        {
-            public GLDirect(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
-            {
-                AddVertexFragment(new GLPLVertexShaderScreenTexture(), new GLPLFragmentShaderTextureOffset());
-            }
-        }
-
 
     }
 

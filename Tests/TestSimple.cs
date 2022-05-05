@@ -47,15 +47,29 @@ namespace TestOpenTk
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
         }
 
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
             Closed += ShaderTest_Closed;
+
+            {
+                System.Diagnostics.Debug.WriteLine($"Version  {GLStatics.GetVersion()}");
+                System.Diagnostics.Debug.WriteLine($"Version  {GLStatics.GetVersionString()}");
+                System.Diagnostics.Debug.WriteLine($"Vendor  {GLStatics.GetVendor()}");
+                System.Diagnostics.Debug.WriteLine($"Shading lang {GLStatics.GetShaderLanguageVersion()}");
+                System.Diagnostics.Debug.WriteLine($"Shading lang {GLStatics.GetShadingLanguageVersionString()}");
+                var ext = GLStatics.Extensions();
+                System.Diagnostics.Debug.WriteLine($"Extension {string.Join(",", ext)}");
+
+                System.Diagnostics.Debug.WriteLine($"UBS={GL4Statics.GetMaxUniformBlockSize()}");
+                GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
+                System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
+                System.Diagnostics.Debug.WriteLine($"tex layers {GL4Statics.GetMaxTextureDepth()} ");
+                System.Diagnostics.Debug.WriteLine($"Vertex attribs {GL4Statics.GetMaxVertexAttribs()} ");
+            }
+
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
@@ -64,12 +78,12 @@ namespace TestOpenTk
             gl3dcontroller.MouseTranslateAmountAtZoom1PerPixel = 0.5f;
             gl3dcontroller.ZoomDistance = 50F;
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(135f, 0, 0f), 1F);
-
+             
             bool useopenglcoords = true;        // true for +Z towards viewer. OFC is using mostly +Z away from viewer
             if (useopenglcoords)
             {
                 gl3dcontroller.MatrixCalc.ModelAxisPositiveZAwayFromViewer = false;
-                gl3dcontroller.SetPositionCamera(new Vector3(0, 0, 0), new Vector3(0, 0, 100), 0f);
+                gl3dcontroller.SetPositionCamera(new Vector3(0, 0, 0), new Vector3(0, 50, 100), 0f);
                 gl3dcontroller.RecalcMatrices();
             }
 
@@ -78,14 +92,13 @@ namespace TestOpenTk
                 return (float)ms / 100.0f;
             };
 
+            // create stock shaders
 
-           // create stock shaders
-
-             items.Add(new GLColorShaderWorld(), "COSW");
+            items.Add(new GLColorShaderWorld(), "COSW");
             items.Add(new GLColorShaderObjectTranslation(), "COSOT");
             items.Add(new GLTexturedShaderObjectTranslation(), "TEXOT");
 
-           // create stock textures
+            // create stock textures
 
             items.Add(new GLTexture2D(Properties.Resources.dotted, SizedInternalFormat.Rgba8), "dotted");
             items.Add(new GLTexture2D(Properties.Resources.dotted2, SizedInternalFormat.Rgba8), "dotted2");
@@ -191,15 +204,16 @@ namespace TestOpenTk
             #endregion
 
             #region textures
-            if (false)
+            if (true)
             {
               //  texture facing upwards, culled if viewer below it
 
-                GLRenderState rq = GLRenderState.Quads();
+                GLRenderState rq = GLRenderState.Tri();
 
                 rObjects.Add(items.Shader("TEXOT"),
-                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(5.0f, 5.0f, new Vector3(-0f.Radians(), 0, 0), ccw: gl3dcontroller.MatrixCalc.ModelAxisPositiveZAwayFromViewer), GLShapeObjectFactory.TexQuadCW,
+                            GLRenderableItem.CreateVector4Vector2(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(5.0f, 5.0f, new Vector3(-0f.Radians(), 0, 0), ccw:!useopenglcoords), 
+                            GLShapeObjectFactory.TexTriStripQuad,
                             new GLRenderDataTranslationRotationTexture(items.Tex("dotted2"), new Vector3(0, 0, 0))
                             ));
             }
@@ -207,13 +221,11 @@ namespace TestOpenTk
             #endregion
 
 
-            #region Matrix Calc Uniform
-
             items.Add(new GLMatrixCalcUniformBlock(),"MCUB");     // def binding of 0
 
-            GLStatics.Check();
-            #endregion
-
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
         private void ShaderTest_Closed(object sender, EventArgs e)

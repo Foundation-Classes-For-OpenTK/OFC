@@ -1,6 +1,6 @@
 ﻿namespace TestOpenTk
 {
-    partial class TestOrreryImport
+    partial class TestSolOrrery
     {
         /// <summary>
         /// Required designer variable.

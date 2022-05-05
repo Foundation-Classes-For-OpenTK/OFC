@@ -37,7 +37,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);
@@ -115,10 +115,11 @@ namespace TestOpenTk
                 pos2[2] *= Matrix4.CreateTranslation(new Vector3(25, 0, 40));
                 pos2[2].M44 = 0;        // this is the image number
 
-                GLRenderState rq = GLRenderState.Quads(cullface: false);
+                GLRenderState rq = GLRenderState.Tri(cullface: false);
+
                 rObjects.Add(items.Shader("ShaderMat"),
-                    GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Quads, rq,
-                            GLShapeObjectFactory.CreateQuad(20.0f, 20.0f, new Vector3(-90f.Radians(), 0, 0)), GLShapeObjectFactory.TexQuadCW,
+                    GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rq,
+                            GLShapeObjectFactory.CreateQuadTriStrip(20.0f, 20.0f, new Vector3(-90f.Radians(), 0, 0)), GLShapeObjectFactory.TexTriStripQuad,
                             pos2, ic: 3, separbuf: false
                             ));
             }

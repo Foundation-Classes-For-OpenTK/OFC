@@ -44,11 +44,7 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer);
-
-            systemtimer.Interval = 25;
-            systemtimer.Tick += new EventHandler(SystemTick);
-            systemtimer.Start();
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
         }
 
         GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
@@ -87,19 +83,19 @@ namespace TestOpenTk
             };
 
             items.Add(new GLColorShaderWorld(), "COSW");
-            GLRenderState rl1 = GLRenderState.Lines(1);
+            GLRenderState rll = GLRenderState.Lines();
 
             {
 
                 rObjects.Add(items.Shader("COSW"), "L1",   // horizontal
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rll,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(-100, 0, 100), new Vector3(10, 0, 0), 21),
                                                         new Color4[] { Color.Gray })
                                    );
 
 
                 rObjects.Add(items.Shader("COSW"),    // vertical
-                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl1,
+                             GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rll,
                                    GLShapeObjectFactory.CreateLines(new Vector3(-100, 0, -100), new Vector3(100, 0, -100), new Vector3(0, 0, 10), 21),
                                                              new Color4[] { Color.Gray })
                                    );
@@ -120,44 +116,36 @@ namespace TestOpenTk
                     new Vector4(hsize,-vsize,-zsize,1),
             };
 
+            rObjects.Add(items.Shader("COSW"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.LineLoop, rll, boundingbox,new Color4[] { Color.Yellow }));
 
+            Vector4[] extralines = new Vector4[]
             {
-                GLRenderState rll = GLRenderState.Lines(4);
+                new Vector4(-hsize,-vsize,zsize,1),
+                new Vector4(-hsize,-vsize,-zsize,1),
 
-                rObjects.Add(items.Shader("COSW"),
-                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rll, boundingbox));
+                new Vector4(-hsize,vsize,zsize,1),
+                new Vector4(-hsize,vsize,-zsize,1),
 
-                Vector4[] extralines = new Vector4[]
-                {
-                    new Vector4(-hsize,-vsize,zsize,1),
-                    new Vector4(-hsize,-vsize,-zsize,1),
+                new Vector4(hsize,vsize,zsize,1),
+                new Vector4(hsize,vsize,-zsize,1),
 
-                    new Vector4(-hsize,vsize,zsize,1),
-                    new Vector4(-hsize,vsize,-zsize,1),
+                new Vector4(hsize,-vsize,zsize,1),
+                new Vector4(hsize,-vsize,-zsize,1),
 
-                    new Vector4(hsize,vsize,zsize,1),
-                    new Vector4(hsize,vsize,-zsize,1),
+                new Vector4(-hsize,-vsize,zsize,1),
+                new Vector4(hsize,-vsize,zsize,1),
 
-                    new Vector4(hsize,-vsize,zsize,1),
-                    new Vector4(hsize,-vsize,-zsize,1),
+                new Vector4(-hsize,-vsize,-zsize,1),
+                new Vector4(hsize,-vsize,-zsize,1),
+            };
 
-                    new Vector4(-hsize,-vsize,zsize,1),
-                    new Vector4(hsize,-vsize,zsize,1),
-
-                    new Vector4(-hsize,-vsize,-zsize,1),
-                    new Vector4(hsize,-vsize,-zsize,1),
-                };
-
-                GLRenderState rl = GLRenderState.Lines(4);
-                rObjects.Add(items.Shader("COSW"),
-                            GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl, extralines));
-            }
-
+            rObjects.Add(items.Shader("COSW"), GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rll, extralines, new Color4[] { Color.Yellow })); ;
+           
             items.Add(new GLFixedShader(System.Drawing.Color.Purple), "LINEPURPLE");
 
             indicatorlinebuffer = new GLBuffer();           // new buffer
             indicatorlinebuffer.AllocateBytes(sizeof(float) * 4 * 2, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
-            rObjects.Add(items.Shader("LINEPURPLE"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rl1, indicatorlinebuffer, 2));
+            rObjects.Add(items.Shader("LINEPURPLE"), GLRenderableItem.CreateVector4(items, PrimitiveType.Lines, rll, indicatorlinebuffer, 2));
 
             items.Add(new GLFixedProjectionShader(System.Drawing.Color.Yellow), "DOTYELLOW");
             interceptpointbuffer = new GLBuffer();           // new buffer
@@ -166,15 +154,18 @@ namespace TestOpenTk
             interceptri = GLRenderableItem.CreateVector4(items, PrimitiveType.Points, rp1, interceptpointbuffer, 0);
             rObjects.Add(items.Shader("DOTYELLOW"), interceptri);
 
-            items.Add(new GLFixedProjectionShader(System.Drawing.Color.FromArgb(60,Color.Blue)), "SURFACEBLUE");
+            items.Add(new GLFixedProjectionShader(System.Drawing.Color.FromArgb(60, Color.Blue)), "SURFACEBLUE");
             surfacebuffer = new GLBuffer();           // new buffer
-            surfacebuffer.AllocateBytes(sizeof(float) * 4 * (6+2), OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
+            surfacebuffer.AllocateBytes(sizeof(float) * 4 * (6 + 2), OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
             GLRenderState rtf = GLRenderState.Tri();
             surfaceri = GLRenderableItem.CreateVector4(items, PrimitiveType.TriangleFan, rtf, surfacebuffer, 0);
             rObjects.Add(items.Shader("SURFACEBLUE"), surfaceri);
 
             items.Add( new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
+            systemtimer.Interval = 25;
+            systemtimer.Tick += new EventHandler(SystemTick);
+            systemtimer.Start();
         }
 
         Vector4[] boundingbox;
