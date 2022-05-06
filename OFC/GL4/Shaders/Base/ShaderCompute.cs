@@ -54,6 +54,10 @@ namespace GLOFC.GL4.Shaders
         /// <summary> If Enabled </summary>
         public bool Enable { get; set; } = true;
 
+        // <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
+        [Obsolete("Not used on this class", true)]
+        public GLRenderState RenderState { get; set; }
+
         /// <summary> Name of shader </summary>
         public virtual string Name { get { return "Compute:" + GetType().Name; } }     // override to give meaningful name
 
@@ -61,8 +65,11 @@ namespace GLOFC.GL4.Shaders
         public IGLShader GetShader(ShaderType t) { return this; }
 
         /// <summary> Not implemented</summary>
+        [Obsolete("Not used on this class", true)]
         public T GetShader<T>(ShaderType t) where T : IGLShader { throw new NotImplementedException(); }
+
         /// <summary> Not implemented</summary>
+        [Obsolete("Not used on this class", true)]
         public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }
 
         /// <summary> Start Action callback </summary>

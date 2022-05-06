@@ -157,7 +157,9 @@ namespace GLOFC.GL4
                 // shader must be enabled
                 if (shaderri.Item1.Enable)
                 {
-                    if (shaderri.Item2 == null)                             // indicating its a compute or operation             
+                    var renderlist = shaderri.Item2;
+
+                    if (renderlist == null)                                 // no render list. So its indicating its a compute or operation             
                     {
                         if (shaderri.Item1 is GLShaderCompute)              // if compute
                         {
@@ -173,45 +175,53 @@ namespace GLOFC.GL4
                             shaderri.Item1.Finish();
                         }
                         else
-                        {
+                        {           
                             if (verbose) System.Diagnostics.Trace.WriteLine("  Operation " + shaderri.Item1.GetType().Name);
                             shaderri.Item1.Start(c);                        // operations just start, but don't change the current shader
                         }
                     }
-                    else if (shaderri.Item2.Find(x=>x.Item2.Visible)!=null)      // must have a list, all must not be null, and some must be visible
+                    else if (renderlist.Find(x=>x.Item2.Visible)!=null)     // some must be visible
                     {
-                        if (curshader != shaderri.Item1)                                // if a different shader instance
+                        if (curshader != shaderri.Item1)                    // if a different shader instance
                         {
-                            if (curshader != null)                                      // finish the last one if present
+                            if (curshader != null)                          // finish the last one if present
                                 curshader.Finish();
+                            
                             curshader = shaderri.Item1;
-                            curshader.Start(c);                                         // start the program - if compute shader, or operation, this executes the code
+
+                            if ( curshader.RenderState!=null)               // optional render state control from shader
+                                currentstate.ApplyState(curshader.RenderState,"From shader");
+
+                            curshader.Start(c);                             // start the program - if compute shader, or operation, this executes the code
                         }
+
                         //System.Diagnostics.Trace.WriteLine("Shader " + kvp.Item1.GetType().Name);
 
-                        foreach (var g in shaderri.Item2)
+                        foreach (var g in renderlist)
                         {
-                            var ri = g.Item2;
+                            var renderableitem = g.Item2;
 
-                            if (ri != null && ri.Visible)                    // Make sure its visible and not empty slot
+                            if (renderableitem != null && renderableitem.Visible)                    // Make sure its visible and not empty slot
                             {
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Bind " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
-                                if (ri.RenderState == null)                       // if no render control, do not change last applied.
+
+                                if (renderableitem.RenderState == null)                       // if no render control, do not change last applied.
                                 {
-                                    ri.Bind(null, shaderri.Item1, c);
+                                    renderableitem.Bind(null, shaderri.Item1, c);
                                 }
-                                else if (object.ReferenceEquals(ri.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
+                                else if (object.ReferenceEquals(renderableitem.RenderState, lastapplied))     // no point forcing the test of rendercontrol if its the same as last applied
                                 {
-                                    ri.Bind(null, shaderri.Item1, c);
+                                    renderableitem.Bind(null, shaderri.Item1, c);
                                 }
                                 else
                                 {
-                                    ri.Bind(currentstate, shaderri.Item1, c);      // change and remember
-                                    lastapplied = ri.RenderState;
+                                    renderableitem.Bind(currentstate, shaderri.Item1, c);      // change and remember
+                                    lastapplied = renderableitem.RenderState;
                                 }
 
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
-                                ri.Render();
+
+                                renderableitem.Render();
                                 //System.Diagnostics.Trace.WriteLine("....Render Over " + g.Item1);
                             }
                             else

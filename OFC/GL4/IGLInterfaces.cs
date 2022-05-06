@@ -37,7 +37,7 @@ namespace GLOFC.GL4
         void Finish();                                 
     }
 
-    /// <summary> Pipleine Component Shader Interface. All pipeline components must come from this  </summary>
+    /// <summary> Pipeline Component Shader Interface. All pipeline components must come from this  </summary>
     public interface IGLPipelineComponentShader : IGLShader  
     {
         /// <summary>Number of references across shaders to this component</summary>
@@ -56,6 +56,9 @@ namespace GLOFC.GL4
         string Name { get; }
         /// <summary>Shader enable</summary>
         bool Enable { get; set; }
+
+        // <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
+        GLRenderState RenderState { get; set;}
 
         /// <summary>Return a component shader. If the shader does not have subcomponents, its will return itself.</summary>
         IGLShader GetShader(OpenTK.Graphics.OpenGL4.ShaderType st);

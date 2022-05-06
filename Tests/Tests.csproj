@@ -124,6 +124,12 @@
     <Compile Include="Orrery\TestOrrey.designer.cs">
       <DependentUpon>TestOrrey.cs</DependentUpon>
     </Compile>
+    <Compile Include="ShaderRenderState\TestShaderRenderState.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShaderRenderState\TestShaderRenderState.designer.cs">
+      <DependentUpon>TestShaderRenderState.cs</DependentUpon>
+    </Compile>
     <Compile Include="SolOrrery\TestSolOrrery.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -386,6 +392,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Orrery\TestOrrey.resx">
       <DependentUpon>TestOrrey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShaderRenderState\TestShaderRenderState.resx">
+      <DependentUpon>TestShaderRenderState.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SolOrrery\TestSolOrrery.resx">
       <DependentUpon>TestSolOrrery.cs</DependentUpon>

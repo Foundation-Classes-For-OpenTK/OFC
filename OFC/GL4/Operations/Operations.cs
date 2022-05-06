@@ -45,32 +45,50 @@ namespace GLOFC.GL4.Operations
         public Action<IGLProgramShader> FinishAction { get; set; }        // not used
 
         /// <summary> ID, if applicable to operation </summary>
-        public int Id { get; set; } = -1;           
+        public int Id { get; set; } = -1;
 
         // inactive when attached to render
 
         /// <summary> Inherited, Not Applicable to this class </summary>
-        public GLRenderState RenderState { get; set; } = null;          // Not used, must be null
+        [Obsolete("Not used on this class", true)]
+        public GLRenderState RenderState { get; set; } = null;
+
         /// <summary> Inherited, Not Applicable to this class </summary>
-        public IGLRenderItemData RenderData { get; set; }                   // Not used
+        [Obsolete("Not used on this class", true)]
+        public IGLRenderItemData RenderData { get; set; }
+
         /// <summary> Inherited, Not Applicable to this class </summary>
-        public int DrawCount { get; set; } = 0;                             // Not used
+        [Obsolete("Not used on this class", true)]
+        public int DrawCount { get; set; } = 0;
+
         /// <summary> Inherited, Not Applicable to this class </summary>
-        public int InstanceCount { get; set; } = 0;                         // Not used
+        [Obsolete("Not used on this class", true)]
+        public int InstanceCount { get; set; } = 0;
 
         // inactive when attached to shader
 
         /// <summary> Name - fixed as Operation </summary>
+        [Obsolete("Not used on this class", true)]
         public string Name => "Operation";
+
         /// <summary> Not applicable to this class </summary>
+        [Obsolete("Not used on this class", true)]
         public IGLShader GetShader(ShaderType t) { throw new NotImplementedException(); }
+
         /// <summary> Not applicable to this class </summary>
+        [Obsolete("Not used on this class", true)]
         public T GetShader<T>(OpenTK.Graphics.OpenGL4.ShaderType t) where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
+
         /// <summary> Not applicable to this class </summary>
+        [Obsolete("Not used on this class", true)]
         public T GetShader<T>() where T : IGLShader { throw new NotImplementedException(); }    // get a subcomponent of type T. Excepts if not present
+
         /// <summary> Not applicable to this class </summary>
+        [Obsolete("Not used on this class", true)]
         public byte[] GetBinary(out BinaryFormat binformat) { throw new NotImplementedException(); }
+
         /// <summary> Not applicable to this class </summary>
+        [Obsolete("Not used on this class", true)]
         public void Load(byte[] bin, BinaryFormat binformat) { throw new NotImplementedException(); }
 
         /// <summary> Construct an empty operation </summary>

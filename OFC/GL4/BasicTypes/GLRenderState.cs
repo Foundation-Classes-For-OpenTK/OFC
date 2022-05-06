@@ -17,13 +17,12 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4
 {
     ///<summary>Wraps the openGL main state variables in a class so they get selected correctly for each render.
-    /// An instance of this class is associated with each GLRenderableItem
+    /// An instance of this class is associated with each GLRenderableItem and with each IGLProgramShader. 
+    /// You can select if render state is applied at the shader bind or at each renderable item bind.
     ///</summary> 
 
     public class GLRenderState
     {
-        // static creates of a GLRenderControl for the various OpenGL primitives
-
         /// <summary> Render setup for primitive Triangles, with optional control over various parameters of the primitive </summary>
         static public GLRenderState Tri(FrontFaceDirection frontface = FrontFaceDirection.Ccw, bool cullface = true,
                                                                 PolygonMode polygonmode = PolygonMode.Fill, bool polysmooth = false)
