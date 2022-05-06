@@ -36,7 +36,7 @@ namespace GLOFC.GL4.Shaders
         /// <summary> If Enabled</summary>
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
 
-        // <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
+        /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         public GLRenderState RenderState { get; set; }
 
         /// <summary>Name of shader. Standard name is type name, override to give a better name if required </summary>

@@ -57,7 +57,7 @@ namespace GLOFC.GL4
         /// <summary>Shader enable</summary>
         bool Enable { get; set; }
 
-        // <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
+        /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         GLRenderState RenderState { get; set;}
 
         /// <summary>Return a component shader. If the shader does not have subcomponents, its will return itself.</summary>
