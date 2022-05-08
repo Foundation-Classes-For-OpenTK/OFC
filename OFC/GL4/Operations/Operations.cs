@@ -44,6 +44,9 @@ namespace GLOFC.GL4.Operations
         /// <summary> Called after the operation has executed </summary>
         public Action<IGLProgramShader> FinishAction { get; set; }        // not used
 
+        /// <summary>Is it successfully compiled</summary>
+        public bool Compiled { get { return true; } }
+
         /// <summary> ID, if applicable to operation </summary>
         public int Id { get; set; } = -1;
 

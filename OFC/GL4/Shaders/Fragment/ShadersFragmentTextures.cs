@@ -35,7 +35,7 @@ namespace GLOFC.GL4.Shaders.Fragment
         /// <param name="binding">Binding of texture</param>
         public GLPLFragmentShaderTexture(int binding = 1)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused);
         }
 
         private string Code(int binding)
@@ -74,7 +74,7 @@ void main(void)
         /// <param name="alphazerocolour">Allows a default colour to show for low alpha samples</param>
         public GLPLFragmentShaderTexture2DDiscard(int binding = 1, Color? alphazerocolour = null)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding, alphazerocolour != null), constvalues: new object[] { "alphacolor", alphazerocolour }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding, alphazerocolour != null), out string unused, constvalues: new object[] { "alphacolor", alphazerocolour });
         }
 
         private string Code(int binding, bool alphacolor)
@@ -137,7 +137,7 @@ void main(void)
 
         public GLPLFragmentShaderTexture2DIndexed(int offset, int binding = 1, bool alphablend = false, Color? alphazerocolour = null)
         {
-            CompileLink(ShaderType.FragmentShader, Code(alphazerocolour != null), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "alphacolor", alphazerocolour }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(alphazerocolour != null), out string unused, new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "alphacolor", alphazerocolour });
         }
 
         private string Code(bool alphacolor)
@@ -208,7 +208,7 @@ void main(void)
         /// <param name="maxtextures">No of textures. Note 16 is the opengl minimum textures supported</param>
         public GLPLFragmentShaderTexture2DIndexMulti(int offset, int binding = 1, bool alphablend = false, int maxtextures = 16)  
         {
-            CompileLink(ShaderType.FragmentShader, Code(), new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(), out string unused, new object[] { "enablealphablend", alphablend, "texbinding", binding, "imageoffset", offset, "texbindinglength", maxtextures });
         }
 
         private string Code()
@@ -275,7 +275,7 @@ void main(void)
         /// <param name="binding">Tex binding number</param>
         public GLPLFragmentShaderTexture2DBlend(int binding = 1)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused);
         }
 
         /// <summary> Start shader </summary>
@@ -328,7 +328,7 @@ void main(void)
         /// <param name="binding">Tex binding</param>
         public GLPLFragmentShaderTextureOffset(int binding = 1)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused);
         }
 
         /// <summary> Start shader</summary>

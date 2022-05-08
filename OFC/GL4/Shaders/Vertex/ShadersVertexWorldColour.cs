@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="useoffset">Use vector 4 offset from uniform 22 and add</param>
         public GLPLVertexShaderColorWorldCoord(bool useoffset = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), constvalues:new object[] { "useoffset", useoffset }, auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues:new object[] { "useoffset", useoffset });
         }
 
         /// <summary> Set Offset </summary>
@@ -53,7 +53,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         {
             return
 @"
-#version 450 core
+#version 460 core
 #include UniformStorageBlocks.matrixcalc.glsl
 
 layout (location = 0) in vec4 position;
@@ -104,7 +104,7 @@ void main(void)
         /// <param name="yfromuniform">True to take Y from uniform 22</param>
         public GLPLVertexShaderWorldPalletColor(Vector4[] colourarray, bool yfromuniform = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "palette", colourarray, "yfromuniform", yfromuniform }, auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] { "palette", colourarray, "yfromuniform", yfromuniform });
         }
 
         /// <summary>

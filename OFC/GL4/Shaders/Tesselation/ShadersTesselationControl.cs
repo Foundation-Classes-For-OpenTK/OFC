@@ -43,7 +43,7 @@ namespace GLOFC.GL4.Shaders.Tesselation
         /// <param name="tess">Tesselation level</param>
         public GLPLTesselationControl(float tess)
         {
-            CompileLink(ShaderType.TessControlShader, TCS(tess));
+            CompileLink(ShaderType.TessControlShader, TCS(tess), out string unused);
         }
 
         private string TCS(float tesselation)

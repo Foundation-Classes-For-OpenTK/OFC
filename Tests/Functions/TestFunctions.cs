@@ -182,7 +182,7 @@ void main(void)
 
             public ComputeShader() : base(1,1,1)
             {
-                CompileLink(gencode());
+                CompileLink(gencode(), out string unused);
             }
         }
 

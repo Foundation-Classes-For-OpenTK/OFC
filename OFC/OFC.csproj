@@ -142,6 +142,7 @@
     <Compile Include="GL4\Operations\OperationsStencil.cs" />
     <Compile Include="GL4\Operations\OperationsBasic.cs" />
     <Compile Include="GL4\Operations\Operations.cs" />
+    <Compile Include="GL4\Shaders\Base\ShaderLog.cs" />
     <Compile Include="GL4\Shaders\Basic Shaders\ShadersTesselationSinewaveInstanced.cs" />
     <Compile Include="GL4\Shaders\Find\ShaderFindGeoTriangles.cs" />
     <Compile Include="GL4\Shaders\Fragment\ShadersFragmentBindless.cs" />

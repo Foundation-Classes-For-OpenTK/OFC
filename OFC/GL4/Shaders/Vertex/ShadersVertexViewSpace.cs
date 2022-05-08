@@ -31,7 +31,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// </summary>
         public GLPLVertexShaderViewSpace()
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         private string Code()

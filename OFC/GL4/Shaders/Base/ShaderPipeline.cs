@@ -42,6 +42,11 @@ namespace GLOFC.GL4.Shaders
         /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         public GLRenderState RenderState { get; set; }
 
+        /// <summary>Is it successfully compiled</summary>
+        public bool Compiled { get; private set; } = false;
+        /// <summary>Have we tried to add a broken pipeline shader</summary>
+        public bool ComponentFailed { get; private set; } = false;
+
         /// <summary> Name of shader. Standard name is type name and pipeline shaders, override to give a better name if required </summary>
         public virtual string Name { get { string s = ""; foreach (var sh in shaders) s = s.AppendPrePad(sh.Value.GetType().Name, ","); return GetType().Name + ":" + s; } }
 
@@ -140,10 +145,21 @@ namespace GLOFC.GL4.Shaders
         public void Add(IGLPipelineComponentShader pipelineshader, ShaderType shadertype)
         {
             System.Diagnostics.Debug.Assert(!shaders.ContainsKey(shadertype));
-            shaders[shadertype] = pipelineshader;
-            pipelineshader.References++;
-            GL.UseProgramStages(pipelineid, convmask[shadertype], pipelineshader.Id);
-            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+
+            if (pipelineshader.Compiled && !ComponentFailed)
+            {
+                shaders[shadertype] = pipelineshader;
+                pipelineshader.References++;
+                GL.UseProgramStages(pipelineid, convmask[shadertype], pipelineshader.Id);
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+
+                Compiled = true;        // adding 1 pipeline shader means its compiled.
+            }
+            else
+            {
+                Compiled = false;        // adding 1 pipeline shader means its compiled.
+                ComponentFailed = true; // record a component failure
+            }
         }
 
         /// <summary> Get the binary of the shader.  Must have linked with wantbinary</summary>

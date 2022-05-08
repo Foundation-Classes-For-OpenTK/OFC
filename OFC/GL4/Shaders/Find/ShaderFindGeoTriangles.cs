@@ -54,7 +54,7 @@ namespace GLOFC.GL4.Shaders.Geo
             if (buffer.Length < sizeneeded)
                 buffer.AllocateBytes(sizeneeded);
             vecoutbuffer = buffer;
-            CompileLink(ShaderType.GeometryShader, Code(false), auxname: GetType().Name,
+            CompileLink(ShaderType.GeometryShader, Code(false), out string unused,
                                 constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing });
         }
 

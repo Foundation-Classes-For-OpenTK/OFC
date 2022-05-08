@@ -48,7 +48,7 @@ void main(void)
         /// <summary> Constructor </summary>
         public GLPLVertexShaderVolumetric()
         {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode);
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode, out string unused);
         }
     }
 
@@ -67,7 +67,7 @@ void main(void)
         /// <param name="bufferbindingpoint">Uniform buffer with volumetric info - see shader</param>
         public GLPLGeometricShaderVolumetric(int bufferbindingpoint)
         {
-            CompileLink(ShaderType.GeometryShader, "#include Shaders.Volumetric.volumetricgeoshader.glsl", new object[] { "bufferbp", bufferbindingpoint } );
+            CompileLink(ShaderType.GeometryShader, "#include Shaders.Volumetric.volumetricgeoshader.glsl", out string unused, new object[] { "bufferbp", bufferbindingpoint } );
         }
     }
 }

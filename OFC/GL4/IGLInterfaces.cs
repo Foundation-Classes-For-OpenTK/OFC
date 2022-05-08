@@ -34,7 +34,7 @@ namespace GLOFC.GL4
         /// <summary>Called at shader start, do work at this point</summary>
         void Start(GLMatrixCalc c);                    
         /// <summary>Called at shader removal, clean up</summary>
-        void Finish();                                 
+        void Finish(); 
     }
 
     /// <summary> Pipeline Component Shader Interface. All pipeline components must come from this  </summary>
@@ -43,9 +43,11 @@ namespace GLOFC.GL4
         /// <summary>Number of references across shaders to this component</summary>
         int References { get; set; }
         /// <summary>Return the binary version of the shader for storage.  Must have linked with wantbinary</summary>
-        byte[] GetBinary(out OpenTK.Graphics.OpenGL4.BinaryFormat binformat);     
+        byte[] GetBinary(out OpenTK.Graphics.OpenGL4.BinaryFormat binformat);
         /// <summary>Load a binary image of a shader from storage</summary>
         void Load(byte[] bin, OpenTK.Graphics.OpenGL4.BinaryFormat binformat);
+        /// <summary>Is it successfully compiled</summary>
+        bool Compiled { get; }
     }
 
     /// <summary> Program Shader Interface </summary>
@@ -56,6 +58,9 @@ namespace GLOFC.GL4
         string Name { get; }
         /// <summary>Shader enable</summary>
         bool Enable { get; set; }
+
+        /// <summary>Is it successfully compiled</summary>
+        bool Compiled { get; }
 
         /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         GLRenderState RenderState { get; set;}

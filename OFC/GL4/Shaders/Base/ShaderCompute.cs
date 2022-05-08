@@ -14,6 +14,7 @@
 
 
 using System;
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4.Shaders
@@ -53,6 +54,9 @@ namespace GLOFC.GL4.Shaders
 
         /// <summary> If Enabled </summary>
         public bool Enable { get; set; } = true;
+
+        /// <summary>Is it successfully compiled</summary>
+        public bool Compiled { get; private set; } = false;
 
         /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         [Obsolete("Not used on this class", true)]
@@ -106,29 +110,51 @@ namespace GLOFC.GL4.Shaders
         /// Compile the compute program
         /// </summary>
         /// <param name="codelisting">The code</param>
+        /// <param name="compilerreport">Compiler and linker report </param>
         /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="saveable">True if want to save to binary</param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        /// <param name="assertonerror">If set, trace assert on error</param>
-        /// <returns>Null string if successful, or error text, if assert is disabled</returns>/// 
+        ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
 
-        public string CompileLink(string codelisting, object[] constvalues = null, bool saveable = false, string completeoutfile = null, bool assertonerror = true)
+        public bool CompileLink(string codelisting, out string compilerreport, object[] constvalues = null, bool saveable = false, string completeoutfile = null)
         {
+            Compiled = false;
+
             Program = new GLProgram();
-            string ret = Program.Compile(ShaderType.ComputeShader, codelisting, constvalues, completeoutfile);
 
-            if (assertonerror)
-                System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
+            bool ret = Program.Compile(ShaderType.ComputeShader, codelisting, out compilerreport, constvalues, completeoutfile);
 
-            if (ret != null)
+            if (compilerreport.HasChars())
+            {
+                compilerreport = $"Compute shader compiler report for {GetType().Name}: {compilerreport}";
+                System.Diagnostics.Trace.WriteLine(compilerreport);
+                GLShaderLog.Add(compilerreport);
+            }
+
+            GLShaderLog.Okay = ret;     // upate global Okay flag
+
+            if (ret == false && GLShaderLog.AssertOnError)
+                System.Diagnostics.Trace.Assert(ret, "", compilerreport);     // note use of trace so its asserts even in release
+
+            if (!ret)
                 return ret;
 
-            ret = Program.Link(wantbinary: saveable);
+            ret = Program.Link(out string linkerreport, wantbinary: saveable);
 
-            if (assertonerror)
-                System.Diagnostics.Trace.Assert(ret == null, "", ret);
+            if (linkerreport.HasChars())
+            {
+                linkerreport = $"Compute shader linker report for {GetType().Name}: {linkerreport}";
+                compilerreport = compilerreport.AppendPrePad(linkerreport, Environment.NewLine);
+                System.Diagnostics.Trace.WriteLine(linkerreport);
+                GLShaderLog.Add(linkerreport);
+            }
 
-            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            if (ret == false && GLShaderLog.AssertOnError)
+                System.Diagnostics.Trace.Assert(ret, "", linkerreport);
+
+            GLShaderLog.Okay = ret;     // upate global Okay flag
+
+            Compiled = ret;
             return ret;
         }
 

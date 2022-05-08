@@ -44,7 +44,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="saveable">True if want to save to binary</param>
         public GLPLVertexShaderColorModelObjectTranslation(string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), null, varyings, varymode, auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, null, varyings, varymode, saveable: saveable);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ void main(void)
             if (basecolours != null)
                 values.AddRange(new object[] { "colours", basecolours });
 
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: values.ToArray()); //, completeoutfile:@"c:\code\code.out");
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: values.ToArray()); //, completeoutfile:@"c:\code\code.out");
         }
 
         /// <summary> </summary>
@@ -244,7 +244,7 @@ void main(void)
             if (basecolours != null)
                 cvalues = new object[] { "colours", basecolours };
 
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: cvalues);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: cvalues);
         }
 
         /// <summary> Start shader </summary>
@@ -327,7 +327,7 @@ void main(void)
         /// </summary>
         public GLPLVertexShaderModelMatrixColor()
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         private string Code()
@@ -382,7 +382,7 @@ void main(void)
         public GLPLVertexShaderModelCommonObjectColor()
         {
             Transform = new GLRenderDataTranslationRotation();
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         /// <summary> Start shader </summary>
@@ -449,7 +449,7 @@ void main(void)
         /// <param name="basecolours">Optional, set of basecolours for fragment shader, worldpos.W picks colour</param>
         public GLPLVertexShaderModelWorldUniform(System.Drawing.Color[] basecolours = null)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] { "colours", basecolours }); //, completeoutfile:@"c:\code\code.out");
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] { "colours", basecolours }); //, completeoutfile:@"c:\code\code.out");
         }
 
         private string Code()       // with transform, object needs to pass in uniform 22 the transform

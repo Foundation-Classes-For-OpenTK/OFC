@@ -82,7 +82,7 @@ void main(void)
             System.Diagnostics.Debug.Assert(width % 8 == 0);
             System.Diagnostics.Debug.Assert(height % 8 == 0);
             System.Diagnostics.Debug.Assert(depth % 8 == 0);
-            CompileLink(gencode(width, height, depth, wb, hb, db, binding), saveable: saveable);
+            CompileLink(gencode(width, height, depth, wb, hb, db, binding), out string unused, saveable: saveable);
         }
     }
 }

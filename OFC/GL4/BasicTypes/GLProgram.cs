@@ -61,38 +61,40 @@ namespace GLOFC.GL4
         /// </summary>
         /// <param name="shadertype">Shader type,Fragment, Vertex etc </param>
         /// <param name="codelisting">The code</param>
+        /// <param name="compilerreport">Compiler report, empty if no compiler info</param>
         /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        /// <returns>Null string if successful, or error text</returns>
-        public string Compile( ShaderType shadertype, string codelisting, Object[] constvalues = null, string completeoutfile = null )        
+        /// <returns>true if shader compiled</returns>
+        public bool Compile( ShaderType shadertype, string codelisting, out string compilerreport, Object[] constvalues = null, string completeoutfile = null )        
         {
             GLShader shader = new GLShader(shadertype);
 
-            string ret = shader.Compile(codelisting, constvalues, completeoutfile);
+            bool ret = shader.Compile(codelisting, out compilerreport, constvalues, completeoutfile);
 
-            if (ret == null)
-            {
+            if ( ret  )
                 Add(shader);
-                return null;
-            }
-            else
-                return ret;
+
+            return ret;
         }
 
         /// <summary>
         /// Link the program.
         /// If you specify varyings, you must set up a buffer, and a start action of Gl.BindBuffer(GL.TRANSFORM_FEEDBACK_BUFFER,bufid) AND BeingTransformFeedback.
         /// </summary>
+        /// <param name="linkerreport">Linker report, empty if no linker info</param>
         /// <param name="separable">Set to true to allow for pipeline shaders</param>
         /// <param name="varyings">List of varyings to report. See <href>https://www.khronos.org/opengl/wiki/Transform_Feedback</href> for details on how you can send varying to various binding indexes</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="wantbinary">Set to true to allow GetBinary to work</param>
-        /// <returns>Null string if successful, or error text</returns>
+        /// <returns>true if shader linked</returns>
 
-        public string Link( bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool wantbinary= false)            // link, seperable or not.  Disposes of shaders. null if okay
+        public bool Link( out string linkerreport, bool separable = false, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool wantbinary= false)            // link, seperable or not.  Disposes of shaders. null if okay
         {
             if (shaders.Count == 0)
-                return "No shaders attached";
+            {
+                linkerreport = "No shaders attached";
+                return false;
+            }
 
             foreach (GLShader s in shaders)
                 GL.AttachShader(Id, s.Id);
@@ -105,7 +107,12 @@ namespace GLOFC.GL4
             GL.ProgramParameter(Id, ProgramParameterName.ProgramBinaryRetrievableHint, wantbinary ? 1:0);
 
             GL.LinkProgram(Id);
-            var info = GL.GetProgramInfoLog(Id);
+
+            GL.GetProgram(Id, GetProgramParameterName.LinkStatus, out int success);
+
+            linkerreport = GL.GetProgramInfoLog(Id);
+
+            //if (linkerreport.IsEmpty())   linkerreport += $"Linked {Id} Successfully";
 
             foreach (GLShader s in shaders)
             {
@@ -113,7 +120,7 @@ namespace GLOFC.GL4
                 s.Dispose();
             }
 
-            return info.HasChars() ? info : null;
+            return success != 0;
         }
 
         /// <summary> Get binary. Must have linked with wantbinary </summary>

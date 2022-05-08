@@ -36,7 +36,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="yfromuniform">True to take Y from uniform 22</param>
         public GLPLVertexShaderWorldCoord(bool yfromuniform = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), constvalues: new object[] { "yfromuniform", yfromuniform }, auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] { "yfromuniform", yfromuniform });
         }
         
         /// <summary> Set Y </summary>

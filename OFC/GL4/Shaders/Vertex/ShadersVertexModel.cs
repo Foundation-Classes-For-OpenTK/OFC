@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// </summary>
         public GLPLVertexShaderModelObjectTranslation()
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         private string Code()       // with transform, object needs to pass in uniform 22 the transform

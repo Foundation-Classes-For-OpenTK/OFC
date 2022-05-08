@@ -52,7 +52,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         public GLPLVertexScaleLookat(bool rotatetoviewer = false, bool rotateelevation = true, int commontransformuniform = 0, bool texcoords = false, bool generateworldpos = false,
                                                     float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
-            CompileLink(ShaderType.VertexShader, vert, new object[] { "rotate", rotatetoviewer, "rotateelevation", rotateelevation,
+            CompileLink(ShaderType.VertexShader, vert, out string unused, new object[] { "rotate", rotatetoviewer, "rotateelevation", rotateelevation,
                                                                     "usetexcoords", texcoords, "generateworldpos", generateworldpos,
                                                                     "autoscale", autoscale,
                                                                     "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance,

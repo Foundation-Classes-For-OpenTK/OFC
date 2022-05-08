@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// </summary>
         public GLPLVertexShaderWorldTextureTriStrip()
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         private string Code()
@@ -108,7 +108,7 @@ void main(void)
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
         public GLPLVertexShaderWorldTextureTriStripNorm(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] {
                                                                     "autoscale", autoscale, "autoscalemin", autoscalemin, "autoscalemax", autoscalemax ,
                                                                     "useeyedistance", useeyedistance });
         }

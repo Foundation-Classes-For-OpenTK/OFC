@@ -48,23 +48,32 @@ namespace GLOFC.GL4
         }
 
         /// <summary> 
-        /// Compile. The codelisting is glsl with the following extensions:
-        /// #include resourcename
-        /// ..   resourcename can either be a reference to an OFC glsl file, from the GL4 root, such as Shaders.Volumetric.volumetricgeoshader.glsl
-        /// ..   or it can be a fully qualified resource reference: TestOpenTk.Volumetrics.volumetricgeo3.glsl
-        /// ..   or it can be a partial resource reference from a include modules path (no . at the end, fully qualified : TestOpenTk.Volumetrics)
-        /// ..   or it can be a fully qualified filename (no quotes)
-        /// ..   or a partial path from one of the static includepaths
+        /// Compile. 
         /// const values:
-        /// ..   constvalues allow you to override definitions in the script for const type var = value
-        /// ..   declare your variables in glsl like this (const int iterations = 10 for example)
-        /// ..   then include in call a list of (string,value) pairs to set the const values to (new object[] {"iterations",20})
-        /// ..   glsl types: int, float (passed in as float or double), System.Drawing.Color, bool,
-        /// ..   vec2 (OpenTK.Vector2), vec3 (OpenTK.Vector3), vec4 (as OpenTK.Vector4)
-        /// ..   vec4[] (OpenTK.Vector4[]), Color[]
         ///</summary>
+        ///<param name="codelisting">The codelisting is glsl with the following extensions:
+        /// #include resourcename
+        /// Resourcename can either be a reference to an OFC glsl file, from the GL4 root, such as Shaders.Volumetric.volumetricgeoshader.glsl
+        /// or it can be a fully qualified resource reference: TestOpenTk.Volumetrics.volumetricgeo3.glsl
+        /// or it can be a partial resource reference from a include modules path (no . at the end, fully qualified : TestOpenTk.Volumetrics)
+        /// or it can be a fully qualified filename (no quotes)
+        /// or a partial path from one of the static includepaths
+        /// Constant values (see constvalues) in the form:
+        /// const type Name = value
+        /// </param>
+        ///<param name="constvalues">
+        /// constvalues allow you to override definitions in the script for const type var = value
+        /// declare your variables in glsl like this (const int iterations = 10 for example)
+        /// then include in call a list of (string,value) pairs to set the const values to (new object[] {"iterations",20})
+        /// glsl types: int, float (passed in as float or double), System.Drawing.Color, bool,
+        /// vec2 (OpenTK.Vector2), vec3 (OpenTK.Vector3), vec4 (as OpenTK.Vector4)
+        /// vec4[] (OpenTK.Vector4[]), Color[]
+        ///</param>
+        ///<param name="compilereport">Compiler report, empty if no compiler info</param>
+        ///<param name="completeoutfile">If you want the compiled code to be outputted</param>
+        ///<returns>true if shader compiled, even if compiler reported text</returns>
 
-        public string Compile(string codelisting, Object[] constvalues = null, string completeoutfile = null)                // string return gives any errors
+        public bool Compile(string codelisting, out string compilereport, Object[] constvalues = null,  string completeoutfile = null)                // string return gives any errors
         {
             Id = GL.CreateShader(type);
             GLStatics.RegisterAllocation(typeof(GLShader));
@@ -74,32 +83,41 @@ namespace GLOFC.GL4
 
             GL.CompileShader(Id);
 
-            string CompileReport = GL.GetShaderInfoLog(Id);
+            GL.GetShader(Id, ShaderParameter.CompileStatus, out int success);       // this is the way to get compilation status, success == 0 failed
 
-            if (CompileReport.HasChars())
+            compilereport = GL.GetShaderInfoLog(Id);
+
+            if (compilereport.HasChars())
             {
-                GL.DeleteShader(Id);
-                Id = -1;
-
-                int opos = CompileReport.IndexOf("0(");
+                int opos = compilereport.IndexOf("0(");
                 if (opos != -1)
                 {
-                    int opose = CompileReport.IndexOf(")", opos);
+                    int opose = compilereport.IndexOf(")", opos);
                     if (opose != -1)     // lets help ourselves by reporting the source.. since the source can be obscure.
                     {
-                        int? lineno = CompileReport.Substring(opos + 2, opose - opos - 2).InvariantParseIntNull();
+                        int? lineno = compilereport.Substring(opos + 2, opose - opos - 2).InvariantParseIntNull();
 
                         if (lineno.HasValue)
                         {
-                            CompileReport = CompileReport + Environment.NewLine + source.LineMarking(lineno.Value - 5, 10, "##0", lineno.Value);
+                            compilereport = compilereport + Environment.NewLine + source.LineMarking(lineno.Value - 5, 10, "##0", lineno.Value);
                         }
                     }
                 }
-
-                return CompileReport;
+            }
+            else
+            {
+                compilereport = "";
+              //  compilereport = $"Compiled {Id} successfully";
             }
 
-            return null;
+            if (success == 0)
+            {
+                GL.DeleteShader(Id);
+                Id = -1;
+                return false;
+            }
+            else
+                return true;
         }
 
         /// <summary> </summary>

@@ -34,7 +34,7 @@ namespace GLOFC.GL4.Shaders.Fragment
         public GLPLFragmentShaderFixedColor(OpenTK.Graphics.Color4 color, bool saveable = false)
         {
             col = color;
-            CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.FragmentShader, Code(), out string unused, saveable: saveable);
         }
 
         private string Code()
@@ -68,7 +68,7 @@ void main(void)
         /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentShaderUniformColor(int uniform = 25, bool saveable = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(), constvalues: new object[] { "bindingpoint", uniform }, auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.FragmentShader, Code(), out string unused, constvalues: new object[] { "bindingpoint", uniform }, saveable: saveable);
         }
 
         private string Code()
@@ -102,7 +102,7 @@ void main(void)
         /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentShaderVSColor(bool saveable = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(), auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.FragmentShader, Code(), out string unused, saveable: saveable);
         }
 
         private string Code()
@@ -135,7 +135,7 @@ void main(void)
         /// <param name="saveable">Make it saveable</param>
         public GLPLFragmentIDShaderColor(int divisor, bool saveable = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(divisor), auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.FragmentShader, Code(divisor), out string unused, saveable: saveable);
         }
 
         private string Code(int divisor)

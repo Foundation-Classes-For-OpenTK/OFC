@@ -319,7 +319,7 @@ namespace TestOpenTk
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it
         {
-            System.Diagnostics.Debug.Write($"Theme {s.GetType().Name}");
+            System.Diagnostics.Debug.WriteLine($"Theme {s.GetType().Name}");
 
             Color formback = Color.FromArgb(220, 60, 60, 70);
             Color buttonface = Color.FromArgb(255, 128, 128, 128);

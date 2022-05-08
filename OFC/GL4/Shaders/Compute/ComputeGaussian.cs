@@ -71,7 +71,7 @@ void main(void)
         public ComputeShaderGaussian(int points, float centre, float width, float stddist, int binding = 4, bool saveable = false) : base(points / Localgroupsize, 1, 1)
         {
             System.Diagnostics.Debug.Assert(points % Localgroupsize == 0);
-            CompileLink(gencode(points, centre, width, stddist, binding), saveable: saveable);
+            CompileLink(gencode(points, centre, width, stddist, binding), out string unused, saveable: saveable);
         }
     }
 }

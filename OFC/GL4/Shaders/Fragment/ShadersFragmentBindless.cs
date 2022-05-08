@@ -50,9 +50,8 @@ namespace GLOFC.GL4.Shaders.Fragment
         /// <param name="useprimidover2">Use primitive/2 as texture object number, else use location 4</param>
         public GLPLFragmentShaderBindlessTexture(int arbblock, bool usealphablending = false, bool discardiftransparent = false, bool useprimidover2 = true)
         {
-            CompileLink(ShaderType.FragmentShader, Code(arbblock),
-                        constvalues: new object[] { "usewvalue", usealphablending, "discardiftransparent", discardiftransparent, "useprimidover2", useprimidover2 },
-                        auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(arbblock), out string unused,
+                        constvalues: new object[] { "usewvalue", usealphablending, "discardiftransparent", discardiftransparent, "useprimidover2", useprimidover2 });
         }
 
         /// <summary> Shader start </summary>

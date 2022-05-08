@@ -42,7 +42,7 @@ namespace GLOFC.GL4.Shaders.Stars
         /// <summary> Constructor </summary>
         public GLPLStarSurfaceFragmentShader()
         {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), auxname: GetType().Name);
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), out string unused);
         }
 
         /// <summary> Start shader</summary>

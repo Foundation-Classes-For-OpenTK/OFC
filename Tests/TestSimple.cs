@@ -94,7 +94,11 @@ namespace TestOpenTk
 
             // create stock shaders
 
+            GLShaderLog.AssertOnError = false;
+
             items.Add(new GLColorShaderWorld(), "COSW");
+
+#if true
             items.Add(new GLColorShaderObjectTranslation(), "COSOT");
             items.Add(new GLTexturedShaderObjectTranslation(), "TEXOT");
 
@@ -105,7 +109,7 @@ namespace TestOpenTk
             items.Add(new GLTexture2D(Properties.Resources.Logo8bpp, SizedInternalFormat.Rgba8), "logo8bpp");
             items.Add(new GLTexture2D(Properties.Resources.smile5300_256x256x8, SizedInternalFormat.Rgba8), "smile");
 
-            #region coloured lines
+#region coloured lines
 
             if (true)
             {
@@ -141,9 +145,9 @@ namespace TestOpenTk
                                    );
             }
 
-            #endregion
+#endregion
 
-            #region Coloured cubes
+#region Coloured cubes
             if (true)
             {
                 GLRenderState rc = GLRenderState.Tri();
@@ -201,9 +205,9 @@ namespace TestOpenTk
                             ));
             }
 
-            #endregion
+#endregion
 
-            #region textures
+#region textures
             if (true)
             {
               //  texture facing upwards, culled if viewer below it
@@ -218,10 +222,17 @@ namespace TestOpenTk
                             ));
             }
 
-            #endregion
+#endregion
 
 
             items.Add(new GLMatrixCalcUniformBlock(),"MCUB");     // def binding of 0
+
+#endif
+            System.Diagnostics.Debug.WriteLine($"Shader report: {Environment.NewLine}{GLShaderLog.ShaderLog}");
+
+            string shaderlog = GLShaderLog.ShaderLog;
+            if (shaderlog.HasChars())
+                MessageBox.Show(this, shaderlog, "Shader Log - report to EDD");
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

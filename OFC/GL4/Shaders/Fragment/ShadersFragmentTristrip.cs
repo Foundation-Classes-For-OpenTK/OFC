@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Shaders.Fragment
         /// <param name="binding">Binding point of texture</param>
         public GLPLFragmentShaderTextureTriStrip(int binding = 1)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused);
         }
 
         /// <summary> Start shader </summary>
@@ -119,7 +119,7 @@ void main(void)
         /// <param name="eyedistancetomakealllcolorreplace">if non zero, eye distance above which all pixels become location 3</param>
         public GLPLFragmentShaderTextureTriStripColorReplace(int binding, Color replace, float eyedistancetomakealllcolorreplace = 0)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), constvalues: new object[] { "replace", replace , "eyedistancetomakealllcolorin", eyedistancetomakealllcolorreplace }, auxname: GetType().Name);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused, constvalues: new object[] { "replace", replace , "eyedistancetomakealllcolorin", eyedistancetomakealllcolorreplace });
         }
 
         /// <summary> </summary>

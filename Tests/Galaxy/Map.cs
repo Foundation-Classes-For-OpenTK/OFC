@@ -113,6 +113,9 @@ namespace TestOpenTk
 
             hptimer.Start();
 
+            GLShaderLog.Reset();
+            GLShaderLog.AssertOnError = false;
+
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int lyscale = 1;
@@ -554,6 +557,13 @@ namespace TestOpenTk
                 }
 
             }
+
+            string shaderlog = GLShaderLog.ShaderLog;
+            if (shaderlog.HasChars())
+                MessageBox.Show(shaderlog, "Shader Log - report to EDD");
+            if ( GLShaderLog.Okay == false )
+                MessageBox.Show(shaderlog, "Map broken - abort");
+
         }
 
         public void LoadState(MapSaver defaults)

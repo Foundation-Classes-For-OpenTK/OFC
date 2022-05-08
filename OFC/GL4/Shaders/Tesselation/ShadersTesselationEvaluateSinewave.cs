@@ -40,7 +40,7 @@ namespace GLOFC.GL4.Shaders.Tesselation
         /// <param name="repeats">Number of repeats across the object</param>
         public GLPLTesselationEvaluateSinewave(float amplitude, float repeats)
         {
-            CompileLink(ShaderType.TessEvaluationShader, TES(), constvalues: new object[] { "amplitude", amplitude, "repeats", repeats });
+            CompileLink(ShaderType.TessEvaluationShader, TES(), out string unused, constvalues: new object[] { "amplitude", amplitude, "repeats", repeats });
         }
 
         /// <summary> Start shader</summary>

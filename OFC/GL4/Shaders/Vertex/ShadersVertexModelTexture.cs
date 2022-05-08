@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="saveable">Is shader to be saveable</param>
         public GLPLVertexShaderModelTextureTranslation(bool saveable = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, saveable: saveable);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, saveable: saveable);
         }
 
         private string Code()       // with transform, object needs to pass in uniform 22 the transform
@@ -104,7 +104,7 @@ void main(void)
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
         public GLPLVertexShaderModelMatrixTexture(float autoscale = 0, bool useeyedistance = true)
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] {
                                                                     "autoscale", autoscale,
                                                                     "useeyedistance", useeyedistance });
         }
@@ -214,7 +214,7 @@ void main(void)
         public GLPLVertexShaderModelTranslationTexture(float autoscale = 0, float autoscalemin = 0.1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
             Transform = new GLRenderDataTranslationRotation();
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name, constvalues: new object[] {
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] {
                                                                     "autoscale", autoscale,
                                                                     "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
         }
@@ -304,7 +304,7 @@ void main(void)
         /// </summary>
         public GLPLVertexShaderModelWorldTexture()
         {
-            CompileLink(ShaderType.VertexShader, Code(), auxname: GetType().Name);
+            CompileLink(ShaderType.VertexShader, Code(), out string unused);
         }
 
         /// <summary> Start shader </summary>

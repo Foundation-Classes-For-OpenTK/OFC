@@ -83,7 +83,7 @@ namespace TestOpenTk
 
         string vcode()
         { return @"
-#version 450 core
+#version 460 core
 
 layout (location=10) uniform int lines;
 layout (location=11) uniform int gridwidth;
@@ -149,7 +149,7 @@ void main(void)
 
         public DynamicGridVertexShader(Color c)
         {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), new object[] { "color", c });
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unused, new object[] { "color", c });
         }
 
     }
@@ -286,7 +286,7 @@ void main(void)
                 texcoords.LoadBitmap(bmp, i,true, 1);
             }
 
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode());
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unused);
         }
 
         public override void Start(GLMatrixCalc c)

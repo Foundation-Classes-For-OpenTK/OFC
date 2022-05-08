@@ -14,6 +14,7 @@
 
 
 using System;
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4.Shaders
@@ -35,6 +36,9 @@ namespace GLOFC.GL4.Shaders
         public GLProgram Program { get; private set; }
         /// <summary> If Enabled</summary>
         public bool Enable { get; set; } = true;                        // if not enabled, no render items below it will be visible
+
+        /// <summary>Is it successfully compiled</summary>
+        public bool Compiled { get; private set; } = false;
 
         /// <summary>Optional Render state. The shader can order a render state instead of each renderable item having one, if required </summary>
         public GLRenderState RenderState { get; set; }
@@ -83,72 +87,127 @@ namespace GLOFC.GL4.Shaders
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
-        /// <param name="assertonerror">If set, trace assert on error</param>
-        /// <returns>Null string if successful, or error text, if assert is disabled</returns>/// 
+        ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
 
-        public string CompileLink(string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
+        public bool CompileLink(string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
                                  object[] vertexconstvars = null, object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
-                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false, bool assertonerror = true
+                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
                                 )
         {
+            return CompileLink(out string unused, vertex, tcs, tes, geo, frag,
+                                vertexconstvars, tcsconstvars, tesconstvars, geoconstvars, fragconstvars, 
+                                varyings, varymode, saveable);
+        }
+
+
+        /// <summary>
+        /// Compile and link the pipeline component. 
+        /// If you specify varyings, you must set up a buffer, and a start action of Gl.BindBuffer(GL.TRANSFORM_FEEDBACK_BUFFER,bufid) AND BeingTransformFeedback.
+        /// </summary>
+        /// <param name="compilerreport">Compiler and linker report </param>
+        /// <param name="vertex">The code for this shader type, or null</param>
+        /// <param name="tcs">The code for this shader type, or null</param>
+        /// <param name="tes">The code for this shader type, or null</param>
+        /// <param name="geo">The code for this shader type, or null</param>
+        /// <param name="frag">The code for this shader type, or null</param>
+        /// <param name="vertexconstvars">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="tcsconstvars">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="tesconstvars">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="geoconstvars">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="fragconstvars">List of constant values to use. Set of {name,value} pairs</param>
+        /// <param name="varyings">List of varyings to report</param>
+        /// <param name="varymode">How to write the varying to the buffer</param>
+        /// <param name="saveable">True if want to save to binary</param>
+        ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
+
+        public bool CompileLink(out string compilerreport, 
+                                string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
+                                object[] vertexconstvars = null, object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
+                                string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
+                            )
+        {
+            Compiled = false;
+
             Program = new GLProgram();
 
-            string ret;
+            compilerreport = "";
 
             if (vertex != null)
             {
-                ret = Program.Compile(ShaderType.VertexShader, vertex, vertexconstvars);
-                if (assertonerror)
-                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
-                if (ret != null)
+                bool ret = Compile(ShaderType.VertexShader, vertex, ref compilerreport, vertexconstvars);
+                if (!ret)
                     return ret;
             }
 
             if (tcs != null)
             {
-                ret = Program.Compile(ShaderType.TessControlShader, tcs, tcsconstvars);
-                if (assertonerror)
-                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
-                if (ret != null)
+                bool ret = Compile(ShaderType.TessControlShader, tcs, ref compilerreport, tcsconstvars);
+                if (!ret)
                     return ret;
             }
 
             if (tes != null)
             {
-                ret = Program.Compile(ShaderType.TessEvaluationShader, tes, tesconstvars);
-                if (assertonerror)
-                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
-                if (ret != null)
+                bool ret = Compile(ShaderType.TessEvaluationShader, tes, ref compilerreport, tesconstvars);
+                if (!ret)
                     return ret;
             }
 
             if (geo != null)
             {
-                ret = Program.Compile(ShaderType.GeometryShader, geo, geoconstvars);
-                if (assertonerror)
-                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
-                if (ret != null)
+                bool ret = Compile(ShaderType.GeometryShader, geo, ref compilerreport, geoconstvars);
+                if (!ret)
                     return ret;
             }
 
             if (frag != null)
             {
-                ret = Program.Compile(ShaderType.FragmentShader, frag, fragconstvars);
-                if (assertonerror)
-                    System.Diagnostics.Trace.Assert(ret == null, "", ret);     // note use of trace so its asserts even in release
-                if (ret != null)
+                bool ret = Compile(ShaderType.FragmentShader, frag, ref compilerreport, fragconstvars);
+                if (!ret)
                     return ret;
             }
 
-            ret = Program.Link(false, varyings, varymode, saveable);
-            System.Diagnostics.Debug.Assert(ret == null, "Link", ret);
+            bool lret = Program.Link(out string linkerreport, false, varyings, varymode, saveable);
 
-            if (assertonerror)
-                System.Diagnostics.Trace.Assert(ret == null, "", ret);
+            if (linkerreport.HasChars())
+            {
+                linkerreport = $"Standard shader linker report for {GetType().Name}: {linkerreport}";
+                compilerreport = compilerreport.AppendPrePad(linkerreport, Environment.NewLine);
+                System.Diagnostics.Trace.WriteLine(linkerreport);
+                GLShaderLog.Add(linkerreport);
+            }
 
-            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            if (lret == false && GLShaderLog.AssertOnError)
+                System.Diagnostics.Trace.Assert(lret, "", linkerreport);     // note use of trace so its asserts even in release
+
+            Compiled = lret;
+            GLShaderLog.Okay = lret;     // update global Okay flag
+
+            return lret;
+        }
+
+        /// <summary> Internal compile one shader /// </summary>
+        private bool Compile(ShaderType t, string text, ref string compilerreport, object[] vars)
+        {
+            bool ret = Program.Compile(t, text, out string report, vars);
+
+            string errreport = $"Std {t.ToString()} compiler report for {GetType().Name}: {report}";
+
+            if (report.HasChars())
+            {
+                compilerreport = compilerreport.AppendPrePad(errreport,Environment.NewLine);
+                System.Diagnostics.Trace.WriteLine(errreport);
+                GLShaderLog.Add(errreport);
+            }
+
+            if (ret == false && GLShaderLog.AssertOnError)
+                System.Diagnostics.Trace.Assert(ret, "", errreport);     // note use of trace so its asserts even in release
+
+            GLShaderLog.Okay = ret;     // update global Okay flag
+
             return ret;
         }
+
 
         /// <summary> Get the binary of the shader.  Must have linked with wantbinary</summary>
         public byte[] GetBinary(out BinaryFormat binformat)     // must have linked with wantbinary

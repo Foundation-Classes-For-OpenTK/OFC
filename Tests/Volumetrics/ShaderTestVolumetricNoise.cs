@@ -335,7 +335,7 @@ void main(void)
 
             public ComputeShaderNoise(int width, int height, int depth, int wb, int hb, int db) : base(width/Localgroupsize,height/Localgroupsize,depth/Localgroupsize)
             {
-                CompileLink( gencode(width,height,depth,wb,hb,db)) ;
+                CompileLink( gencode(width,height,depth,wb,hb,db), out string unused) ;
             }
 
         }

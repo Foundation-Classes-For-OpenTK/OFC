@@ -14,6 +14,7 @@
 
 
 using System;
+using GLOFC.Utils;
 using OpenTK.Graphics.OpenGL4;
 
 namespace GLOFC.GL4.Shaders
@@ -33,38 +34,63 @@ namespace GLOFC.GL4.Shaders
         /// <summary> Program object </summary>
         protected GLProgram Program { get; private set; }
 
+        /// <summary>Is it successfully compiled</summary>
+        public bool Compiled { get; private set; } = false;
+
         /// <summary>
         /// Compile and link the pipeline component.
         /// If you specify varyings, you must set up a buffer, and a start action of Gl.BindBuffer(GL.TRANSFORM_FEEDBACK_BUFFER,bufid) AND BeingTransformFeedback.
         /// </summary>
         /// <param name="shadertype">Shader type,Fragment, Vertex etc </param>
         /// <param name="codelisting">The code</param>
+        /// <param name="compilerreport">Compiler and linker report </param>
         /// <param name="constvalues">List of constant values to use. Set of {name,value} pairs</param>
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
-        /// <param name="auxname">For reporting purposes on error, name to give to shader </param>
         /// <param name="completeoutfile">If non null, output the post processed code listing to this file</param>
-        /// <param name="assertonerror">If set, trace assert on error</param>
-        /// <returns>Null string if successful, or error text, if assert is disabled</returns>
-        protected string CompileLink(ShaderType shadertype, string codelisting,
+        ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
+        protected bool CompileLink(ShaderType shadertype, string codelisting, out string compilerreport, 
                                         object[] constvalues = null, string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs,
                                         bool saveable = false,
-                                        string auxname = "", string completeoutfile = null, bool assertonerror = true)
+                                        string completeoutfile = null)
         {
+            Compiled = false;
+
             Program = new GLProgram();
-            string ret = Program.Compile(shadertype, codelisting, constvalues, completeoutfile);
+            bool ret = Program.Compile(shadertype, codelisting, out compilerreport, constvalues, completeoutfile);
 
-            if (assertonerror)
-                System.Diagnostics.Trace.Assert(ret == null, auxname, ret);     // note use of trace so its asserts even in release
+            if (compilerreport.HasChars())
+            {
+                compilerreport = $"Pipeline shader compiler report for {GetType().Name}: {compilerreport}";
+                System.Diagnostics.Trace.WriteLine(compilerreport);
+                GLShaderLog.Add(compilerreport);
+            }
 
-            if (ret != null)
+            GLShaderLog.Okay = ret;     // upate global Okay flag
+
+            if (ret == false)
+            {
+                if (GLShaderLog.AssertOnError)
+                    System.Diagnostics.Trace.Assert(ret, "", compilerreport);     // note use of trace so its asserts even in release
                 return ret;
+            }
 
-            ret = Program.Link(separable: true, varyings, varymode, saveable);
+            ret = Program.Link(out string linkerreport, separable: true, varyings, varymode, saveable);
 
-            if (assertonerror)
-                System.Diagnostics.Trace.Assert(ret == null, auxname, ret);
+            if (linkerreport.HasChars())
+            {
+                linkerreport = $"Pipeline shader linker report for {GetType().Name}: {linkerreport}";
+                compilerreport = compilerreport.AppendPrePad(linkerreport, Environment.NewLine);
+                System.Diagnostics.Trace.WriteLine(linkerreport);
+                GLShaderLog.Add(linkerreport);
+            }
+
+            if (ret == false && GLShaderLog.AssertOnError)
+                System.Diagnostics.Trace.Assert(ret, "", linkerreport);
+
+            Compiled = ret;
+            GLShaderLog.Okay = ret;     // upate global Okay flag
 
             return ret;
         }
