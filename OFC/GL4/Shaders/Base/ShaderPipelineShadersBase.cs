@@ -56,6 +56,8 @@ namespace GLOFC.GL4.Shaders
                                         string completeoutfile = null)
         {
             Compiled = false;
+            
+            completeoutfile = GLShaderLog.Outfile(completeoutfile, GetType().Name);       // see if shader log wants output files
 
             Program = new GLProgram();
             bool ret = Program.Compile(shadertype, codelisting, out compilerreport, constvalues, completeoutfile);

@@ -48,8 +48,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary> 
-        /// Compile. 
-        /// const values:
+        /// Compile a shader with optional constvalues, report back the compiler report, an optional outfile of the text compiled, and true/false if the compile worked.
         ///</summary>
         ///<param name="codelisting">The codelisting is glsl with the following extensions:
         /// #include resourcename

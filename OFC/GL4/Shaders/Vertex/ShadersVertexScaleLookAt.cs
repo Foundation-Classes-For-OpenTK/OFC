@@ -78,7 +78,7 @@ layout (location = transformuniform) uniform  mat4 transform;
 
 layout (location = 0) out vec2 vs_textureCoordinate;
 layout (location = 1) out vec4 worldposinstance;
-layout (location = 2) out int instance;
+layout (location = 2) out flat int instance;
 
 out gl_PerVertex {
         vec4 gl_Position;

@@ -56,7 +56,7 @@ namespace GLOFC.GL4.Shaders.Fragment
     @"
 #version 450 core
 layout (location=0) in vec2 vs_textureCoordinate;
-layout (location=2) flat in int vertexid;
+layout (location=2) in flat int vertexid;
 
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureObject;
 layout (location = 24) uniform  vec2 offset;
@@ -134,7 +134,7 @@ void main(void)
 #include UniformStorageBlocks.matrixcalc.glsl
 
 layout (location=0) in vec2 vs_textureCoordinate;
-layout (location=2) flat in int vertexid;
+layout (location=2) in flat int vertexid;
 layout (location=3) flat in vec4 colorin;
 
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureObject;

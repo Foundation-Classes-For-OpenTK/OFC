@@ -335,7 +335,7 @@ out gl_PerVertex {
 
 layout( location = 0) out vec2 vs_textureCoordinate;
 layout (location = 1) out vec3 modelpos;
-layout (location = 2) out int instance;
+layout (location = 2) out flat int instance;
 
 void main(void)
 {

@@ -70,7 +70,7 @@ in gl_PerVertex
 } gl_in[];
 
 layout( location = 1 ) in vec4 tcs_worldposinstance[];
-layout( location = 2 ) in int tcs_instance[];
+layout( location = 2 ) in flat int tcs_instance[];
 
 out gl_PerVertex {
   vec4 gl_Position;
@@ -79,8 +79,8 @@ out gl_PerVertex {
 };
 
 layout( location = 0 ) out vec2 vs_textureCoordinate;
-layout( location = 1 ) flat out int imageno;
-layout( location = 2 ) out int instance;
+layout( location = 1 ) out flat int imageno;
+layout( location = 2 ) out flat int instance;
 const float amplitude = 0;
 const float repeats = 0;
 

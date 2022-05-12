@@ -115,6 +115,7 @@ namespace TestOpenTk
 
             GLShaderLog.Reset();
             GLShaderLog.AssertOnError = false;
+            GLShaderLog.ShaderSourceLog = @"c:\code\logs\shaders";
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 

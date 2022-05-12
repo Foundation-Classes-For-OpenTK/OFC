@@ -61,7 +61,7 @@ out gl_PerVertex {
 
 layout(location = 0) out vec2 vs_textureCoordinate;
 layout(location = 1) out vec3 worldpos;
-layout(location = 2) flat out int vertexid;
+layout(location = 2) out flat int vertexid;
 layout(location = 3) flat out vec4 colorout;
 
 void main(void)
@@ -139,7 +139,7 @@ out gl_PerVertex {
 
 layout(location = 0) out vec2 vs_textureCoordinate;
 layout(location = 1) out vec3 worldpos;
-layout(location = 2) flat out int vertexid;
+layout(location = 2) out flat int vertexid;
 layout(location = 3) flat out vec4 colorout;
 
 const float autoscale = 0;

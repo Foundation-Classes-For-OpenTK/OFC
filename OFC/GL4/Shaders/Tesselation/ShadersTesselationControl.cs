@@ -69,10 +69,10 @@ out gl_PerVertex
 } gl_out[];
 
 layout( location = 1 ) in vec4 worldposinstance[];         // pass thru this array. TCS is run one per vertex
-layout( location = 2 ) in int instance[];
+layout( location = 2 ) in flat int instance[];
 
 layout( location = 1 ) out vec4 tcs_worldposinstance[];
-layout( location = 2 ) out int tcs_instance[];
+layout( location = 2 ) out flat int tcs_instance[];
 
 void main(void)
 {

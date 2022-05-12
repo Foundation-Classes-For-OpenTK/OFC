@@ -30,7 +30,7 @@ layout (points) in;             // no vertex info is used, just its instance ID
 layout (triangle_strip) out;
 layout (max_vertices=18) out;	// 6 triangles max
 
-in int instance[];				// from vertex shader
+in flat int instance[];				// from vertex shader
 
 out vec3 vs_texcoord;			// 0-1 normalised tex co-ord in the direction of vector x=v8,y=v0,z=v3, 0,0,0 is the bottom front left corner
 

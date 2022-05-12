@@ -87,16 +87,18 @@ namespace GLOFC.GL4.Shaders
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
+        /// <param name="completeoutfile">If non null, save compiler source to this root namd and extension</param>
         ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
 
         public bool CompileLink(string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
                                  object[] vertexconstvars = null, object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
-                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
+                                 string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false, 
+                                 string completeoutfile = null
                                 )
         {
             return CompileLink(out string unused, vertex, tcs, tes, geo, frag,
                                 vertexconstvars, tcsconstvars, tesconstvars, geoconstvars, fragconstvars, 
-                                varyings, varymode, saveable);
+                                varyings, varymode, saveable, completeoutfile);
         }
 
 
@@ -118,12 +120,14 @@ namespace GLOFC.GL4.Shaders
         /// <param name="varyings">List of varyings to report</param>
         /// <param name="varymode">How to write the varying to the buffer</param>
         /// <param name="saveable">True if want to save to binary</param>
+        /// <param name="completeoutfile">If non null, save compiler source to this root namd and extension</param>
         ///<returns>true if shader compiled and linked, even if compiler reported text</returns>
 
         public bool CompileLink(out string compilerreport, 
                                 string vertex = null, string tcs = null, string tes = null, string geo = null, string frag = null,
                                 object[] vertexconstvars = null, object[] tcsconstvars = null, object[] tesconstvars = null, object[] geoconstvars = null, object[] fragconstvars = null,
-                                string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false
+                                string[] varyings = null, TransformFeedbackMode varymode = TransformFeedbackMode.InterleavedAttribs, bool saveable = false, 
+                                string completeoutfile = null
                             )
         {
             Compiled = false;
@@ -134,35 +138,35 @@ namespace GLOFC.GL4.Shaders
 
             if (vertex != null)
             {
-                bool ret = Compile(ShaderType.VertexShader, vertex, ref compilerreport, vertexconstvars);
+                bool ret = Compile(ShaderType.VertexShader, vertex, ref compilerreport, vertexconstvars, completeoutfile);
                 if (!ret)
                     return ret;
             }
 
             if (tcs != null)
             {
-                bool ret = Compile(ShaderType.TessControlShader, tcs, ref compilerreport, tcsconstvars);
+                bool ret = Compile(ShaderType.TessControlShader, tcs, ref compilerreport, tcsconstvars, completeoutfile);
                 if (!ret)
                     return ret;
             }
 
             if (tes != null)
             {
-                bool ret = Compile(ShaderType.TessEvaluationShader, tes, ref compilerreport, tesconstvars);
+                bool ret = Compile(ShaderType.TessEvaluationShader, tes, ref compilerreport, tesconstvars, completeoutfile);
                 if (!ret)
                     return ret;
             }
 
             if (geo != null)
             {
-                bool ret = Compile(ShaderType.GeometryShader, geo, ref compilerreport, geoconstvars);
+                bool ret = Compile(ShaderType.GeometryShader, geo, ref compilerreport, geoconstvars, completeoutfile);
                 if (!ret)
                     return ret;
             }
 
             if (frag != null)
             {
-                bool ret = Compile(ShaderType.FragmentShader, frag, ref compilerreport, fragconstvars);
+                bool ret = Compile(ShaderType.FragmentShader, frag, ref compilerreport, fragconstvars, completeoutfile);
                 if (!ret)
                     return ret;
             }
@@ -187,9 +191,14 @@ namespace GLOFC.GL4.Shaders
         }
 
         /// <summary> Internal compile one shader /// </summary>
-        private bool Compile(ShaderType t, string text, ref string compilerreport, object[] vars)
+        private bool Compile(ShaderType t, string text, ref string compilerreport, object[] vars, string completeoutfile)
         {
-            bool ret = Program.Compile(t, text, out string report, vars);
+            if (completeoutfile != null)        // if not null, mangle path to include shader type
+                completeoutfile = System.IO.Path.GetDirectoryName(completeoutfile) + "\\" + System.IO.Path.GetFileNameWithoutExtension(completeoutfile) + "-" + t.ToString() + System.IO.Path.GetExtension(completeoutfile);
+
+            completeoutfile = GLShaderLog.Outfile(completeoutfile, GetType().Name, t.ToString());       // see if shader log wants output file
+
+            bool ret = Program.Compile(t, text, out string report, vars, completeoutfile);
 
             string errreport = $"Std {t.ToString()} compiler report for {GetType().Name}: {report}";
 

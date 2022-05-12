@@ -31,7 +31,7 @@ namespace GLOFC.GL4.Shaders.Volumetric
         @"
 #version 450 core
 
-out int instance;
+out flat int instance;
 
 out gl_PerVertex {
         vec4 gl_Position;
@@ -67,7 +67,7 @@ void main(void)
         /// <param name="bufferbindingpoint">Uniform buffer with volumetric info - see shader</param>
         public GLPLGeometricShaderVolumetric(int bufferbindingpoint)
         {
-            CompileLink(ShaderType.GeometryShader, "#include Shaders.Volumetric.volumetricgeoshader.glsl", out string unused, new object[] { "bufferbp", bufferbindingpoint } );
+            CompileLink(ShaderType.GeometryShader, "#include Shaders.Volumetric.volumetricgeoshader.glsl", out string unused, new object[] { "bufferbp", bufferbindingpoint });
         }
     }
 }

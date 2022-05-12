@@ -84,7 +84,7 @@ void main(void)
 #version 450 core
 
 layout( location = 0 ) in vec2 vs_textureCoordinate;
-layout( location = 1 ) flat in int imageno;      
+layout( location = 1 ) in flat int imageno;      
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2DArray textureObject2D;
 
 out vec4 color;

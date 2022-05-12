@@ -40,7 +40,7 @@ layout(location = 2) in vec4 instancepos;
 layout (location = 20) uniform  mat4 commontransform;
 
 out vec2 tc;
-out int imagebase;
+out flat int imagebase;
 
 void main(void)
 {
@@ -67,7 +67,7 @@ layout(location = 4) in mat4 mat;       // from buffer2
 layout (location = 20) uniform  mat4 commontransform;
 
 out vec2 tc;
-out int imagebase;
+out flat int imagebase;
 
 void main(void)
 {
@@ -96,7 +96,7 @@ in gl_PerVertex
 } gl_in[];
 
 in vec2 tc[];
-in int imagebase[];
+in flat int imagebase[];
 
 out gl_PerVertex 
 {
@@ -106,7 +106,7 @@ out gl_PerVertex
 };
 
 layout (location = 0) out vec2 tcg;
-layout (location = 1) out int imagebaseg;
+layout (location = 1) out flat int imagebaseg;
 
 void main(void)
 {
@@ -130,7 +130,7 @@ void main(void)
 
 out vec4 color;
 layout (location = 0 ) in vec2 tcg;
-layout (location = 1 ) flat in int imagebaseg;      //default is last vertex provides this, but as position is per instance, its just the instance value
+layout (location = 1 ) in flat int imagebaseg;      //default is last vertex provides this, but as position is per instance, its just the instance value
 
 layout (binding=1) uniform sampler2DArray textureObject2D;
 layout (location = 25) uniform  float mixamount;    // between lo and hi image, 0-1

@@ -124,8 +124,8 @@ layout (triangles) in;               // triangles come in
 layout (triangle_strip) out;        // norm op is not to sent them on
 layout (max_vertices=3) out;	    // 1 triangle max
 
-layout (location = 2) in int instance[];        // vertex shader pass in instance
-layout (location = 4) in int drawid[];          // vertex shader may pass in drawid
+layout (location = 2) in flat int instance[];        // vertex shader pass in instance
+layout (location = 4) in flat int drawid[];          // vertex shader may pass in drawid
 
 layout (location = 10) uniform vec4 screencoords;
 layout (location = 11) uniform float pointdist;
