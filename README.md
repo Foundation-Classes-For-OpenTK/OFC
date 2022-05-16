@@ -19,6 +19,8 @@ A basic set of shape factories allow some basic shapes to be turned into vertex 
 
 Also present is a WINFORM style set of classes to allow a UI to be presented in GL, allowing creation of Forms, Buttons, Labels, Comboboxes, Data grid views, drop down lists, panels, data grid views, etc.
 
+Available on NUGET for framework 4.8 - search for GLOFC.
+
 This code was written for the EDDiscovery project and so is orientated for that use.
 
 The code is in development and more will be added as we use this code in EDD.
