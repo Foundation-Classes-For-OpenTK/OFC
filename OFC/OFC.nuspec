@@ -9,7 +9,12 @@
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Release 0.9.0 fixes an issue with FormConfigurable and the close icon.</releaseNotes>
+    <releaseNotes>Release 1.0.0 features:
+    Support for indicating GL version required.
+    All examples reworked for 4.6 only - removal of QUADs etc.
+    New GLShaderLog to allow errors to accumulate
+    Fixes for shaders for some AMD quirks
+    </releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>OpenGL OpenTK GL GLOFC</tags>
     <readme>docs\README.md</readme>
