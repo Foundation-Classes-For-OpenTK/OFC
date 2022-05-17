@@ -107,6 +107,11 @@ namespace GLOFC.GL4
         }
 
 
+        /// <summary> Return maximum shader storage buffer number +1 (all binding indexes must be below this)</summary>
+        public static int GetShaderStorageMaxBindingNumber()
+        {
+            return GL.GetInteger((GetPName)All.MaxShaderStorageBufferBindings);
+        }
     }
 }
 

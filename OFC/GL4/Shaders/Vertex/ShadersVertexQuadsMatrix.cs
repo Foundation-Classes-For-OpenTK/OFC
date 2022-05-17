@@ -158,7 +158,7 @@ namespace GLOFC.GL4.Shaders.Vertex
     vec4 vertex[] = { vec4(-0.5,0,0.5,1), vec4(-0.5,0,-0.5,1), vec4(0.5,0,-0.5,1), vec4(0.5,0,0.5,1)};      // flat on xz plane is the default
     vec2 tex[] = { vec2(0,0), vec2(0,1), vec2(1,1), vec2(1,0)};
 
-    layout (binding = 31, std430) buffer Positions      // For debug
+    layout (binding = 15, std430) buffer Positions      // For debug
     {
         vec4 txout;
     };

@@ -40,6 +40,8 @@ namespace GLOFC.GL4
         /// <summary> Construct and bind to binding index</summary>
         public GLUniformBlock(int bindingindex) : base(bindingindex, false,  BufferRangeTarget.UniformBuffer)
         {
+            if (bindingindex >= 36)  // GL_MAX_UNIFORM_BUFFER_BINDINGS min is 36
+                System.Diagnostics.Debug.WriteLine("*** Warning - using uniform binding number above GL minimum");
         }
     }
 
@@ -51,6 +53,8 @@ namespace GLOFC.GL4
         /// <summary> Construct and bind to binding index</summary>
         public GLStorageBlock(int bindingindex, bool std430 = false) : base(bindingindex, std430,  BufferRangeTarget.ShaderStorageBuffer)
         {
+            if (bindingindex >= 8)  // GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS is 8
+                System.Diagnostics.Debug.WriteLine("*** Warning - using storage buffer binding number above GL minimum");
         }
     }
 
@@ -62,6 +66,7 @@ namespace GLOFC.GL4
         /// <summary> Construct and bind to binding index</summary>
         public GLAtomicBlock(int bindingindex) : base(bindingindex, false, BufferRangeTarget.AtomicCounterBuffer)
         {
+            // appears to be lots of atomic counter variables
         }
     }
 }

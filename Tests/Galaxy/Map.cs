@@ -396,7 +396,7 @@ namespace TestOpenTk
 
             if ((ctrlo & 512) != 0)
             {
-              //  galaxystars = new GalaxyStars(items, rObjects, sunsize, findresults);
+                galaxystars = new GalaxyStars(items, rObjects, sunsize, findresults);
             }
 
             if ((ctrlo & 1024) != 0)
