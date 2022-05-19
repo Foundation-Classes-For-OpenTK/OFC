@@ -41,7 +41,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Callback when scroll bar is moved </summary>
         public Action<GLScrollBar, ScrollEventArgs> Scroll { get; set; } = null;
 
-        /// <summary> Return of set the scroll value </summary>
+        /// <summary> Return or set the scroll value </summary>
         public int Value { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange); } }
         /// <summary> Return or set the scroll value, limited to user range</summary>
         public int ValueLimited { get { return thumbvalue; } set { SetValues(value, maximum, minimum, largechange, smallchange, true); } }
@@ -458,7 +458,8 @@ namespace GLOFC.GL4.Controls
 
         private int UserMaximum { get { return Math.Max(maximum - largechange + 1, minimum); } }    // make sure it does not go below minimum whatever largechange is set to.
 
-        private void OnScroll(ScrollEventArgs se)
+        /// <summary> Called when Scroll call back executed </summary>
+        protected virtual void OnScroll(ScrollEventArgs se)
         {
             Scroll?.Invoke(this, se);
         }

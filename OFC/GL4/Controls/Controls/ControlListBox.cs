@@ -461,12 +461,15 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private void OnSelectedIndexChanged()
+
+        /// <summary> Called when value changed, invokes call back </summary>
+        protected virtual void OnSelectedIndexChanged()
         {
             SelectedIndexChanged?.Invoke(this, SelectedIndexNoChange);
         }
 
-        private void OnOtherKeyPressed(GLKeyEventArgs e)
+        /// <summary> Called when Delete,Escape or Back pressed </summary>
+        protected virtual void OnOtherKeyPressed(GLKeyEventArgs e)
         {
             OtherKeyPressed?.Invoke(this, e);
         }

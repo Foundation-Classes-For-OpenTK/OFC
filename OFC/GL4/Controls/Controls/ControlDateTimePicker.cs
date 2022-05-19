@@ -345,11 +345,15 @@ namespace GLOFC.GL4.Controls
                 ProcessUpDown(-1);
         }
 
-        private void OnCheckBoxChanged()
+
+        /// <summary> Called when check box value changed, invokes call back </summary>
+        protected virtual void OnCheckBoxChanged()
         {
             CheckChanged?.Invoke(this);
         }
-        private void OnValueChanged()
+
+        /// <summary> Called when value changed, invokes call back </summary>
+        protected virtual void OnValueChanged()
         {
             ValueChanged?.Invoke(this);
         }

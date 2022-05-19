@@ -26,7 +26,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Fore color </summary>
         public Color ForeColor { get { return foreColor; } set { foreColor = value; Invalidate(); } }       // of text
         /// <summary> Button face color </summary>
-        public Color ButtonFaceColour { get { return buttonFaceColor; } set { buttonFaceColor = value; Invalidate(); } }    // of button
+        public Color ButtonFaceColor { get { return buttonFaceColor; } set { buttonFaceColor = value; Invalidate(); } }    // of button
         /// <summary> Mouse over color for face </summary>
         public Color MouseOverColor { get { return mouseOverColor; } set { mouseOverColor = value; Invalidate(); } }
         /// <summary> Mouse down color for face </summary>
@@ -91,13 +91,13 @@ namespace GLOFC.GL4.Controls
             Color colBack;
 
             if (Enabled == false)
-                colBack = ButtonFaceColour.Multiply(BackDisabledScaling); 
+                colBack = ButtonFaceColor.Multiply(BackDisabledScaling); 
             else if (MouseButtonsDown == GLMouseEventArgs.MouseButtons.Left)
                 colBack = MouseDownColor;
             else if (lockhighlight || (Hover && !disablehoverhighlight))
                 colBack = MouseOverColor;
             else
-                colBack = ButtonFaceColour;
+                colBack = ButtonFaceColor;
 
             return colBack;
         }

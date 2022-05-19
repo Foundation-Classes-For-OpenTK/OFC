@@ -94,7 +94,7 @@ namespace GLOFC.GL4.Controls
                     }
                 }
 
-                base.PaintButtonFace(butarea, gr, Enabled ? ButtonFaceColour : ButtonFaceColour.Multiply(BackDisabledScaling));
+                base.PaintButtonFace(butarea, gr, Enabled ? ButtonFaceColor : ButtonFaceColor.Multiply(BackDisabledScaling));
             }
 
             //using (Brush inner = new SolidBrush(Color.Red))  gr.FillRectangle(inner, butarea);      // Debug
@@ -111,7 +111,7 @@ namespace GLOFC.GL4.Controls
                     float discaling = Enabled ? 1.0f : BackDisabledScaling;
 
                     Color checkboxbordercolour = CheckBoxBorderColor.Multiply(discaling); //(Enabled && Hover) ? MouseOverBackColor : 
-                    Color backcolour = (Enabled && Hover) ? MouseOverColor : ButtonFaceColour.Multiply(discaling);
+                    Color backcolour = (Enabled && Hover) ? MouseOverColor : ButtonFaceColor.Multiply(discaling);
 
                     using (Brush inner = new System.Drawing.Drawing2D.LinearGradientBrush(tickarea, CheckBoxInnerColor.Multiply(discaling), backcolour, 225))
                         gr.FillRectangle(inner, tickarea);      // fill slightly over size to make sure all pixels are painted

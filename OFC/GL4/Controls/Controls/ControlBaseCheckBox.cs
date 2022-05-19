@@ -142,7 +142,9 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private protected virtual void OnCheckChanged()
+
+        /// <summary> Called when value changed, invokes call back </summary>
+        protected virtual void OnCheckChanged()
         {
             CheckChanged?.Invoke(this);
         }

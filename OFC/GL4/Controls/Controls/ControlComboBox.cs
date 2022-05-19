@@ -314,7 +314,9 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private void OnSelectedIndexChanged()
+
+        /// <summary> Called when value changed, invokes call back </summary>
+        protected virtual void OnSelectedIndexChanged()
         {
             SelectedIndexChanged?.Invoke(this);
         }

@@ -118,7 +118,7 @@ namespace GLOFC.GL4.Controls
                     }
                     else if (CheckState == CheckStateType.Checked)
                     {
-                        using (var b = new LinearGradientBrush(marea, ButtonFaceColour, ButtonFaceColour.Multiply(FaceColorScaling), 90))
+                        using (var b = new LinearGradientBrush(marea, ButtonFaceColor, ButtonFaceColor.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
                     }
                 }

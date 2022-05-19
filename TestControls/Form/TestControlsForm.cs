@@ -138,7 +138,7 @@ namespace TestOpenTk
             displaycontrol = new GLControlDisplay(items, glwfc,mc);       // hook form to the window - its the master, it takes its size fro mc.ScreenCoordMax
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Font = new Font("Times", 8);
-            displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+            displaycontrol.Paint += (ts) => { displaycontrol.Render(glwfc.RenderState, ts); };
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.ZoomDistance = 5000F;
@@ -156,7 +156,7 @@ namespace TestOpenTk
 
             GLForm pform;
 
-            if (true)
+            if (false)
             {
                 pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
                 //pform.BackColor = Color.FromArgb(200, Color.Red);
@@ -393,11 +393,23 @@ namespace TestOpenTk
 
                 displaycontrol.Add(pform);
 
+                displaycontrol.GlobalMouseDown += (ctrl, ex) =>
+                {
+                    if (ctrl == null || !pform.IsThisOrChildOf(ctrl))
+                    {
+                        //  System.Diagnostics.Debug.WriteLine("Not on form");
+                    }
+                    else
+                    {
+                        //  System.Diagnostics.Debug.WriteLine("Click on form");
+                    }
+                };
+
             }
 
             if (true)
             {
-                GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 400));
+                GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 800));
                 pform2.BackColor = Color.FromArgb(200, Color.Red);
                 pform2.Font = new Font("Ms sans serif", 10);
                 pform2.BackColorGradientDir = 90;
@@ -406,6 +418,16 @@ namespace TestOpenTk
 
                 GLButton b1 = new GLButton("*********** F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
                 pform2.Add(b1);
+
+                GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 20));
+                tb1.SmallChange = 5;
+                pform2.Add(tb1);
+                GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 140, 40, 380));
+                tb2.TickFrequency = 12;
+                tb2.BarSize = 0.3f;
+                tb2.HorizontalTrackbar = false;
+                tb2.ValueChanged += (s, value) => { System.Diagnostics.Debug.WriteLine($"Trackbar {value}"); };
+                pform2.Add(tb2);
             }
 
             if (true)
@@ -414,17 +436,6 @@ namespace TestOpenTk
                 displaycontrol.Add(tip);
             }
 
-            displaycontrol.GlobalMouseDown += (ctrl, ex) =>
-            {
-                if (ctrl == null || !pform.IsThisOrChildOf(ctrl))
-                {
-                  //  System.Diagnostics.Debug.WriteLine("Not on form");
-                }
-                else
-                {
-                  //  System.Diagnostics.Debug.WriteLine("Click on form");
-                }
-            };
 
 
             systemtimer.Start();
@@ -432,7 +443,7 @@ namespace TestOpenTk
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {
-            System.Diagnostics.Debug.WriteLine("Paint controller");
+            //System.Diagnostics.Debug.WriteLine("Paint controller");
 
             ((GLMatrixCalcUniformBlock)items.UB("MCUB")).SetFull(gl3dcontroller.MatrixCalc);        // set the matrix unform block to the controller 3d matrix calc.
 

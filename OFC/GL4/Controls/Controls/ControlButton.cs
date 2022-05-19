@@ -82,7 +82,7 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary> Call to perform Click functionality  </summary>
-        public virtual void OnClick(GLMouseEventArgs e)
+        protected virtual void OnClick(GLMouseEventArgs e)
         {
             Click?.Invoke(this, e);
         }

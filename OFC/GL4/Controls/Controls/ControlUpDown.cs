@@ -171,7 +171,9 @@ namespace GLOFC.GL4.Controls
             repeattimer.Stop();
         }
 
-        private void OnClicked(int dir)
+
+        /// <summary> Called when clicked with direction, invokes call back </summary>
+        protected virtual void OnClicked(int dir)
         {
             Clicked?.Invoke(this,dir);
         }

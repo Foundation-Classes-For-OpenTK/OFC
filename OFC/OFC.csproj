@@ -105,6 +105,7 @@
     <Compile Include="GL4\Controls\Controls\ControlListBox.cs" />
     <Compile Include="GL4\Controls\Controls\ControlScrollBar.cs" />
     <Compile Include="GL4\Controls\Controls\ControlToolTip.cs" />
+    <Compile Include="GL4\Controls\Controls\ControlTrackBar.cs" />
     <Compile Include="GL4\Controls\Controls\ControlUpDown.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridView.cs" />
     <Compile Include="GL4\Controls\DGV\DataGridViewCell.cs" />

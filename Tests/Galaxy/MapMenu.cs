@@ -328,7 +328,7 @@ namespace TestOpenTk
             var but = s as GLButton;
             if (but != null)
             {
-                but.ButtonFaceColour = buttonface;
+                but.ButtonFaceColor = buttonface;
                 but.ForeColor = texc;
                 but.BackColor = buttonface;
                 but.BorderColor = buttonface;
@@ -337,7 +337,7 @@ namespace TestOpenTk
             var cb = s as GLCheckBox;
             if (cb != null)
             {
-                cb.ButtonFaceColour = buttonface;
+                cb.ButtonFaceColor = buttonface;
             }
             var cmb = s as GLComboBox;
             if (cmb != null)
@@ -383,7 +383,7 @@ namespace TestOpenTk
             if (mi != null)
             {
                 mi.BackColor = cmbck;
-                mi.ButtonFaceColour = cmbck;
+                mi.ButtonFaceColor = cmbck;
                 mi.ForeColor = texc;
                 mi.BackDisabledScaling = 1.0f;
             }

@@ -424,7 +424,9 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
-        private void OnValueChanged()
+
+        /// <summary> Called when value changed, invokes call back </summary>
+        protected virtual void OnValueChanged()
         {
             ValueChanged?.Invoke(this);
         }

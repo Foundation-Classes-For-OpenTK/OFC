@@ -130,8 +130,11 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultDGVCellSelectedColor = SystemColors.Highlight;
         static public Color DefaultDGVCellHighlightColor = Color.Red;
 
+        static public Color DefaultTrackBarBarColor = Color.Gray;
+        static public Color DefaultTrackBarTickColor = Color.FromArgb(255, 192, 192, 192);
+        static public Color DefaultTrackMouseOverColor = Color.FromArgb(255, 210, 210, 210);
+        static public Color DefaultTrackMouseDownColor = Color.FromArgb(255, 230, 220, 220);
 
-        // RowsDefaultCellStyle
         #endregion
 
     }
