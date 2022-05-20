@@ -419,16 +419,25 @@ namespace TestOpenTk
                 GLButton b1 = new GLButton("*********** F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
                 pform2.Add(b1);
 
-                GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 20));
+                GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 40));
                 tb1.SmallChange = 5;
+                tb1.FaceColorScaling = 0.5f;
                 pform2.Add(tb1);
                 GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 140, 40, 380));
                 tb2.TickFrequency = 12;
                 tb2.BarSize = 0.3f;
+                tb2.FaceColorScaling = 0.25f;
+                tb2.ButtonFaceColor = Color.Blue;
+                tb2.MouseOverColor = Color.Cyan;
                 tb2.HorizontalTrackbar = false;
                 tb2.ValueChanged += (s, value) => { System.Diagnostics.Debug.WriteLine($"Trackbar {value}"); };
                 pform2.Add(tb2);
-            }
+                GLTrackBar tb3 = new GLTrackBar("Trackbar", new Rectangle(100, 140, 40, 380));
+                tb3.HorizontalTrackbar = false;
+                tb3.Image = TestControls.Properties.Resources.dotted2;
+                tb3.ImageStretch = true;        // stretch to Needlesize percent
+                pform2.Add(tb3);
+               }
 
             if (true)
             {

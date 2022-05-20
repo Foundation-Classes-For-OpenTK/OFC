@@ -81,6 +81,7 @@ namespace GLOFC.GL4.Controls
             tickcolor = DefaultTrackBarBarColor;
             Padding = new PaddingType(2, 2, 2, 2);
             InvalidateOnFocusChange = true;
+            ImageStretch = true;        // because you normally want the image to be matched to the control
         }
 
         /// <summary> Default Constructor </summary>
@@ -133,28 +134,36 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-            GraphicsPath path = new GraphicsPath();
-            if (horzmode)
+            if (Image == null)
             {
-                path.AddLines(new Point[] { new Point(needlearea.Left, needlearea.Top), new Point(needlearea.Right, needlearea.Top),
-                                new Point(needlearea.Right, needlearea.Top + needlearea.Height * sliderarrowpercentage / 16), new Point(needlearea.XCenter(), needlearea.Bottom) , 
-                                new Point(needlearea.Left, needlearea.Top + needlearea.Height * sliderarrowpercentage / 16) });
+                gr.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+                GraphicsPath path = new GraphicsPath();
+                if (horzmode)
+                {
+                    path.AddLines(new Point[] { new Point(needlearea.Left, needlearea.Top), new Point(needlearea.Right, needlearea.Top),
+                                    new Point(needlearea.Right, needlearea.Top + needlearea.Height * sliderarrowpercentage / 16), new Point(needlearea.XCenter(), needlearea.Bottom) ,
+                                    new Point(needlearea.Left, needlearea.Top + needlearea.Height * sliderarrowpercentage / 16) });
+                }
+                else
+                {
+                    path.AddLines(new Point[] {new Point(needlearea.Left, needlearea.Top), new Point(needlearea.Left + needlearea.Width * sliderarrowpercentage / 16, needlearea.Top) ,
+                                    new Point(needlearea.Right, needlearea.YCenter()), new Point(needlearea.Left + needlearea.Width * sliderarrowpercentage / 16, needlearea.Bottom),
+                                    new Point(needlearea.Left, needlearea.Bottom) });
+                }
+
+                path.CloseFigure();
+
+                Color c = mousedrag ? MouseDownColor : mouseovertick ? MouseOverColor : ButtonFaceColor;
+                using (Brush b = new LinearGradientBrush(needlearea, c, c.Multiply(FaceColorScaling), horzmode ? 90 : 0))
+                {
+                    gr.FillPath(b, path);
+                }
             }
             else
             {
-                path.AddLines(new Point[] {new Point(needlearea.Left, needlearea.Top), new Point(needlearea.Left + needlearea.Width * sliderarrowpercentage / 16, needlearea.Top) ,
-                                new Point(needlearea.Right, needlearea.YCenter()), new Point(needlearea.Left + needlearea.Width * sliderarrowpercentage / 16, needlearea.Bottom), 
-                                new Point(needlearea.Left, needlearea.Bottom) });
-            }
+                gr.DrawImage(Image, needlearea);
 
-            path.CloseFigure();
-
-            Color c = mousedrag ? MouseDownColor : mouseovertick ? MouseOverColor : ButtonFaceColor;
-            using (Brush b = new LinearGradientBrush(needlearea, c, c.Multiply(FaceColorScaling), horzmode ? 90 : 0))
-            {
-                gr.FillPath(b, path);
             }
 
             if (ShowFocusBox && Focused)
@@ -188,16 +197,39 @@ namespace GLOFC.GL4.Controls
                 bararea = new Rectangle(area.Left, pbarcentre - pbarsize / 2, area.Width - 1, pbarsize);
                 tickmarkarea = new Rectangle(bararea.Left + pshortneedlesize / 2, ptickcentre - pticksize / 2, bararea.Width - pshortneedlesize, pticksize);
                 pixelscalar = (float)tickmarkarea.Width / (float)(maximum - minimum);
-                // note bumping needle area against 0
-                needlearea = new Rectangle((int)(tickmarkarea.Left + Value * pixelscalar) - pshortneedlesize / 2, Math.Max(0,pbarcentre - plongneedlesize * sliderbaroffset / 16), pshortneedlesize, plongneedlesize);
+                if (Image == null)
+                {
+                    // note bumping needle area against 0
+                    needlearea = new Rectangle((int)(tickmarkarea.Left + Value * pixelscalar) - pshortneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), pshortneedlesize, plongneedlesize);
+                }
+                else
+                {
+                    if (ImageStretch == false)      // if no stretching, the needle size is the length of the image
+                        plongneedlesize = Image.Height;  // if stretching, its at plongneedlesize as calculated by control
+
+                    // image is placed in centre of bar, at plongneedlesize
+                    needlearea = new Rectangle((int)(tickmarkarea.Left + Value * pixelscalar) - plongneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize /2), plongneedlesize, plongneedlesize);
+                }
             }
             else
             {
                 bararea = new Rectangle(pbarcentre - pbarsize / 2, area.Top, pbarsize, area.Height - 1);
                 tickmarkarea = new Rectangle(ptickcentre - pticksize / 2, bararea.Top + pshortneedlesize / 2, pticksize, bararea.Height - pshortneedlesize);
                 pixelscalar = (float)tickmarkarea.Height / (float)(maximum - minimum);
-                // note bumping needle area against 0
-                needlearea = new Rectangle(Math.Max(0,pbarcentre - plongneedlesize * sliderbaroffset / 16), (int)(tickmarkarea.Top + Value * pixelscalar) - pshortneedlesize / 2, plongneedlesize, pshortneedlesize);
+
+                if (Image == null)
+                {
+                    // note bumping needle area against 0
+                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), (int)(tickmarkarea.Top + Value * pixelscalar) - pshortneedlesize / 2, plongneedlesize, pshortneedlesize);
+                }
+                else
+                {
+                    if (ImageStretch == false)      // if no stretching, the needle size is the length of the image
+                        plongneedlesize = Image.Width;  // if stretching, its at plongneedlesize as calculated by control
+
+                    // image is placed in centre of bar, at plongneedlesize
+                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize / 2), (int)(tickmarkarea.Top + Value * pixelscalar) - plongneedlesize / 2, plongneedlesize, plongneedlesize);
+                }
             }
         }
 
