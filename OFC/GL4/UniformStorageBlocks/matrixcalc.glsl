@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2022 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -23,5 +23,5 @@ layout(std140, binding=0) uniform MatrixCalc
     vec4 EyePosition;			// vertex position, before ModelMatrix
     float EyeDistance;			// between eye and target
 	mat4 ScreenMatrix;			// for co-ordinate transforms between screen coords and display coords
-
+    bool Perspective;           // if in perspective mode (note bool takes up 4 bytes, tested, so can be written as an int write)
 } mc;

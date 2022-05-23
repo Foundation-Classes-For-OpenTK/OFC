@@ -23,7 +23,7 @@ namespace GLOFC.GL4
     public class GLMatrixCalcUniformBlock : GLUniformBlock 
     {
         /// <summary> Size of matrix block </summary>
-        public int MatrixCalcUse { get; } = Mat4size * 3 + Vec4size * 2 + sizeof(float) * 4 + Mat4size;
+        public int MatrixCalcUse { get; } = Mat4size * 3 + Vec4size * 2 + sizeof(float) * 4 + Mat4size + 1*sizeof(int);
 
         /// <summary> Binding point </summary>
         public const int BindingPoint = 0;// 0 is the fixed binding block for matrixcal
@@ -106,6 +106,7 @@ namespace GLOFC.GL4
                 Write(matrixcalc.EyePosition, 0);            // 208, vec4, 16 long
                 Write(matrixcalc.EyeDistance);               // 224, float, 4 long
                 Write(matrixcalc.MatrixScreenCoordToClipSpace());                // 240-303, into the project model matrix slot, used for text
+                Write(matrixcalc.InPerspectiveMode ? 1 : 0);     // write as int, but its a bool actually. takes up 4 bytes.
                 StopReadWrite();   // and complete..
                 lastmccount = matrixcalc.CountMatrixCalcs;
             }

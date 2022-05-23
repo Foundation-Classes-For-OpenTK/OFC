@@ -40,11 +40,8 @@ namespace EliteDangerousCore.EDSM
         {
             if (ridisplay == null)
             {
-                //var vert = new GLPLVertexScaleLookat(rotate: dorotate, rotateelevation: doelevation, commontransform: false, texcoords: true,      // a look at vertex shader
-                //                                                          
-                //                var vert = new GLPLVertexShaderWorldCoord();
                 var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
-                                                                autoscale: 500, autoscalemin: 1f, autoscalemax: 3f); // below 500, 1f, above 500, scale up to 20x
+                                                                autoscale: 30, autoscalemin: 1f, autoscalemax: 30f); 
 
 
                 const int texbindingpoint = 1;
@@ -64,8 +61,6 @@ namespace EliteDangerousCore.EDSM
 
                 GLRenderState rt = GLRenderState.Tri();
                 rt.DepthTest = depthtest;
-
-                bookmarksize *= 10;
 
                 // 0 is model pos, 1 is world pos by a buffer, 2 is tex co-ords
                 ridisplay = GLRenderableItem.CreateVector4Vector4Vector2(items, OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rt,

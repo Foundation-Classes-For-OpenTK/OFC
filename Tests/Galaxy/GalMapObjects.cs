@@ -72,17 +72,24 @@ namespace TestOpenTk
             var objtex = new GLTexture2DArray(images, bmpmipmaplevels: 1, wantedmipmaplevels: 3, texturesize: new Size(256, 256), internalformat: OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, alignment: ContentAlignment.BottomCenter);
             IGLTexture texarray = items.Add(objtex, "GalObjTex");
 
+            const float objsize = 1.0f;        // size of object on screen
+            const float wavesize = 0.1f;
+            Size textbitmapsize = new Size(128, 40);
+            Vector3 labelsize = new Vector3(2, 0, 2.0f * textbitmapsize.Height / textbitmapsize.Width);   // size of text
+
+
             // now build the shaders
 
             const int texbindingpoint = 1;
-            var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation,        // a look at vertex shader
-                                                        autoscale: 500, autoscalemin: 1f, autoscalemax: 20f); // below 500, 1f, above 500, scale up to 20x
-            var tcs = new GLPLTesselationControl(40f);
-            tes = new GLPLTesselationEvaluateSinewave(1f, 2f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
+            var vert = new GLPLVertexScaleLookatConfigurable(rotatetoviewer: dorotate, rotateelevation: doelevation,        // a look at vertex shader
+                                                        useeyedistance:false); 
+            var tcs = new GLPLTesselationControl(10f);
+            tes = new GLPLTesselationEvaluateSinewave(wavesize, 1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
             var frag = new GLPLFragmentShaderTexture2DDiscard(texbindingpoint);       // binding - takes image pos from tes. imagepos < 0 means discard
-
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);
             items.Add(objectshader);
+
+            vert.SetScalars(30, 1, 30);
 
             objectshader.StartAction += (s, m) =>
             {
@@ -96,8 +103,6 @@ namespace TestOpenTk
 
             // create a quad and all entries of the renderable map objects, zero at this point, with a zero instance count. UpdateEnables will fill it in later
             // but we need to give it the maximum buffer length at this point
-
-            const float objsize = 10.0f;        // size of object on screen
 
             ridisplay = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Patches, rt,
                                 GLShapeObjectFactory.CreateQuadTriStrip(objsize, objsize),         // quad2 4 vertexts

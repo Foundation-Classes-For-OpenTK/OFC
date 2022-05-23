@@ -171,6 +171,7 @@ namespace TestOpenTk
 
             int ctrlo = 2048 | 32 | 64;
             ctrlo = -1;
+            //ctrlo = 32 | 64 | 256;
 
             if ((ctrlo & 1) != 0) // galaxy
             {
@@ -442,7 +443,7 @@ namespace TestOpenTk
             {
                 bookmarks = new Bookmarks();
                 var syslist = new List<SystemClass> { new SystemClass("bk1", 1000, 0, 0), new SystemClass("bk1", 1000, 0, 2000), };
-                bookmarks.Create(items, rObjects, syslist, 3, findresults, false);
+                bookmarks.Create(items, rObjects, syslist, 1.0f, findresults, false);
             }
             // Matrix calc holding transform info
 
