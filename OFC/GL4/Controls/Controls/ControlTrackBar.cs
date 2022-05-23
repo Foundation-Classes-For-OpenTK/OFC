@@ -200,7 +200,7 @@ namespace GLOFC.GL4.Controls
                 if (Image == null)
                 {
                     // note bumping needle area against 0
-                    needlearea = new Rectangle((int)(tickmarkarea.Left + Value * pixelscalar) - pshortneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), pshortneedlesize, plongneedlesize);
+                    needlearea = new Rectangle((int)(tickmarkarea.Left + (thumbvalue-minimum) * pixelscalar) - pshortneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), pshortneedlesize, plongneedlesize);
                 }
                 else
                 {
@@ -208,7 +208,7 @@ namespace GLOFC.GL4.Controls
                         plongneedlesize = Image.Height;  // if stretching, its at plongneedlesize as calculated by control
 
                     // image is placed in centre of bar, at plongneedlesize
-                    needlearea = new Rectangle((int)(tickmarkarea.Left + Value * pixelscalar) - plongneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize /2), plongneedlesize, plongneedlesize);
+                    needlearea = new Rectangle((int)(tickmarkarea.Left + (thumbvalue-minimum) * pixelscalar) - plongneedlesize / 2, Math.Max(0, pbarcentre - plongneedlesize /2), plongneedlesize, plongneedlesize);
                 }
             }
             else
@@ -220,7 +220,7 @@ namespace GLOFC.GL4.Controls
                 if (Image == null)
                 {
                     // note bumping needle area against 0
-                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), (int)(tickmarkarea.Top + Value * pixelscalar) - pshortneedlesize / 2, plongneedlesize, pshortneedlesize);
+                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize * sliderbaroffset / 16), (int)(tickmarkarea.Top + (thumbvalue-minimum) * pixelscalar) - pshortneedlesize / 2, plongneedlesize, pshortneedlesize);
                 }
                 else
                 {
@@ -228,11 +228,10 @@ namespace GLOFC.GL4.Controls
                         plongneedlesize = Image.Width;  // if stretching, its at plongneedlesize as calculated by control
 
                     // image is placed in centre of bar, at plongneedlesize
-                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize / 2), (int)(tickmarkarea.Top + Value * pixelscalar) - plongneedlesize / 2, plongneedlesize, plongneedlesize);
+                    needlearea = new Rectangle(Math.Max(0, pbarcentre - plongneedlesize / 2), (int)(tickmarkarea.Top + (thumbvalue-minimum) * pixelscalar) - plongneedlesize / 2, plongneedlesize, plongneedlesize);
                 }
             }
         }
-
 
         private void SetValues(int v, int max, int min, int lc, int sc)
         {
@@ -262,6 +261,17 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        private void MoveValue(int dir)
+        {
+            int newthumbvalue = Math.Min(Math.Max(thumbvalue+dir, minimum), maximum);
+            if ( newthumbvalue != thumbvalue )
+            {
+                thumbvalue = newthumbvalue;
+                OnValueChanged();
+                Invalidate();
+            }
+        }
+
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
@@ -277,11 +287,7 @@ namespace GLOFC.GL4.Controls
 
                     if (Math.Abs(delta) > ticksize / 2)
                     {
-                        if (delta < 0)
-                            Value -= LargeChange;
-                        else
-                            Value += LargeChange;
-                        OnValueChanged();
+                        MoveValue(delta < 0 ? -LargeChange : LargeChange);
                     }
                 }
             }
@@ -310,14 +316,7 @@ namespace GLOFC.GL4.Controls
             {
                 int offset = horzmode ? (e.Location.X - sliderarea.Left) : (e.Location.Y -sliderarea.Top);
                 float scaledvalue = (float)offset / pixelscalar;
-                int newvalue = Math.Min(Math.Max(minimum + (int)scaledvalue, minimum), maximum); 
-
-                if ( thumbvalue != newvalue)
-                {
-                    thumbvalue = newvalue;
-                    Invalidate();
-                    OnValueChanged();
-                }
+                MoveValue(minimum + (int)scaledvalue - thumbvalue); 
             }
             else
             {
@@ -361,13 +360,27 @@ namespace GLOFC.GL4.Controls
 
                 if ( horzmode ? e.KeyCode == System.Windows.Forms.Keys.Left : e.KeyCode == System.Windows.Forms.Keys.Up)
                 {
-                    Value -= SmallChange;
-                    OnValueChanged();
+                    MoveValue(-SmallChange);
                 }
-                else if ( horzmode ? e.KeyCode == System.Windows.Forms.Keys.Right : e.KeyCode == System.Windows.Forms.Keys.Down)
+                else if (horzmode ? e.KeyCode == System.Windows.Forms.Keys.Right : e.KeyCode == System.Windows.Forms.Keys.Down)
                 {
-                    Value += SmallChange;
-                    OnValueChanged();
+                    MoveValue(SmallChange);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.PageUp)
+                {
+                    MoveValue(-LargeChange);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.PageDown)
+                {
+                    MoveValue(LargeChange);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.Home)
+                {
+                    MoveValue(minimum - thumbvalue);
+                }
+                else if (e.KeyCode == System.Windows.Forms.Keys.End)
+                {
+                    MoveValue(maximum - thumbvalue);
                 }
 
             }

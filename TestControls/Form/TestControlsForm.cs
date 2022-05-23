@@ -423,6 +423,7 @@ namespace TestOpenTk
                 tb1.SmallChange = 5;
                 tb1.FaceColorScaling = 0.5f;
                 pform2.Add(tb1);
+
                 GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 140, 40, 380));
                 tb2.TickFrequency = 12;
                 tb2.BarSize = 0.3f;
@@ -431,7 +432,12 @@ namespace TestOpenTk
                 tb2.MouseOverColor = Color.Cyan;
                 tb2.HorizontalTrackbar = false;
                 tb2.ValueChanged += (s, value) => { System.Diagnostics.Debug.WriteLine($"Trackbar {value}"); };
+                tb2.Minimum = 10;
+                tb2.Maximum = 500;
+                tb2.Value = 10;
+                tb2.TickFrequency = 10;
                 pform2.Add(tb2);
+
                 GLTrackBar tb3 = new GLTrackBar("Trackbar", new Rectangle(100, 140, 40, 380));
                 tb3.HorizontalTrackbar = false;
                 tb3.Image = TestControls.Properties.Resources.dotted2;
