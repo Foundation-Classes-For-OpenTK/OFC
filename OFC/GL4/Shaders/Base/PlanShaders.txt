@@ -19,6 +19,7 @@ Uniform/Storage blocks - global across all shaders
 0 = MatrixCalc - see the MatrixCalcUniformBlock.cs
 
 Uniforms - these are per shader, so this is a guide.
+0-20 free form
 21 = transform to look at eye position
 22 = object transform position/rotation
 23 = common transform position/rotation OR vector4 world pos common move

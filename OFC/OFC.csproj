@@ -150,6 +150,7 @@
     <Compile Include="GL4\Shaders\Tesselation\ShadersTesselationEvaluateSinewave.cs" />
     <Compile Include="GL4\Shaders\Tesselation\ShadersTesselationControl.cs" />
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexModelColour.cs" />
+    <Compile Include="GL4\Shaders\Vertex\ShadersVertexScaleLookAtConfigurable.cs" />
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexTriStripMatrix.cs" />
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexViewSpace.cs" />
     <Compile Include="GL4\Shaders\Vertex\ShadersVertexScaleLookAt.cs" />
