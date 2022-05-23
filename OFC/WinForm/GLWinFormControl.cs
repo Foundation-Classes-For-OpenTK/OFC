@@ -169,9 +169,24 @@ namespace GLOFC.WinForm
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
             context = GLStatics.GetContext();
-            System.Diagnostics.Debug.WriteLine($"GL Context {context} created");
+            System.Diagnostics.Trace.WriteLine($"GL Context {context} created for {GLStatics.GetVersion()}");
             gltime.Start();
-            
+
+#if DEBUG
+            System.Diagnostics.Trace.WriteLine($"Version  {GLStatics.GetVersion()}");
+            System.Diagnostics.Trace.WriteLine($"Version  {GLStatics.GetVersionString()}");
+            System.Diagnostics.Trace.WriteLine($"Vendor  {GLStatics.GetVendor()}");
+            System.Diagnostics.Trace.WriteLine($"Shading lang {GLStatics.GetShaderLanguageVersion()}");
+            System.Diagnostics.Trace.WriteLine($"Shading lang {GLStatics.GetShadingLanguageVersionString()}");
+            //var ext = GLStatics.Extensions();  System.Diagnostics.Trace.WriteLine($"Extension {string.Join(",", ext)}");
+
+            System.Diagnostics.Trace.WriteLine($"UBS={GL4.GL4Statics.GetMaxUniformBlockSize()}");
+            GL4.GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
+            System.Diagnostics.Trace.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
+            System.Diagnostics.Trace.WriteLine($"tex layers {GL4.GL4Statics.GetMaxTextureDepth()} ");
+            System.Diagnostics.Trace.WriteLine($"Vertex attribs {GL4.GL4Statics.GetMaxVertexAttribs()} ");
+            System.Diagnostics.Trace.WriteLine($"Shader storage buffer bindings {GL4.GL4Statics.GetShaderStorageMaxBindingNumber()} ");
+#endif
 
         }
 
