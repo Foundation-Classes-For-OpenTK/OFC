@@ -405,32 +405,35 @@ namespace TestOpenTk
                 rightclickmenu = new GLContextMenu("RightClickMenu",    
                     new GLMenuItem("RCMInfo", "Information")
                     {
-                        MouseClick = (s, e) => {
-                        var nl = NameLocationDescription(rightclickmenu.Tag);
-                        System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
-                            // logical name is important as menu uses it to close down
-                        GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol,e.WindowLocation, 
-                                nl.Item3, $"{nl.Item1} @ {nl.Item2.X:#.#},{nl.Item2.Y:#.#},{nl.Item2.Z:#.#}", GLMessageBox.MessageBoxButtons.OK, null , 
-                                        Color.FromArgb(220, 60, 60, 70), Color.DarkOrange);
+                        MouseClick = (s,e) => {
+                            if (e.Button == GLMouseEventArgs.MouseButtons.Left)
+                            {
+                                var nl = NameLocationDescription(rightclickmenu.Tag);
+                                System.Diagnostics.Debug.WriteLine($"Info {nl.Item1} {nl.Item2}");
+                                // logical name is important as menu uses it to close down
+                                GLMessageBox msg = new GLMessageBox("InfoBoxForm-1", displaycontrol, e.WindowLocation,
+                                        nl.Item3, $"{nl.Item1} @ {nl.Item2.X:#.#},{nl.Item2.Y:#.#},{nl.Item2.Z:#.#}", GLMessageBox.MessageBoxButtons.OK, null,
+                                            Color.FromArgb(220, 60, 60, 70), Color.DarkOrange);
+                            }
                         }
                     },
                     new GLMenuItem("RCMZoomIn", "Goto Zoom In")
                     {
-                        MouseClick = (s1, e1) => {
+                        Click = (s) => {
                             var nl = NameLocationDescription(rightclickmenu.Tag);
                             gl3dcontroller.SlewToPositionZoom(nl.Item2, 100, -1);
                         }
                     },
                     new GLMenuItem("RCMGoto", "Goto Position")
                     {
-                        MouseClick = (s1, e1) => {
+                        Click = (s) => {
                             var nl = NameLocationDescription(rightclickmenu.Tag);
                             System.Diagnostics.Debug.WriteLine($"Goto {nl.Item1} {nl.Item2}");
                             gl3dcontroller.SlewToPosition(nl.Item2, -1);
                         }
                     },
                     new GLMenuItem("RCMLookAt", "Look At") {
-                        MouseClick = (s1, e1) => {
+                        Click = (s) => {
                             var nl = NameLocationDescription(rightclickmenu.Tag);
                             gl3dcontroller.PanTo(nl.Item2, -1);
                         }

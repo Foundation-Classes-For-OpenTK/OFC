@@ -137,7 +137,7 @@ namespace TestOpenTk
                 displaycontrol = new GLControlDisplay(items, glwfc, mc);     // start class but don't hook
                 displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
                 displaycontrol.Font = new Font("Times", 8);
-                displaycontrol.Paint += (ts) => { System.Diagnostics.Debug.WriteLine("Paint controls"); displaycontrol.Render(glwfc.RenderState, ts); };
+                displaycontrol.Paint += (ts) => { displaycontrol.Render(glwfc.RenderState, ts); };
 
                 gl3dcontroller = new Controller3D();
                 gl3dcontroller.ZoomDistance = 5000F;
@@ -212,9 +212,11 @@ namespace TestOpenTk
                 {
                     GLContextMenu ctx1, ctx2;
 
-                    ctx1 = new GLContextMenu("CM1");
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Menu-1");
-                    cm1.CheckOnClick = true;
+                    cm1.Click += (c1) => {
+                        System.Diagnostics.Debug.WriteLine("Click on menu-1");
+                    };
+
 
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
@@ -227,6 +229,7 @@ namespace TestOpenTk
                     l1a3.CheckOnClick = true;
                     cm3.SubMenuItems = new List<GLBaseControl>() { l1a1, l1a2, l1a3 };
 
+                    ctx1 = new GLContextMenu("CM1");
                     int count = 0;
                     ctx1.Opening += (c1,c2) =>
                     {
@@ -234,7 +237,6 @@ namespace TestOpenTk
                         System.Diagnostics.Debug.WriteLine($"Set cm2 state {on}");
                         cm2.Visible = on;
                     };
-
                     ctx1.Add(cm1);
                     ctx1.Add(cm2);
                     ctx1.Add(cm3);

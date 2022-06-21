@@ -142,13 +142,13 @@ namespace TestOpenTk
 
 
             GLStorageBlock block = new GLStorageBlock(20);
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16), null, null, null);
+            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16, obeyculldistance:true,debugbuffer:true), null, null, null);
 
             Font fnt = new Font("MS sans serif", 16f);
 
             // DEMO Indirect command buffer manually set up
 
-            if ( true )
+            if ( false )
             {
                 int maxstars = 1000;    // this is an aspriation, depends on fragmentation of the system
 
@@ -284,13 +284,14 @@ namespace TestOpenTk
                 GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
+                starrc.ClipDistanceEnable = 1;
 
                 var textrc = GLRenderState.Tri();       // text render is triangles are going to cull primitives which are deleted
                 textrc.DepthTest = true;
-                textrc.ClipDistanceEnable = 1;  
+                textrc.ClipDistanceEnable = 1;
 
                 sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 50, starshapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 3);
+                var ris = sl.Create(texunitspergroup, 50, 50, starshapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 50);
                 rObjects.Add(sunshader, "SLsunshade", ris.Item1);
                 rObjects.Add(textshader, "SLtextshade", ris.Item2);
                 items.Add(sl);
@@ -298,12 +299,18 @@ namespace TestOpenTk
                 int SectorSize = 10;
                 {
                     Vector3 pos = new Vector3(0, 0, -15);
-                    Vector4[] array = new Vector4[10];
+                    Vector4[] array = new Vector4[5];
                     string[] text = new string[array.Length];
                     Random rnd = new Random(31);
                     for (int i = 0; i < array.Length; i++)
                     {
-                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+                        if ( i == 1 )
+                        {
+                            array[i] = new Vector4(0, 0, 0, -1);
+                        }
+                        else
+                            array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
+
                         text[i] = "A.r" + i;
                     }
 
@@ -314,6 +321,7 @@ namespace TestOpenTk
                     sl.Add(array, mats, bmps, bref);
                     GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
+                if (false)
                 {
                     Vector3 pos = new Vector3(0, 0, 0);
                     Vector4[] array = new Vector4[20];
@@ -328,6 +336,7 @@ namespace TestOpenTk
                     List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
                     sl.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0), bref);
                 }
+                if (false)
                 {
                     Vector3 pos = new Vector3(0, 0, 15);
                     Vector4[] array = new Vector4[10];
@@ -348,7 +357,7 @@ namespace TestOpenTk
 
             // Sets of..
 
-            if (true)
+            if (false)
             {
                 GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;

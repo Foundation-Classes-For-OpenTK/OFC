@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2020 Robbyxp1 @ github.com
+ * Copyright 2019-2022 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -46,16 +46,24 @@ namespace GLOFC.GL4.Shaders.Geo
         /// <param name="buffer">Storage Buffer to place results in</param>
         /// <param name="maximumresultsp">Maximum number of results</param>
         /// <param name="forwardfacing">Triangles are forward facing</param>
+        /// <param name="obeyculldistance">Reject primitives with cull distance less than 0</param>
+        /// <param name="debugbuffer">Set true to enable debug output</param>
 
-        public GLPLGeoShaderFindTriangles(GLStorageBlock buffer, int maximumresultsp, bool forwardfacing = true)
+        public GLPLGeoShaderFindTriangles(GLStorageBlock buffer, int maximumresultsp, bool forwardfacing = true, bool obeyculldistance = true, bool debugbuffer = false)
         {
             maximumresults = maximumresultsp;
             int sizeneeded = 16 + sizeof(float) * 4 * maximumresults;
             if (buffer.Length < sizeneeded)
                 buffer.AllocateBytes(sizeneeded);
             vecoutbuffer = buffer;
-            CompileLink(ShaderType.GeometryShader, Code(false), out string unused,
-                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing });
+            CompileLink(ShaderType.GeometryShader, Code(), out string unused,
+                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing , "debugout" , debugbuffer , "obeyculldistance", obeyculldistance});
+
+            if (debugbuffer && calcbuf == null)     // if want debug output.
+            {
+                calcbuf = new GLStorageBlock(7);
+                calcbuf.AllocateBytes(50000);
+            }
         }
 
         /// <summary>
@@ -70,7 +78,7 @@ namespace GLOFC.GL4.Shaders.Geo
             Vector4 v = new Vector4((float)cursorpos.X / (windowsize.Width / 2) - 1.0f, 1.0f - (float)cursorpos.Y / (windowsize.Height / 2), 0, 0);   // convert to clip space
             GL.ProgramUniform4(Id, 10, v);
             float pixd = (float)(margin / (float)((windowsize.Width + windowsize.Height) / 2 / 2));
-            //   System.Diagnostics.Debug.WriteLine("Set CP {0} Pixd {1}", v , pixd);
+            //System.Diagnostics.Debug.WriteLine("Geo Find set Cursor {0} Pixd {1}", v , pixd);
             GL.ProgramUniform1(Id, 11, pixd);
         }
 
@@ -87,6 +95,8 @@ namespace GLOFC.GL4.Shaders.Geo
         {
             base.Start(c);
             vecoutbuffer.ZeroBuffer();
+            if ( calcbuf != null )
+                calcbuf.ZeroBuffer();
         }
 
         /// <summary>
@@ -97,6 +107,22 @@ namespace GLOFC.GL4.Shaders.Geo
         {
             GLMemoryBarrier.All();
 
+            if (calcbuf != null)
+            {
+                int cstride = 8;
+                calcbuf.StartRead(0);
+                int calccount = calcbuf.ReadInt() * cstride;
+                var carray = calcbuf.ReadVector4s(calccount);
+                calcbuf.StopReadWrite();
+                for (int j = 0; j < calccount; j++)
+                {
+                    if (j % cstride == 0)
+                        System.Diagnostics.Debug.WriteLine($"Find Debug Set {j / cstride}");
+
+                    System.Diagnostics.Debug.WriteLine($"     {carray[j]}");
+                }
+            }
+
             vecoutbuffer.StartRead(0);
             int count = Math.Min(vecoutbuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
 
@@ -105,6 +131,9 @@ namespace GLOFC.GL4.Shaders.Geo
             if (count > 0)
             {
                 d = vecoutbuffer.ReadVector4s(count);      // align 16 for vec4
+
+                //System.Diagnostics.Debug.WriteLine($"Geo Find results {count}");  for (int i = 0; i < d.Length; i++) System.Diagnostics.Debug.WriteLine($"  {i} {d[i]}");
+
                 Array.Sort(d, delegate (Vector4 left, Vector4 right) { return left.Z.CompareTo(right.Z); });
             }
 
@@ -112,11 +141,11 @@ namespace GLOFC.GL4.Shaders.Geo
             return d;
         }
 
-        private string Code(bool passthru)
+        private string Code()
         {
             return
 @"
-#version 450 core
+#version 460 core
 #include UniformStorageBlocks.matrixcalc.glsl
 #include Shaders.Functions.trig.glsl
 
@@ -136,6 +165,7 @@ in gl_PerVertex
     vec4 gl_Position;
     float gl_PointSize;
     float gl_ClipDistance[];
+    float gl_CullDistance[];
    
 } gl_in[];
 
@@ -146,49 +176,64 @@ out gl_PerVertex
     float gl_ClipDistance[];
 };
 
-// shows how to pass thru modelpos..
-layout (location = 1) in vec3[] modelpos;
-out MP
-{
-    layout (location = 1) out vec3 modelpos;
-} MPOUT;
-
-
 const int bindingoutdata = 20;
-layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock note - buffer
+layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock - holds results
 {
     uint count;
     vec4 values[];
 };
 
+const int bindingoutcalcbuf = 7;
+layout (binding = bindingoutcalcbuf, std430) buffer CalcData      // Debug side buffer
+{
+    uint calccount;
+    vec4 calcdata[];
+};
+
 const int maximumresults = 1;       // is overriden by compiler feed in const
 const bool forwardsfacing = true;   // compiler overriden
+const bool debugout = false;        // debug buffer out on
+const bool obeyculldistance = false;    // obey cull distance
 
 void main(void)
 {
-" + (passthru ? // pass thru is for testing purposes only
-@"
-        gl_Position = gl_in[0].gl_Position;
-        MPOUT.modelpos =modelpos[0];
-        EmitVertex();
-
-        gl_Position = gl_in[1].gl_Position;
-        MPOUT.modelpos =modelpos[1];
-        EmitVertex();
-
-        gl_Position = gl_in[2].gl_Position;
-        MPOUT.modelpos =modelpos[2];
-        EmitVertex();
-        EndPrimitive();
-" : "") +
-@"
+    if ( obeyculldistance && gl_in[0].gl_CullDistance[0] < 0)       // if we are obeying clipping, check it, and if true, ignore the primitive
+    {
+        if ( debugout && gl_PrimitiveIDIn==0)
+        {
+            uint pos = atomicAdd(calccount,1)*8;
+            calcdata[pos+0] = gl_in[0].gl_Position;
+            calcdata[pos+1] = gl_in[1].gl_Position;
+            calcdata[pos+2] = gl_in[2].gl_Position;
+            calcdata[pos+3] = vec4(0,0,0,0);
+            calcdata[pos+4] = vec4(0,0,0,0);
+            calcdata[pos+5] = vec4(0,0,0,0);
+            calcdata[pos+6] = screencoords;
+            calcdata[pos+7] = vec4(9999,instance[0],drawid[0],gl_in[0].gl_CullDistance[0]);
+        }
+    }
+    else
+    {    
         vec4 p0 = gl_in[0].gl_Position / gl_in[0].gl_Position.w;        // normalise w to produce screen pos in x/y, +/- 1
         vec4 p1 = gl_in[1].gl_Position / gl_in[1].gl_Position.w;        
         vec4 p2 = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
 
+        if ( debugout && gl_PrimitiveIDIn==0)               // this debug output helps a lot!
+        {
+            uint pos = atomicAdd(calccount,1)*8;
+            calcdata[pos+0] = gl_in[0].gl_Position;
+            calcdata[pos+1] = gl_in[1].gl_Position;
+            calcdata[pos+2] = gl_in[2].gl_Position;
+            calcdata[pos+3] = p0;
+            calcdata[pos+4] = p1;
+            calcdata[pos+5] = p2;
+            calcdata[pos+6] = screencoords;
+            calcdata[pos+7] = vec4(gl_PrimitiveIDIn,instance[0],drawid[0],gl_in[0].gl_CullDistance[0]);
+        }
+
         if ( !forwardsfacing || PMSquareS(p0,p1,p2) < 0 )     // if wound okay, so its forward facing (p0->p1 vector, p2 is on the right)
         {
-            // only check for approximate cursor position on first triangle of primitive (if small, all would respond)
+            // only check for approximate cursor position on first triangle of primitive (if small, all would respond)wa
 
             if ( gl_PrimitiveIDIn == 0 && abs(p0.x-screencoords.x) < pointdist && abs(p0.y-screencoords.y) < pointdist )
             {
@@ -196,7 +241,8 @@ void main(void)
                 if ( ipos < maximumresults )
                 {
                     float avgz = (p0.z+p1.z+p2.z)/3;
-                    values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,drawid[0] | group);
+                    values[ipos] = vec4(-1,instance[0],avgz,drawid[0] | group);
+                    //values[ipos] = vec4(p0.x,instance[0],avgz,drawid[0] | group);
                 }
             }
             else 
@@ -219,13 +265,15 @@ void main(void)
                 }   
             }
         }
+    }
 }
 ";
         }
 
 
 
-        private GLStorageBlock vecoutbuffer;
+        public GLStorageBlock vecoutbuffer;
+        static public GLStorageBlock calcbuf;
         private int maximumresults;
     }
 

@@ -169,10 +169,9 @@ namespace GLOFC.WinForm
             glControl.Resize += Gc_Resize;
             glControl.Paint += GlControl_Paint;
             context = GLStatics.GetContext();
-            System.Diagnostics.Trace.WriteLine($"GL Context {context} created for {GLStatics.GetVersion()}");
-            gltime.Start();
 
-#if DEBUG
+            System.Diagnostics.Trace.WriteLine($"GL Context {context}");
+
             System.Diagnostics.Trace.WriteLine($"Version  {GLStatics.GetVersion()}");
             System.Diagnostics.Trace.WriteLine($"Version  {GLStatics.GetVersionString()}");
             System.Diagnostics.Trace.WriteLine($"Vendor  {GLStatics.GetVendor()}");
@@ -186,8 +185,8 @@ namespace GLOFC.WinForm
             System.Diagnostics.Trace.WriteLine($"tex layers {GL4.GL4Statics.GetMaxTextureDepth()} ");
             System.Diagnostics.Trace.WriteLine($"Vertex attribs {GL4.GL4Statics.GetMaxVertexAttribs()} ");
             System.Diagnostics.Trace.WriteLine($"Shader storage buffer bindings {GL4.GL4Statics.GetShaderStorageMaxBindingNumber()} ");
-#endif
 
+            gltime.Start();
         }
 
         /// <summary> Close down </summary>

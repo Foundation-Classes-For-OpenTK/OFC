@@ -89,7 +89,7 @@ void main(void)
 
     /// <summary>
     /// Pipeline shader, Common Model Translation, Seperate World pos, transform, autoscaling of model due to eyedistance
-    /// colour is given by an array of basecolours, and the world position.W selectes the base colour
+    /// colour is given by an array of basecolours, and the world position.W selectes the base colour (>=0) or off -1
     /// </summary>
 
     public class GLPLVertexShaderModelCoordWorldAutoscale : GLShaderPipelineComponentShadersBase

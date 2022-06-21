@@ -96,7 +96,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <summary>
         /// Make multiple matrices
         /// </summary>
-        /// <param name="worldpos">Positions array</param>
+        /// <param name="worldpos">Positions array. If W is less than 0 then its visibility is set to zero </param>
         /// <param name="offset">Offset on each position</param>
         /// <param name="size">Size of each</param>
         /// <param name="rotationradians">Rotation of object</param>
@@ -125,7 +125,7 @@ namespace GLOFC.GL4.Shaders.Vertex
 
             Matrix4[] mats = new Matrix4[length];
             for (int i = 0; i < length; i++)
-                mats[i] = CreateMatrix(worldpos[i+pos].Xyz + offset, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, visible);
+                mats[i] = CreateMatrix(worldpos[i+pos].Xyz + offset, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, worldpos[i+pos].W>=0 ? visible : false);
             return mats;
         }
 

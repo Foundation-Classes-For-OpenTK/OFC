@@ -300,7 +300,7 @@ namespace GLOFC.GL4.Buffers
 
             foreach (var s in set)      
             {
-                geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform (encoded in drawID in .W)
+                geo.SetGroup(setno++ << 18);      // set the group marker for this group as a uniform (encoded with drawID in .W)
                 s.ObjectRenderer.Execute(findshader, glstate, noshaderstart:true); // execute find over ever set, not clearing the buffer
             }
 
@@ -309,14 +309,12 @@ namespace GLOFC.GL4.Buffers
             var res = geo.GetResult();
             if (res != null)
             {
-                System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine(i + " = " + res[i]);
+               // System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine($"  {i} S:{(int)res[i].W>>18} G:{(int)res[i].W & 0x3ffff} I:{res[i].Y} Z:{res[i].Z} raw {res[i]}");
                 return new Tuple<int,int, int,float>(((int)res[0].W) >> 18, ((int)res[0].W) & 0x3ffff, (int)res[0].Y, res[0].Z);
             }
             else
                 return null;
         }
-
-        // Find, 
 
         /// <summary>
         /// Find object on screen
@@ -336,7 +334,7 @@ namespace GLOFC.GL4.Buffers
         public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
         {
             var ret = Find(findshader, glstate, pos, size);       // return set, group, index, z
-            if (ret != null)
+            if (ret != null && ret.Item1 >= 0 && ret.Item1 < set.Count)     // #3272 reported an out of range here, AMD Card, suspect GC issues, but cover it up
             {
                 GLObjectsWithLabels s = set[ret.Item1];     // this is set
 
@@ -345,14 +343,15 @@ namespace GLOFC.GL4.Buffers
                 if ( fb != null )
                 {
                     int c = 0;
-                    foreach( var br in fb)      // until we get to owl/blockindex, count previous block counts so we get a cumulative total
+                    foreach (var br in fb)      // until we get to owl/blockindex, count previous block counts so we get a cumulative total
                     {
                         if (br.owl == s && br.blockindex == ret.Item2)
                             break;
-                        c += br.count;      
+                        c += br.count;
                     }
 
-                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, ret.Item2, ret.Item3, c + ret.Item3, ret.Item4);       // return block list, and real index into it
+                    // return block list, and real index into it
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, ret.Item2, ret.Item3, c + ret.Item3, ret.Item4);      
                 }
             }
 
