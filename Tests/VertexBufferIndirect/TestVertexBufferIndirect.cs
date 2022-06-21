@@ -138,11 +138,13 @@ namespace TestOpenTk
             // text shader uses a precomputed vertex shader (no vertex needed) expecting four draw points
             var textshader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
             items.Add(textshader);
-            
+
 
 
             GLStorageBlock block = new GLStorageBlock(20);
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16, obeyculldistance:true,debugbuffer:true), null, null, null);
+            GLStorageBlock debug = new GLStorageBlock(5);
+            debug.AllocateBytes(5000);
+            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16, obeyculldistance:true,debugbuffer:debug), null, null, null);
 
             Font fnt = new Font("MS sans serif", 16f);
 

@@ -32,6 +32,11 @@ namespace GLOFC.GL4.Shaders.Geo
 
     public class GLPLGeoShaderFindTriangles : GLShaderPipelineComponentShadersBase
     {
+        /// <summary> Access to the buffer used to store search results </summary>
+        public GLStorageBlock VectorOutBuffer { get; set; }
+        /// <summary> Access to the debug buffer if debug buffering is enabled, else null</summary>
+        static public GLStorageBlock DebugCalcBuffer { get; set; }
+
         /// <summary>
         /// Constructor
         /// Requires:
@@ -47,23 +52,21 @@ namespace GLOFC.GL4.Shaders.Geo
         /// <param name="maximumresultsp">Maximum number of results</param>
         /// <param name="forwardfacing">Triangles are forward facing</param>
         /// <param name="obeyculldistance">Reject primitives with cull distance less than 0</param>
-        /// <param name="debugbuffer">Set true to enable debug output</param>
-
-        public GLPLGeoShaderFindTriangles(GLStorageBlock buffer, int maximumresultsp, bool forwardfacing = true, bool obeyculldistance = true, bool debugbuffer = false)
+        /// <param name="debugbuffer">Pass in a debug buffer if require debug output</param>
+        public GLPLGeoShaderFindTriangles(GLStorageBlock buffer, int maximumresultsp, bool forwardfacing = true, bool obeyculldistance = true, GLStorageBlock debugbuffer = null)
         {
             maximumresults = maximumresultsp;
+
             int sizeneeded = 16 + sizeof(float) * 4 * maximumresults;
             if (buffer.Length < sizeneeded)
                 buffer.AllocateBytes(sizeneeded);
-            vecoutbuffer = buffer;
-            CompileLink(ShaderType.GeometryShader, Code(), out string unused,
-                                constvalues: new object[] { "bindingoutdata", vecoutbuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing , "debugout" , debugbuffer , "obeyculldistance", obeyculldistance});
+            VectorOutBuffer = buffer;
 
-            if (debugbuffer && calcbuf == null)     // if want debug output.
-            {
-                calcbuf = new GLStorageBlock(7);
-                calcbuf.AllocateBytes(50000);
-            }
+            DebugCalcBuffer = debugbuffer;
+
+            CompileLink(ShaderType.GeometryShader, Code(), out string unused,
+                                constvalues: new object[] { "bindingoutdata", VectorOutBuffer.BindingIndex, "maximumresults", maximumresults, "forwardfacing", forwardfacing , 
+                                            "bindingdebug" , debugbuffer != null ? debugbuffer.BindingIndex : 0, "debugoutput" , debugbuffer!=null  , "obeyculldistance", obeyculldistance});
         }
 
         /// <summary>
@@ -94,9 +97,9 @@ namespace GLOFC.GL4.Shaders.Geo
         public override void Start(GLMatrixCalc c)
         {
             base.Start(c);
-            vecoutbuffer.ZeroBuffer();
-            if ( calcbuf != null )
-                calcbuf.ZeroBuffer();
+            VectorOutBuffer.ZeroBuffer();
+            if ( DebugCalcBuffer != null )
+                DebugCalcBuffer.ZeroBuffer();
         }
 
         /// <summary>
@@ -107,13 +110,13 @@ namespace GLOFC.GL4.Shaders.Geo
         {
             GLMemoryBarrier.All();
 
-            if (calcbuf != null)
+            if (DebugCalcBuffer != null)
             {
                 int cstride = 8;
-                calcbuf.StartRead(0);
-                int calccount = calcbuf.ReadInt() * cstride;
-                var carray = calcbuf.ReadVector4s(calccount);
-                calcbuf.StopReadWrite();
+                DebugCalcBuffer.StartRead(0);
+                int calccount = DebugCalcBuffer.ReadInt() * cstride;
+                var carray = DebugCalcBuffer.ReadVector4s(calccount);
+                DebugCalcBuffer.StopReadWrite();
                 for (int j = 0; j < calccount; j++)
                 {
                     if (j % cstride == 0)
@@ -123,21 +126,21 @@ namespace GLOFC.GL4.Shaders.Geo
                 }
             }
 
-            vecoutbuffer.StartRead(0);
-            int count = Math.Min(vecoutbuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
+            VectorOutBuffer.StartRead(0);
+            int count = Math.Min(VectorOutBuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
 
             Vector4[] d = null;
 
             if (count > 0)
             {
-                d = vecoutbuffer.ReadVector4s(count);      // align 16 for vec4
+                d = VectorOutBuffer.ReadVector4s(count);      // align 16 for vec4
 
                 //System.Diagnostics.Debug.WriteLine($"Geo Find results {count}");  for (int i = 0; i < d.Length; i++) System.Diagnostics.Debug.WriteLine($"  {i} {d[i]}");
 
                 Array.Sort(d, delegate (Vector4 left, Vector4 right) { return left.Z.CompareTo(right.Z); });
             }
 
-            vecoutbuffer.StopReadWrite();
+            VectorOutBuffer.StopReadWrite();
             return d;
         }
 
@@ -176,15 +179,15 @@ out gl_PerVertex
     float gl_ClipDistance[];
 };
 
-const int bindingoutdata = 20;
+const int bindingoutdata = 1;
 layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock - holds results
 {
     uint count;
     vec4 values[];
 };
 
-const int bindingoutcalcbuf = 7;
-layout (binding = bindingoutcalcbuf, std430) buffer CalcData      // Debug side buffer
+const int bindingdebug = 2;
+layout (binding = bindingdebug, std430) buffer CalcData      // Debug side buffer
 {
     uint calccount;
     vec4 calcdata[];
@@ -192,14 +195,14 @@ layout (binding = bindingoutcalcbuf, std430) buffer CalcData      // Debug side 
 
 const int maximumresults = 1;       // is overriden by compiler feed in const
 const bool forwardsfacing = true;   // compiler overriden
-const bool debugout = false;        // debug buffer out on
 const bool obeyculldistance = false;    // obey cull distance
+const bool debugoutput = false;    // debug output on
 
 void main(void)
 {
     if ( obeyculldistance && gl_in[0].gl_CullDistance[0] < 0)       // if we are obeying clipping, check it, and if true, ignore the primitive
     {
-        if ( debugout && gl_PrimitiveIDIn==0)
+        if ( debugoutput && gl_PrimitiveIDIn==0)
         {
             uint pos = atomicAdd(calccount,1)*8;
             calcdata[pos+0] = gl_in[0].gl_Position;
@@ -218,7 +221,7 @@ void main(void)
         vec4 p1 = gl_in[1].gl_Position / gl_in[1].gl_Position.w;        
         vec4 p2 = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
 
-        if ( debugout && gl_PrimitiveIDIn==0)               // this debug output helps a lot!
+        if ( debugoutput && gl_PrimitiveIDIn==0)               // this debug output helps a lot!
         {
             uint pos = atomicAdd(calccount,1)*8;
             calcdata[pos+0] = gl_in[0].gl_Position;
@@ -270,10 +273,6 @@ void main(void)
 ";
         }
 
-
-
-        public GLStorageBlock vecoutbuffer;
-        static public GLStorageBlock calcbuf;
         private int maximumresults;
     }
 
