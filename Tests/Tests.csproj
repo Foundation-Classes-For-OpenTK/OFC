@@ -117,7 +117,7 @@
     <Compile Include="BaseUtils\KeplerOrbitElements.cs" />
     <Compile Include="Orrery\OrbitalBodyInformation.cs" />
     <Compile Include="Orrery\Orrery.cs" />
-    <Compile Include="Orrery\StarNodes.cs" />
+    <Compile Include="Orrery\StarScan.cs" />
     <Compile Include="Orrery\TestOrrey.cs">
       <SubType>Form</SubType>
     </Compile>

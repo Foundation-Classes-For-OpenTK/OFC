@@ -53,7 +53,7 @@ namespace TestOpenTk
 
             orrery = new Orrery();
             orrery.Start(glwfc);
-            orrery.CreateBodies(@"c:\code\bodies.json");
+            orrery.CreateBodies(@"c:\code\Dryu Chroa VK-D c26-1.json");
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

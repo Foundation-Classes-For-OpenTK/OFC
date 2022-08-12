@@ -156,7 +156,7 @@ namespace TestOpenTk
 
             GLForm pform;
 
-            if (false)
+            if (true)
             {
                 pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
                 //pform.BackColor = Color.FromArgb(200, Color.Red);

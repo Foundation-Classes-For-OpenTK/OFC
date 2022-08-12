@@ -192,7 +192,7 @@ namespace TestOpenTk
          //   System.Diagnostics.Debug.WriteLine($"Orbit {OrbitalPeriodS} = {orbitalperioddays} days res {angleresolutiondeg} {CentralMass}");
 
             List<Vector4> ret = new List<Vector4>();
-            for ( double a = 0; a <= 360.0;  a = a +angleresolutiondeg)
+            for ( double a = 0; a <= 360.0 + angleresolutiondeg;  a = a +angleresolutiondeg)
             {
                 double t = tdays + orbitalperioddays / 360.0 * a;
                 Vector3d posd = ToCartesian(t);

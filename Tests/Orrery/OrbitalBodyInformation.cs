@@ -14,15 +14,15 @@ namespace TestOpenTk
 {
     public class BodyInfo
     {
-        public KeplerOrbitElements kepler;
-        public GLRenderDataWorldPositionColor orbitpos;
-        public GLRenderDataWorldPositionColor bodypos;
-        public StarScan.ScanNode scannode;
-        public StarScan.ScanNode parent;
-        public int index;
-        public int parentindex;
+        public StarScan.ScanNode ScanNode { get; set; }
+        public StarScan.ScanNode Parent { get; set; }      // or null
+        public KeplerOrbitElements KeplerParameters { get; set; }
+        public GLRenderDataWorldPositionColor orbitpos { get; set; }    // where the orbit centre is
+        public GLRenderDataWorldPositionColor bodypos { get; set; } // where the body is
+        public int Index { get; set; }
+        public int ParentIndex { get; set; }
 
-        static public void CreateInfoTree(StarScan.ScanNode sn, StarScan.ScanNode parent, int p, double prevmasskg, List<BodyInfo> oilist)
+        static public void CreateInfoTree(StarScan.ScanNode sn, StarScan.ScanNode parent, int parentindex, double prevmasskg, List<BodyInfo> oilist)
         {
             KeplerOrbitElements kepler = null;
 
@@ -40,14 +40,15 @@ namespace TestOpenTk
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info");
+                if ( parent != null )
+                    System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info");
             }
 
             BodyInfo oi = new BodyInfo();
-            oi.kepler = kepler;
-            oi.scannode = sn;
-            oi.index = oilist.Count;
-            oi.parentindex = p;
+            oi.KeplerParameters = kepler;
+            oi.ScanNode = sn;
+            oi.Index = oilist.Count;
+            oi.ParentIndex = parentindex;
             oi.orbitpos = new GLRenderDataWorldPositionColor();
             oi.bodypos = new GLRenderDataWorldPositionColor();
             oilist.Add(oi);
@@ -62,12 +63,11 @@ namespace TestOpenTk
                     kepler.CentralMass = prevmasskg;
             }
 
-
             if (sn.Children != null)
             {
                 foreach (var kvp in sn.Children)
                 {
-                    CreateInfoTree(kvp.Value, sn, oi.index, sn.scandata?.nMassKG != null ? sn.scandata.nMassKG.Value : 0, oilist);
+                    CreateInfoTree(kvp.Value, sn, oi.Index, sn.scandata?.nMassKG != null ? sn.scandata.nMassKG.Value : 0, oilist);
                 }
             }
         }

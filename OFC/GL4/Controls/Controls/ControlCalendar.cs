@@ -32,7 +32,7 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, GLKeyEventArgs> OtherKeyPressed { get; set; } = null;     // not fired by programatically
 
         /// <summary> Date value selected. Default is local date </summary>
-        public DateTime Value { get { return datetimevalue; } set { datetimevalue = value; Invalidate(); } }
+        public DateTime Value { get { return datetimevalue; } set { datetimevalue = datetimecursor = value; Invalidate(); } }
 
         /// <summary> The left calendar button, for theming purposes </summary>
         public GLButton ButLeft { get; set; } = new GLButton();

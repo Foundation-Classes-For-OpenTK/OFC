@@ -19,6 +19,7 @@ namespace TestOpenTk
         public bool IsPlanet { get { return PlanetClass != null; } }
 
         public string BodyName { get; private set; }                        // direct (meaning no translation)
+        public int BodyID { get; private set; }
 
         public double? nRadius { get; set; }                        // direct (m)
 
@@ -58,7 +59,7 @@ namespace TestOpenTk
         public const double oneSOL_KG = 1.989e30;
         public const double oneEarth_KG = 5.972e24;
         public const double oneMoon_KG = 7.34767309e22;
-        public const double EarthMoonMassRatio = oneEarth_KG / oneMoon_KG;
+        public const double oneEarthMoonMassRatio = oneEarth_KG / oneMoon_KG;
 
         // astrometric
         public const double oneLS_m = 299792458;
@@ -66,11 +67,12 @@ namespace TestOpenTk
         public const double oneAU_LS = oneAU_m / oneLS_m;
         public const double oneDay_s = 86400;
 
-        public JournalScan(string name, string sc, string pc, double? mass, double? op, double? axialtiltdeg, double? radius,
+        public JournalScan(string name, int bodyid, string sc, string pc, double? mass, double? op, double? axialtiltdeg, double? radius,
             double? s,double? e,double? i,double? an,double? p,double? ma, DateTime t
             )
         {
             BodyName = name;
+            BodyID = bodyid;
             StarType = sc;
             PlanetClass = pc;
             if (StarType.HasChars())
@@ -93,20 +95,25 @@ namespace TestOpenTk
 
     public partial class StarScan
     {
-        public enum ScanNodeType { star, barycentre, body, belt, beltcluster, ring };
+        public enum ScanNodeType
+        {
+            star,            // used for top level stars - stars around stars are called a body.
+            barycentre,      // only used for top level barycentres (AB)
+            body,            // all levels >0 except for below are called a body
+            belt,            // used on level 1 under the star : HIP 23759 A Belt Cluster 4 -> elements Main Star,A Belt,Cluster 4
+            beltcluster,     // each cluster under it gets this name at level 2
+            ring             // rings at the last level : Selkana 9 A Ring : MainStar,9,A Ring
+        };
         public partial class ScanNode
         {
-            public ScanNodeType NodeType;
-            public string FullName;                 // full name including star system
-            public string OwnName;                  // own name excluding star system
-            public string CustomName;               // if we can extract from the journals a custom name of it, this holds it. Mostly null
-            public SortedList<string, ScanNode> Children;         // kids
-            public int Level;                       // level within SystemNode
-            public int? BodyID;
-            public bool IsMapped;                   // recorded here since the scan data can be replaced by a better version later.
-            public bool WasMappedEfficiently;
-
-            public string CustomNameOrOwnname { get { return CustomName ?? OwnName; } }
+            public ScanNodeType NodeType { get; set;}
+            public string FullName { get; set;}                 // full name including star system
+            public string OwnName { get; set;}                  // own name excluding star system
+            public SortedList<string, ScanNode> Children { get; set;}         // kids
+            public int Level { get; set;}                       // level within SystemNode
+            public int? BodyID { get; set;}
+            public bool IsMapped { get; set;}                   // recorded here since the scan data can be replaced by a better version later.
+            public bool WasMappedEfficiently { get; set;}
 
             public JournalScan scandata;            // can be null if no scan, its a place holder, else its a journal scan
         };
@@ -121,37 +128,43 @@ namespace TestOpenTk
 
             n.OwnName = jo["Name"].Str();
             n.FullName = jo["FullName"].Str(n.OwnName);
-            string nt = jo["NodeType"].Str();
-            n.NodeType = nt.Equals("barycentre") ? ScanNodeType.barycentre : nt.Equals("body") ? ScanNodeType.body : ScanNodeType.star;
 
-            if (jo.ContainsKey("SemiMajorAxis"))
+            if (Enum.TryParse<ScanNodeType>(jo["NodeType"].Str("body"), out ScanNodeType ty))
             {
-                n.scandata = new JournalScan(n.OwnName, jo["StarClass"].StrNull(), jo["PlanetClass"].StrNull(), jo["Mass"].DoubleNull(),
-                                        jo["OrbitalPeriod"].DoubleNull(), jo["AxialTilt"].DoubleNull(), jo["Radius"].DoubleNull(),
-                                        jo["SemiMajorAxis"].DoubleNull(),        // km
-                                        jo["Eccentricity"].DoubleNull(),
-                                        jo["Inclination"].DoubleNull(),        // deg all
-                                        jo["AscendingNode"].DoubleNull(),
-                                        jo["Periapis"].DoubleNull(),
-                                        jo["MeanAnomaly"].DoubleNull(),
-                                        epoch);
-                if (n.scandata.nRadius.HasValue)
-                    n.scandata.nRadius *= 1000;
-            }
-
-
-            if (jo.ContainsKey("Bodies"))
-            {
-                n.Children = new SortedList<string, ScanNode>();
-                JArray ja = jo["Bodies"] as JArray;
-                foreach (JObject o in ja)
+                n.NodeType = ty;
+                if (jo.ContainsKey("SemiMajorAxis"))
                 {
-                    var cn = ReadJSON(o);
-                    n.Children.Add(cn.OwnName, cn);
+                    n.scandata = new JournalScan(n.OwnName, jo["ID"].Int(0),
+                                            jo["StarClass"].StrNull(),
+                                            jo["PlanetClass"].StrNull(), jo["Mass"].DoubleNull(),
+                                            jo["OrbitalPeriod"].DoubleNull(), jo["AxialTilt"].DoubleNull(), jo["Radius"].DoubleNull(),
+                                            jo["SemiMajorAxis"].DoubleNull(),        // km
+                                            jo["Eccentricity"].DoubleNull(),
+                                            jo["Inclination"].DoubleNull(),        // deg all
+                                            jo["AscendingNode"].DoubleNull(),
+                                            jo["Periapis"].DoubleNull(),
+                                            jo["MeanAnomaly"].DoubleNull(),
+                                            epoch);
+                    if (n.scandata.nRadius.HasValue)
+                        n.scandata.nRadius *= 1000;
                 }
-            }
 
-            return n;
+                if (jo.ContainsKey("Bodies"))
+                {
+                    n.Children = new SortedList<string, ScanNode>();
+                    JArray ja = jo["Bodies"] as JArray;
+                    foreach (JObject o in ja)
+                    {
+                        var cn = ReadJSON(o);
+                        n.Children.Add(cn.OwnName, cn);
+                    }
+                }
+
+                return n;
+            }
+            else
+                return null;
+
         }
     }
     
