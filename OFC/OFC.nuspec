@@ -9,7 +9,10 @@
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Release 1.0.0 features:
+    <releaseNotes>Release 1.0.2 features:
+    Fixes for Calendar Control
+    Fixes for NVidia drivers
+    Release 1.0.0:
     Support for indicating GL version required.
     All examples reworked for 4.6 only - removal of QUADs etc.
     New GLShaderLog to allow errors to accumulate
