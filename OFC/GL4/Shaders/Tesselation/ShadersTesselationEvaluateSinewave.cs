@@ -76,6 +76,7 @@ out gl_PerVertex {
   vec4 gl_Position;
   float gl_PointSize;
   float gl_ClipDistance[];
+  float gl_CullDistance[];
 };
 
 layout( location = 0 ) out vec2 vs_textureCoordinate;
