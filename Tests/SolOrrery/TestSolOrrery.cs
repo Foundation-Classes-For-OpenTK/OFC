@@ -189,40 +189,40 @@ namespace TestOpenTk
             // earth
             bodies[0] = new KeplerOrbitElements(true, semimajoraxiskm: 0.38709893 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/mercuryfact.html
                                                                  eccentricity: 0.20563069,
-                                                                 inclination: 7.00487,
-                                                                 longitudeofascendingnode: 48.33167,
-                                                                 longitudeofperihelion: 77.45645,
-                                                                 meanlongitude: 252.25084,
+                                                                 inclinationdeg: 7.00487,
+                                                                 longitudeofascendingnodedeg: 48.33167,
+                                                                 longitudeofperiheliondeg: 77.45645,
+                                                                 meanlongitudedeg: 252.25084,
                                                                  currentjd);
             bodies[1] = new KeplerOrbitElements(true, semimajoraxiskm: 0.72333199 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html
                                                                  eccentricity: 0.00677323,
-                                                                 inclination: 3.39471,
-                                                                 longitudeofascendingnode: 76.68069,
-                                                                 longitudeofperihelion: 131.53298,
-                                                                 meanlongitude: 181.97973,
+                                                                 inclinationdeg: 3.39471,
+                                                                 longitudeofascendingnodedeg: 76.68069,
+                                                                 longitudeofperiheliondeg: 131.53298,
+                                                                 meanlongitudedeg: 181.97973,
                                                                  currentjd);
             bodies[2] = new KeplerOrbitElements(true, semimajoraxiskm: 1.49596E+08,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
                                                                  eccentricity: 0.0167086,
-                                                                 inclination: 0.00005,
-                                                                 longitudeofascendingnode: -11.26064,
-                                                                 longitudeofperihelion: 102.94719,
-                                                                 meanlongitude: 100.46435,
+                                                                 inclinationdeg: 0.00005,
+                                                                 longitudeofascendingnodedeg: -11.26064,
+                                                                 longitudeofperiheliondeg: 102.94719,
+                                                                 meanlongitudedeg: 100.46435,
                                                                  currentjd);
             bodies[3] = new KeplerOrbitElements(true, semimajoraxiskm: 1.52366231 * AU,  // https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
                                                                  eccentricity: 0.09341233,
-                                                                 inclination: 1.85061,
-                                                                 longitudeofascendingnode: 49.57854,
-                                                                 longitudeofperihelion: 336.04084,
-                                                                 meanlongitude: 355.45332,
+                                                                 inclinationdeg: 1.85061,
+                                                                 longitudeofascendingnodedeg: 49.57854,
+                                                                 longitudeofperiheliondeg: 336.04084,
+                                                                 meanlongitudedeg: 355.45332,
                                                                  currentjd);
 
             float planetsize = earthradiusm * mscaling * planetscaleup;
 
             for (int i = 0; i < bodies.Length; i++)
             {
-                bodies[i].CentralMass = Msol;
+                bodies[i].OrbitingMass = Msol;
 
-                System.Diagnostics.Debug.WriteLine($"{i} {bodies[i].OrbitalPeriodS/60/60/24} {bodies[i].CalculateMass(bodies[i].OrbitalPeriodS)}");
+                System.Diagnostics.Debug.WriteLine($"{i} {bodies[i].OrbitalPeriods/60/60/24} {bodies[i].MassKG(bodies[i].OrbitalPeriods)}");
 
                 bodypositions[i] = new GLRenderDataTranslationRotationTexture(items.Tex("moon"), new Vector3(0, 0, 0));
 

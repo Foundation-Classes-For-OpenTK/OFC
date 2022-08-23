@@ -231,7 +231,7 @@ namespace GLOFC.GL4
             Fill(tex);
         }
 
-        /// <summary>AFill with Matrix4s, with a definable length.</summary>
+        /// <summary>Fill with Matrix4s, with a definable length.</summary>
         public void Fill(Matrix4[] mats, int length = -1)
         {
             length = (length == -1) ? mats.Length : length;

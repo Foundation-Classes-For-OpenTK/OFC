@@ -24,75 +24,90 @@ namespace TestOpenTk
     public class KeplerOrbitElements
     {
         // keplarian parameters
-        public double SemiMajorAxis { get; set; }       // a (meters) the sum of the periapsis and apoapsis distances divided by two.
+        public double SemiMajorAxism { get; set; }       // a (meters) the sum of the periapsis and apoapsis distances divided by two.
         public double Eccentricity { get; set; }        // e Eccentricity of orbit
-        public double Inclination { get; set; }         // i (radians) Orbital inclination of orbit from the reference plane measured at the ascending node, radians
-        public double LongitudeOfAscendingNode { get; set; }    // omega (radians) - angle where the orbit passes upward through the reference plane, normally measured from the reference vernal point of the system, radians
-        public double ArgumentOfPeriapsis { get; set; } // w (radians) Argument of periapsis, angle where the periapsis (closest approach) occurs, radians
+        public double Inclinationr { get; set; }         // i (radians) Orbital inclination of orbit from the reference plane measured at the ascending node, radians
+        public double LongitudeOfAscendingNoder { get; set; }    // omega (radians) - angle where the orbit passes upward through the reference plane, normally measured from the reference vernal point of the system, radians
+        public double ArgumentOfPeriapsisr { get; set; } // w (radians) Argument of periapsis, angle where the periapsis (closest approach) occurs, radians
                                                         // also called the argument of perifocus or argument of pericentre
-        public double MeanAnomalyAtT0 { get; set; }     // v (radians) where it is in its orbit, 0 - 2PI, at epoch T0. Mean Anomaly is not a true geometric angle, rather a linear value varying over orbital period
+        public double MeanAnomalyAtT0r { get; set; }     // v (radians) where it is in its orbit, 0 - 2PI, at epoch T0. Mean Anomaly is not a true geometric angle, rather a linear value varying over orbital period
         public double T0 { get; set; }                  // epoch time in days where these values are valid at
-
-        // Other info
-        public double CentralMass { get; set; } = 1;    // in KG.  Needed only if your going to use the OrbitPeriod, ToCartesian or Orbit functions
-     
-        public double OrbitalPeriodS { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / GM); } } // seconds, keplers third law 
-
-        public double CalculateMass(double orbitalperiodseconds)        // keplers third law backwards
-        {
-            return 4 * Math.PI * Math.PI * SemiMajorAxis * SemiMajorAxis * SemiMajorAxis / G / (orbitalperiodseconds * orbitalperiodseconds);
-        }
-
-        public Vector3d LastCartensianPosition { get; private set; } // set when ToCartesian is run
-
         public object Tag { get; set; }                 // for other info
 
-        public double GM { get { return G * CentralMass; } }
-        public const double G = 6.67430E-11;                   // in m3.kg-1.s-2, wiki https://en.wikipedia.org/wiki/Gravitational_constant
         public const double J2000 = 2451545.0;                 // equals January 1st 2000 at 12:00 noon (Horizons 2451545.000000000 = A.D. 2000-Jan-01 12:00:00.0000 TDB)
+        public const double G = 6.67430E-11;                   // in m3.kg-1.s-2, wiki https://en.wikipedia.org/wiki/Gravitational_constant
+
+        // calculators
+        public double MassKG(double orbitalperiodseconds)        // keplers third law backwards
+        {
+            return 4 * Math.PI * Math.PI * SemiMajorAxism * SemiMajorAxism * SemiMajorAxism / G / (orbitalperiodseconds * orbitalperiodseconds);
+        }
+        public static double CalculateOrbitalPeriods(double sma_m, double cm_kg) { return 2 * Math.PI * Math.Sqrt(sma_m * sma_m * sma_m / (G * cm_kg)); }
+
+        public static double CalculateMassKG(double sma_m, double orbitalperiodseconds)        // keplers third law backwards
+        {
+            return 4 * Math.PI * Math.PI * sma_m * sma_m * sma_m / G / (orbitalperiodseconds * orbitalperiodseconds);
+        }
+
+        public static double CalculateSMAm(double orbitalperiodseconds, double centralmasskg)
+        {
+            return Math.Pow(Math.Pow(orbitalperiodseconds / (2 * Math.PI), 2) * G * centralmasskg, 1.0 / 3.0);
+        }
+
+        // requiring mass
+
+        public double OrbitingMass { get; set; } = 1;    // in KG.  Needed only if your going to use the OrbitPeriod, ToCartesian or Orbit functions
+
+        public double GM { get { return G * OrbitingMass; } }
+
+        public double OrbitalPeriods { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxism * SemiMajorAxism * SemiMajorAxism / GM); } } // seconds, keplers third law 
+
+        public Vector3d LastCartensianPositionm { get; private set; } // set when ToCartesian is run
+
 
         // in km, degrees and days, as per horizons
-        public KeplerOrbitElements(double semimajoraxis, double eccentricity, double inclination, double longitudeofascendingnode, double argumentofperiapsis,
-                                    double meananomlalyT0, double T0)
+        public KeplerOrbitElements(double semimajoraxiskm, double eccentricity, double inclinationdeg, double longitudeofascendingnodedeg, double argumentofperiapsisdeg,
+                                    double meananomlalyT0deg, double T0)
         {
             this.Eccentricity = eccentricity;
-            this.SemiMajorAxis = semimajoraxis * 1000;    // to m
-            this.Inclination = ((inclination + 360) % 360).Radians();
-            this.LongitudeOfAscendingNode = ((longitudeofascendingnode + 360) % 360).Radians();
-            this.ArgumentOfPeriapsis = ((argumentofperiapsis + 360) % 360).Radians();
-            this.MeanAnomalyAtT0 = ((meananomlalyT0 + 360) % 360).Radians();
+            this.SemiMajorAxism = semimajoraxiskm * 1000;    // to m
+            this.Inclinationr = ((inclinationdeg + 360) % 360).Radians();
+            this.LongitudeOfAscendingNoder = ((longitudeofascendingnodedeg + 360) % 360).Radians();
+            this.ArgumentOfPeriapsisr = ((argumentofperiapsisdeg + 360) % 360).Radians();
+            this.MeanAnomalyAtT0r = ((meananomlalyT0deg + 360) % 360).Radians();
             this.T0 = T0;
         }
 
         // in km, degrees and days, as per horizons. In form used by https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html
         public KeplerOrbitElements(bool markerunused, double semimajoraxiskm, double eccentricity,
-                                    double inclination, double longitudeofascendingnode, double longitudeofperihelion,
-                                    double meanlongitude, double T0)
+                                    double inclinationdeg, double longitudeofascendingnodedeg, double longitudeofperiheliondeg,
+                                    double meanlongitudedeg, double T0)
         {
             this.Eccentricity = eccentricity;
-            this.SemiMajorAxis = semimajoraxiskm * 1000;    // to m
-            this.Inclination = ((inclination + 360) % 360).Radians();
+            this.SemiMajorAxism = semimajoraxiskm * 1000;    // to m
+            this.Inclinationr = ((inclinationdeg + 360) % 360).Radians();
 
-            this.LongitudeOfAscendingNode = ((longitudeofascendingnode + 360) % 360).Radians();
+            this.LongitudeOfAscendingNoder = ((longitudeofascendingnodedeg + 360) % 360).Radians();
 
             // https://en.wikipedia.org/wiki/Longitude_of_the_periapsis
             // longitude of perihelion = longitudeofascendingnode + argumentofperiapsis (W' = omega+w)
             // therefore argumentofperiapsis = longitude of perihelion - longitudeofascendingnode
 
-            this.ArgumentOfPeriapsis = ((longitudeofperihelion - longitudeofascendingnode + 720) % 360).Radians();
+            this.ArgumentOfPeriapsisr = ((longitudeofperiheliondeg - longitudeofascendingnodedeg + 720) % 360).Radians();
 
             // https://en.wikipedia.org/wiki/Mean_longitude
             // mean longitude = longitudeofperiphelion + meananomaly (I = W' + M)
             // verified against horizons orbit viewer from 2000/2020 the positions appear correct
 
-            this.MeanAnomalyAtT0 = ((meanlongitude - longitudeofperihelion + 720 ) % 360).Radians();
+            this.MeanAnomalyAtT0r = ((meanlongitudedeg - longitudeofperiheliondeg + 720 ) % 360).Radians();
 
             this.T0 = T0;
         }
 
+        // what is MA at time t.
         public double MeanAnomalyAtT(double tdays)
         {
-            System.Diagnostics.Debug.Assert(CentralMass > 1);
+            System.Diagnostics.Debug.Assert(OrbitingMass > 1);
 
             // see https://downloads.rene-schwarz.com/download/M001-Keplerian_Orbit_Elements_to_Cartesian_State_Vectors.pdf
 
@@ -100,13 +115,13 @@ namespace TestOpenTk
 
            // System.Diagnostics.Debug.WriteLine($"At {tdays} A={SemiMajorAxis:E8}m EC={Eccentricity.Degrees():E8} deg OP={OrbitalPeriodS / 60 / 60 / 24:0.##}");
 
-            double MAt = MeanAnomalyAtT0;
+            double MAt = MeanAnomalyAtT0r;
             if (tdays != T0)     // if not at epoch. T is in days, convert to seconds
             {
-                double f = Math.Sqrt(GM / Math.Pow(SemiMajorAxis, 3));
+                double f = Math.Sqrt(GM / Math.Pow(SemiMajorAxism, 3));
                 double d = (tdays - T0) * 60 * 60 * 24;
 
-                MAt = MeanAnomalyAtT0 + d * f;
+                MAt = MeanAnomalyAtT0r + d * f;
                 MAt = MAt % (Math.PI * 2);
             }
 
@@ -151,11 +166,11 @@ namespace TestOpenTk
         {
             double MAt = MeanAnomalyAtT(tdays);
             double EAt = EccentricAnomaly(MAt);
-            double rct = SemiMajorAxis * (1 - Eccentricity * Math.Cos(EAt));
+            double rct = SemiMajorAxism * (1 - Eccentricity * Math.Cos(EAt));
             return rct;
         }
 
-        // return position vector with orbit on xy plane in meters
+        // return position vector with orbit on xy plane in meters. Needs Mass
         public Vector3d ToCartesian(double tdays)
         {
             double MAt = MeanAnomalyAtT(tdays);
@@ -164,7 +179,7 @@ namespace TestOpenTk
 
             // 4 Calculate distance to central body
 
-            double rct = SemiMajorAxis * (1 - Eccentricity * Math.Cos(EAt));
+            double rct = SemiMajorAxism * (1 - Eccentricity * Math.Cos(EAt));
 
             //5 Get position vector (z-axis perpendicular to orbital plane, x-axis pointing to periapsis of the orbit)
 
@@ -172,23 +187,22 @@ namespace TestOpenTk
 
             // 6 Transform to the inertial frame in bodycentric.
 
-            double rx = (ot.X * (Math.Cos(ArgumentOfPeriapsis) * Math.Cos(LongitudeOfAscendingNode) - Math.Sin(ArgumentOfPeriapsis) * Math.Cos(Inclination) * Math.Sin(LongitudeOfAscendingNode)) -
-                    ot.Y * (Math.Sin(ArgumentOfPeriapsis) * Math.Cos(LongitudeOfAscendingNode) + Math.Cos(ArgumentOfPeriapsis) * Math.Cos(Inclination) * Math.Sin(LongitudeOfAscendingNode)));
-            double ry = (ot.X * (Math.Cos(ArgumentOfPeriapsis) * Math.Sin(LongitudeOfAscendingNode) + Math.Sin(ArgumentOfPeriapsis) * Math.Cos(Inclination) * Math.Cos(LongitudeOfAscendingNode)) +
-                ot.Y * (Math.Cos(ArgumentOfPeriapsis) * Math.Cos(Inclination) * Math.Cos(LongitudeOfAscendingNode) - Math.Sin(ArgumentOfPeriapsis) * Math.Sin(LongitudeOfAscendingNode)));
-            double rz = (ot.X * (Math.Sin(ArgumentOfPeriapsis) * Math.Sin(Inclination)) + ot.Y * (Math.Cos(ArgumentOfPeriapsis) * Math.Sin(Inclination)));
+            double rx = (ot.X * (Math.Cos(ArgumentOfPeriapsisr) * Math.Cos(LongitudeOfAscendingNoder) - Math.Sin(ArgumentOfPeriapsisr) * Math.Cos(Inclinationr) * Math.Sin(LongitudeOfAscendingNoder)) -
+                    ot.Y * (Math.Sin(ArgumentOfPeriapsisr) * Math.Cos(LongitudeOfAscendingNoder) + Math.Cos(ArgumentOfPeriapsisr) * Math.Cos(Inclinationr) * Math.Sin(LongitudeOfAscendingNoder)));
+            double ry = (ot.X * (Math.Cos(ArgumentOfPeriapsisr) * Math.Sin(LongitudeOfAscendingNoder) + Math.Sin(ArgumentOfPeriapsisr) * Math.Cos(Inclinationr) * Math.Cos(LongitudeOfAscendingNoder)) +
+                ot.Y * (Math.Cos(ArgumentOfPeriapsisr) * Math.Cos(Inclinationr) * Math.Cos(LongitudeOfAscendingNoder) - Math.Sin(ArgumentOfPeriapsisr) * Math.Sin(LongitudeOfAscendingNoder)));
+            double rz = (ot.X * (Math.Sin(ArgumentOfPeriapsisr) * Math.Sin(Inclinationr)) + ot.Y * (Math.Cos(ArgumentOfPeriapsisr) * Math.Sin(Inclinationr)));
 
-            LastCartensianPosition = new Vector3d(rx, ry, rz); //Position vector in meters
+            LastCartensianPositionm = new Vector3d(rx, ry, rz); //Position vector in meters
                                                    //  System.Diagnostics.Debug.WriteLine($"Result {r}");
 
-            return LastCartensianPosition;
+            return LastCartensianPositionm;
         }
-
 
         // return vector path of orbit, in GL format, on XZ plane, given the day start, day resolution (ie. 2 means every two days), and scaling to GL units
         public Vector4[] Orbit(double tdays, double angleresolutiondeg, double scaling)
         {
-            double orbitalperioddays = OrbitalPeriodS / 60 / 60 / 24;
+            double orbitalperioddays = OrbitalPeriods / 60 / 60 / 24;
          //   System.Diagnostics.Debug.WriteLine($"Orbit {OrbitalPeriodS} = {orbitalperioddays} days res {angleresolutiondeg} {CentralMass}");
 
             List<Vector4> ret = new List<Vector4>();

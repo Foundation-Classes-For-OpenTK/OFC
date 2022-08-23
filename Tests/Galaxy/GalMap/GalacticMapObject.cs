@@ -15,13 +15,11 @@
  */
 
 using BaseUtils;
-using Newtonsoft.Json.Linq;
+using QuickJSON;
 using OpenTK;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace EliteDangerousCore.EDSM
@@ -92,14 +90,14 @@ namespace EliteDangerousCore.EDSM
 
                 if (coords.Count > 0)
                 {
-                    if (coords[0].Type == JTokenType.Array)
+                    if (coords[0].IsArray)
                     {
                         foreach (JArray ja in coords)
                         {
                             float x, y, z;
-                            x = ja[0].Value<float>();
-                            y = ja[1].Value<float>();
-                            z = ja[2].Value<float>();
+                            x = ja[0].Float();
+                            y = ja[1].Float();
+                            z = ja[2].Float();
                             points.Add(new Vector3(x, y, z));
                         }
                     }
@@ -108,9 +106,9 @@ namespace EliteDangerousCore.EDSM
                         JArray plist = coords;
 
                         float x, y, z;
-                        x = plist[0].Value<float>();
-                        y = plist[1].Value<float>();
-                        z = plist[2].Value<float>();
+                        x = plist[0].Float();
+                        y = plist[1].Float();
+                        z = plist[2].Float();
                         points.Add(new Vector3(x, y, z));
                     }
                 }

@@ -13,19 +13,7 @@
  * governing permissions and limitations under the License.
  */
 
-using GLOFC;
-using GLOFC.Controller;
-using GLOFC.GL4;
-using GLOFC.GL4.Controls;
-using Newtonsoft.Json.Linq;
-using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL4;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Globalization;
-using System.IO;
 using System.Windows.Forms;
 
 // A simpler main for demoing
@@ -53,7 +41,7 @@ namespace TestOpenTk
 
             orrery = new Orrery();
             orrery.Start(glwfc);
-            orrery.CreateBodies(@"c:\code\Dryu Chroa VK-D c26-1.json");
+            orrery.CreateBodies(@"c:\code\t2.json");
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

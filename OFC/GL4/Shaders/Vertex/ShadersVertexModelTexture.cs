@@ -102,10 +102,12 @@ void main(void)
         /// </summary>
         /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
         /// <param name="useeyedistance">Use eye distance to lookat to autoscale, else use distance between object and eye</param>
-        public GLPLVertexShaderModelMatrixTexture(float autoscale = 0, bool useeyedistance = true)
+        public GLPLVertexShaderModelMatrixTexture(float autoscale = 0, float autoscalemin = 1, float autoscalemax = 10000, bool useeyedistance = true)
         {
             CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] {
                                                                     "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin,
+                                                                    "autoscalemax", autoscalemax,
                                                                     "useeyedistance", useeyedistance });
         }
 
@@ -140,6 +142,8 @@ layout (location = 4) out VS_OUT2
 } vs_out2;
 
 const float autoscale = 0;
+const float autoscalemin = 0;
+const float autoscalemax = 0;
 const bool useeyedistance = true;
 
 void main(void)
@@ -160,18 +164,19 @@ void main(void)
         {
             vec4 worldpos = vec4(transform[3][0],transform[3][1],transform[3][2],0);
             float d = distance(mc.EyePosition,worldpos);            // find distance between eye and world pos
-            scale = d/autoscale;
+            scale = clamp(d/autoscale,autoscalemin,autoscalemax);
         }
 
-        scale = clamp(scale*transform[2][3],tx[0][3],tx[1][3]);
-        tx[0][3]=0;
+        // take scale, multiply by body scaling [2][3], and clip to min/max
+        scale = clamp(scale*transform[2][3],tx[0][3],tx[1][3]); 
+        pos = Scale(pos,scale);
+
+        tx[0][3]=0; // cancel control words
         tx[1][3]=0;
         tx[2][3]=0;
-
-        pos = Scale(pos,scale);
     }
 
-    vs_out2.m33 = int(transform[3][3]);
+    vs_out2.m33 = int(transform[3][3]);     // pass on image number
     tx[3][3]=1;
 
 	gl_Position = mc.ProjectionModelMatrix * tx * pos;        // order important

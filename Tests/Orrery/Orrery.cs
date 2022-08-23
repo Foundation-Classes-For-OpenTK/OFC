@@ -1,76 +1,82 @@
 ﻿using GLOFC;
 using GLOFC.Controller;
 using GLOFC.GL4;
+using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.Controls;
 using GLOFC.GL4.Shaders;
-using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Basic;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Geo;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.ShapeFactory;
 using GLOFC.Utils;
 using GLOFC.WinForm;
-using Newtonsoft.Json.Linq;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using GLOFC.GL4.Bitmaps;
-using GLOFC.GL4.ShapeFactory;
 using static GLOFC.GL4.Controls.GLBaseControl;
 
 namespace TestOpenTk
 {
-    public class Orrery
+    public partial class Orrery
     {
         private GLOFC.WinForm.GLWinFormControl glwfc;
+
         private GLItemsList items = new GLItemsList();
         private GLMatrixCalc matrixcalc;
 
-        private GLRenderProgramSortedList rObjects = new GLRenderProgramSortedList();
-        private GLRenderProgramSortedList rBodyObjects = new GLRenderProgramSortedList();
+        // Playfield
 
         private Controller3Dd gl3dcontroller;
+        private float worldsize = 7500e9f;        // size of playfield in meters
+        private float mscaling = 1 / 1e6f;       // convert meters to units used by GL, 1e6 = 1e11 m, earth is at 1.49e11 m.  1,000,000m = 1000km = 1 unit
+        private float mscalingkm = 1000 / 1e6f;    // if km is used
+
+        // Grid
+        private GLRenderProgramSortedList rgrid = new GLRenderProgramSortedList();          // Render grid
+        private long gridlines = 50000000000;   // m
+
+        // Bodies
+        private GLRenderProgramSortedList rbodyobjects = new GLRenderProgramSortedList();   // Render body objects
+        private GLShaderPipeline bodyfindshader;
+        private GLRenderableItem rbodyfindshader;
+        private Matrix4[] bodymats;
+        private GLBuffer bodymatrixbuffer, sphereshapebuffer, spheretexcobuffer;
+        private GLBuffer ringsmatrixbuffer, ringsshapebuffer, ringstexcobuffer;
+        private GLShaderPipeline orbitlineshader, bodyshader, ringsshader;
+
+        private const int findbufferblock = 3;
+        private const int bodyimagearbblock = 4;
+
+        private int bodytrack = -1;
+
+        private const float autoscalekm = 1000000;      // body distance divider for autoscaling
+        private const float autoscalemin = 1;           // clamp values between these two
+        private const float autoscalemax = 1000;
+        private const float planetminkm = 100;          // set min/max on objectsweh
+        private const float planetmaxkm = 10000000;
+        private const float starminkm = 1000000;
+        private const float starmaxkm = 3e6f;
+        private const float baryminkm = 100000;
+        private const float barymaxkm = 100000;
+
+
+        // Controls 
         private GLControlDisplay displaycontrol;
         private GLLabel timedisplay;
         private GLLabel mastersystem;
         private GLLabel datalabel;
         private GLLabel status;
-
-        private StarScan.ScanNode starsystemnodes;        // heirarchical list, all
-        private int displaysubnode = 0; // subnode, 0 all, 1 first, etc
-        private List<BodyInfo> bodyinfo;       // linear list pointing to nodes with kepler info etc
-
-        private const double oneAU_m = 149597870700;
-        private float worldsize = 7500e9f;        // size of playfield in meters
-        private long gridlines = 50000000000;   // m
-        private float mscaling = 1 / 1e6f;       // convert to units used by GL, 1e6 = 1e11 m, earth is at 1.49e11 m.  1,000,000m = 1000km = 1 unit
-
-        private int track = -1;
-
-        private const int findblock = 3;
-        private const int arbblock = 4;
-
-
-        private double currentjd;
-        private double jdscaling;
-
-        private GLBuffer spherebuffer, spheretexcobuffer;
-        private GLShaderPipeline orbitlineshader, bodyshader, bodyplaneshader;
-
-        private GLShaderPipeline findshader;
-        private GLRenderableItem rifind;
-
-        private GLBuffer bodymatrixbuffer;
-
         private GLContextMenu rightclickmenubody;
         private GLContextMenu rightclickmenuscreen;
+
+        // Time
+        private double currentjd;
+        private double jdscaling;
 
         public void Start(GLWinFormControl glwfc)
         {
@@ -99,7 +105,7 @@ namespace TestOpenTk
             gl3dcontroller = new Controller3Dd();
             gl3dcontroller.ZoomDistance = 20e6 * 1000 * mscaling;       // zoom 1 is X km
             gl3dcontroller.PosCamera.ZoomMin = 0.001f;
-            gl3dcontroller.PosCamera.ZoomMax = 300f;
+            gl3dcontroller.PosCamera.ZoomMax = 4000f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.08f;
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
@@ -120,13 +126,16 @@ namespace TestOpenTk
 
             // begin
 
-            for ( int i = 1; i <= 10; i++ )
-            {
-                int v = i * i;
-                double f = (gl3dcontroller.PosCamera.ZoomMax - gl3dcontroller.PosCamera.ZoomMin) * v / 100.0 + gl3dcontroller.PosCamera.ZoomMin;
-                System.Diagnostics.Debug.WriteLine($"{i} {v} {f}");
-            }
+            //for ( int i = 1; i <= 10; i++ )
+            //{
+            //    int v = i * i;
+            //    double f = (gl3dcontroller.PosCamera.ZoomMax - gl3dcontroller.PosCamera.ZoomMin) * v / 100.0 + gl3dcontroller.PosCamera.ZoomMin;
+            //    System.Diagnostics.Debug.WriteLine($"{i} {v} {f}");
+            //}
 
+            //////////////////////////////////////////////////////////////////////////////////////// 
+            /// MENUS
+            //////////////////////////////////////////////////////////////////////////////////////// 
 
             double startspeed = 60 * 60 * 6; // in sec
             GLImage minus = new GLImage("timeplus1y", new Rectangle(0, 0, 32, 32), Properties.Resources.GoBackward);
@@ -181,7 +190,7 @@ namespace TestOpenTk
                 {
                     MouseClick = (s, e) =>
                     {
-                        track = (int)rightclickmenubody.Tag;
+                        bodytrack = (int)rightclickmenubody.Tag;
                     }
                 },
                 new GLMenuItem("RCMZoomIn", "Track Central Body")
@@ -190,7 +199,7 @@ namespace TestOpenTk
                     {
                         int body = (int)rightclickmenubody.Tag;
                         if (bodyinfo[body].ParentIndex >= 0)
-                            track = bodyinfo[body].ParentIndex;
+                            bodytrack = bodyinfo[body].ParentIndex;
                     }
                 },
                 new GLMenuItem("RCMZoomIn", "Zoom In")
@@ -200,14 +209,14 @@ namespace TestOpenTk
                 {
                     MouseClick = (s1, e1) =>
                     {
-                        track = -1;
+                        bodytrack = -1;
                     }
                 }
                 );
 
             rightclickmenubody.Opening += (ms,tag) =>
             {
-                ms["RCMUntrack"].Enabled = track != -1;
+                ms["RCMUntrack"].Enabled = bodytrack != -1;
             };
 
             rightclickmenuscreen = new GLContextMenu("RightClickMenuBody",
@@ -221,15 +230,19 @@ namespace TestOpenTk
                 {
                     MouseClick = (s1, e1) =>
                     {
-                        track = -1;
+                        bodytrack = -1;
                     }
                 }
                 );
 
             rightclickmenuscreen.Opening += (ms,tag) =>
             {
-                ms["RCMUntrack"].Enabled = track != -1;
+                ms["RCMUntrack"].Enabled = bodytrack != -1;
             };
+
+            //////////////////////////////////////////////////////////////////////////////////////// 
+            /// Plane grid
+            //////////////////////////////////////////////////////////////////////////////////////// 
 
             if ( true )
             {
@@ -244,20 +257,20 @@ namespace TestOpenTk
                 int nolines = gridsize / gridoffset * 2 + 1;
 
                 Color gridcolour = Color.FromArgb(80, 80, 80, 80);
-                rObjects.Add(shader,
+                rgrid.Add(shader,
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                                         GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(-gridsize, -0, gridsize), new Vector3(gridoffset, 0, 0), nolines),
                                                         new Color4[] { gridcolour })
                                     );
 
 
-                rObjects.Add(shader,
+                rgrid.Add(shader,
                                 GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
                                     GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, gridoffset), nolines),
                                                         new Color4[] { gridcolour }));
 
                 Size bmpsize = new Size(128, 30);
-                var maps = new GLBitmaps("bitmap1", rObjects, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
+                var maps = new GLBitmaps("bitmap1", rgrid, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
                 {
                     float hsize = 40e6f * 1000 * mscaling; // million km -> m -> scaling
@@ -274,11 +287,11 @@ namespace TestOpenTk
 
                             maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, vsize / 2),
                                                 new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                            maps.Add(i, (v / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, -vsize / 2),
+                            maps.Add(i, (v / BodyPhysicalConstants.oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, -vsize / 2),
                                                 new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
                             maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset + vsize / 2),
                                                 new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                            maps.Add(i, (v / oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset - vsize / 2),
+                            maps.Add(i, (v / BodyPhysicalConstants.oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset - vsize / 2),
                                                 new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
                         }
                         pos += 50000000;
@@ -286,129 +299,82 @@ namespace TestOpenTk
                 }
             }
 
+            //////////////////////////////////////////////////////////////////////////////////////// 
+            /// Shaders for objects
+            //////////////////////////////////////////////////////////////////////////////////////// 
+
+            // orbit lines
             var orbitlinesvertshader = new GLPLVertexShaderModelWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
-            bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
 
-            // set up ARB IDs for all images we are going to use..
-            var tbs = items.NewBindlessTextureHandleBlock(arbblock);
+            // textures for bodies
             var texs = items.NewTexture2D(null, Properties.Resources.golden, SizedInternalFormat.Rgba8);
             var texp = items.NewTexture2D(null, Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8);
             var texb = items.NewTexture2D(null, Properties.Resources.dotted, SizedInternalFormat.Rgba8);
             var texs2 = items.NewTexture2D(null, Properties.Resources.wooden, SizedInternalFormat.Rgba8);
-            tbs.WriteHandles(new IGLTexture[] { texs, texp, texb, texs2 });
+            var ringrocky = items.NewTexture2D(null, Properties.Resources.Rings_1_rocky, SizedInternalFormat.Rgba8);
 
-            // using 0 tex coord, 4 image id and arb text binding 
-            var bodyfragshader = new GLPLFragmentShaderBindlessTexture(arbblock, discardiftransparent: true, useprimidover2: false);
+            // Make an ARB buffer with textures in them. Index select image
+            var tbs = items.NewBindlessTextureHandleBlock(bodyimagearbblock);
+            tbs.WriteHandles(new IGLTexture[] { texs, texp, texb, texs2, ringrocky });
 
-            // takes 0:Vector4 model, 1: vec2 text, 4:matrix, out is 0:tex, 1: modelpos, 2: instance, 4 = matrix[3][3]
-            var bodyvertshader = new GLPLVertexShaderModelMatrixTexture(1000000 * 1000 * mscaling, useeyedistance: false);
+            // now body shader
+            // Vertex's are autoscaled, by body distance to eye, 
+            // takes in: 0:Vector4 model, 1: vec2 text, 4:matrix containing position, autoscale and image no
+            // out: 0:tex, 1: modelpos, 2: instance count, 4 = matrix[3][3] image number
+            var bodyvertshader = new GLPLVertexShaderModelMatrixTexture(autoscalekm * 1000 * mscaling, autoscalemin, autoscalemax, useeyedistance: false);
+
+            // takes in: 0 tex coord, 4 image index into arb text binding block
+            var bodyfragshader = new GLPLFragmentShaderBindlessTexture(bodyimagearbblock, discardiftransparent: true, useprimidover2: false);
+
             bodyshader = new GLShaderPipeline(bodyvertshader, bodyfragshader);
             items.Add(bodyshader);
 
-            // hold shape
+            // shape of bodies - spheres, nominal 1.0 big
             var sphereshape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(3, 1.0f);
-            spherebuffer = items.NewBuffer();      // fill buffer with model co-ords
-            spherebuffer.AllocateFill(sphereshape.Item1);
+            sphereshapebuffer = items.NewBuffer();      // fill buffer with model co-ords
+            sphereshapebuffer.AllocateFill(sphereshape.Item1);
             spheretexcobuffer = items.NewBuffer(); // fill buffer with tex coords
             spheretexcobuffer.AllocateFill(sphereshape.Item2);
 
+            // body matrix buffer for bodies - see GLPLVertexShaderModelMatrixTexture for matrix definition.  Autoscale and image index
+
             bodymatrixbuffer = items.NewBuffer();    // this holds the matrix to set position and size
 
-            GLStorageBlock findbufferresults = items.NewStorageBlock(findblock);
+            // find buffer 
+
+            GLStorageBlock findbufferresults = items.NewStorageBlock(findbufferblock);
             var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
-            findshader = items.NewShaderPipeline(null, bodyvertshader, null, null, geofind, null, null, null);
+            bodyfindshader = items.NewShaderPipeline(null, bodyvertshader, null, null, geofind, null, null, null);
+
+            // shape of rings
+
+            ringsshader = new GLShaderPipeline(bodyvertshader, bodyfragshader);     // reuse the Shaders
+            items.Add(ringsshader);
+
+            var ringsshape = GLShapeObjectFactory.CreateQuadTriStrip(1.0f, 1.0f);
+            ringsshapebuffer = items.NewBuffer();
+            ringsshapebuffer.AllocateFill(ringsshape);
+            ringstexcobuffer = items.NewBuffer();
+            ringstexcobuffer.AllocateFill(GLShapeObjectFactory.TexTriStripQuad);
+
+            ringsmatrixbuffer = items.NewBuffer();
+
+            // set date
 
             jdscaling = 0;
             currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
         }
 
-        public void CreateBodies(string file)
-        { 
-            string para = File.ReadAllText(file);
-            JObject jo = JObject.Parse(para);
-
-            starsystemnodes = StarScan.ReadJSON(jo);
-
-            displaysubnode = 0;
-            CreateBodies(starsystemnodes, displaysubnode);
-
-        }
-
-        private void CreateBodies(StarScan.ScanNode node, int subnode)
-        {
-            rBodyObjects.Clear();       // clear the render list
-
-            bodyinfo = new List<BodyInfo>();        // new bodyinfo tree
-
-            bool sysenabled = false;
-            if (subnode > 0 && node.NodeType == StarScan.ScanNodeType.barycentre && node.Children != null)      // select display subnode and ignore rest of tree
-            {
-                node = node.Children.Values[subnode - 1];
-                sysenabled = true;
-            }
-
-            displaycontrol.ApplyToControlOfName("sys*", (c) => { c.Visible = sysenabled; });        // set up if system selector is enabled
-
-            BodyInfo.CreateInfoTree(node, null, -1, 0, bodyinfo);       // create the info tree, reading the nodes in and filling in our kepler data etc
-
-            foreach (var o in bodyinfo) // for all bodies, now create the opengl artifacts
-            {
-                System.Diagnostics.Debug.Write($"Body {o.ScanNode.OwnName} {o.ScanNode.scandata?.StarType} {o.ScanNode.scandata?.PlanetClass} Lvl {o.ScanNode.Level} ");
-
-                if (o.KeplerParameters != null)
-                {
-                    System.Diagnostics.Debug.Write($"SMA {o.KeplerParameters.SemiMajorAxis / oneAU_m} AU {o.KeplerParameters.SemiMajorAxis / 1000} km " +
-                                $" Ecc {o.KeplerParameters.Eccentricity} Orbital Period {o.KeplerParameters.OrbitalPeriodS / 24 / 60 / 60 / 365} Y Radius {o.ScanNode.scandata.nRadius} m CM {o.KeplerParameters.CentralMass} axt {o.ScanNode.scandata.nAxialTilt}");
-                }
-
-                System.Diagnostics.Debug.WriteLine("");
-
-                if (o.KeplerParameters != null)     // in orbit
-                {
-                    Vector4[] orbit = o.KeplerParameters.Orbit(currentjd, 0.1, mscaling);
-                    GLRenderState lines = GLRenderState.Lines();
-                    lines.DepthTest = false;
-
-                    o.orbitpos.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
-
-                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, o.orbitpos);
-                    rBodyObjects.Add(orbitlineshader, riol);
-
-// TBD TURN BACK ON
-                    //GLRenderState quad = GLRenderState.Quads(cullface: false);
-                    //quad.DepthTest = false;
-                    //var s = 100000e3f * mscaling;
-                    //var quadpos = new Vector4[] { new Vector4(-s, 0, -s, 1), new Vector4(-s, 0, +s, 1), new Vector4(+s, 0, +s, 1), new Vector4(+s, 0, -s, 1) };
-                    //var plane = GLRenderableItem.CreateVector4(items, PrimitiveType.Quads, quad, quadpos, o.bodypos);
-                    //rBodyObjects.Add(bodyplaneshader, plane);
-                }
-            }
-
-            int bodies = bodyinfo.Count;
-
-            // hold planet and barycentre positions/sizes/imageno
-            bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodies);
-
-            GLRenderState rt = GLRenderState.Tri();
-            rt.DepthTest = false;
-            var ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, spherebuffer, spheretexcobuffer, bodymatrixbuffer,
-                                            spherebuffer.Length / sizeof(float) / 4,
-                                            ic: bodies, matrixdivisor: 1);
-            rBodyObjects.Add(bodyshader, ribody);
-
-            rifind = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, GLRenderState.Tri(), spherebuffer, spheretexcobuffer, bodymatrixbuffer,
-                                            spherebuffer.Length / sizeof(float) / 4,
-                                            ic: bodies, matrixdivisor: 1);
-        }
-
-        float planetrot = 0;
         public void SystemTick()
         {
             if (bodyinfo != null)
             {
-                Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
                 Vector3d[] positions = new Vector3d[bodyinfo.Count];
+
+                List<Matrix4> ringsmats = new List<Matrix4>();
+
+                var diffseconds = (currentjd - KeplerOrbitElements.J2000)*86400;        // seconds since J2000 epoch for use by rotation - Frontier does not write longitude at epoch
 
                 for (int i = 0; i < bodyinfo.Count; i++)
                 {
@@ -438,30 +404,52 @@ namespace TestOpenTk
                     pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
                     bi.bodypos.WorldPosition = pos;
 
-                    float imageradius = bi.ScanNode.scandata != null && bi.ScanNode.scandata.nRadius.HasValue ? (float)bi.ScanNode.scandata.nRadius.Value : 1000e3f;
-                    imageradius *= mscaling;
+                    float bodyradiusm = bi.ScanNode.scandata != null && bi.ScanNode.scandata.nRadius.HasValue ? (float)(bi.ScanNode.scandata.nRadius.Value) : 1000e3f;
 
                     bool planet = bi.ScanNode.scandata != null && bi.ScanNode.scandata.PlanetClass.HasChars();
                     bool bary = bi.ScanNode.scandata == null || bi.ScanNode.scandata.nRadius == null;
 
                     double axialtilt = (bi.ScanNode.scandata?.nAxialTilt ?? 0).Radians();
-                    bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1, 1, 1), (float)axialtilt, planetrot.Radians());
-                    planetrot += 0.1f;
-   // here, getting the rotation speed correct
 
-                    // more clever, knowing orbit paras
-                    bodymats[i].M14 = (bary ? 100000 : planet ? 100000 : 1000000) * 1000 * mscaling;      // min size in km
-                    bodymats[i].M24 = (bary ? 100000 : planet ? 10000000 : 3e6f) * 1000 * mscaling;           // maximum size in scaling
-                    bodymats[i].M34 = imageradius;
+                    float planetrot = 0;
+                    if (bi.ScanNode.scandata?.nRotationPeriod != null)
+                    {
+                        double mod = diffseconds % bi.ScanNode.scandata.nRotationPeriod.Value;
+                        mod = mod / bi.ScanNode.scandata.nRotationPeriod.Value;
+                        planetrot = (float)(2 * Math.PI * mod);                    
+                    }
+
+                    bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1, 1, 1), (float)axialtilt, planetrot);
+
+                    // Min/max size of objects. And give the body size
+
+                    bodymats[i].M14 = (bary ? baryminkm : planet ? planetminkm : starminkm) * mscalingkm;      // min scale in km, scaled to m then mscaling
+                    bodymats[i].M24 = (bary ? barymaxkm : planet ? planetmaxkm : starmaxkm) * mscalingkm;       // maximum scale
+                    bodymats[i].M34 = bodyradiusm * mscaling;       // set the size of the sphere - its 1.0f so scale by this
                     bodymats[i].M44 = planet ? 1 : bary ? 2 : 0;      // select image
+
+                    //System.Diagnostics.Debug.WriteLine(gl3dcontroller.
                 }
 
                 bodymatrixbuffer.ResetFillPos();
                 bodymatrixbuffer.Fill(bodymats);
 
-                if (track != -1)
                 {
-                    Vector3d pos = positions[track];
+                    Matrix4 ringmat = GLStaticsMatrix4.CreateMatrixPlanetRot(new Vector3(0, 0, 0), new Vector3(1f, 1f, 1f), 0, 0);
+                    ringmat.M14 = planetminkm * mscalingkm;
+                    ringmat.M24 = planetmaxkm * mscalingkm;
+                    ringmat.M34 = 10e6f * 1000 * mscaling;
+                    ringmat.M44 = 4;
+                         
+                    ringsmats.Add(ringmat);
+                    ringsmatrixbuffer.ResetFillPos();
+                    ringsmatrixbuffer.Fill(ringsmats.ToArray());
+                }
+
+
+                if (bodytrack != -1)
+                {
+                    Vector3d pos = positions[bodytrack];
                     gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling, false);
                 }
             }
@@ -471,7 +459,7 @@ namespace TestOpenTk
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys, 0.0001f, 0.0001f);
 
-            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (track >= 0 ? " Tracking " + bodyinfo[track].ScanNode.FullName : "");
+            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (bodytrack >= 0 ? " Tracking " + bodyinfo[bodytrack].ScanNode.FullName : "");
 
             status.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.0} " +
                         $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.0} " +
@@ -493,8 +481,8 @@ namespace TestOpenTk
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetFull(gl3dcontroller.MatrixCalc);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
-            rBodyObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
+            rgrid.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
+            rbodyobjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
 
             if (jdscaling != 0 && lasttime != ulong.MaxValue)
             {
@@ -517,10 +505,10 @@ namespace TestOpenTk
             int distmovedsq = gl3dcontroller.MouseMovedSq(e);        //3dcontroller is monitoring mouse movements
             if (distmovedsq < 4)
             {
-                var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
+                var geo = bodyfindshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
                 geo.SetScreenCoords(e.ViewportLocation, matrixcalc.ViewPort.Size);
 
-                rifind.Execute(findshader, glwfc.RenderState);
+                rbodyfindshader.Execute(bodyfindshader, glwfc.RenderState);
 
                 var res = geo.GetResult();
                 if (res != null)
@@ -529,7 +517,7 @@ namespace TestOpenTk
 
                     if (e.Button == GLMouseEventArgs.MouseButtons.Left)
                     {
-                        track = (int)res[0].Y;
+                        bodytrack = (int)res[0].Y;
                     }
                     else if(e.Button == GLMouseEventArgs.MouseButtons.Right)
                     {
@@ -553,17 +541,25 @@ namespace TestOpenTk
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
+
             var res = kb.HasBeenPressed(Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
             if (res != null)
             {
-                int n = res.Item1;
-                if (n < bodyinfo.Count)
-                    track = bodyinfo[n].Index;
+                if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
+                {
+
+                }
+                else if (res.Item2 == KeyboardMonitor.ShiftState.None)
+                {
+                    int n = res.Item1;
+                    if (n < bodyinfo.Count)
+                        bodytrack = bodyinfo[n].Index;
+                }
             }
 
             if (kb.HasBeenPressed(Keys.D0, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                track = -1;
+                bodytrack = -1;
             }
         }
 
@@ -571,18 +567,6 @@ namespace TestOpenTk
 
 
         #region helpers
-
-        public void DisplayNode(int dir)
-        {
-            if (starsystemnodes.NodeType == StarScan.ScanNodeType.barycentre && starsystemnodes.Children != null)
-            {
-                int number = starsystemnodes.Children.Count + 1;
-                displaysubnode = (displaysubnode + dir + number) % number; // rotate between 0 and N
-                CreateBodies(starsystemnodes, displaysubnode);
-                mastersystem.Text = displaysubnode == 0 ? "All" : starsystemnodes.Children.Values[displaysubnode - 1].OwnName;
-                track = -1;
-            }
-        }
 
         #endregion
 

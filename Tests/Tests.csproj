@@ -33,14 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.3.3.2\lib\net20\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="QuickJSON, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RJKJSoft.QuickJSON.0.9.0\lib\net48\QuickJSON.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -115,7 +115,8 @@
       <DependentUpon>TestMultiWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="BaseUtils\KeplerOrbitElements.cs" />
-    <Compile Include="Orrery\OrbitalBodyInformation.cs" />
+    <Compile Include="Orrery\BodyInfo.cs" />
+    <Compile Include="Orrery\Orrery_CreateBodies.cs" />
     <Compile Include="Orrery\Orrery.cs" />
     <Compile Include="Orrery\StarScan.cs" />
     <Compile Include="Orrery\TestOrrey.cs">
@@ -183,7 +184,6 @@
     <Compile Include="FrameBuffer\TestFrameBuffer.designer.cs">
       <DependentUpon>TestFrameBuffer.cs</DependentUpon>
     </Compile>
-    <Compile Include="BaseUtils\Jsonext.cs" />
     <Compile Include="Geometry\ShaderTestGeoFind.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -720,6 +720,11 @@
   <ItemGroup>
     <None Include="Resources\star_grey64.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\rings_9xx.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Rings_1_rocky.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

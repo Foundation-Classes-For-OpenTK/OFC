@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using EliteDangerousCore.EDSM;
 using System.IO;
-using Newtonsoft.Json.Linq;
+using QuickJSON;
 using GLOFC.Utils;
 
 namespace TestOpenTk
@@ -98,7 +98,7 @@ namespace TestOpenTk
         public void WriteToDisk(string file)
         {
             JToken jk = JToken.FromObject(settings);
-            string s = jk.ToString(Newtonsoft.Json.Formatting.Indented);
+            string s = jk.ToString(true);
             System.Diagnostics.Debug.WriteLine(s);
             File.WriteAllText(file, s);
         }
