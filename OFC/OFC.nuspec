@@ -9,7 +9,8 @@
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Release 1.0.2 features:
+    <releaseNotes>Release 1.0.3 features:
+    Fixes for AMD cards for searching for objects
     Fixes for Calendar Control
     Fixes for NVidia drivers
     Release 1.0.0:
