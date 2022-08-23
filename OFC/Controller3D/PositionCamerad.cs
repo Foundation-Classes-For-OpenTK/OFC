@@ -237,7 +237,7 @@ namespace GLOFC.Controller
 
                 zoomSlewTime = timetozoom;
                 zoomSlewProgress = 0;
-                System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
+               // System.Diagnostics.Debug.WriteLine($"gotozoom to {zoomSlewTarget} from {ZoomFactor} {zoomSlewTime}");
             }
         }
 
@@ -372,12 +372,12 @@ namespace GLOFC.Controller
                 if (newprogress >= 1.0f)
                 {
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / zoomSlewTarget);
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {zoomSlewTarget} over {ZoomFactor}");
                 }
                 else
                 {
                     double newzoom = zoomSlewStart + (zoomSlewTarget - zoomSlewStart) * newprogress;
-                    System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {newprogress:N2} targ {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
+                    //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 10000} Zoom {newprogress:N2} targ {zoomSlewTarget} zoomfactor {ZoomFactor} -> set new {newzoom}");
                     SetEyePositionFromLookat(CameraDirection, Zoom1Distance / newzoom);
                 }
 

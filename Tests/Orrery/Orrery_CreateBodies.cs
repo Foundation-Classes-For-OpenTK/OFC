@@ -12,6 +12,7 @@ namespace TestOpenTk
         StarScan.ScanNode starsystemnodes;
         private int displaysubnode = 0;        // subnode, 0 all, 1 first, etc
         private List<BodyInfo> bodyinfo = new List<BodyInfo>();       // linear list pointing to nodes with kepler info etc. Empty on power on in case create failed
+        private int ringcount;
 
         // move to barycentre node displaysubnode
         public void DisplayNode(int dir)        
@@ -71,7 +72,7 @@ namespace TestOpenTk
 
             // now process the bodies found to create the opengl artifacts
 
-            int rings = 0;
+            ringcount = 0;
 
             foreach (var bi in bodyinfo) 
             {
@@ -88,34 +89,34 @@ namespace TestOpenTk
 
                     if ( bi.ScanNode?.scandata?.Rings != null )
                     {
-                        rings++;
+                        ringcount++;
                     }
                 }
             }
 
             int bodies = bodyinfo.Count;
 
-            bodymats = new Matrix4[bodies];
-
             // hold planet and barycentre positions/sizes/imageno for each body
             bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodies);
 
             // now create the body objects render - this renders all bodies. Matrix controls the position and image of them
 
-            GLRenderState rt = GLRenderState.Tri();
-            rt.DepthTest = true;
-            var ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rt, sphereshapebuffer, spheretexcobuffer, bodymatrixbuffer,
+            GLRenderState rtbody = GLRenderState.Tri();
+
+            var ribody = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.Triangles, rtbody, sphereshapebuffer, spheretexcobuffer, bodymatrixbuffer,
                                             sphereshapebuffer.Length / sizeof(float) / 4,
                                             ic: bodies, matrixdivisor: 1);
             rbodyobjects.Add(bodyshader, ribody);
 
-            rings = 1;
 
-            ringsmatrixbuffer.AllocateBytes(GLBuffer.Mat4size * rings);
+            ringsmatrixbuffer.AllocateBytes(GLBuffer.Mat4size * ringcount);
 
-            var rirings = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rt, ringsshapebuffer, ringstexcobuffer, ringsmatrixbuffer,
+            GLRenderState rtrings = GLRenderState.Tri();
+            rtrings.CullFace = false;
+
+            var rirings = GLRenderableItem.CreateVector4Vector2Matrix4(items, PrimitiveType.TriangleStrip, rtrings, ringsshapebuffer, ringstexcobuffer, ringsmatrixbuffer,
                                             ringsshapebuffer.Length / sizeof(float) / 4,
-                                            ic: rings, matrixdivisor: 1);
+                                            ic: ringcount, matrixdivisor: 1);
 
             rbodyobjects.Add(ringsshader, rirings);
 

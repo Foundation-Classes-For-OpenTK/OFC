@@ -17,6 +17,7 @@ using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using static GLOFC.GL4.Controls.GLBaseControl;
 
@@ -44,7 +45,6 @@ namespace TestOpenTk
         private GLRenderProgramSortedList rbodyobjects = new GLRenderProgramSortedList();   // Render body objects
         private GLShaderPipeline bodyfindshader;
         private GLRenderableItem rbodyfindshader;
-        private Matrix4[] bodymats;
         private GLBuffer bodymatrixbuffer, sphereshapebuffer, spheretexcobuffer;
         private GLBuffer ringsmatrixbuffer, ringsshapebuffer, ringstexcobuffer;
         private GLShaderPipeline orbitlineshader, bodyshader, ringsshader;
@@ -372,9 +372,13 @@ namespace TestOpenTk
             {
                 Vector3d[] positions = new Vector3d[bodyinfo.Count];
 
-                List<Matrix4> ringsmats = new List<Matrix4>();
+                Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
+
+                Matrix4[] ringsmats = new Matrix4[ringcount];
 
                 var diffseconds = (currentjd - KeplerOrbitElements.J2000)*86400;        // seconds since J2000 epoch for use by rotation - Frontier does not write longitude at epoch
+
+                int ringentry = 0;
 
                 for (int i = 0; i < bodyinfo.Count; i++)
                 {
@@ -409,14 +413,14 @@ namespace TestOpenTk
                     bool planet = bi.ScanNode.scandata != null && bi.ScanNode.scandata.PlanetClass.HasChars();
                     bool bary = bi.ScanNode.scandata == null || bi.ScanNode.scandata.nRadius == null;
 
-                    double axialtilt = (bi.ScanNode.scandata?.nAxialTilt ?? 0).Radians();
+                    double axialtilt = bi.ScanNode.scandata?.nAxialTilt ?? 0;       // axial tilt is in radians
 
                     float planetrot = 0;
                     if (bi.ScanNode.scandata?.nRotationPeriod != null)
                     {
                         double mod = diffseconds % bi.ScanNode.scandata.nRotationPeriod.Value;
                         mod = mod / bi.ScanNode.scandata.nRotationPeriod.Value;
-                        planetrot = (float)(2 * Math.PI * mod);                    
+                        planetrot = (float)(2 * Math.PI * mod);
                     }
 
                     bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1, 1, 1), (float)axialtilt, planetrot);
@@ -428,24 +432,32 @@ namespace TestOpenTk
                     bodymats[i].M34 = bodyradiusm * mscaling;       // set the size of the sphere - its 1.0f so scale by this
                     bodymats[i].M44 = planet ? 1 : bary ? 2 : 0;      // select image
 
-                    //System.Diagnostics.Debug.WriteLine(gl3dcontroller.
+                    if (bi.ScanNode?.scandata?.Rings != null)
+                    {
+                        float ringrot = 0;
+                        if (bi.ScanNode.scandata?.nRotationPeriod != null)
+                        {
+                            double mod = diffseconds % bi.ScanNode.scandata.nRotationPeriod.Value;
+                            mod = mod / (bi.ScanNode.scandata.nRotationPeriod.Value*2);     // for now, fixed 2 times slower
+                            ringrot = (float)(2 * Math.PI * mod);
+                        }
+
+                        float maxdist = (float)bi.ScanNode.scandata.Rings.Select(x => x.OuterRad).Max();
+
+                        Matrix4 ringmat = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1f, 1f, 1f), (float)axialtilt, ringrot);
+                        ringmat.M14 = planetminkm * mscalingkm;
+                        ringmat.M24 = planetmaxkm * mscalingkm;
+                        ringmat.M34 = maxdist * mscaling;
+                        ringmat.M44 = 4;
+                        ringsmats[ringentry++] = ringmat;
+                    }
                 }
 
                 bodymatrixbuffer.ResetFillPos();
                 bodymatrixbuffer.Fill(bodymats);
 
-                {
-                    Matrix4 ringmat = GLStaticsMatrix4.CreateMatrixPlanetRot(new Vector3(0, 0, 0), new Vector3(1f, 1f, 1f), 0, 0);
-                    ringmat.M14 = planetminkm * mscalingkm;
-                    ringmat.M24 = planetmaxkm * mscalingkm;
-                    ringmat.M34 = 10e6f * 1000 * mscaling;
-                    ringmat.M44 = 4;
-                         
-                    ringsmats.Add(ringmat);
-                    ringsmatrixbuffer.ResetFillPos();
-                    ringsmatrixbuffer.Fill(ringsmats.ToArray());
-                }
-
+                ringsmatrixbuffer.ResetFillPos();
+                ringsmatrixbuffer.Fill(ringsmats);
 
                 if (bodytrack != -1)
                 {

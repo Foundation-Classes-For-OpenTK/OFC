@@ -200,8 +200,8 @@ namespace TestOpenTk
                     {
                         n.scandata.Rings[i] = new StarPlanetRing() { 
                             RingClassID = rings[i]["Type"].EnumStr<StarPlanetRing.RingClassEnum>(StarPlanetRing.RingClassEnum.Unknown),
-                            InnerRad = rings[i]["InnerRadm"].Double(),
-                            OuterRad = rings[i]["OuterRadm"].Double(),
+                            InnerRad = rings[i]["InnerRad"].Double() * 1000.0,      // in mk in file, m in program
+                            OuterRad = rings[i]["OuterRad"].Double() * 1000.0,
                             MassMT = rings[i]["MassMT"].Double(),
                         };
                     }
