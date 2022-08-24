@@ -35,23 +35,29 @@ namespace GLOFC.GL4.Shaders.Vertex
         ///              [col=3,row=3] Fade Pos, 0 = none.   for fade out formula is alpha = clamp((EyeDistance-fade pos)/Fade scalar,0,1). At EyeDistance less than fadepos, alpha is 0
         ///                                                  for fade in formula is alpha = clamp((fadepos-EyeDistance)/-Fade scalar,0,1). At EyeDistance greater than fadepos, alpha is 0
         ///      uniform buffer 0 : GL MatrixCalc
-        ///      uniform 22 : float replacement Y (if enabled)
+        ///      uniform 22 : world offset
         /// Out:
         ///      location 0 : vs_textureCoordinate
         ///      location 2 : image index to use
         ///      location 3 : alpha blend to use
         ///      gL_Position
         /// </summary>
-        /// <param name="yfromuniform">Take Y value from uniform, instead of transform </param>
-        public GLPLVertexShaderMatrixTriStripTexture(bool yfromuniform = false)
+        /// <param name="worldoffset">Use a world offset </param>
+        public GLPLVertexShaderMatrixTriStripTexture(bool worldoffset = false)
         {
-            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] { "yfromuniform", yfromuniform });
+            CompileLink(ShaderType.VertexShader, Code(), out string unused, constvalues: new object[] { "worldoffset", worldoffset });
         }
 
-        /// <summary> Set Y position for override </summary>
-        public void SetY(float y)
+        /// <summary> Set world offset position</summary>
+        public void SetWorldOffset(Vector3 offset)
         {
-            GL.ProgramUniform1(Id, 22, y);
+            GL.ProgramUniform3(Id, 22, offset);
+        }
+
+        /// <summary> Set Y only offset</summary>
+        public void SetY(float offset)
+        {
+            GL.ProgramUniform3(Id, 22, new Vector3(0,offset,0));
         }
 
         /// <summary>
@@ -139,7 +145,7 @@ namespace GLOFC.GL4.Shaders.Vertex
     #include Shaders.Functions.mat4.glsl
 
     layout (location = 4) in mat4 transform;
-    layout (location = 22) uniform  float replacementy;
+    layout (location = 22) uniform vec3 offsetp;
 
     out gl_PerVertex {
             vec4 gl_Position;
@@ -163,15 +169,19 @@ namespace GLOFC.GL4.Shaders.Vertex
         vec4 txout;
     };
 
-    const bool yfromuniform = false;
+    const bool worldoffset = false;
 
     void main(void)
     {
         mat4 tx = transform;
         vs.vs_index = int(tx[0][3]);                                // row/col ordering
 
-        if ( yfromuniform)                                          // optional fixed y
-            tx[3][1] = replacementy;
+        if ( worldoffset )                                          // optional world offset
+        {
+            tx[3][0] += offsetp.x;
+            tx[3][1] += offsetp.y;
+            tx[3][2] += offsetp.z;
+        }
 
         vec3 worldposition = vec3(tx[3][0],tx[3][1],tx[3][2]);      // extract world position from row3 columns 0/1/2 , y possibly fixed
 

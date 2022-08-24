@@ -39,8 +39,8 @@
     <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
     </Reference>
-    <Reference Include="QuickJSON, Version=0.9.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\RJKJSoft.QuickJSON.0.9.0\lib\net48\QuickJSON.dll</HintPath>
+    <Reference Include="QuickJSON, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RJKJSoft.QuickJSON.0.9.1\lib\net48\QuickJSON.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -116,6 +116,7 @@
     </Compile>
     <Compile Include="BaseUtils\KeplerOrbitElements.cs" />
     <Compile Include="Orrery\BodyInfo.cs" />
+    <Compile Include="Orrery\Grid.cs" />
     <Compile Include="Orrery\Orrery_CreateBodies.cs" />
     <Compile Include="Orrery\Orrery.cs" />
     <Compile Include="Orrery\StarScan.cs" />

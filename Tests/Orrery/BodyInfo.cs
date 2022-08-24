@@ -10,7 +10,6 @@ namespace TestOpenTk
         public StarScan.ScanNode Parent { get; set; }      // or null
         public KeplerOrbitElements KeplerParameters { get; set; }
         public GLRenderDataWorldPositionColor orbitpos { get; set; }    // where the orbit centre is
-        public GLRenderDataWorldPositionColor bodypos { get; set; } // where the body is
         public int Index { get; set; }
         public int ParentIndex { get; set; }
 
@@ -76,7 +75,6 @@ namespace TestOpenTk
             oi.Index = bodylist.Count;
             oi.ParentIndex = parentindex;
             oi.orbitpos = new GLRenderDataWorldPositionColor();
-            oi.bodypos = new GLRenderDataWorldPositionColor();
             bodylist.Add(oi);
 
             if (sn.Children != null)

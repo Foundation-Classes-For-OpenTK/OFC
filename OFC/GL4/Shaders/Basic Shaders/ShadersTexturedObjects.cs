@@ -34,6 +34,8 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      tex binding 1 : textureObject : 2D 
         ///      uniform 0 : GL MatrixCalc
         /// </summary>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>/// 
         public GLTexturedShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderWorldTexture(), new GLPLFragmentShaderTexture());
@@ -55,6 +57,8 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      uniform 0 : GL MatrixCalc
         ///      uniform 22 : objecttransform: mat4 transform
         /// </summary>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
         public GLTexturedShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderModelTextureTranslation(), new GLPLFragmentShaderTexture());

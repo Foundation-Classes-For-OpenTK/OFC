@@ -16,6 +16,7 @@ using OpenTK;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GLOFC.GL4
 {
@@ -221,6 +222,25 @@ namespace GLOFC.GL4
         {
             AllocateBytes(Vec4size * vertices.Length);
             Fill(vertices);
+        }
+
+        /// <summary>Allocate and fill with two Vector4s</summary>
+        public void AllocateFill(Vector4[] vertices1, Vector4[] vertices2)
+        {
+            AllocateBytes(Vec4size * (vertices1.Length + vertices2.Length));
+            Fill(vertices1);
+            Fill(vertices2);
+        }
+
+        /// <summary>Allocate and fill with multiple Vector4s</summary>
+        public void AllocateFill(Vector4[][] vertices)
+        {
+            int count = 0;
+            foreach (var x in vertices)     // cannot see an easy linq for this
+                count += x.Length;
+            AllocateBytes(Vec4size * count);
+            foreach ( var v in vertices)
+                Fill(v);
         }
 
         /// <summary>Allocate and fill with Vector4s and Vector2 text co-ords</summary>

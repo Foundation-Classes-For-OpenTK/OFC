@@ -38,8 +38,9 @@ namespace TestOpenTk
         private float mscalingkm = 1000 / 1e6f;    // if km is used
 
         // Grid
-        private GLRenderProgramSortedList rgrid = new GLRenderProgramSortedList();          // Render grid
-        private long gridlines = 50000000000;   // m
+
+        public long gridlines = 50000000000;  // m
+        Grid grd;
 
         // Bodies
         private GLRenderProgramSortedList rbodyobjects = new GLRenderProgramSortedList();   // Render body objects
@@ -52,7 +53,7 @@ namespace TestOpenTk
         private const int findbufferblock = 3;
         private const int bodyimagearbblock = 4;
 
-        private int bodytrack = -1;
+        //private int bodytrack = -1;
 
         private const float autoscalekm = 1000000;      // body distance divider for autoscaling
         private const float autoscalemin = 1;           // clamp values between these two
@@ -190,7 +191,7 @@ namespace TestOpenTk
                 {
                     MouseClick = (s, e) =>
                     {
-                        bodytrack = (int)rightclickmenubody.Tag;
+                        SetBodyTrack((int)rightclickmenubody.Tag);
                     }
                 },
                 new GLMenuItem("RCMZoomIn", "Track Central Body")
@@ -199,7 +200,7 @@ namespace TestOpenTk
                     {
                         int body = (int)rightclickmenubody.Tag;
                         if (bodyinfo[body].ParentIndex >= 0)
-                            bodytrack = bodyinfo[body].ParentIndex;
+                            SetBodyTrack(bodyinfo[body].ParentIndex);
                     }
                 },
                 new GLMenuItem("RCMZoomIn", "Zoom In")
@@ -209,14 +210,14 @@ namespace TestOpenTk
                 {
                     MouseClick = (s1, e1) =>
                     {
-                        bodytrack = -1;
+                        SetBodyTrack(-1);
                     }
                 }
                 );
 
             rightclickmenubody.Opening += (ms,tag) =>
             {
-                ms["RCMUntrack"].Enabled = bodytrack != -1;
+                ms["RCMUntrack"].Enabled = IsBodyTracked();
             };
 
             rightclickmenuscreen = new GLContextMenu("RightClickMenuBody",
@@ -230,75 +231,23 @@ namespace TestOpenTk
                 {
                     MouseClick = (s1, e1) =>
                     {
-                        bodytrack = -1;
+                        SetBodyTrack(-1);
                     }
                 }
                 );
 
             rightclickmenuscreen.Opening += (ms,tag) =>
             {
-                ms["RCMUntrack"].Enabled = bodytrack != -1;
+                ms["RCMUntrack"].Enabled = IsBodyTracked();
             };
 
             //////////////////////////////////////////////////////////////////////////////////////// 
             /// Plane grid
             //////////////////////////////////////////////////////////////////////////////////////// 
 
-            if ( true )
-            {
-                var shader = new GLColorShaderWorld();
-                items.Add(shader);
-
-                GLRenderState lines = GLRenderState.Lines();
-                lines.DepthTest = false;
-
-                int gridsize = (int)(worldsize * mscaling);
-                int gridoffset = (int)(gridlines * mscaling);
-                int nolines = gridsize / gridoffset * 2 + 1;
-
-                Color gridcolour = Color.FromArgb(80, 80, 80, 80);
-                rgrid.Add(shader,
-                                GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
-                                                        GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(-gridsize, -0, gridsize), new Vector3(gridoffset, 0, 0), nolines),
-                                                        new Color4[] { gridcolour })
-                                    );
-
-
-                rgrid.Add(shader,
-                                GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, lines,
-                                    GLShapeObjectFactory.CreateLines(new Vector3(-gridsize, -0, -gridsize), new Vector3(gridsize, -0, -gridsize), new Vector3(0, 0, gridoffset), nolines),
-                                                        new Color4[] { gridcolour }));
-
-                Size bmpsize = new Size(128, 30);
-                var maps = new GLBitmaps("bitmap1", rgrid, bmpsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, false);
-                using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center })
-                {
-                    float hsize = 40e6f * 1000 * mscaling; // million km -> m -> scaling
-                    float vsize = hsize * bmpsize.Height / bmpsize.Width;
-
-                    Font f = new Font("MS sans serif", 12f);
-                    long pos = -nolines / 2 * (gridlines / 1000);
-                    for (int i = -nolines / 2; i < nolines / 2; i++)
-                    {
-                        if (i != 0)
-                        {
-                            double v = Math.Abs(pos * 1000);
-                            long p = Math.Abs(pos);
-
-                            maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, vsize / 2),
-                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                            maps.Add(i, (v / BodyPhysicalConstants.oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(i * gridoffset + hsize / 2, 0, -vsize / 2),
-                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                            maps.Add(i, (p).ToString("N0"), f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset + vsize / 2),
-                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                            maps.Add(i, (v / BodyPhysicalConstants.oneAU_m).ToString("N1") + "AU", f, Color.White, Color.Transparent, new Vector3(hsize / 2, 0, i * gridoffset - vsize / 2),
-                                                new Vector3(hsize, 0, 0), new Vector3(0, 0, 0), fmt);
-                        }
-                        pos += 50000000;
-                    }
-                }
-            }
-
+            grd = new Grid();
+            grd.Create(items, worldsize, mscaling,gridlines);
+           // grd.SetOffset(new Vector3(200000, 200000, 20000));
             //////////////////////////////////////////////////////////////////////////////////////// 
             /// Shaders for objects
             //////////////////////////////////////////////////////////////////////////////////////// 
@@ -368,45 +317,62 @@ namespace TestOpenTk
 
         public void SystemTick()
         {
+            Vector3d worldcentrem = new Vector3d(0, 0, 0);       // default is world centre here
+
             if (bodyinfo != null)
             {
-                Vector3d[] positions = new Vector3d[bodyinfo.Count];
+                // work out positions of bodies and orbitpos centres, all in doubles
 
-                Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
-
-                Matrix4[] ringsmats = new Matrix4[ringcount];
-
-                var diffseconds = (currentjd - KeplerOrbitElements.J2000)*86400;        // seconds since J2000 epoch for use by rotation - Frontier does not write longitude at epoch
-
-                int ringentry = 0;
+                Vector3d[] bodypositionm = new Vector3d[bodyinfo.Count];    
+                Vector3d[] bodycentresm = new Vector3d[bodyinfo.Count];
 
                 for (int i = 0; i < bodyinfo.Count; i++)
                 {
                     var bi = bodyinfo[i];
-                    Vector3 pos = Vector3.Zero;
 
                     if (bi.KeplerParameters != null)      // this body is orbiting
                     {
                         if (i > 0)              // not the root node, so a normal orbit
                         {
-                            positions[i] = bi.KeplerParameters.ToCartesian(currentjd);    // in meters around 0,0,0
-                            var cbpos = positions[bi.ParentIndex];              // central body position
-                            positions[i] += cbpos;                              // offset
-
-                            bi.orbitpos.WorldPosition = new Vector3((float)cbpos.X, (float)cbpos.Z, (float)cbpos.Y) * mscaling;
+                            // kepler returns orbit in meters on xy plane around 0,0,0. But we have a different co-ord system (X,Y up/down,Z forward/backwards) so we need to swap
+                            bodypositionm[i] = bi.KeplerParameters.ToCartesian(currentjd).Xzy;
+                            var cbpos = bodypositionm[bi.ParentIndex];              // central body position
+                            bodypositionm[i] += cbpos;                              // offset
+                            bodycentresm[i] = cbpos;
                         }
                         else
                         {
-                            // node 0 is the root node, always displayed at 0,0,0
+                            // node 0 is the root node, always at 0,0,0
+                            bodypositionm[i] = new Vector3d(0, 0, 0);
+
                             // If we remove the root node, and just display a body or barycentre which is in orbit around the root node
                             // the orbit of this node body is calculated at T0, and then the orbit position of offset so the line passes thru 0,0,0
-                            var orbitpos = bi.KeplerParameters.ToCartesian(bi.KeplerParameters.T0);       // find the orbit of the root at T0 (fixed so it does not move)
-                            bi.orbitpos.WorldPosition = new Vector3((float)-orbitpos.X, (float)-orbitpos.Z, (float)-orbitpos.Y) * mscaling;
+                            var orbitpos = bi.KeplerParameters.ToCartesian(bi.KeplerParameters.T0);       // find the orbit of the root at T0 (fixed so it does not move) 
+                            bodycentresm[i] = new Vector3d(-orbitpos.X, -orbitpos.Z, -orbitpos.Y);   // invert so body centre is away from 0,0,0 and swap axis
                         }
                     }
+                }
 
-                    pos = new Vector3((float)(positions[i].X * mscaling), (float)(positions[i].Z * mscaling), (float)(positions[i].Y * mscaling));
-                    bi.bodypos.WorldPosition = pos;
+
+                if (IsBodyTracked())
+                {
+                    worldcentrem = bodypositionm[bodytrackid];        // this is the offset to remove from all other positions
+                    grd.SetOffset(new Vector3((float)(-worldcentrem.X*mscaling), (float)(-worldcentrem.Y*mscaling), (float)(-worldcentrem.Z*mscaling)));
+                }
+
+                Matrix4[] bodymats = new Matrix4[bodyinfo.Count];
+                Matrix4[] ringsmats = new Matrix4[ringcount];
+
+                var diffseconds = (currentjd - KeplerOrbitElements.J2000) * 86400;        // seconds since J2000 epoch for use by rotation - Frontier does not write longitude at epoch
+                int ringentry = 0;
+
+                for (int i = 0; i < bodyinfo.Count; i++)
+                {
+                    var bi = bodyinfo[i];
+                    Vector3d bodyfinalposd = i == bodytrackid ? new Vector3d(0,0,0) : (bodypositionm[i] - worldcentrem);     // use 0,0,0 for bodytrack to prevent inaccuracies in subtraction
+
+                    Vector3d bodycentrefinalposd = bodycentresm[i] - worldcentrem;
+                    bi.orbitpos.WorldPosition = new Vector3((float)(bodycentrefinalposd.X * mscaling), (float)(bodycentrefinalposd.Y * mscaling), (float)(bodycentrefinalposd.Z * mscaling));
 
                     float bodyradiusm = bi.ScanNode.scandata != null && bi.ScanNode.scandata.nRadius.HasValue ? (float)(bi.ScanNode.scandata.nRadius.Value) : 1000e3f;
 
@@ -423,7 +389,10 @@ namespace TestOpenTk
                         planetrot = (float)(2 * Math.PI * mod);
                     }
 
-                    bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1, 1, 1), (float)axialtilt, planetrot);
+                    Vector3 scaledbodypos = new Vector3((float)(bodyfinalposd.X * mscaling), (float)(bodyfinalposd.Y * mscaling), (float)(bodyfinalposd.Z * mscaling));
+
+                    bodymats[i] = GLStaticsMatrix4.CreateMatrixPlanetRot(scaledbodypos, new Vector3(1, 1, 1), (float)axialtilt, planetrot);
+                 //  System.Diagnostics.Debug.WriteLine($"Body {i} {scaledbodypos}");
 
                     // Min/max size of objects. And give the body size
 
@@ -438,13 +407,13 @@ namespace TestOpenTk
                         if (bi.ScanNode.scandata?.nRotationPeriod != null)
                         {
                             double mod = diffseconds % bi.ScanNode.scandata.nRotationPeriod.Value;
-                            mod = mod / (bi.ScanNode.scandata.nRotationPeriod.Value*2);     // for now, fixed 2 times slower
+                            mod = mod / (bi.ScanNode.scandata.nRotationPeriod.Value * 2);     // for now, fixed 2 times slower
                             ringrot = (float)(2 * Math.PI * mod);
                         }
 
                         float maxdist = (float)bi.ScanNode.scandata.Rings.Select(x => x.OuterRad).Max();
 
-                        Matrix4 ringmat = GLStaticsMatrix4.CreateMatrixPlanetRot(pos, new Vector3(1f, 1f, 1f), (float)axialtilt, ringrot);
+                        Matrix4 ringmat = GLStaticsMatrix4.CreateMatrixPlanetRot(scaledbodypos, new Vector3(1f, 1f, 1f), (float)axialtilt, ringrot);
                         ringmat.M14 = planetminkm * mscalingkm;
                         ringmat.M24 = planetmaxkm * mscalingkm;
                         ringmat.M34 = maxdist * mscaling;
@@ -458,31 +427,20 @@ namespace TestOpenTk
 
                 ringsmatrixbuffer.ResetFillPos();
                 ringsmatrixbuffer.Fill(ringsmats);
-
-                if (bodytrack != -1)
-                {
-                    Vector3d pos = positions[bodytrack];
-                    gl3dcontroller.MoveLookAt(new Vector3d(pos.X, pos.Z, pos.Y) * mscaling, false);
-                }
             }
-
-
-            //            datalabel.Text = $"{bodypositionscaling[1].Position/mscaling/1000}" + Environment.NewLine;
 
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys, 0.0001f, 0.0001f);
 
-            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}" + (bodytrack >= 0 ? " Tracking " + bodyinfo[bodytrack].ScanNode.FullName : "");
+            timedisplay.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}";// + (bodytrack >= 0 ? " Tracking " + bodyinfo[bodytrack].ScanNode.FullName : "");
 
-            status.Text = $"Looking at {gl3dcontroller.PosCamera.LookAt.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.LookAt.Z / mscaling / 1000:0.0} " +
-                        $"from {gl3dcontroller.PosCamera.EyePosition.X / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Y / mscaling / 1000:0.0},{gl3dcontroller.PosCamera.EyePosition.Z / mscaling / 1000:0.0} " +
+            Vector3d reallookat = (gl3dcontroller.PosCamera.LookAt / mscaling + worldcentrem) / 1000.0;
+
+            status.Text = $"Looking at {reallookat.X:N0}, {reallookat.Y:N0}, {reallookat.Z:N0} km " +
                         $"cdir {gl3dcontroller.PosCamera.CameraDirection.X:0.0},{gl3dcontroller.PosCamera.CameraDirection.Y:0.0} zoom {gl3dcontroller.PosCamera.ZoomFactor:0.0000} " +
                         $"dist {gl3dcontroller.PosCamera.EyeDistance / mscaling / 1000:N0}km FOV {gl3dcontroller.MatrixCalc.FovDeg}";
 
-            //float sr = gl3dcontroller.MatrixCalc.EyeDistance / (0.05e6f * 1000 * mscaling);
-            //status.Text += $" eye units {gl3dcontroller.MatrixCalc.EyeDistance} sr {sr}";
-
-            //  System.Diagnostics.Debug.WriteLine("Tick");
             gl3dcontroller.Redraw();
+
         }
 
         ulong lasttime = ulong.MaxValue;
@@ -493,7 +451,7 @@ namespace TestOpenTk
             GLMatrixCalcUniformBlock mcub = (GLMatrixCalcUniformBlock)items.UB("MCUB");
             mcub.SetFull(gl3dcontroller.MatrixCalc);
 
-            rgrid.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
+            grd.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc);
             rbodyobjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, false);
 
             if (jdscaling != 0 && lasttime != ulong.MaxValue)
@@ -529,7 +487,7 @@ namespace TestOpenTk
 
                     if (e.Button == GLMouseEventArgs.MouseButtons.Left)
                     {
-                        bodytrack = (int)res[0].Y;
+                        SetBodyTrack((int)res[0].Y);
                     }
                     else if(e.Button == GLMouseEventArgs.MouseButtons.Right)
                     {
@@ -565,21 +523,35 @@ namespace TestOpenTk
                 {
                     int n = res.Item1;
                     if (n < bodyinfo.Count)
-                        bodytrack = bodyinfo[n].Index;
+                        SetBodyTrack(bodyinfo[n].Index);
                 }
             }
 
             if (kb.HasBeenPressed(Keys.D0, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                bodytrack = -1;
+                SetBodyTrack(-1);
             }
         }
 
         #endregion
 
 
-        #region helpers
+        #region Body Track
 
+        int bodytrackid = -1;
+        
+        void SetBodyTrack(int i)
+        {
+            bodytrackid = i;
+            if ( i>=0)
+                gl3dcontroller.MoveLookAt(new Vector3d(0, 0, 0), false);
+        }
+
+        bool IsBodyTracked()
+        {
+            return bodytrackid != -1;
+        }
+        
         #endregion
 
     }

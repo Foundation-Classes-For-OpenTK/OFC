@@ -48,6 +48,11 @@ namespace GLOFC.GL4.Shaders.Vertex
         {
             GL.ProgramUniform4(Id, 22, y);
         }
+        /// <summary> Set Offset </summary>
+        public void SetOffset(Vector3 y)
+        {
+            GL.ProgramUniform4(Id, 22, y.ToVector4());
+        }
 
         private string Code()
         {

@@ -62,10 +62,10 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="cullface">True to cull face</param>
         /// <param name="depthtest">True to depth test</param>
         /// <param name="maxpergroup">Maximum number of bitmaps per group</param>
-        /// <param name="yfixed">Set true to fix Y co-ord externally</param>
+        /// <param name="worldoffset">Set true to allow world offset to work</param>
         public GLBitmaps(string name, GLRenderProgramSortedList rlist, Size bitmapsize, int mipmaplevels = 3, 
                                             OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat = OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, 
-                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue, bool yfixed = false )
+                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue, bool worldoffset= false )
         {
             this.name = name;
             this.context = GLStatics.GetContext();
@@ -80,7 +80,7 @@ namespace GLOFC.GL4.Bitmaps
             renderlist = rlist;
             this.bitmapsize = bitmapsize;
 
-            shader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(yfixed), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
+            shader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(worldoffset), new GLPLFragmentShaderTexture2DIndexed(0, alphablend: true));
             items.Add(shader);
 
             renderstate = GLRenderState.Tri();      
@@ -214,10 +214,15 @@ namespace GLOFC.GL4.Bitmaps
         {
             matrixbuffers.Clear();
         }
-        /// <summary>Set Y if using Y hold</summary>
-        public void SetY(float y)
+        /// <summary>If worldoffset is enabled, offset position by this</summary>
+        public void SetWorldOffset(Vector3 offset)
         {
-            shader.GetShader<GLPLVertexShaderMatrixTriStripTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(y);
+            shader.GetShader<GLPLVertexShaderMatrixTriStripTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetWorldOffset(offset);
+        }
+        /// <summary>If worldoffset is enabled, offset Y position only </summary>
+        public void SetY(float offset)
+        {
+            shader.GetShader<GLPLVertexShaderMatrixTriStripTexture>(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader).SetY(offset);
         }
         /// <summary>Dispose of the bitmaps</summary>
         public virtual void Dispose()           // you can double dispose.

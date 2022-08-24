@@ -54,7 +54,7 @@ namespace TestOpenTk
             List<ushort> vertexregionoutlineindex = new List<ushort>();
 
             Size bitmapsize = new Size(250, 22);
-            textrenderer = new GLBitmaps(name + "-bitmaps", rObjects, bitmapsize, depthtest: false, yfixed: true);
+            textrenderer = new GLBitmaps(name + "-bitmaps", rObjects, bitmapsize, depthtest: false, worldoffset: true);
             items.Add(textrenderer);
 
             StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
@@ -73,7 +73,7 @@ namespace TestOpenTk
                     {
                         polygonxz.Add(new Vector2((float)pd.X, (float)pd.Z));                   // can be concave and wound the wrong way..
                         vertexregionoutlineindex.Add((ushort)(vertexregionsoutlines.Count));
-                        vertexregionsoutlines.Add(new Vector4((float)pd.X, 0, (float)pd.Z, 1));
+                        vertexregionsoutlines.Add(new Vector4((float)pd.X, 0, (float)pd.Z, 1));     // set with Y = 0
                     }
 
                     vertexregionoutlineindex.Add(0xffff);       // primitive restart to break polygon

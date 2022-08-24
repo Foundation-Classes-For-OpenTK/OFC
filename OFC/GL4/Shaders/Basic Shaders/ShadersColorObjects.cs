@@ -15,6 +15,7 @@
 using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Fragment;
 using System;
+using OpenTK;
 
 namespace GLOFC.GL4.Shaders.Basic
 {
@@ -40,6 +41,8 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
         ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
         /// </summary>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
         public GLColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderVSColor());
@@ -58,9 +61,12 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
         ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
         /// </summary>
-        public GLFixedColorShaderObjectTranslation(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <param name="color">Color to shade with</param>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
+        public GLFixedColorShaderObjectTranslation(System.Drawing.Color color, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderFixedColor(c));
+            AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderFixedColor(color));
         }
     }
 
@@ -77,6 +83,8 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      uniform 22 matrix4 transform of model->world positions, supply using per object binding
         ///      uniform 25 colour of object
         /// </summary>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
         public GLUniformColorShaderObjectTranslation(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
         {
             AddVertexFragment(new GLPLVertexShaderColorModelObjectTranslation(), new GLPLFragmentShaderUniformColor());
@@ -95,9 +103,21 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      location 1 vec4 colours of each vertex
         ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
         /// </summary>
-        public GLColorShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
+        /// <param name="worldoffset">True to add a world offset to vertex positions. Use SetOffset</param>
+        public GLColorShaderWorld(Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null, bool worldoffset = false) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderColorWorldCoord(), new GLPLFragmentShaderVSColor());
+            AddVertexFragment(new GLPLVertexShaderColorWorldCoord(worldoffset), new GLPLFragmentShaderVSColor());
+        }
+
+        /// <summary>
+        /// Set a world offset if enabled
+        /// </summary>
+        /// <param name="offset">World offset for all vertexes</param>
+        public void SetOffset(Vector3 offset)
+        {
+            this.GetShader<GLPLVertexShaderColorWorldCoord>().SetOffset(offset);
         }
     }
 
@@ -112,10 +132,24 @@ namespace GLOFC.GL4.Shaders.Basic
         ///      location 0 vec4 positions of world positions
         ///      uniform 0 standard Matrix uniform block GLMatrixCalcUniformBlock
         /// </summary>
-        public GLFixedColorShaderWorld(System.Drawing.Color c, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null) : base(start, finish)
+        /// <param name="color">Color to shade with</param>
+        /// <param name="start">Start shader call back</param>
+        /// <param name="finish">Finish shader call back</param>
+        /// <param name="worldoffset">True to add a world offset to vertex positions. Use SetOffset</param>
+        public GLFixedColorShaderWorld(System.Drawing.Color color, Action<IGLProgramShader, GLMatrixCalc> start = null, Action<IGLProgramShader> finish = null, bool worldoffset = false) : base(start, finish)
         {
-            AddVertexFragment(new GLPLVertexShaderWorldCoord(), new GLPLFragmentShaderFixedColor(c));
+            AddVertexFragment(new GLPLVertexShaderWorldCoord(worldoffset), new GLPLFragmentShaderFixedColor(color));
         }
+
+        /// <summary>
+        /// Set a world offset if enabled
+        /// </summary>
+        /// <param name="offset">World offset for all vertexes</param>
+        public void SetOffset(Vector3 offset)
+        {
+            this.GetShader<GLPLVertexShaderColorWorldCoord>().SetOffset(offset);
+        }
+
     }
 
 }

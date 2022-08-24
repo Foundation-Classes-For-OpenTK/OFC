@@ -218,7 +218,24 @@ namespace GLOFC.GL4
             vb.Bind(va, 1, vb.Positions[1], 16);                            // buffer bind to vertex array at bindingpoint 1, bufferpos, stride
             va.Attribute(1, 1, 4, VertexAttribType.Float);                  // bind bindingpoint 1 to attribute index 1 (in shader), 4 components, float
 
-            return new GLRenderableItem(prim,pt, vectors.Length, va, id, ic);    // create new RI
+            return new GLRenderableItem(prim, pt, vectors.Length, va, id, ic);    // create new RI
+        }
+
+        /// <summary>Vector4 Buffer, Color4 vector, optional instance data and count
+        /// in attribute 0 and 1 setup vector4 and vector4 colours</summary>
+        public static GLRenderableItem CreateVector4Color4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer vbuf, int count, int offset, Color4[] colours, IGLRenderItemData id = null, int ic = 1)
+        {
+            var va = items.NewArray();                                      // vertex array
+            vbuf.Bind(va, 0, offset, 16);                                     // buffer bind to vertex array at bindingpoint 0, bufferpos, stride
+            va.Attribute(0, 0, 4, VertexAttribType.Float);                  // bind bindingpoint 0 to attribute index 0 (in shader), 4 components, float
+
+            var vb = items.NewBuffer();                                     // they all follow this pattern, grab a buffer (unless supplied)
+            vb.AllocateBytes(GLBuffer.Vec4size * count);                    // allocate colour array
+            vb.Fill(colours, count);
+            vb.Bind(va, 1, 0, 16);                                          // buffer bind to vertex array at bindingpoint 1, bufferpos, stride
+            va.Attribute(1, 1, 4, VertexAttribType.Float);                  // bind bindingpoint 1 to attribute index 1 (in shader), 4 components, float
+
+            return new GLRenderableItem(prim, pt, count, va, id, ic);    // create new RI
         }
 
         /// <summary>Vector4, in attribute 0</summary> 

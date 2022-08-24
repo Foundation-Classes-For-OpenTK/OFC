@@ -23,7 +23,7 @@ namespace TestOpenTk
                 displaysubnode = (displaysubnode + dir + number) % number; // rotate between 0 and N
                 CreateBodies(starsystemnodes, displaysubnode);
                 mastersystem.Text = displaysubnode == 0 ? "All" : starsystemnodes.Children.Values[displaysubnode - 1].OwnName;
-                bodytrack = -1;
+                SetBodyTrack(-1);
             }
         }
 

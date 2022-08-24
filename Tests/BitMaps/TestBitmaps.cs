@@ -154,16 +154,17 @@ namespace TestOpenTk
                     Vector3 bannersize = new Vector3(20, 0, 0);
                     Font f = new Font("MS sans serif", 8f);
 
-                    tim = new GLBitmaps("bitmap1x", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true, 2);      // group 2
+                    tim = new GLBitmaps("bitmap1x", rObjects, bitmapsize, 3, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8, false, true, 2, worldoffset:true);      // group 2
+                    tim.SetWorldOffset(new Vector3(0, 10, 0));
                     items.Add(tim);
-                    tim.Add("TT1", "SingleTest", f, Color.White, Color.Red, new Vector3(10, 10, 10),
+                    tim.Add("TT1", "SingleTest", f, Color.White, Color.Red, new Vector3(0, 0, 0),
                                             bannersize, new Vector3(0,0,0), fmt, alphafadescalar: 10, alphafadepos: 5, rotatetoviewer:true);
 
                 }
             }
 
 
-            if ( true)
+            if ( true )
             {
                 using (StringFormat fmt = new StringFormat(StringFormatFlags.NoWrap) { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 {
