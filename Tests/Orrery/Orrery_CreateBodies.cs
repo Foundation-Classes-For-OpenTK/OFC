@@ -28,21 +28,39 @@ namespace TestOpenTk
         }
 
         // read a JSON body file and create nodes from it. Can select barycentre subnode.
-        public void CreateBodies(string file, int subnode = 0)
+        public bool CreateBodiesFile(string file, int subnode = 0)
         {
             if (File.Exists(file))
             {
                 string para = GLOFC.Utils.FileHelpers.TryReadAllTextFromFile(file);
                 if (para != null)
                 {
-                    JObject jo = JObject.Parse(para);
-
-                    starsystemnodes = StarScan.ReadJSON(jo);
-
-                    displaysubnode = subnode;
-                    CreateBodies(starsystemnodes, displaysubnode);
+                    return CreateBodiesJSON(para, subnode);
                 }
             }
+            return false; 
+        }
+
+        public bool CreateBodiesJSON(string json, int subnode = 0)
+        {
+            JObject jo = JObject.Parse(json);
+            if (jo != null)
+                return CreateBodies(jo, subnode);
+            else
+                return false;
+        }
+
+        public bool CreateBodies(JObject jo, int subnode = 0)
+        {
+            starsystemnodes = StarScan.ReadJSON(jo);
+            if (starsystemnodes != null)
+            {
+                displaysubnode = subnode;
+                CreateBodies(starsystemnodes, displaysubnode);
+                return true;
+            }
+            else
+                return false;
         }
 
         // create tree. If subnode > 0, and we have a barycentre at top, then it picks a node of the top node to display, instead of the whole tree

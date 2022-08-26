@@ -154,7 +154,15 @@ namespace TestOpenTk
         static public ScanNode ReadJSON(JObject jo)
         {
             string time = jo["Epoch"].Str();
-            DateTime epoch = time.HasChars() ? DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal) : DateTime.UtcNow;
+            DateTime epoch;
+            try
+            {
+                 epoch = time.HasChars() ? DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal) : DateTime.UtcNow;
+            }
+            catch
+            {
+                return null;
+            }
 
             ScanNode n = new ScanNode();
 
@@ -175,8 +183,9 @@ namespace TestOpenTk
                 if (sma != null)
                     sma = sma.Value * 1000; // to m
 
+                n.BodyID = jo["ID"].Int(0);
                 n.NodeType = ty;
-                n.scandata = new JournalScan(n.OwnName, jo["ID"].Int(0),
+                n.scandata = new JournalScan(n.OwnName, n.BodyID.Value ,
                                         jo["StarType"].StrNull(),
                                         jo["PlanetClass"].StrNull(), 
                                         jo["Mass"].DoubleNull(),        // kg

@@ -333,6 +333,16 @@ namespace TestOpenTk.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap HMCv37 {
+            get {
+                object obj = ResourceManager.GetObject("HMCv37", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap jumponiumRichSystem {
             get {
                 object obj = ResourceManager.GetObject("jumponiumRichSystem", resourceCulture);

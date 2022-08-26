@@ -14,6 +14,7 @@
  */
 
 using System;
+using System.Reflection;
 using System.Windows.Forms;
 
 // A simpler main for demoing
@@ -41,7 +42,8 @@ namespace TestOpenTk
 
             orrery = new Orrery();
             orrery.Start(glwfc);
-            orrery.CreateBodies(@"c:\code\t2.json");
+            var str = GLOFC.Utils.ResourceHelpers.GetResourceAsString("TestOpenTk.Orrery.TestFiles.HIP 22566.json");
+            orrery.CreateBodiesJSON(str);
 
             systemtimer.Interval = 25;
             systemtimer.Tick += new EventHandler(SystemTick);

@@ -263,9 +263,12 @@ namespace TestOpenTk
             var texs2 = items.NewTexture2D(null, Properties.Resources.wooden, SizedInternalFormat.Rgba8);
             var ringrocky = items.NewTexture2D(null, Properties.Resources.Rings_1_rocky, SizedInternalFormat.Rgba8);
 
+            var p1 = new GLOFC.GL4.Textures.GLTexture2D(Properties.Resources.HMCv37, new SizeF(0.7f, 0.7f), SizedInternalFormat.Rgba8);
+            items.Add(p1);
+
             // Make an ARB buffer with textures in them. Index select image
             var tbs = items.NewBindlessTextureHandleBlock(bodyimagearbblock);
-            tbs.WriteHandles(new IGLTexture[] { texs, texp, texb, texs2, ringrocky });
+            tbs.WriteHandles(new IGLTexture[] { texs, texp, texb, texs2, ringrocky, p1 });
 
             // now body shader
             // Vertex's are autoscaled, by body distance to eye, 
@@ -399,7 +402,7 @@ namespace TestOpenTk
                     bodymats[i].M14 = (bary ? baryminkm : planet ? planetminkm : starminkm) * mscalingkm;      // min scale in km, scaled to m then mscaling
                     bodymats[i].M24 = (bary ? barymaxkm : planet ? planetmaxkm : starmaxkm) * mscalingkm;       // maximum scale
                     bodymats[i].M34 = bodyradiusm * mscaling;       // set the size of the sphere - its 1.0f so scale by this
-                    bodymats[i].M44 = planet ? 1 : bary ? 2 : 0;      // select image
+                    bodymats[i].M44 = planet ? 5 : bary ? 2 : 0;      // select image
 
                     if (bi.ScanNode?.scandata?.Rings != null)
                     {

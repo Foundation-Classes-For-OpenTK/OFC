@@ -441,5 +441,22 @@ namespace GLOFC.Utils
 
             bmp.UnlockBits(bmpdata);
         }
+
+        /// <summary>
+        /// Create a bitmap from the centre part of another bitmap
+        /// </summary>
+        /// <param name="bmp">Bitmap to clone</param>
+        /// <param name="partsize">Size of centre to take, in percentage terms (0.7F = 70% etc)</param>
+        /// <returns>New bitmap</returns>
+        public static Bitmap CloneCentre(this Bitmap bmp, SizeF partsize)
+        {
+            var widthtake = (int)(bmp.Width * partsize.Width);
+            var widthleft = (bmp.Width - widthtake) / 2;
+            var heighttake = (int)(bmp.Height * partsize.Width);
+            var heighttop = (bmp.Height - heighttake) / 2;
+            var rect = new Rectangle(widthleft, heighttop, widthtake, heighttake);
+            var bmppart = bmp.Clone(rect, bmp.PixelFormat);
+            return bmppart;
+        }
     }
 }

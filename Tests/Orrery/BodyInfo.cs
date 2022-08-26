@@ -21,6 +21,8 @@ namespace TestOpenTk
 
             double inclination = parentinclination;
 
+            bool includebody = false;
+
             if (sn.scandata != null && sn.scandata.nSemiMajorAxis.HasValue)
             {
                 double orbitingmass;
@@ -49,9 +51,9 @@ namespace TestOpenTk
                     sn.scandata.nSemiMajorAxisKM.Value,
                     sn.scandata.nEccentricity != null ? sn.scandata.nEccentricity.Value : 0,                    // protect against missing data
                     inclination,
-                    sn.scandata.nAscendingNode != null ? sn.scandata.nAscendingNode.Value : 0,
-                    sn.scandata.nPeriapsis != null ? sn.scandata.nPeriapsis.Value : 0,
-                    sn.scandata.nMeanAnomaly != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.nAscendingNode != null ? (360-sn.scandata.nAscendingNode.Value) : 0,
+                    sn.scandata.nPeriapsis != null ? (360-sn.scandata.nPeriapsis.Value) : 0,
+                    sn.scandata.nMeanAnomaly != null ? sn.scandata.nMeanAnomaly.Value : 0,
                     sn.scandata.EventTimeUTC.ToJulianDate()
                 );
 
@@ -61,28 +63,37 @@ namespace TestOpenTk
                     $"BodyInfo {sn.FullName} SMA {kepler.SemiMajorAxism/1000.0} vs {KeplerOrbitElements.CalculateSMAm(sn.scandata.nOrbitalPeriod.Value, orbitingmass) / 1000.0} km " +
                     $" | Period {kepler.OrbitalPeriods} vs CalcOP {KeplerOrbitElements.CalculateOrbitalPeriods(sn.scandata.nSemiMajorAxis.Value, orbitingmass)} s" + 
                     $" | Mass {kepler.OrbitingMass} vs {KeplerOrbitElements.CalculateMassKG(sn.scandata.nSemiMajorAxis.Value, sn.scandata.nOrbitalPeriod.Value)} kg" +
-                    $" | Summed Inclination {kepler.Inclinationr.Degrees()} | Axial Eclipic Tilt {sn.scandata.nAxialTilt.Value.Degrees()}");
+                    $" | Summed Inclination {kepler.Inclinationr.Degrees()} | Axial Eclipic Tilt {(sn.scandata.nAxialTilt.HasValue ? sn.scandata.nAxialTilt.Value.Degrees():-9999)}");
+
+                includebody = true;
             }
             else
             {
-                if ( parent != null )
-                    System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info");
+                if (sn.BodyID == 0)       // 0, is allowed to have no data
+                    includebody = true;
             }
 
-            BodyInfo oi = new BodyInfo();
-            oi.KeplerParameters = kepler;
-            oi.ScanNode = sn;
-            oi.Index = bodylist.Count;
-            oi.ParentIndex = parentindex;
-            oi.orbitpos = new GLRenderDataWorldPositionColor();
-            bodylist.Add(oi);
-
-            if (sn.Children != null)
+            if (includebody)
             {
-                foreach (var kvp in sn.Children)
+                BodyInfo oi = new BodyInfo();
+                oi.KeplerParameters = kepler;
+                oi.ScanNode = sn;
+                oi.Index = bodylist.Count;
+                oi.ParentIndex = parentindex;
+                oi.orbitpos = new GLRenderDataWorldPositionColor();
+                bodylist.Add(oi);
+
+                if (sn.Children != null)
                 {
-                    CreateInfoList(bodylist, kvp.Value, sn, oi.Index, sn.scandata?.nMassKG != null ? sn.scandata.nMassKG.Value : 0, inclination );
+                    foreach (var kvp in sn.Children)
+                    {
+                        CreateInfoList(bodylist, kvp.Value, sn, oi.Index, sn.scandata?.nMassKG != null ? sn.scandata.nMassKG.Value : 0, inclination);
+                    }
                 }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"{sn.OwnName} does not have kepler info so ignore it and its children");
             }
         }
     }
