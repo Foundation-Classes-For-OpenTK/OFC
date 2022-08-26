@@ -315,7 +315,7 @@ namespace TestOpenTk
             // set date
 
             jdscaling = 0;
-            currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
+            currentjd = DateTime.UtcNow.ToJulianDate();
         }
 
         public void SystemTick()
