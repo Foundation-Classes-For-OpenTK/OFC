@@ -19,15 +19,15 @@ namespace TestOpenTk
 {
     static class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
+        public static GLOFC.CommandArgs ProgramArgs;
+
         [STAThread]
         static void Main(string[] stringargs)
         {
-            GLOFC.CommandArgs args = new GLOFC.CommandArgs(stringargs);
-            if (args.Left == 0)
-                args = new GLOFC.CommandArgs(new string[] { "TestMain" });
+            ProgramArgs = new GLOFC.CommandArgs(stringargs);
+
+            if (ProgramArgs.Left == 0)
+                ProgramArgs = new GLOFC.CommandArgs(new string[] { "TestMain" });
 
             using (OpenTK.Toolkit.Init(new OpenTK.ToolkitOptions { EnableHighResolution = false, Backend = OpenTK.PlatformBackend.PreferNative }))
             {
@@ -35,9 +35,9 @@ namespace TestOpenTk
                 Application.SetCompatibleTextRenderingDefault(false);
 
 
-                while (args.Left > 0)
+                while (ProgramArgs.Left > 0)
                 {
-                    string arg1 = args.Next();
+                    string arg1 = ProgramArgs.Next();
 
                     Type t = Type.GetType("TestOpenTk." + arg1, false, true);
 

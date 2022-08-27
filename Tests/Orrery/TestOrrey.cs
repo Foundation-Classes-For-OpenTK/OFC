@@ -42,8 +42,15 @@ namespace TestOpenTk
 
             orrery = new Orrery();
             orrery.Start(glwfc);
-            var str = GLOFC.Utils.ResourceHelpers.GetResourceAsString("TestOpenTk.Orrery.TestFiles.HIP 22566.json");
-            //var str = System.IO.File.ReadAllText(@"c:\code\text.json");
+
+            string file = TestOpenTk.Program.ProgramArgs.Next();
+            if (file == null)
+                file = "HIP 22566";
+
+            var str = GLOFC.Utils.ResourceHelpers.GetResourceAsString("TestOpenTk.Orrery.TestFiles." + file  +".json");
+            if ( str == null )
+                str = System.IO.File.ReadAllText(str);
+
             orrery.CreateBodiesJSON(str);
 
             systemtimer.Interval = 25;
