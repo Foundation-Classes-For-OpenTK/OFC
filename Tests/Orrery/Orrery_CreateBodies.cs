@@ -53,6 +53,7 @@ namespace TestOpenTk
         public bool CreateBodies(JObject jo, int subnode = 0)
         {
             starsystemnodes = StarScan.ReadJSON(jo);
+
             if (starsystemnodes != null)
             {
                 displaysubnode = subnode;
@@ -65,7 +66,7 @@ namespace TestOpenTk
 
         // create tree. If subnode > 0, and we have a barycentre at top, then it picks a node of the top node to display, instead of the whole tree
 
-        private void CreateBodies(StarScan.ScanNode node, int subnode)
+        public void CreateBodies(StarScan.ScanNode node, int subnode = 0)
         {
             rbodyobjects.Clear();       // clear the render list
 
@@ -73,16 +74,15 @@ namespace TestOpenTk
 
             bool sysenabled = false;
 
-            if (subnode > 0 && node.NodeType == StarScan.ScanNodeType.barycentre && node.Children != null)      
+            if (node.NodeType == StarScan.ScanNodeType.barycentre && node.Children != null)      
             {
-                node = node.Children.Values[subnode - 1];
+                if ( subnode > 0)
+                    node = node.Children.Values[subnode-1];
+
                 sysenabled = true;
             }
 
-            // turn on/off the sys* controls dependent on if we are doing a subnode
-
             displaycontrol.ApplyToControlOfName("sys*", (c) => { c.Visible = sysenabled; });        // set up if system selector is enabled
-
             // From the node tree, create the body list
 
             bodyinfo = new List<BodyInfo>();        // new bodyinfo tree
@@ -96,11 +96,11 @@ namespace TestOpenTk
             {
                 if (bi.KeplerParameters != null)     // in orbit
                 {
-                    Vector4[] orbit = bi.KeplerParameters.Orbit(currentjd, 0.1, mscaling);
+                    Vector4[] orbit = bi.KeplerParameters.Orbit(currentjd, 0.1, mscaling);  // make an orbit vector
+
                     GLRenderState lines = GLRenderState.Lines();
                     lines.DepthTest = false;
-
-                    bi.orbitpos.ColorIndex = node.scandata?.nRadius != null ? 0 : 1;
+                    bi.orbitpos.ColorIndex = bi.ScanNode?.scandata?.nRadius != null ? 1 : 0;        // pick a colour based on if it has radius
 
                     var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, bi.orbitpos);
                     rbodyobjects.Add(orbitlineshader, riol);

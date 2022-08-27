@@ -33,7 +33,8 @@ namespace TestOpenTk
         // Playfield
 
         private Controller3Dd gl3dcontroller;
-        private float worldsize = 7500e9f;        // size of playfield in meters
+        private float perspectivesize = 15000e9f;        // size of playfield in meters
+        private float gridsize = 15000e9f;
         private float mscaling = 1 / 1e6f;       // convert meters to units used by GL, 1e6 = 1e11 m, earth is at 1.49e11 m.  1,000,000m = 1000km = 1 unit
         private float mscalingkm = 1000 / 1e6f;    // if km is used
 
@@ -57,7 +58,7 @@ namespace TestOpenTk
 
         private const float autoscalekm = 1000000;      // body distance divider for autoscaling
         private const float autoscalemin = 1;           // clamp values between these two
-        private const float autoscalemax = 1000;
+        private const float autoscalemax = 10000;
         private const float planetminkm = 100;          // set min/max on objectsweh
         private const float planetmaxkm = 10000000;
         private const float starminkm = 1000000;
@@ -85,7 +86,7 @@ namespace TestOpenTk
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 1f;
-            matrixcalc.PerspectiveFarZDistance = worldsize * 2;
+            matrixcalc.PerspectiveFarZDistance = perspectivesize;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);
 
@@ -160,6 +161,7 @@ namespace TestOpenTk
             displaycontrol.Add(sysleft);
 
             mastersystem = new GLLabel("sysname", new Rectangle(230, 6, 70, 20), "All", Color.DarkOrange);
+            mastersystem.Text = "All";
             mastersystem.TextAlign = ContentAlignment.MiddleCenter;
             displaycontrol.Add(mastersystem);
 
@@ -246,13 +248,13 @@ namespace TestOpenTk
             //////////////////////////////////////////////////////////////////////////////////////// 
 
             grd = new Grid();
-            grd.Create(items, worldsize, mscaling,gridlines);
+            grd.Create(items, gridsize, mscaling,gridlines);
            // grd.SetOffset(new Vector3(200000, 200000, 20000));
             //////////////////////////////////////////////////////////////////////////////////////// 
             /// Shaders for objects
             //////////////////////////////////////////////////////////////////////////////////////// 
 
-            // orbit lines
+            // orbit lines, have N colours to pick from
             var orbitlinesvertshader = new GLPLVertexShaderModelWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
 
