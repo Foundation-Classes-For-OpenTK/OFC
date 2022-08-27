@@ -181,7 +181,10 @@ namespace TestOpenTk
 
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
+            // check vs https://in-the-sky.org/solarsystem.php
+
             currentjd = KeplerOrbitElements.J2000;
+          //  currentjd = DateTime.UtcNow.ToJulianDate();
             jdscaling = 0;
             bodies = new KeplerOrbitElements[4];
             bodypositions = new GLRenderDataTranslationRotationTexture[4];

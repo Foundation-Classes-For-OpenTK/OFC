@@ -45,7 +45,7 @@ namespace TestOpenTk
 
             string file = TestOpenTk.Program.ProgramArgs.Next();
             if (file == null)
-                file = "HIP 22566";
+                file = "HIP 21918";
 
             var str = GLOFC.Utils.ResourceHelpers.GetResourceAsString("TestOpenTk.Orrery.TestFiles." + file  +".json");
             if ( str == null )

@@ -83,6 +83,7 @@ namespace TestOpenTk
                                     double inclinationdeg, double longitudeofascendingnodedeg, double longitudeofperiheliondeg,
                                     double meanlongitudedeg, double T0)
         {
+            System.Diagnostics.Debug.WriteLine($"KOP {semimajoraxiskm} ECC {eccentricity} INC {inclinationdeg} LAN {longitudeofascendingnodedeg} LOP {longitudeofperiheliondeg} MA {meanlongitudedeg} {T0}");
             this.Eccentricity = eccentricity;
             this.SemiMajorAxism = semimajoraxiskm * 1000;    // to m
             this.Inclinationr = ((inclinationdeg + 360) % 360).Radians();

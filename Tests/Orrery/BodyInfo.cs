@@ -51,9 +51,9 @@ namespace TestOpenTk
                     sn.scandata.nSemiMajorAxisKM.Value,
                     sn.scandata.nEccentricity != null ? sn.scandata.nEccentricity.Value : 0,                    // protect against missing data
                     inclination,
-                    sn.scandata.nAscendingNode != null ? (360-sn.scandata.nAscendingNode.Value) : 0,
-                    sn.scandata.nPeriapsis != null ? (360-sn.scandata.nPeriapsis.Value) : 0,
-                    sn.scandata.nMeanAnomaly != null ? sn.scandata.nMeanAnomaly.Value : 0,
+                    sn.scandata.nAscendingNode != null ? sn.scandata.nAscendingNode.Value: 0,
+                    sn.scandata.nPeriapsis != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.nMeanAnomaly != null ? (sn.scandata.nMeanAnomaly.Value) : 0,
                     sn.scandata.EventTimeUTC.ToJulianDate()
                 );
 
