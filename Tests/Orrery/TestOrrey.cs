@@ -49,7 +49,7 @@ namespace TestOpenTk
 
             var str = GLOFC.Utils.ResourceHelpers.GetResourceAsString("TestOpenTk.Orrery.TestFiles." + file  +".json");
             if ( str == null )
-                str = System.IO.File.ReadAllText(str);
+                str = System.IO.File.ReadAllText(file);
 
             orrery.CreateBodiesJSON(str);
 
