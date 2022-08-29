@@ -1,0 +1,89 @@
+
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918", "BodyID":0, "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":0.000000, "StarType":"G", "Subclass":5, "StellarMass":0.886719, "Radius":652476928.000000, "AbsoluteMagnitude":3.855896, "Age_MY":9730, "SurfaceTemperature":5246.000000, "Luminosity":"V", "RotationPeriod":304773.852076, "AxialTilt":0.000000, "WasDiscovered":false, "WasMapped":false }
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan",
+"ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 1", "BodyID":1,
+"Parents":[ {"Star":0} ], "StarSystem":"HIP 21918",
+"SystemAddress":1183431201458, "DistanceFromArrivalLS":293.250876,
+"TidalLock":false, "TerraformState":"", "PlanetClass":"High metal content
+body", "Atmosphere":"sulfur dioxide atmosphere",
+"AtmosphereType":"SulphurDioxide", "AtmosphereComposition":[ {
+"Name":"SulphurDioxide", "Percent":100.000000 } ], "Volcanism":"",
+"MassEM":0.594482, "Radius":5179626.500000, "SurfaceGravity":8.831836,
+"SurfaceTemperature":428.343719, "SurfacePressure":79772.328125,
+"Landable":false, "Composition":{ "Ice":0.000000, "Rock":0.657361,
+"Metal":0.342639 }, "SemiMajorAxis":87916151881.217957,
+"Eccentricity":0.000053, "OrbitalInclination":0.146511,
+"Periapsis":335.518689, "OrbitalPeriod":15096367.001534,
+"AscendingNode":177.681354, "MeanAnomaly":67.800508,
+"RotationPeriod":-15096937.936861, "AxialTilt":1.661996,
+"WasDiscovered":false, "WasMapped":true }
+
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan",
+"ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 2", "BodyID":3,
+"Parents":[ {"Star":0} ], "StarSystem":"HIP 21918",
+"SystemAddress":1183431201458, "DistanceFromArrivalLS":410.834137,
+"TidalLock":false, "TerraformState":"", "PlanetClass":"High metal content
+body", "Atmosphere":"carbon dioxide atmosphere",
+"AtmosphereType":"CarbonDioxide", "AtmosphereComposition":[ {
+"Name":"CarbonDioxide", "Percent":94.210144 }, { "Name":"SulphurDioxide",
+"Percent":5.789850 } ], "Volcanism":"", "MassEM":0.266971,
+"Radius":4061304.500000, "SurfaceGravity":6.451228,
+"SurfaceTemperature":459.908386, "SurfacePressure":10299.596680,
+"Landable":false, "Composition":{ "Ice":0.000000, "Rock":0.671210,
+"Metal":0.328790 }, "SemiMajorAxis":123165315389.633179,
+"Eccentricity":0.000003, "OrbitalInclination":-0.044830,
+"Periapsis":213.348800, "OrbitalPeriod":25032374.858856,
+"AscendingNode":-14.353011, "MeanAnomaly":12.926448,
+"RotationPeriod":205819.302820, "AxialTilt":0.226759, "WasDiscovered":false,
+"WasMapped":true }
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan",
+"ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 3", "BodyID":4,
+"Parents":[ {"Star":0} ], "StarSystem":"HIP 21918",
+"SystemAddress":1183431201458, "DistanceFromArrivalLS":526.516433,
+"TidalLock":false, "TerraformState":"", "PlanetClass":"High metal content
+body", "Atmosphere":"hot thick carbon dioxide atmosphere",
+"AtmosphereType":"CarbonDioxide", "AtmosphereComposition":[ {
+"Name":"CarbonDioxide", "Percent":99.001884 }, { "Name":"SulphurDioxide",
+"Percent":0.997936 } ], "Volcanism":"", "MassEM":0.713574,
+"Radius":5496649.000000, "SurfaceGravity":9.413522,
+"SurfaceTemperature":896.666382, "SurfacePressure":11606370.000000,
+"Landable":false, "Composition":{ "Ice":0.000000, "Rock":0.671207,
+"Metal":0.328793 }, "SemiMajorAxis":157817441225.051880,
+"Eccentricity":0.000183, "OrbitalInclination":0.038730, "Periapsis":5.823160,
+"OrbitalPeriod":36307964.324951, "AscendingNode":-147.994545,
+"MeanAnomaly":191.897416, "RotationPeriod":49243.982222, "AxialTilt":0.373530,
+"WasDiscovered":false, "WasMapped":true }
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan",
+"ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 4", "BodyID":5,
+"Parents":[ {"Star":0} ], "StarSystem":"HIP 21918",
+"SystemAddress":1183431201458, "DistanceFromArrivalLS":769.208517,
+"TidalLock":false, "TerraformState":"Terraforming", "PlanetClass":"High metal
+content body", "Atmosphere":"hot thick carbon dioxide atmosphere",
+"AtmosphereType":"CarbonDioxide", "AtmosphereComposition":[ {
+"Name":"CarbonDioxide", "Percent":98.857101 }, { "Name":"SulphurDioxide",
+"Percent":0.992894 }, { "Name":"Nitrogen", "Percent":0.125565 } ],
+"Volcanism":"", "MassEM":0.774756, "Radius":5634943.000000,
+"SurfaceGravity":9.725126, "SurfaceTemperature":741.136536,
+"SurfacePressure":11374907.000000, "Landable":false, "Composition":{
+"Ice":0.000000, "Rock":0.671207, "Metal":0.328793 },
+"SemiMajorAxis":230621194839.477539, "Eccentricity":0.000083,
+"OrbitalInclination":-0.281836, "Periapsis":165.575691,
+"OrbitalPeriod":64138419.628143, "AscendingNode":-39.573498,
+"MeanAnomaly":17.089547, "RotationPeriod":120997.421369,
+"AxialTilt":-0.322728, "WasDiscovered":false, "WasMapped":true }
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 5", "BodyID":6, "Parents":[ {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":2007.241705, "TidalLock":false, "TerraformState":"", "PlanetClass":"High metal content body", "Atmosphere":"nitrogen atmosphere", "AtmosphereType":"Nitrogen", "AtmosphereComposition":[ { "Name":"Nitrogen", "Percent":89.823181 }, { "Name":"Oxygen", "Percent":6.784186 }, { "Name":"CarbonDioxide", "Percent":3.285998 } ], "Volcanism":"minor silicate vapour geysers volcanism", "MassEM":2.247282, "Radius":7705311.500000, "SurfaceGravity":15.086437, "SurfaceTemperature":218.643066, "SurfacePressure":324443.437500, "Landable":false, "Composition":{ "Ice":0.000000, "Rock":0.671206, "Metal":0.328794 }, "SemiMajorAxis":601784378290.176392, "Eccentricity":0.000140, "OrbitalInclination":-1.087710, "Periapsis":93.597801, "OrbitalPeriod":270352715.253830, "AscendingNode":101.957307, "MeanAnomaly":289.728215, "RotationPeriod":96944.436081, "AxialTilt":-0.239818, "WasDiscovered":false, "WasMapped":true }
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 6", "BodyID":7, "Parents":[ {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":3374.929068, "TidalLock":false, "TerraformState":"", "PlanetClass":"Icy body", "Atmosphere":"thick argon rich atmosphere", "AtmosphereType":"ArgonRich", "AtmosphereComposition":[ { "Name":"Nitrogen", "Percent":95.237823 }, { "Name":"Argon", "Percent":4.688338 } ], "Volcanism":"major water geysers volcanism", "MassEM":6.346996, "Radius":12569373.000000, "SurfaceGravity":16.012178, "SurfaceTemperature":167.765015, "SurfacePressure":179721024.000000, "Landable":false, "Composition":{ "Ice":0.538838, "Rock":0.309535, "Metal":0.151627 }, "SemiMajorAxis":1011854469776.153564, "Eccentricity":0.000162, "OrbitalInclination":1.474521, "Periapsis":256.932633, "OrbitalPeriod":589449363.946915, "AscendingNode":-23.173766, "MeanAnomaly":62.203361, "RotationPeriod":36874.950066, "AxialTilt":0.043681, "WasDiscovered":false, "WasMapped":true }
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 7", "BodyID":8, "Parents":[ {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":5112.304843, "TidalLock":false, "TerraformState":"", "PlanetClass":"Icy body", "Atmosphere":"thick methane rich atmosphere", "AtmosphereType":"MethaneRich", "AtmosphereComposition":[ { "Name":"Ammonia", "Percent":33.214432 }, { "Name":"Methane", "Percent":33.214432 }, { "Name":"Nitrogen", "Percent":33.214432 } ], "Volcanism":"major water geysers volcanism", "MassEM":3.623522, "Radius":11316726.000000, "SurfaceGravity":11.277134, "SurfaceTemperature":494.996521, "SurfacePressure":1601425792.000000, "Landable":false, "Composition":{ "Ice":0.685768, "Rock":0.210916, "Metal":0.103316 }, "SemiMajorAxis":1495332896709.442139, "Eccentricity":0.025212, "OrbitalInclination":2.794963, "Periapsis":96.208880, "OrbitalPeriod":1058951914.310455, "AscendingNode":-157.084577, "MeanAnomaly":188.592924, "RotationPeriod":138172.442864, "AxialTilt":-0.248974, "WasDiscovered":false, "WasMapped":true }
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"ScanBaryCentre", "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "BodyID":10, "SemiMajorAxis":2631929039955.139160, "Eccentricity":0.000492, "OrbitalInclination":-5.530710, "Periapsis":50.331452, "OrbitalPeriod":2472752571.105957, "AscendingNode":114.283224, "MeanAnomaly":137.883643 }
+    { "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 8", "BodyID":11, "Parents":[ {"Null":10}, {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":8759.597677, "TidalLock":false, "TerraformState":"", "PlanetClass":"Icy body", "Atmosphere":"helium atmosphere", "AtmosphereType":"Helium", "AtmosphereComposition":[ { "Name":"Helium", "Percent":83.356377 }, { "Name":"Hydrogen", "Percent":7.863809 }, { "Name":"Nitrogen", "Percent":6.692339 } ], "Volcanism":"major water geysers volcanism", "MassEM":4.365246, "Radius":11915396.000000, "SurfaceGravity":12.254656, "SurfaceTemperature":68.198532, "SurfacePressure":87861.445313, "Landable":false, "Composition":{ "Ice":0.685768, "Rock":0.210916, "Metal":0.103316 }, "SemiMajorAxis":7636866271.495819, "Eccentricity":0.027213, "OrbitalInclination":-7.864882, "Periapsis":61.548194, "OrbitalPeriod":289452314.376831, "AscendingNode":41.379659, "MeanAnomaly":84.082309, "RotationPeriod":110071.969920, "AxialTilt":-0.393328, "WasDiscovered":false, "WasMapped":true }
+    { "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 9", "BodyID":12, "Parents":[ {"Null":10}, {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":8814.691951, "TidalLock":false, "TerraformState":"", "PlanetClass":"Icy body", "Atmosphere":"helium atmosphere", "AtmosphereType":"Helium", "AtmosphereComposition":[ { "Name":"Helium", "Percent":86.026871 }, { "Name":"Nitrogen", "Percent":8.918430 }, { "Name":"Hydrogen", "Percent":2.900346 } ], "Volcanism":"major water geysers volcanism", "MassEM":3.078495, "Radius":10810818.000000, "SurfaceGravity":10.498583, "SurfaceTemperature":67.822792, "SurfacePressure":62483.000000, "Landable":false, "Composition":{ "Ice":0.685768, "Rock":0.210916, "Metal":0.103316 }, "SemiMajorAxis":10828933715.820313, "Eccentricity":0.027213, "OrbitalInclination":-7.864882, "Periapsis":241.548189, "OrbitalPeriod":289452314.376831, "AscendingNode":41.379659, "MeanAnomaly":84.082309, "RotationPeriod":115324.930690, "AxialTilt":-0.174594, "WasDiscovered":false, "WasMapped":true }
+
+
+
+{ "timestamp":"2022-08-27T14:54:12Z", "event":"Scan", "ScanType":"NavBeaconDetail", "BodyName":"HIP 21918 1 a", "BodyID":2, "Parents":[ {"Planet":1}, {"Star":0} ], "StarSystem":"HIP 21918", "SystemAddress":1183431201458, "DistanceFromArrivalLS":293.913694, "TidalLock":true, "TerraformState":"", "PlanetClass":"Rocky body", "Atmosphere":"", "AtmosphereType":"None", "Volcanism":"", "MassEM":0.029023, "Radius":2101077.250000, "SurfaceGravity":2.620390, "SurfaceTemperature":408.255524, "SurfacePressure":0.000000, "Landable":true, "Materials":[ { "Name":"iron", "Percent":19.356178 }, { "Name":"sulphur", "Percent":17.294464 }, { "Name":"nickel", "Percent":14.640202 }, { "Name":"carbon", "Percent":14.542855 }, { "Name":"phosphorus", "Percent":9.310584 }, { "Name":"chromium", "Percent":8.705115 }, { "Name":"manganese", "Percent":7.993903 }, { "Name":"vanadium", "Percent":4.753203 }, { "Name":"cadmium", "Percent":1.503095 }, { "Name":"tin", "Percent":1.208105 }, { "Name":"technetium", "Percent":0.692292 } ], "Composition":{ "Ice":0.000000, "Rock":0.858322, "Metal":0.141678 }, "SemiMajorAxis":234784507.751465, "Eccentricity":0.000000, "OrbitalInclination":-63.775016, "Periapsis":261.454174, "OrbitalPeriod":1433853.924274, "AscendingNode":117.307970, "MeanAnomaly":29.103937, "RotationPeriod":1468437.600815, "AxialTilt":-0.245581, "WasDiscovered":false, "WasMapped":true }

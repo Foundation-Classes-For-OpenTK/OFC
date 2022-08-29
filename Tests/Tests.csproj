@@ -439,6 +439,7 @@
     <EmbeddedResource Include="Orrery\TestFiles\SimpleSystem1.json" />
     <EmbeddedResource Include="Orrery\TestFiles\HIP 22566.json" />
     <EmbeddedResource Include="Orrery\TestFiles\HIP 21918.json" />
+    <EmbeddedResource Include="Orrery\TestFiles\HIP 21918first4.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

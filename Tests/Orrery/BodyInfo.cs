@@ -47,23 +47,30 @@ namespace TestOpenTk
                 // inclunation, according to frontier, is just added thru heirachy, and not affected by axial tilt
                 inclination += (sn.scandata.nOrbitalInclination != null ? sn.scandata.nOrbitalInclination.Value : 0);
 
-                kepler = new KeplerOrbitElements(true,
+                double t0 = sn.scandata.EventTimeUTC.ToJulianDate();
+
+                System.Diagnostics.Debug.WriteLine($"---------------- {sn.FullName}");
+                kepler = new KeplerOrbitElements(
                     sn.scandata.nSemiMajorAxisKM.Value,
                     sn.scandata.nEccentricity != null ? sn.scandata.nEccentricity.Value : 0,                    // protect against missing data
                     inclination,
-                    sn.scandata.nAscendingNode != null ? sn.scandata.nAscendingNode.Value: 0,
-                    sn.scandata.nPeriapsis != null ? sn.scandata.nPeriapsis.Value : 0,
+                    sn.scandata.nAscendingNode != null ? (360-sn.scandata.nAscendingNode.Value): 0,
+                    sn.scandata.nPeriapsis != null ? (360-sn.scandata.nPeriapsis.Value) : 0,
                     sn.scandata.nMeanAnomaly != null ? (sn.scandata.nMeanAnomaly.Value) : 0,
-                    sn.scandata.EventTimeUTC.ToJulianDate()
+                    t0
                 );
 
                 kepler.OrbitingMass = orbitingmass;
+
+                System.Diagnostics.Debug.WriteLine($"LAN+AOP+MA={((kepler.LongitudeOfAscendingNoder + kepler.ArgumentOfPeriapsisr + kepler.MeanAnomalyAtT0r)%(2* System.Math.PI)).Degrees():0.0} deg");
 
                 System.Diagnostics.Debug.WriteLine(
                     $"BodyInfo {sn.FullName} SMA {kepler.SemiMajorAxism/1000.0} vs {KeplerOrbitElements.CalculateSMAm(sn.scandata.nOrbitalPeriod.Value, orbitingmass) / 1000.0} km " +
                     $" | Period {kepler.OrbitalPeriods} vs CalcOP {KeplerOrbitElements.CalculateOrbitalPeriods(sn.scandata.nSemiMajorAxis.Value, orbitingmass)} s" + 
                     $" | Mass {kepler.OrbitingMass} vs {KeplerOrbitElements.CalculateMassKG(sn.scandata.nSemiMajorAxis.Value, sn.scandata.nOrbitalPeriod.Value)} kg" +
                     $" | Summed Inclination {kepler.Inclinationr.Degrees()} | Axial Eclipic Tilt {(sn.scandata.nAxialTilt.HasValue ? sn.scandata.nAxialTilt.Value.Degrees():-9999)}");
+
+                var cart = kepler.ToCartesian(t0);  System.Diagnostics.Debug.WriteLine($"Pos {cart.X / 1000.0:N0} {cart.Y / 1000:N0} {cart.Z / 1000:N0} km {kepler.Angle(t0).Degrees():0.0} deg");
 
                 includebody = true;
             }

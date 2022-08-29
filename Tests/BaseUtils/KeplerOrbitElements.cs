@@ -64,17 +64,18 @@ namespace TestOpenTk
 
         public Vector3d LastCartensianPositionm { get; private set; } // set when ToCartesian is run
 
-
         // in km, degrees and days, as per horizons
         public KeplerOrbitElements(double semimajoraxiskm, double eccentricity, double inclinationdeg, double longitudeofascendingnodedeg, double argumentofperiapsisdeg,
-                                    double meananomlalyT0deg, double T0)
+                                    double meanAnomlalyAtT0r, double T0)
         {
+            System.Diagnostics.Debug.WriteLine($"KOP {semimajoraxiskm} km ECC {eccentricity} INC {inclinationdeg} LAN {longitudeofascendingnodedeg} AOP {argumentofperiapsisdeg} MA {meanAnomlalyAtT0r} T0 {T0}");
+
             this.Eccentricity = eccentricity;
             this.SemiMajorAxism = semimajoraxiskm * 1000;    // to m
             this.Inclinationr = ((inclinationdeg + 360) % 360).Radians();
             this.LongitudeOfAscendingNoder = ((longitudeofascendingnodedeg + 360) % 360).Radians();
             this.ArgumentOfPeriapsisr = ((argumentofperiapsisdeg + 360) % 360).Radians();
-            this.MeanAnomalyAtT0r = ((meananomlalyT0deg + 360) % 360).Radians();
+            this.MeanAnomalyAtT0r = ((meanAnomlalyAtT0r + 360) % 360).Radians();
             this.T0 = T0;
         }
 
@@ -83,7 +84,8 @@ namespace TestOpenTk
                                     double inclinationdeg, double longitudeofascendingnodedeg, double longitudeofperiheliondeg,
                                     double meanlongitudedeg, double T0)
         {
-            System.Diagnostics.Debug.WriteLine($"KOP {semimajoraxiskm} ECC {eccentricity} INC {inclinationdeg} LAN {longitudeofascendingnodedeg} LOP {longitudeofperiheliondeg} MA {meanlongitudedeg} {T0}");
+            System.Diagnostics.Debug.WriteLine($"KOP {semimajoraxiskm} km ECC {eccentricity} INC {inclinationdeg} LAN {longitudeofascendingnodedeg} LOP {longitudeofperiheliondeg} MA {meanlongitudedeg} {T0}");
+
             this.Eccentricity = eccentricity;
             this.SemiMajorAxism = semimajoraxiskm * 1000;    // to m
             this.Inclinationr = ((inclinationdeg + 360) % 360).Radians();
@@ -184,7 +186,7 @@ namespace TestOpenTk
 
             //5 Get position vector (z-axis perpendicular to orbital plane, x-axis pointing to periapsis of the orbit)
 
-            Vector3d ot = new Vector3d(rct * Math.Cos(TAt), rct * Math.Sin(TAt), 0);
+            Vector2d ot = new Vector2d(rct * Math.Cos(TAt), rct * Math.Sin(TAt));
 
             // 6 Transform to the inertial frame in bodycentric.
 
@@ -198,6 +200,13 @@ namespace TestOpenTk
                                                    //  System.Diagnostics.Debug.WriteLine($"Result {r}");
 
             return LastCartensianPositionm;
+        }
+
+        // return current angle of body in orbit at this date
+        public double Angle(double tdays)
+        {
+            var cart = ToCartesian(tdays);
+            return (System.Math.Atan2(cart.X, cart.Y) + 2 * Math.PI) % (2 * Math.PI);
         }
 
         // return vector path of orbit, in GL format, on XZ plane, given the day start, day resolution (ie. 2 means every two days), and scaling to GL units

@@ -56,7 +56,7 @@ namespace TestOpenTk
 
         //private int bodytrack = -1;
 
-        private const float autoscalekm = 1000000;      // body distance divider for autoscaling
+        private const float autoscalekm = 500000;      // body distance divider for autoscaling
         private const float autoscalemin = 1;           // clamp values between these two
         private const float autoscalemax = 10000;
         private const float planetminkm = 100;          // set min/max on objectsweh
