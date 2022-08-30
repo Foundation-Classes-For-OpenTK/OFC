@@ -280,7 +280,7 @@ namespace TestOpenTk
             gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
             status.Text = $"JD {currentjd:#0000000.00000} {currentjd.JulianToDateTime()}";
 
-            Vector3d[] positions = new Vector3d[bodies.Length];
+            Vector4d[] positions = new Vector4d[bodies.Length];
 
             for (int i = 0; i < bodies.Length; i++)
             {

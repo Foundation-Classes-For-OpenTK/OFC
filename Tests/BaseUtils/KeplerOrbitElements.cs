@@ -32,7 +32,8 @@ namespace TestOpenTk
                                                         // also called the argument of perifocus or argument of pericentre
         public double MeanAnomalyAtT0r { get; set; }     // v (radians) where it is in its orbit, 0 - 2PI, at epoch T0. Mean Anomaly is not a true geometric angle, rather a linear value varying over orbital period
         public double T0 { get; set; }                  // epoch time in days where these values are valid at
-        public object Tag { get; set; }                 // for other info
+
+        public OpenTK.Matrix4d ResMat { get; set; } = OpenTK.Matrix4d.Identity;   // the orientation of the body against the system reference
 
         public const double J2000 = 2451545.0;                 // equals January 1st 2000 at 12:00 noon (Horizons 2451545.000000000 = A.D. 2000-Jan-01 12:00:00.0000 TDB)
         public const double G = 6.67430E-11;                   // in m3.kg-1.s-2, wiki https://en.wikipedia.org/wiki/Gravitational_constant
@@ -61,8 +62,6 @@ namespace TestOpenTk
         public double GM { get { return G * OrbitingMass; } }
 
         public double OrbitalPeriods { get { return 2 * Math.PI * Math.Sqrt(SemiMajorAxism * SemiMajorAxism * SemiMajorAxism / GM); } } // seconds, keplers third law 
-
-        public Vector3d LastCartensianPositionm { get; private set; } // set when ToCartesian is run
 
         // in km, degrees and days, as per horizons
         public KeplerOrbitElements(double semimajoraxiskm, double eccentricity, double inclinationdeg, double longitudeofascendingnodedeg, double argumentofperiapsisdeg,
@@ -173,8 +172,10 @@ namespace TestOpenTk
             return rct;
         }
 
-        // return position vector with orbit on xy plane in meters. Needs Mass
-        public Vector3d ToCartesian(double tdays)
+        // return position vector with orbit on xy plane in meters.
+        // adjusted with the resmat
+        // Needs Mass
+        public Vector4d ToCartesian(double tdays)
         {
             double MAt = MeanAnomalyAtT(tdays);
             double EAt = EccentricAnomaly(MAt);
@@ -196,10 +197,12 @@ namespace TestOpenTk
                 ot.Y * (Math.Cos(ArgumentOfPeriapsisr) * Math.Cos(Inclinationr) * Math.Cos(LongitudeOfAscendingNoder) - Math.Sin(ArgumentOfPeriapsisr) * Math.Sin(LongitudeOfAscendingNoder)));
             double rz = (ot.X * (Math.Sin(ArgumentOfPeriapsisr) * Math.Sin(Inclinationr)) + ot.Y * (Math.Cos(ArgumentOfPeriapsisr) * Math.Sin(Inclinationr)));
 
-            LastCartensianPositionm = new Vector3d(rx, ry, rz); //Position vector in meters
-                                                   //  System.Diagnostics.Debug.WriteLine($"Result {r}");
+            var pos = new Vector4d(rx, ry, rz,1); //Position vector in meters
 
-            return LastCartensianPositionm;
+            var refshift = Vector4d.Transform(pos,ResMat);
+
+            //  System.Diagnostics.Debug.WriteLine($"Result {pos}");
+            return refshift;
         }
 
         // return current angle of body in orbit at this date
@@ -219,7 +222,7 @@ namespace TestOpenTk
             for ( double a = 0; a <= 360.0 + angleresolutiondeg;  a = a +angleresolutiondeg)
             {
                 double t = tdays + orbitalperioddays / 360.0 * a;
-                Vector3d posd = ToCartesian(t);
+                Vector4d posd = ToCartesian(t);
                 ret.Add( new Vector4((float)(posd.X * scaling), (float)(posd.Z * scaling), (float)(posd.Y * scaling), 1) );
             }
 

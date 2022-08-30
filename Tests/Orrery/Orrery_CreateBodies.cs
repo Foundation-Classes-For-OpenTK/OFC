@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL4;
 using System.Collections.Generic;
 using System.IO;
 using QuickJSON;
+using GLOFC.Utils;
 
 namespace TestOpenTk
 {
@@ -100,15 +101,17 @@ namespace TestOpenTk
 
                     GLRenderState lines = GLRenderState.Lines();
                     lines.DepthTest = false;
-                    bi.orbitpos.ColorIndex = bi.ScanNode?.scandata?.nRadius != null ? 1 : 0;        // pick a colour based on if it has radius
+                    bi.OrbitCentre.ColorIndex = bi.ScanNode?.scandata?.nRadius != null ? 1 : 0;        // pick a colour based on if it has radius
 
-                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, bi.orbitpos);
+                    var riol = GLRenderableItem.CreateVector4(items, PrimitiveType.LineStrip, lines, orbit, bi.OrbitCentre);
                     rbodyobjects.Add(orbitlineshader, riol);
 
                     if ( bi.ScanNode?.scandata?.Rings != null )
                     {
                         ringcount++;
                     }
+
+                   // bi.KeplerParameters.ResMat = Matrix4d.CreateRotationZ(-20.0.Radians());
                 }
             }
 

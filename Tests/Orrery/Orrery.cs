@@ -112,7 +112,7 @@ namespace TestOpenTk
             gl3dcontroller.PaintObjects = ControllerDraw;
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
-                double eyedistr = Math.Pow(eyedist, 1.0);
+                double eyedistr = Math.Pow(eyedist, 0.9);
                 float v = (float)Math.Max(eyedistr / 1200, 0);
                 //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
                 return (float)ms * v;
@@ -377,7 +377,7 @@ namespace TestOpenTk
                     Vector3d bodyfinalposd = i == bodytrackid ? new Vector3d(0,0,0) : (bodypositionm[i] - worldcentrem);     // use 0,0,0 for bodytrack to prevent inaccuracies in subtraction
 
                     Vector3d bodycentrefinalposd = bodycentresm[i] - worldcentrem;
-                    bi.orbitpos.WorldPosition = new Vector3((float)(bodycentrefinalposd.X * mscaling), (float)(bodycentrefinalposd.Y * mscaling), (float)(bodycentrefinalposd.Z * mscaling));
+                    bi.OrbitCentre.WorldPosition = new Vector3((float)(bodycentrefinalposd.X * mscaling), (float)(bodycentrefinalposd.Y * mscaling), (float)(bodycentrefinalposd.Z * mscaling));
 
                     float bodyradiusm = bi.ScanNode.scandata != null && bi.ScanNode.scandata.nRadius.HasValue ? (float)(bi.ScanNode.scandata.nRadius.Value) : 1000e3f;
 
@@ -516,15 +516,15 @@ namespace TestOpenTk
             {
                 gl3dcontroller.ChangePerspectiveMode(!gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
+            if (kb.HasBeenPressed(Keys.O, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
+            {
+                gl3dcontroller.SetCameraDir(new Vector2d(90,0));
+            }
 
             var res = kb.HasBeenPressed(Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9);
             if (res != null)
             {
-                if (res.Item2 == KeyboardMonitor.ShiftState.Shift)
-                {
-
-                }
-                else if (res.Item2 == KeyboardMonitor.ShiftState.None)
+                if (res.Item2 == KeyboardMonitor.ShiftState.None)
                 {
                     int n = res.Item1;
                     if (n < bodyinfo.Count)
