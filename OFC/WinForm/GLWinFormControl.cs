@@ -213,7 +213,7 @@ namespace GLOFC.WinForm
 
         private Point FindCursorFormCoords()
         {
-            UnsafeNativeMethods.GetCursorPos(out UnsafeNativeMethods.POINT p);
+            var p = Cursor.Position;
             Point gcsp = glControl.PointToScreen(new Point(0, 0));
             return new Point(p.X - gcsp.X, p.Y - gcsp.Y);
         }
