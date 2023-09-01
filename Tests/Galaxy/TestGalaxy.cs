@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using GLOFC.GL4.Controls;
 using EliteDangerousCore.EDSM;
 using System.IO;
-using Newtonsoft.Json.Linq;
 using GLOFC.Utils;
+using QuickJSON;
 
 namespace TestOpenTk
 {
@@ -48,11 +48,11 @@ namespace TestOpenTk
 
             edsmmapping = new GalacticMapping();
             string text = System.Text.Encoding.UTF8.GetString(Properties.Resources.galacticmapping);
-            edsmmapping.ParseJson(text);                            // at this point, gal map data has been uploaded - get it into memory
+            edsmmapping.ParseEDSMJson(text);                            // at this point, gal map data has been uploaded - get it into memory
 
             eliteRegions = new GalacticMapping();
             text = System.Text.Encoding.UTF8.GetString(Properties.Resources.EliteGalacticRegions);
-            eliteRegions.ParseJson(text);                            // at this point, gal map data has been uploaded - get it into memory
+            eliteRegions.ParseEDSMJson(text);                            // at this point, gal map data has been uploaded - get it into memory
 
             mapdefaults = new MapSaverTest();
             mapdefaults.ReadFromDisk(@"c:\code\mapdef.txt");
@@ -98,7 +98,7 @@ namespace TestOpenTk
         public void WriteToDisk(string file)
         {
             JToken jk = JToken.FromObject(settings);
-            string s = jk.ToString(Newtonsoft.Json.Formatting.Indented);
+            string s = jk.ToString(true);
             System.Diagnostics.Debug.WriteLine(s);
             File.WriteAllText(file, s);
         }
@@ -107,10 +107,21 @@ namespace TestOpenTk
         {
             if (settings.ContainsKey(id))
             {
-                return (T)settings[id];
+                var ttype = typeof(T);
+
+                if ( ttype == typeof(DateTime))
+                { 
+                    if (DateTime.TryParse((string)settings[id], out DateTime res))
+                    {
+                        dynamic dd = res;  // bodge around
+                        return dd;
+                    }
+                }
+                else
+                    return (T)settings[id];
             }
-            else
-                return defaultvalue;
+
+            return defaultvalue;
         }
 
         public void PutSetting<T>(string id, T value)

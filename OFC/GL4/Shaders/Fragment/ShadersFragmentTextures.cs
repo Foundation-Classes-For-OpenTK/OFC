@@ -353,5 +353,63 @@ void main(void)
 }";
         }
     }
+
+    /// <summary>
+    /// Shader for a 2D Array texture bound using location 4 wvalue to pick between them. Use with GLPLVertexShaderModelWorldTextureAutoScale for instance
+    /// discard if alpha is too small 
+    /// </summary>
+
+    public class GLPLFragmentShaderTexture2DWSelector : GLShaderPipelineComponentShadersBase
+    {
+        /// <summary>
+        /// Constructor
+        /// Requires:
+        ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
+        ///      location 4 : float wvalue from world- bits 0..16 select texture.
+        ///      tex binding : textureObject : 2D Array texture
+        /// </summary>
+        /// <param name="binding">Texture binding point</param>
+
+        public GLPLFragmentShaderTexture2DWSelector(int binding = 1)
+        {
+            CompileLink(ShaderType.FragmentShader, Code(), out string unused, 
+                            new object[] { "texbinding", binding });
+        }
+
+        private string Code()
+        {
+            return
+@"
+#version 450 core
+layout (location=0) in vec2 vs_textureCoordinate;
+
+const int texbinding = 1;
+layout (binding=texbinding) uniform sampler2DArray textureObject2D;
+
+layout (location = 4) in VS_IN
+{
+    flat float vs_wvalue;
+} vs;
+
+out vec4 color;
+
+void main(void)
+{
+    int imageno = int(vs.vs_wvalue);
+    vec4 c = texture(textureObject2D, vec3(vs_textureCoordinate,imageno));       // vs_texture coords normalised 0 to 1.0f
+    if ( c.w < 0.01)
+    {
+        discard;
+    }
+    else
+        color = c;
+}
+";
+        }
+
+    }
+
+
+
 }
 

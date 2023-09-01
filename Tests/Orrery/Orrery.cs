@@ -9,7 +9,6 @@ using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Geo;
 using GLOFC.Utils;
 using GLOFC.WinForm;
-using Newtonsoft.Json.Linq;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -24,6 +23,7 @@ using System.Windows.Forms;
 using GLOFC.GL4.Bitmaps;
 using GLOFC.GL4.ShapeFactory;
 using static GLOFC.GL4.Controls.GLBaseControl;
+using QuickJSON;
 
 namespace TestOpenTk
 {

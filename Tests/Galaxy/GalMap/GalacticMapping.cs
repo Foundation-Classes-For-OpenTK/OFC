@@ -14,37 +14,32 @@
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
 
-using Newtonsoft.Json.Linq;
+using QuickJSON;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using GLOFC;
-using GLOFC.Utils;
 
 namespace EliteDangerousCore.EDSM
 {
     public class GalacticMapping
     {
-        public List<GalacticMapObject> galacticMapObjects = null;
-        public List<GalMapType> galacticMapTypes = null;
+        public List<GalacticMapObject> GalacticMapObjects = null;
+        public GalacticMapObject[] VisibleMapObjects { get { return GalacticMapObjects.Where(x => x.GalMapType.VisibleType != null).ToArray(); } }
 
-        public GalacticMapObject[] RenderableMapObjects { get { return galacticMapObjects.Where(x => x.galMapType.Image != null ).ToArray(); } }
-        public GalMapType[] RenderableMapTypes { get { return galacticMapTypes.Where(x => x.Image != null).ToArray(); } }
-
-        public bool Loaded { get { return galacticMapObjects != null; } }
+        public bool Loaded { get { return GalacticMapObjects.Count > 0; } }
 
         public GalacticMapping()
         {
-            galacticMapTypes = GalMapType.GetTypes();          // we always have the types.
+            GalacticMapObjects = new List<GalacticMapObject>();
         }
 
-        public bool ParseFile(string file)
+        public bool ParseEDSMFile(string file)
         {
             try
             {
                 string json = File.ReadAllText(file);
-                return ParseJson(json);
+                return ParseEDSMJson(json);
             }
             catch (Exception ex)
             {
@@ -54,37 +49,18 @@ namespace EliteDangerousCore.EDSM
             return false;
         }
 
-        public bool ParseJson(string json)
+        public bool ParseEDSMJson(string json)
         {
-            var gmobjects = new List<GalacticMapObject>();
-
             try
             {
-                if (json.HasChars())
                 {
-                    //Dictionary<string, int> counts = new Dictionary<string, int>();   foreach (var v in GalMapType.GetTypes())   counts[v.Typeid] = 0;
+                    JArray galobjects = JArray.ParseThrowCommaEOL(json);
 
-                    JArray galobjects = (JArray)JArray.Parse(json);
                     foreach (JObject jo in galobjects)
                     {
                         GalacticMapObject galobject = new GalacticMapObject(jo);
-
-                        GalMapType ty = galacticMapTypes.Find(x => x.Typeid.Equals(galobject.type));
-
-                        //System.Diagnostics.Debug.WriteLine($"Type {galobject.type}");
-                        //counts[galobject.type]++;
-
-                        if (ty == null)
-                        {
-                            ty = galacticMapTypes[galacticMapTypes.Count - 1];      // last one is default..
-                            System.Diagnostics.Trace.WriteLine("Unknown Gal Map object " + galobject.type);
-                        }
-
-                        galobject.galMapType = ty;
-                        gmobjects.Add(galobject);
+                        GalacticMapObjects.Add(galobject);
                     }
-
-                    galacticMapObjects = gmobjects;
 
                     return true;
                 }
@@ -97,15 +73,15 @@ namespace EliteDangerousCore.EDSM
             return false;
         }
 
-        public GalacticMapObject Find(string name, bool contains = false )
+        public GalacticMapObject Find(string name, bool contains = false)
         {
-            if (galacticMapObjects != null && name.Length>0)
+            if (GalacticMapObjects != null)
             {
-                foreach (GalacticMapObject gmo in galacticMapObjects)
+                foreach (GalacticMapObject gmo in GalacticMapObjects)
                 {
-                    if ( gmo.name.Equals(name,StringComparison.InvariantCultureIgnoreCase) || (contains && gmo.name.IndexOf(name,StringComparison.InvariantCultureIgnoreCase)>=0))
+                    if (gmo.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) || (contains && gmo.Name.IndexOf(name, StringComparison.InvariantCultureIgnoreCase) >= 0))
                     {
-                         return gmo;
+                        return gmo;
                     }
                 }
             }
@@ -113,15 +89,39 @@ namespace EliteDangerousCore.EDSM
             return null;
         }
 
+        public GalacticMapObject FindNearest(double x, double y, double z)
+        {
+            GalacticMapObject nearest = null;
+
+            if (GalacticMapObjects != null)
+            {
+                double mindist = double.MaxValue;
+                foreach (GalacticMapObject gmo in GalacticMapObjects)
+                {
+                    if ( gmo.Points.Count == 1 )        // only for single point  bits
+                    {
+                        double distsq = (gmo.Points[0].X - x) * (gmo.Points[0].X - x) + (gmo.Points[0].Y - y) * (gmo.Points[0].Y - y) + (gmo.Points[0].Z - z) * (gmo.Points[0].Z - z);
+                        if ( distsq < mindist)
+                        {
+                            mindist = distsq;
+                            nearest = gmo;
+                        }
+                    }
+                }
+            }
+
+            return nearest;
+        }
+
         public List<string> GetGMONames()
         {
             List<string> ret = new List<string>();
 
-            if (galacticMapObjects != null)
+            if (GalacticMapObjects != null)
             {
-                foreach (GalacticMapObject gmo in galacticMapObjects)
+                foreach (GalacticMapObject gmo in GalacticMapObjects)
                 {
-                    ret.Add(gmo.name);
+                    ret.Add(gmo.Name);
                 }
             }
 

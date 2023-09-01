@@ -100,7 +100,7 @@ void main(void)
         ///      location 1 : world-position: vec4 vertex array of world pos for model, instanced.
         ///                   W>=0 selects the base colour to present, W less or equal to -1 disables the model at this position
         ///      uniform buffer 0 : GL MatrixCalc
-        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling of object)
         /// Out:
         ///      gl_Position
         ///      location 1 modelpos
@@ -145,9 +145,9 @@ void main(void)
 #include UniformStorageBlocks.matrixcalc.glsl
 #include Shaders.Functions.vec4.glsl
 
-layout (location = 0) in vec4 modelposition;
-layout (location = 1) in vec4 worldposition;            // instanced, w ignored
-layout (location = 22) uniform  mat4 transform;
+layout (location = 0) in vec4 modelposition;            // model vertexes
+layout (location = 1) in vec4 worldposition;            // instanced, w is used as the colour selector from basecolor
+layout (location = 22) uniform  mat4 objecttransform;         // rotation/scaling of vertexes
 
 out gl_PerVertex {
         vec4 gl_Position;
@@ -161,7 +161,7 @@ layout (location = 2) out flat int instance;
 layout (location = 3) out vec4 basecolor;
 layout (location = 4) out flat int drawid;       // 4.6 item
 
-const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs
+const vec4 colours[] = { vec4(1,1,0,1), vec4(1,1,0,1)};   // for some reason, need two otherwise it barfs.  This is replaced by the auto compiler with the matrix given in the construc
 
 const float autoscale = 0;
 const float autoscalemax = 0;
@@ -195,7 +195,7 @@ void main(void)
             }
         }
 
-        vec4 modelrot = transform * pos;
+        vec4 modelrot = objecttransform * pos;
         vec4 wp = modelrot + worldp;
         gl_Position = mc.ProjectionModelMatrix * wp;        // order important
         instance = gl_InstanceID;

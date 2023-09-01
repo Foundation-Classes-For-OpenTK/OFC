@@ -22,9 +22,9 @@ namespace TestOpenTk
     class GalaxyStars
     {
         public Vector3 CurrentPos { get; set; } = new Vector3(-1000000, -1000000, -1000000);
-        public Font Font { get; set; } = new Font("Ms Sans Serif", 14f);
+        public Font Font { get; set; } = new Font("Ms Sans Serif", 8f);
         public Color ForeText { get; set; } = Color.White;
-        public Color BackText { get; set; } = Color.Red;
+        public Color BackText { get; set; } = Color.FromArgb(50,128,128,128);
 
         private const int MaxObjectsAllowed = 1000000;
         private const int MaxObjectsMargin = 1000;
@@ -33,8 +33,10 @@ namespace TestOpenTk
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, GLStorageBlock findbufferresults)
         {
-            sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0,0,0) },
-                autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
+            // worldpos.W selects the colour in the fill world pos below
+            var colours = new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 128, 0, 0) , Color.FromArgb(255, 0, 128, 0) , Color.FromArgb(255, 0, 0, 128) };
+
+            sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(colours, autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
             var sunfrag = new GLPLStarSurfaceFragmentShader();
             sunshader = items.NewShaderPipeline(null,sunvertex, sunfrag);
 
@@ -55,7 +57,7 @@ namespace TestOpenTk
  
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
                                                             sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
-                                                            textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8);
+                                                            textshader, new Size(128, 16), textrc, SizedInternalFormat.Rgba8);
 
             items.Add(slset);
 
@@ -157,7 +159,7 @@ namespace TestOpenTk
                             sectoclean.bitmaps = null;
                         }
 
-                        System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts");
+                    //   System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {sector.pos} requestor accepts");
 
                         Interlocked.Add(ref subthreadsrunning, 1);      // commited to run this, so count subthreads, on shutdown, we need to wait until they all complete
 
@@ -192,14 +194,15 @@ namespace TestOpenTk
             Random rnd = new Random((int)(d.pos.X * d.pos.Y) + 1);
             for (int i = 0; i < array.Length; i++)
             {
-                array[i] = new Vector4(d.pos.X + rnd.Next(SectorSize), d.pos.Y + rnd.Next(SectorSize), d.pos.Z + rnd.Next(SectorSize), 0);
-                text[i] = $"({d.pos.X},{d.pos.Y},{d.pos.Z})-{i}";
+                array[i] = new Vector4(d.pos.X + rnd.Next(SectorSize), d.pos.Y + rnd.Next(SectorSize), d.pos.Z + rnd.Next(SectorSize), 
+                    i%4);   // colour selector
+                text[i] = $"{array[i].X:0.###},{array[i].Y:0.###},{array[i].Z:0.###}:{i}";
             }
 
             d.stars = array;       
             d.text = text;
-            d.bitmaps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f);
-            d.textpos = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, -2f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+            d.bitmaps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f, centertext:true);
+            d.textpos = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, -0.5f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
 
             generatedsectors.Enqueue(d);       // d has been filled
             //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} {tno} end");
@@ -219,9 +222,9 @@ namespace TestOpenTk
                     int max = 5;
                     while (max-- > 0 && generatedsectors.TryDequeue(out Sector d) )      // limit fill rate..
                     {
-                        System.Diagnostics.Debug.WriteLine($"Add to set {d.pos}");
+                        //System.Diagnostics.Debug.WriteLine($"Add to set {d.pos}");
                         slset.Add(d.pos, d.text, d.stars, d.textpos, d.bitmaps);
-                        System.Diagnostics.Debug.WriteLine($"..add complete {d.pos} {slset.Objects}" );
+                        //System.Diagnostics.Debug.WriteLine($"..add complete {d.pos} {slset.Objects}" );
                         cleanbitmaps.Enqueue(d);            // ask for cleaning of these bitmaps
                         timelastadded = time;
                     }

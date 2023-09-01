@@ -191,16 +191,16 @@ namespace TestOpenTk
                 galfp.BackColor = pform.BackColor;
                 galgb.Add(galfp);
 
-                for (int i = map.edsmmapping.RenderableMapTypes.Length - 1; i >= 0; i--)
+                for (int i = EliteDangerousCore.EDSM.GalMapType.VisibleTypes.Length - 1; i >= 0; i--)
                 {
-                    var gt = map.edsmmapping.RenderableMapTypes[i];
-                    bool en = map.GetGalObjectTypeEnable(gt.Typeid);
-                    GLCheckBox butg = new GLCheckBox("GMSEL"+i, new Rectangle(0, 0, iconsize, iconsize), gt.Image, null);
+                    var gt = EliteDangerousCore.EDSM.GalMapType.VisibleTypes[i];
+                    bool en = map.GetGalObjectTypeEnable(gt.TypeName);
+                    GLCheckBox butg = new GLCheckBox("GMSEL"+i, new Rectangle(0, 0, iconsize, iconsize), GalMapObjects.GalMapTypeIcons[gt.VisibleType.Value], null);
                     butg.ToolTipText = "Enable/Disable " + gt.Description;
                     butg.Checked = en;
                     butg.CheckChanged += (e1) =>
                     {
-                        map.SetGalObjectTypeEnable(gt.Typeid, butg.Checked);
+                        map.SetGalObjectTypeEnable(gt.TypeName, butg.Checked);
                     };
                     galfp.Add(butg);
                 }

@@ -441,5 +441,71 @@ namespace GLOFC.Utils
 
             bmp.UnlockBits(bmpdata);
         }
+
+        /// <summary>
+        /// Crop bitmap by area - absolute co-ords. Validates croparea
+        /// </summary>
+        /// <param name="image">Bitmap</param>
+        /// <param name="croparea">crop area in pixels</param>
+        public static Bitmap CropImage(this Bitmap image, Rectangle croparea)
+        {
+            if ((croparea.Width <= 0) || (croparea.Width > image.Width))
+            {
+                croparea.X = 0;
+                croparea.Width = image.Width;
+            }
+            else if (croparea.Left + croparea.Width > image.Width)
+            {
+                croparea.X = image.Width - croparea.Width;
+            }
+
+            if ((croparea.Height <= 0) || (croparea.Height > image.Height))
+            {
+                croparea.Y = 0;
+                croparea.Height = image.Height;
+            }
+            else if (croparea.Top + croparea.Height > image.Height)
+            {
+                croparea.Y = image.Height - croparea.Height;
+            }
+
+            return image.Clone(croparea, System.Drawing.Imaging.PixelFormat.DontCare);
+        }
+
+        /// <summary>
+        /// Crop bitmap by area - percentages (0-100)
+        /// </summary>
+        /// <param name="image">Bitmap</param>
+        /// <param name="croparea">crop area in percentages</param>
+        /// <returns>new Bitmap</returns>
+        public static Bitmap CropImage(this Bitmap image, RectangleF croparea)
+        {
+            int left = (int)(image.Width * croparea.X / 100.0F);
+            int top = (int)(image.Height * croparea.Y / 100.0F);
+            int width = (int)(image.Width * croparea.Width / 100.0F);
+            int height = (int)(image.Height * croparea.Height / 100.0F);
+            left = Math.Max(0, left);
+            top = Math.Max(0, top);
+            width = Math.Min(width, image.Width - left);
+            height = Math.Min(height, image.Height - top);
+
+            return image.Clone(new Rectangle(left, top, width, height), System.Drawing.Imaging.PixelFormat.DontCare);
+        }
+
+        /// <summary>
+        /// Crop bitmap array by area - percentages (0-100)
+        /// </summary>
+        /// <param name="image">Array of Bitmap</param>
+        /// <param name="croparea">crop area in percentages</param>
+        /// <returns>new Bitmap array - caller responsible for disposal</returns>
+        public static Bitmap[] CropImages(this Bitmap[] images, RectangleF croparea)
+        {
+            Bitmap[] bmps = new Bitmap[images.Length];
+            for (int b = 0; b < images.Length; b++)
+                bmps[b] = CropImage(images[b], croparea);
+            return bmps;
+        }
+
+
     }
 }

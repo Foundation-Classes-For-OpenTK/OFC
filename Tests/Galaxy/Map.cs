@@ -472,7 +472,7 @@ namespace TestOpenTk
             // 3d controller
 
             gl3dcontroller = new Controller3D();
-            gl3dcontroller.PosCamera.ZoomMax = 600;     // gives 5ly
+            gl3dcontroller.PosCamera.ZoomMax = 5000;     // gives 5ly
             gl3dcontroller.ZoomDistance = 3000F/lyscale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
@@ -504,8 +504,8 @@ namespace TestOpenTk
             tbac.PerformAutoCompleteInUIThread = (s, a,set) =>
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
-                var glist = edsmmapping.galacticMapObjects.Where(x => s.Length < 3 ? x.name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
-                List<string> list = glist.Select(x => x.name).ToList();
+                var glist = edsmmapping.GalacticMapObjects.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
+                List<string> list = glist.Select(x => x.Name).ToList();
                 list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
                 foreach (var x in list)
                     set.Add(x);
@@ -515,11 +515,11 @@ namespace TestOpenTk
             {
                 System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
                 System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
-                var gmo = edsmmapping.galacticMapObjects.Find(x => x.name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                var gmo = edsmmapping.GalacticMapObjects.Find(x => x.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
                 if (gmo != null)
                 {
-                    System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.points[0]);
-                    gl3dcontroller.SlewToPosition(new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z), -1);
+                    System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.Points[0]);
+                    gl3dcontroller.SlewToPosition(new Vector3((float)gmo.Points[0].X, (float)gmo.Points[0].Y, (float)gmo.Points[0].Z), -1);
                 }
                 else
                 {
@@ -822,7 +822,10 @@ namespace TestOpenTk
             var sys = galaxystars?.Find(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float sz);
             if (sys != null)
             {
-                sys.X = sys.Y = sys.Z = 100000;
+                string[] nparts = sys.Name.Split(',');
+                sys.X = nparts[0].InvariantParseDouble(-10000);
+                sys.Y = nparts[1].InvariantParseDouble(-10000);
+                sys.Z = nparts[2].Substring(0,nparts[2].IndexOf(':')).InvariantParseDouble(-10000);
                 return sys;
             }
             var bk = bookmarks?.Find(loc, glwfc.RenderState, matrixcalc.ViewPort.Size, out float bz);
@@ -848,10 +851,10 @@ namespace TestOpenTk
             else if (gmo != null)
             {
   
-                string t1 = gmo.description;
+                string t1 = gmo.Description;
 
-                return new Tuple<string, Vector3, string>(gmo.name,
-                                                          new Vector3((float)gmo.points[0].X, (float)gmo.points[0].Y, (float)gmo.points[0].Z),
+                return new Tuple<string, Vector3, string>(gmo.Name,
+                                                          new Vector3((float)gmo.Points[0].X, (float)gmo.Points[0].Y, (float)gmo.Points[0].Z),
                                                           t1);
             }
             else if ( sys != null)

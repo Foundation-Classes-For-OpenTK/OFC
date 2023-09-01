@@ -1,8 +1,8 @@
 ﻿using GLOFC;
 using GLOFC.GL4;
 using GLOFC.Utils;
-using Newtonsoft.Json.Linq;
 using OpenTK;
+using QuickJSON;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -132,7 +132,7 @@ namespace TestOpenTk
             if (Enum.TryParse<ScanNodeType>(jo["NodeType"].Str("body"), out ScanNodeType ty))
             {
                 n.NodeType = ty;
-                if (jo.ContainsKey("SemiMajorAxis"))
+                if (jo.Contains("SemiMajorAxis"))
                 {
                     n.scandata = new JournalScan(n.OwnName, jo["ID"].Int(0),
                                             jo["StarClass"].StrNull(),
@@ -149,7 +149,7 @@ namespace TestOpenTk
                         n.scandata.nRadius *= 1000;
                 }
 
-                if (jo.ContainsKey("Bodies"))
+                if (jo.Contains("Bodies"))
                 {
                     n.Children = new SortedList<string, ScanNode>();
                     JArray ja = jo["Bodies"] as JArray;

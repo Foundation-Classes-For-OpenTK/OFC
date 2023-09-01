@@ -14,23 +14,17 @@
  * EDDiscovery is not affiliated with Frontier Developments plc.
  */
 
-using BaseUtils;
 using GLOFC.GL4;
 using GLOFC.GL4.Shaders;
-using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Geo;
-using Newtonsoft.Json.Linq;
+using GLOFC.GL4.Shaders.Vertex;
+using GLOFC.GL4.ShapeFactory;
 using OpenTK;
-using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
 using TestOpenTk;
-using GLOFC.GL4.ShapeFactory;
 
 namespace EliteDangerousCore.EDSM
 {

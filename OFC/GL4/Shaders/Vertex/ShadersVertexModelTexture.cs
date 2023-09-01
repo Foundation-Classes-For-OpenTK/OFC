@@ -21,7 +21,7 @@ using OpenTK.Graphics.OpenGL4;
 namespace GLOFC.GL4.Shaders.Vertex
 {
     /// <summary>
-    /// Shader, Translation, Texture, Modelpos, transform
+    /// Shader, Translation, Texture, Modelpos, matrix transform array
     /// </summary>
 
     public class GLPLVertexShaderModelTextureTranslation : GLShaderPipelineComponentShadersBase
@@ -29,7 +29,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <summary>
         /// Constructor
         /// Requires:
-        ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
+        ///      location 0 : model positions: vec4 vertex array of positions model coords, w is ignored
         ///      location 1 : vec2 texture co-ords
         ///      uniform buffer 0 : GL MatrixCalc
         ///      uniform 22 : objecttransform: mat4 array of transforms
@@ -183,7 +183,6 @@ void main(void)
 
     }
 
-
     ///<summary>
     /// Shader, Translation, Texture, Common transform, Object transform, Auto Scale
     /// uniform 22 should be supplied via RenderItemData
@@ -279,9 +278,8 @@ void main(void)
 
     }
 
-
     /// <summary>
-    /// Shader, Common Model Translation, Seperate World pos, transform
+    /// Shader, Common Model Translation, Tex co, Seperate World pos, common transform
     /// </summary>
 
     public class GLPLVertexShaderModelWorldTexture : GLShaderPipelineComponentShadersBase
@@ -351,5 +349,114 @@ void main(void)
 
     }
 
+    /// <summary>
+    /// Shader, Common Model Translation, Tex co, Seperate World pos, W passed thru, with object transform, autoscale
+    /// </summary>
+    
+    public class GLPLVertexShaderModelWorldTextureAutoScale : GLShaderPipelineComponentShadersBase
+    {
+        /// <summary> Rotation to apply </summary>
+        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
+
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
+        ///      location 1 : texco-ords 
+        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, w is ignored and passed thru to fragment shader
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        /// Out:
+        ///      gl_Position
+        ///      location 0 : texco
+        ///      location 1 : modelpos
+        ///      location 2 : instance id
+        ///      location 3 : worldpos w flat
+        /// </summary>
+        public GLPLVertexShaderModelWorldTextureAutoScale(float autoscale = 0, float autoscalemin = 1f, float autoscalemax = 3f, bool useeyedistance = true)
+        {
+            CompileLink(ShaderType.VertexShader, Code(), out string _, constvalues: new object[] {
+                                                                    "autoscale", autoscale,
+                                                                    "autoscalemin", autoscalemin, "autoscalemax", autoscalemax , "useeyedistance", useeyedistance});
+        }
+
+        /// <summary> Start shader </summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            Matrix4 a = ModelTranslation;
+            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            //System.Diagnostics.Debug.WriteLine($"TextAutoScale pos {a.ToString()}");
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
+        {
+            return
+@"
+#version 450 core
+#include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.vec4.glsl
+
+layout (location = 0) in vec4 modelposition;
+layout (location = 1) in vec2 texco;
+layout (location = 2) in vec4 worldposition;            // instanced, w ignored
+layout (location = 22) uniform  mat4 objecttransform;         // rotation/scaling of vertexes
+
+out gl_PerVertex {
+        vec4 gl_Position;
+        float gl_PointSize;
+        float gl_ClipDistance[];
+    };
+
+layout( location = 0) out vec2 vs_textureCoordinate;
+layout (location = 1) out vec3 vs_modelpos;
+layout (location = 2) out VS_OUT
+{
+    flat int vs_instanced;
+} vs_out;
+layout (location = 4) out VS_OUT2
+{
+    flat float vs_wvalue;
+} vs_out2;
+
+const float autoscale = 0;
+const float autoscalemax = 0;
+const float autoscalemin = 0;
+const bool useeyedistance = true;
+
+void main(void)
+{
+    vs_modelpos = modelposition.xyz;
+    vs_out.vs_instanced = gl_InstanceID;
+    vs_out2.vs_wvalue = worldposition.w;
+    vs_textureCoordinate = texco;
+
+    vec4 mpos= vec4(modelposition.xyz,1);
+    vec4 wpos = vec4(worldposition.xyz,0);
+
+    if ( autoscale>0)
+    {
+        float scale;
+        if ( useeyedistance )
+        {
+            scale = mc.EyeDistance/autoscale;
+        }
+        else
+        {
+            float d = distance(mc.EyePosition,wpos);            // find distance between eye and world pos
+            scale = d/autoscale;
+        }
+
+        scale = clamp(scale,autoscalemin,autoscalemax);
+        mpos = Scale(mpos,scale);
+    }
+
+    vec4 modelrot = objecttransform * mpos;
+    vec4 wp = modelrot + wpos;
+    gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+}
+";
+        }
+
+    }
 
 }

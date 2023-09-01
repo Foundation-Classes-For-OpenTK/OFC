@@ -153,7 +153,7 @@ namespace TestOpenTk
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
 
-                GLRenderState rt = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
+                GLRenderState rt = GLRenderState.Tri();     // render is triangles
                 rt.DepthTest = depthtest;
                 rt.DepthClamp = true;
                 renderersun = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);

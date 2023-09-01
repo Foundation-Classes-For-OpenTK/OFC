@@ -10,6 +10,7 @@ Vertex Out's - per shader, so this is a guide
 1 modelpos
 2 instance/image index
 3 alpha correction
+4 w value from world pos
 
 Textures - per shader, so this is a guide
 
