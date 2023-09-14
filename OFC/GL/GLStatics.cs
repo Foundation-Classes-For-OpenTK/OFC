@@ -31,12 +31,26 @@ namespace GLOFC
         [DllImport("opengl32.dll", EntryPoint = "wglGetCurrentContext")]
         extern static IntPtr wglGetCurrentContext();// DCAl
 
+        [DllImport("libGL.so.1", EntryPoint = "glXGetCurrentContext")]
+        public static extern IntPtr glxGetCurrentContext();
+
         /// <summary>
         /// Get the currentopenGL rendering context handle.
         /// </summary>
         public static IntPtr GetContext()
         {
-            return wglGetCurrentContext();
+            if (OpenTK.Configuration.RunningOnWindows)
+            {
+                return wglGetCurrentContext();
+            }
+            else if (OpenTK.Configuration.RunningOnX11)
+            {
+                return glxGetCurrentContext();
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
 
         /// <summary>
