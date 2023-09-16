@@ -19,7 +19,7 @@ namespace GLOFC.GL4.Shaders.Stars
     /// <summary>
     /// Star surface shader
     /// </summary>
-    public class GLPLStarSurfaceFragmentShader : GLShaderPipelineComponentShadersBase
+    public class GLPLStarSurfaceColorFragmentShader : GLShaderPipelineComponentShadersBase
     {
         /// <summary>Time delta for surface, move to make it animate </summary>
         public float TimeDeltaSurface { get; set; } = 0;
@@ -39,7 +39,7 @@ namespace GLOFC.GL4.Shaders.Stars
         /// <summary> Spots, how spread out </summary>
         public float Concentrationequator { get; set; } = 4;
 
-        /// <summary> Constructor </summary>
+        /// <summary> Constructor
         /// a GLPLVertexShaderModelCoordWorldAutoscale is normally used to drive this
         /// Requires:
         ///      location 1 : vec3 model position - know what fragment we are drawing
@@ -52,12 +52,15 @@ namespace GLOFC.GL4.Shaders.Stars
         ///      uniform 15 : time delta to iterate image for surface
         ///      uniform 16 : time delta to iterate image for spots
         /// </summary>
-        public GLPLStarSurfaceFragmentShader()
+        public GLPLStarSurfaceColorFragmentShader()
         {
             CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader, Fragment(), out string unused);
         }
 
-        /// <summary> Start shader</summary>
+        /// <summary>
+        /// Start function for shader to program uniforms
+        /// </summary>
+        /// <param name="c">Matrix calc</param>
         public override void Start(GLMatrixCalc c)
         {
             if ( UpdateControls )
@@ -154,7 +157,7 @@ void main(void)
         /// Constructor.
         /// Requires:
         ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-        ///      location 4 : float wvalue from world- bits 0..15 select texture.  bit 16 = don't run sun shader
+        ///      location 3 : float wvalue from world- bits 0..15 select texture.  bit 16 = don't run sun shader
         ///      uniform 10 : frequency
         ///      uniform 11 : Radius km
         ///      uniform 12 : Scutoff figure
@@ -171,6 +174,11 @@ void main(void)
             CompileLink(ShaderType.FragmentShader, Code(), out string unused,
                             new object[] { "texbinding", binding });
         }
+
+        /// <summary>
+        /// Start function for shader to program uniforms
+        /// </summary>
+        /// <param name="c">Matrix calc</param>
 
         public override void Start(GLMatrixCalc c)
         {
@@ -196,13 +204,13 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
-layout (location=1) in vec3 vs_modelpos;
+layout (location =0) in vec2 vs_textureCoordinate;
+layout (location =1) in vec3 vs_modelpos;
 
 const int texbinding = 1;
 layout (binding=texbinding) uniform sampler2DArray textureObject2D;
 
-layout (location = 4) in VS_IN
+layout (location = 3) in VS_IN
 {
     flat float vs_wvalue;
 } vs;

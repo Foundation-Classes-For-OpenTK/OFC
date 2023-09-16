@@ -82,7 +82,12 @@ namespace GLOFC.GL4
             tesseval = GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxTessEvaluationUniformBlocks);
         }
 
-        /// <summary> Return maximum number of array textures per draw </summary>
+        /// <summary> Return maximum width or height of pixels in a texture </summary>
+        public static int GetMaxTextureWidthAndHeight()
+        {
+            return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxRectangleTextureSize);
+        }
+        /// <summary> Return maximum number of array textures for a one or two dimensional array textures per draw</summary>
         public static int GetMaxTextureDepth()
         {
             return GL.GetInteger(OpenTK.Graphics.OpenGL4.GetPName.MaxArrayTextureLayers);

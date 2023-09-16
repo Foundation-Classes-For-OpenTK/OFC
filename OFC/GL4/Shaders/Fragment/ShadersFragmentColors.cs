@@ -79,7 +79,7 @@ void main(void)
 out vec4 color;
 
 const int bindingpoint = 25;
-layout (location=bindingpoint) uniform vec4 ucol;
+layout (location =bindingpoint) uniform vec4 ucol;
 
 void main(void)
 {

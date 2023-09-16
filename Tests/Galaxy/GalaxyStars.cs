@@ -16,6 +16,7 @@ using GLOFC.GL4.Shaders.Fragment;
 using GLOFC.GL4.Shaders.Stars;
 using GLOFC.GL4.Buffers;
 using GLOFC.GL4.ShapeFactory;
+using GLOFC.GL4.Textures;
 
 namespace TestOpenTk
 {
@@ -25,6 +26,7 @@ namespace TestOpenTk
         public Font Font { get; set; } = new Font("Ms Sans Serif", 8f);
         public Color ForeText { get; set; } = Color.White;
         public Color BackText { get; set; } = Color.FromArgb(50,128,128,128);
+        public int EnableMode { get { return enablemode; } set { enablemode = value; sunshader.Enable = (enablemode & 1) != 0; textshader.Enable = enablemode == 3; } }
 
         private const int MaxObjectsAllowed = 1000000;
         private const int MaxObjectsMargin = 1000;
@@ -33,16 +35,34 @@ namespace TestOpenTk
 
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, GLStorageBlock findbufferresults)
         {
-            // worldpos.W selects the colour in the fill world pos below
-            var colours = new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 128, 0, 0) , Color.FromArgb(255, 0, 128, 0) , Color.FromArgb(255, 0, 0, 128) };
+            // globe shape
+            var shape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(2, 0.5f);
 
-            sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(colours, autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
-            var sunfrag = new GLPLStarSurfaceFragmentShader();
-            sunshader = items.NewShaderPipeline(null,sunvertex, sunfrag);
+            // globe vertex
+            starshapebuf = new GLBuffer();
+            items.Add(starshapebuf);
+            starshapebuf.AllocateFill(shape.Item1);
 
-            shapebuf = items.NewBuffer(false);
-            var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
-            shapebuf.AllocateFill(shape);
+            // globe tex coord
+            startexcoordbuf = new GLBuffer();
+            items.Add(startexcoordbuf);
+            startexcoordbuf.AllocateFill(shape.Item2);
+
+            // a texture 2d array with various star images
+            starimagearray = new GLTexture2DArray();
+            Bitmap[] starbmps = new Bitmap[] { Properties.Resources.O, Properties.Resources.A, Properties.Resources.F, Properties.Resources.G, Properties.Resources.N };
+            Bitmap[] starbmpsreduced = starbmps.CropImages(new RectangleF(16, 16, 68, 68));
+            //for (int b = 0; b < starbmpsreduced.Length; b++)  starbmpsreduced[b].Save(@"c:\code\" + $"star{b}.bmp", System.Drawing.Imaging.ImageFormat.Png);
+            starimagearray.CreateLoadBitmaps(starbmpsreduced, SizedInternalFormat.Rgba8, ownbmp: true);
+            items.Add(starimagearray);
+
+            // the sun shader
+            sunvertexshader = new GLPLVertexShaderModelWorldTextureAutoScale(autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
+            var sunfragmenttexture = new GLPLFragmentShaderTexture2DWSelectorSunspot();
+            sunshader = new GLShaderPipeline(sunvertexshader, sunfragmenttexture);
+            items.Add(sunshader);
+
+            GLRenderDataTexture rdt = new GLRenderDataTexture(starimagearray);  // RDI is used to attach the texture
 
             GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
             starrc.DepthTest = true;
@@ -53,16 +73,16 @@ namespace TestOpenTk
             textrc.ClipDistanceEnable = 1;  // we are going to cull primitives which are deleted
 
             int texunitspergroup = 16;
-            var textshader = items.NewShaderPipeline(null, new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
+            textshader = items.NewShaderPipeline(null, new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
  
             slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, texunitspergroup, 100, 10,
-                                                            sunshader, shapebuf, shape.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles,
+                                                            sunshader, starshapebuf, startexcoordbuf, shape.Item1.Length, starrc, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rdt,
                                                             textshader, new Size(128, 16), textrc, SizedInternalFormat.Rgba8);
 
             items.Add(slset);
 
             var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, geofind , null, null, null);
+            findshader = items.NewShaderPipeline(null, sunvertexshader, null, null, geofind , null, null, null);
         }
 
         public void Start()
@@ -195,7 +215,7 @@ namespace TestOpenTk
             for (int i = 0; i < array.Length; i++)
             {
                 array[i] = new Vector4(d.pos.X + rnd.Next(SectorSize), d.pos.Y + rnd.Next(SectorSize), d.pos.Z + rnd.Next(SectorSize), 
-                    i%4);   // colour selector
+                    i%5);   // colour selector
                 text[i] = $"{array[i].X:0.###},{array[i].Y:0.###},{array[i].Z:0.###}:{i}";
             }
 
@@ -240,10 +260,10 @@ namespace TestOpenTk
             time = time % rotperiodms;
             float fract = (float)time / rotperiodms;
             float angle = (float)(2 * Math.PI * fract);
-            sunvertex.ModelTranslation = Matrix4.CreateRotationY(-angle);
             float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
-            //     System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
-            sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
+
+            sunvertexshader.ModelTranslation = Matrix4.CreateRotationY(-angle);
+            sunvertexshader.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
         }
 
         public SystemClass Find( Point loc, GLRenderState rs, Size viewportsize ,out float z)
@@ -266,8 +286,12 @@ namespace TestOpenTk
         private GLSetOfObjectsWithLabels slset; // main class holding drawing
 
         private GLShaderPipeline sunshader;     // sun drawer
-        private GLPLVertexShaderModelCoordWorldAutoscale sunvertex;
-        private GLBuffer shapebuf;
+        private GLPLVertexShaderModelWorldTextureAutoScale sunvertexshader;
+        private GLBuffer starshapebuf;
+        private GLBuffer startexcoordbuf;
+        private GLTexture2DArray starimagearray;
+        private GLShaderPipeline textshader;     // text shader
+
 
         private GLShaderPipeline findshader;    // find shader for lookups
 
@@ -295,6 +319,8 @@ namespace TestOpenTk
         private Thread requestorthread;
         private CancellationTokenSource stop =  new CancellationTokenSource();
         private int subthreadsrunning = 0;
+
+        private int enablemode = 3;
     }
 
 }

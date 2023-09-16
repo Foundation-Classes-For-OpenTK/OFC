@@ -18,6 +18,7 @@ using GLOFC.Utils;
 using OpenTK;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace GLOFC.Controller
@@ -258,10 +259,10 @@ namespace GLOFC.Controller
 
         #region More Position functions
 
-        /// <summary> Return a string representation of lookat, eyeposition, camera rotation </summary>
-        public string StringPositionCamera { get { return $"{lookat.X},{lookat.Y},{lookat.Z},{eyeposition.X},{eyeposition.Y},{eyeposition.Z},{camerarot}"; } }
+        /// <summary> Return a string representation of lookat, eyeposition, camera rotation. Invariant culture </summary>
+        public string StringPositionCamera { get { return string.Format(CultureInfo.InvariantCulture, "{0},{1},{2},{3},{4},{5},{6}", lookat.X, lookat.Y, lookat.Z, eyeposition.X, eyeposition.Y, eyeposition.Z, camerarot); } }
 
-        /// <summary> Set camera lookat, eyeposition, camera rotation from string </summary>
+        /// <summary> Set camera lookat, eyeposition, camera rotation from invariant culture string </summary>
         public bool SetPositionCamera(string s)     // from StringPositionCamera
         {
             string[] sparts = s.Split(',');

@@ -495,8 +495,8 @@ namespace GLOFC.Utils
         /// <summary>
         /// Crop bitmap array by area - percentages (0-100)
         /// </summary>
-        /// <param name="image">Array of Bitmap</param>
-        /// <param name="croparea">crop area in percentages</param>
+        /// <param name="images">Array of Bitmaps</param>
+        /// <param name="croparea">Crop area in percentages</param>
         /// <returns>new Bitmap array - caller responsible for disposal</returns>
         public static Bitmap[] CropImages(this Bitmap[] images, RectangleF croparea)
         {

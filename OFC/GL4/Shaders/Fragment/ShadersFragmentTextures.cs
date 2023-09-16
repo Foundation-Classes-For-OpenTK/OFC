@@ -43,7 +43,7 @@ namespace GLOFC.GL4.Shaders.Fragment
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureObject;
 
 out vec4 color;
@@ -145,7 +145,7 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 const int texbinding = 1;
 layout (binding=texbinding) uniform sampler2DArray textureObject2D;
 
@@ -216,7 +216,7 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 
 // supports up to N texture bindings
 const int texbinding = 1;
@@ -289,7 +289,7 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2DArray textureObject;
 layout (location = 30) uniform float blend;
 
@@ -342,7 +342,7 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureObject;
 layout (location = 24) uniform  vec2 offset;
 out vec4 color;
@@ -381,7 +381,7 @@ void main(void)
             return
 @"
 #version 450 core
-layout (location=0) in vec2 vs_textureCoordinate;
+layout (location =0) in vec2 vs_textureCoordinate;
 
 const int texbinding = 1;
 layout (binding=texbinding) uniform sampler2DArray textureObject2D;

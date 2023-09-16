@@ -75,7 +75,6 @@ namespace GLOFC.GL4.Buffers
             if (EnoughSpaceVertex(sourcelength, indirectbuffer))
             {
                 Vertex.Fill(vertices, sourceoffset, sourcelength);          // creates a position
-                //Vertex.Fill(vertices);          // creates a position
                 //    System.Diagnostics.Debug.WriteLine($"Vertex buf {Vertex.Positions.Last()} size {vertices.Length * GLBuffer.Vec4size}");
                 vertexcount = vertexcount >= 0 ? vertexcount : sourcelength;
                 baseinstance = baseinstance >= 0 ? baseinstance : (Vertex.Positions.Last() / GLBuffer.Vec4size);

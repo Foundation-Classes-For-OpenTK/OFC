@@ -118,7 +118,10 @@ namespace TestOpenTk
                     }
                 }
                 else
-                    return (T)settings[id];
+                {
+                    var value = settings[id];
+                    return (T)value;
+                }
             }
 
             return defaultvalue;

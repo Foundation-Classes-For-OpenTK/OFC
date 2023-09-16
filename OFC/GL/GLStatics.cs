@@ -32,7 +32,7 @@ namespace GLOFC
         extern static IntPtr wglGetCurrentContext();// DCAl
 
         [DllImport("libGL.so.1", EntryPoint = "glXGetCurrentContext")]
-        public static extern IntPtr glxGetCurrentContext();
+        private static extern IntPtr glxGetCurrentContext();
 
         /// <summary>
         /// Get the currentopenGL rendering context handle.

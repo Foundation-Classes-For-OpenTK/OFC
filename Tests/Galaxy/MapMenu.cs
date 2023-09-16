@@ -85,6 +85,7 @@ namespace TestOpenTk
             int leftmargin = 4;
             int vpos = 10;
             int ypad = 10;
+            int hpad = 8;
 
             GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 600));
             pform.BackColor = Color.FromArgb(220, 60, 60, 70);
@@ -142,6 +143,32 @@ namespace TestOpenTk
                 pform.Add(butsd);
 
                 vpos += butgal.Height + ypad;
+            }
+
+
+            {
+                GLGroupBox tpgb = new GLGroupBox("GalaxyStarsGB", "Galaxy Stars", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize * 2));
+                tpgb.BackColor = Color.Transparent;
+                tpgb.ForeColor = Color.Orange;
+                pform.Add(tpgb);
+
+                int hpos = leftmargin;
+
+                GLCheckBox butgalstars = new GLCheckBox("GalaxyStars", new Rectangle(hpos, 0, iconsize, iconsize), Properties.Resources.StarDots, null);
+                butgalstars.ToolTipText = "Show stars when zoomed in";
+                butgalstars.Checked = (map.GalaxyStars & 1) != 0;
+                butgalstars.CheckChanged += (e1) => { map.GalaxyStars ^= 1; };
+                tpgb.Add(butgalstars);
+                hpos += butgalstars.Width + hpad;
+
+                GLCheckBox butgalstarstext = new GLCheckBox("GalaxyStarsText", new Rectangle(hpos, 0, iconsize, iconsize), Properties.Resources.StarDots, null);
+                butgalstarstext.ToolTipText = "Show names of stars when zoomed in";
+                butgalstarstext.Checked = (map.GalaxyStars & 2) != 0;
+                butgalstarstext.CheckChanged += (e1) => { map.GalaxyStars ^= 2; };
+                tpgb.Add(butgalstarstext);
+                hpos += butgalstarstext.Width + hpad;
+
+                vpos += tpgb.Height + ypad;
             }
 
             {
@@ -319,7 +346,7 @@ namespace TestOpenTk
 
         static void Theme(GLBaseControl s)      // run on each control during add, theme it
         {
-            System.Diagnostics.Debug.WriteLine($"Theme {s.GetType().Name}");
+            //System.Diagnostics.Debug.WriteLine($"Theme {s.GetType().Name}");
 
             Color formback = Color.FromArgb(220, 60, 60, 70);
             Color buttonface = Color.FromArgb(255, 128, 128, 128);

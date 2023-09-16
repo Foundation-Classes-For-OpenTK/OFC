@@ -1,28 +1,42 @@
-﻿using OpenTK;
-using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+﻿/*
+ * Copyright 2019-2021 Robbyxp1 @ github.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+ * file except in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the License for the specific language
+ * governing permissions and limitations under the License.
+ */
+
 using GLOFC;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GLOFC.Utils;
+using GLOFC.GL4;
 using GLOFC.GL4.Shaders;
-using GLOFC.GL4.Shaders.Vertex;
 using GLOFC.GL4.Textures;
+using GLOFC.Utils;
+using OpenTK;
+using OpenTK.Graphics.OpenGL;
+using System.Drawing;
 
 namespace TestOpenTk
 {
     public class DynamicGridVertexShader : GLShaderPipelineComponentShadersBase
     {
-        public int ComputeGridSize(float eyedistance, out int gridwidth)
+        private const int yclamp = 4000;
+        public DynamicGridVertexShader(Color c)
+        {
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unusedcompilerreport, new object[] { "color", c });
+        }
+
+        public int ComputeGridSize(float y, float eyedistance, out int gridwidth)
         {
             int lines = 21;
             gridwidth = 10000;
 
-            if (eyedistance >= 10000)
+            if (eyedistance >= 10000 || y < -yclamp || y >= yclamp)     // addition, to stop the grid going silly at high y with the clamp, go to max size when at stupid Ys
             {
             }
             else if (eyedistance >= 1000)
@@ -48,7 +62,7 @@ namespace TestOpenTk
         {
             Vector3 start;
 
-            float sy = ObjectExtensionsNumbersBool.Clamp(target.Y, -2000, 2000); // need it floating to stop integer giggle at high res
+            float sy = target.Y.Clamp(-yclamp, yclamp); // need it floating to stop integer giggle at high res
 
             if (gridwidth == 10000)
             {
@@ -75,15 +89,17 @@ namespace TestOpenTk
                 start = new Vector3(sx, sy, sz);
             }
 
-            GL.ProgramUniform1(this.Id, 10, lines);
-            GL.ProgramUniform1(this.Id, 11, gridwidth);
-            GL.ProgramUniform3(this.Id, 12, ref start);
-            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            if (Compiled)
+            {
+                GL.ProgramUniform1(this.Id, 10, lines);
+                GL.ProgramUniform1(this.Id, 11, gridwidth);
+                GL.ProgramUniform3(this.Id, 12, ref start);
+            }
         }
 
         string vcode()
         { return @"
-#version 460 core
+#version 450 core
 
 layout (location=10) uniform int lines;
 layout (location=11) uniform int gridwidth;
@@ -99,7 +115,7 @@ out gl_PerVertex {
 
 layout(location=0) out vec4 vs_color;
 
-const vec4 color = vec4(0,0,0,0);       // replaced by const
+const vec4 color = vec4(0,0,0,0);
 
 void main(void)
 {
@@ -147,16 +163,104 @@ void main(void)
     vs_color = vec4(color.x*b,color.y*b,color.z*b,a);
 }
 "; }
-
-        public DynamicGridVertexShader(Color c)
-        {
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unused, new object[] { "color", c });
-        }
-
     }
 
     public class DynamicGridCoordVertexShader : GLShaderPipelineComponentShadersBase
     {
+        private const int yclamp = 4000;
+
+        public DynamicGridCoordVertexShader(Font f = null)
+        {
+            texcoords = new GLTexture2DArray();
+            texcoords.CreateOrUpdateTexture(200, 25, 9, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);        // size and number, and the texcoord will own them, so it will dispose of them
+
+            gridfnt = f ?? new Font("MS Sans Serif", 16);
+
+            for (int i = 0; i < 9; i++)
+            {
+                Bitmap bmp = new Bitmap(texcoords.Width, texcoords.Height); // a bitmap for each number
+                texcoords.LoadBitmap(bmp, i, true, 1);
+            }
+
+            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unusedcompilerreport);
+        }
+
+        public void ComputeUniforms(int gridwidth, GLMatrixCalc mc, Vector2 cameradir, Color textcol, Color? backcol = null)
+        {
+            float sy = mc.LookAt.Y.Clamp(-yclamp, yclamp);
+
+            float multgrid = mc.EyeDistance / gridwidth;
+
+            int tw = 10;
+            if (multgrid < 2)
+                tw = 1;
+            else if (multgrid < 5)
+                tw = 5;
+
+            //                System.Diagnostics.Debug.WriteLine("Mult " + multgrid + " tw "+ tw);
+            int majorlines = (gridwidth * tw).Clamp(0, 10000);
+
+            int sx = (int)((mc.LookAt.X - majorlines).Clamp(-50000, 50000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
+
+            if (sx % majorlines > majorlines / 2)                // if we are over 1/2 way across, move over
+                sx += majorlines;
+
+            sx = sx / majorlines * majorlines - 50000;         // round and adjust back
+
+            bool lookbackwards = (cameradir.Y > 90 || cameradir.Y < -90);
+            int zoffset = lookbackwards ? majorlines : 0;
+
+            int sz = (int)((mc.LookAt.Z - zoffset).Clamp(-20000, 70000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
+
+            sz = sz / majorlines * majorlines - 50000;         // round and adjust back
+
+            Vector3 start = new Vector3(sx, sy, sz);
+
+            if (Compiled)
+            {
+                GL.ProgramUniform1(this.Id, 11, majorlines);
+                GL.ProgramUniform3(this.Id, 12, ref start);
+                GL.ProgramUniform1(this.Id, 13, lookbackwards ? 1 : 0);
+            }
+            //System.Diagnostics.Debug.WriteLine(majorlines + " " + start + " " + lookbackwards);
+
+            if (lastsx != sx || lastsz != sz || lastsy != (int)sy || lasttextcol != textcol)
+            {
+                for (int i = 0; i < texcoords.Depth; i++)
+                {
+                    int bsx = sx + majorlines * (i / 3);
+                    int bsz = sz + majorlines * (i % 3);
+                    string label = bsx.ToStringInvariant() + "," + sy.ToStringInvariant("0") + "," + bsz.ToStringInvariant();
+                    GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, textcol, backcol);
+                    texcoords.LoadBitmap(texcoords.BitMaps[i], i, true, 1);
+                    //    System.Diagnostics.Debug.WriteLine("At {0} Draw {1} {2}", i, bsx, bsz);
+                }
+
+                lastsx = sx;
+                lastsz = sz;
+                lastsy = (int)sy;
+                lasttextcol = textcol;
+            }
+        }
+
+        public override void Start(GLMatrixCalc c)
+        {
+            base.Start(c);
+            texcoords.Bind(1);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            texcoords.Dispose();
+        }
+
+        private GLTexture2DArray texcoords;
+        private Font gridfnt;
+        private int lastsx = int.MinValue, lastsz = int.MinValue;
+        private int lastsy = int.MinValue;
+        private Color lasttextcol = Color.Red;
+
         string vcode()
         { return @"
 #version 450 core
@@ -213,94 +317,7 @@ void main(void)
 }
 "; }
 
-        int lastsx = int.MinValue, lastsz = int.MinValue;
-        int lastsy = int.MinValue;
-        Color lasttextcol = Color.Red;
 
-        public void ComputeUniforms(int gridwidth, GLMatrixCalc mc, Vector2 cameradir, Color textcol, Color? backcol = null)
-        {
-            float sy = mc.LookAt.Y.Clamp(-2000, 2000);
-
-            float multgrid = mc.EyeDistance / gridwidth;
-
-            int tw = 10;
-            if (multgrid < 2)
-                tw = 1;
-            else if (multgrid < 5)
-                tw = 5;
-
-            //                System.Diagnostics.Debug.WriteLine("Mult " + multgrid + " tw "+ tw);
-            int majorlines = (gridwidth * tw).Clamp(0, 10000);
-
-            int sx = (int)((mc.LookAt.X - majorlines).Clamp(-50000, 50000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
-
-            if (sx % majorlines > majorlines / 2)                // if we are over 1/2 way across, move over
-                sx += majorlines;
-
-            sx = sx / majorlines * majorlines - 50000;         // round and adjust back
-
-            bool lookbackwards = (cameradir.Y > 90 || cameradir.Y < -90);
-            int zoffset = lookbackwards ? majorlines : 0;
-
-            int sz = (int)((mc.LookAt.Z - zoffset).Clamp(-20000, 70000 - majorlines * 2)) + 50000;  //move to positive rep so rounding next is always down
-
-            sz = sz / majorlines * majorlines - 50000;         // round and adjust back
-
-            Vector3 start = new Vector3(sx, sy, sz);
-            GL.ProgramUniform1(this.Id, 11, majorlines);
-            GL.ProgramUniform3(this.Id, 12, ref start);
-            GL.ProgramUniform1(this.Id, 13, lookbackwards ? 1 : 0);
-            //System.Diagnostics.Debug.WriteLine(majorlines + " " + start + " " + lookbackwards);
-
-            if (lastsx != sx || lastsz != sz || lastsy != (int)sy || lasttextcol != textcol)
-            {
-                for (int i = 0; i < texcoords.Depth; i++)
-                {
-                    int bsx = sx + majorlines * (i / 3);
-                    int bsz = sz + majorlines * (i % 3);
-                    string label = bsx.ToStringInvariant() + "," + sy.ToStringInvariant("0") + "," + bsz.ToStringInvariant();
-                    GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmap(ref texcoords.BitMaps[i], label, gridfnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, textcol, backcol);
-                    texcoords.LoadBitmap(texcoords.BitMaps[i], i, true, 1);
-                    //System.Diagnostics.Debug.WriteLine("At {0} Draw {1}", i, label);
-                }
-
-                lastsx = sx;
-                lastsz = sz;
-                lastsy = (int)sy;
-                lasttextcol = textcol;
-            }
-        }
-
-        private GLTexture2DArray texcoords;
-        private Font gridfnt;
-
-        public DynamicGridCoordVertexShader(Font f = null)
-        {
-            texcoords = new GLTexture2DArray();
-            texcoords.CreateOrUpdateTexture(200, 25, 9, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);        // size and number, and the texcoord will own them, so it will dispose of them
-            
-            gridfnt = f ?? new Font("MS Sans Serif", 16);
-
-            for (int i = 0; i < 9; i++)
-            {
-                Bitmap bmp = new Bitmap(texcoords.Width, texcoords.Height); // a bitmap for each number
-                texcoords.LoadBitmap(bmp, i,true, 1);
-            }
-
-            CompileLink(OpenTK.Graphics.OpenGL4.ShaderType.VertexShader, vcode(), out string unused);
-        }
-
-        public override void Start(GLMatrixCalc c)
-        {
-            base.Start(c);
-            texcoords.Bind(1);
-        }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            texcoords.Dispose();
-        }
     }
 
 }

@@ -67,8 +67,8 @@ namespace GLOFC.GL4.Shaders.Fragment
 #version 450 core
 #extension GL_ARB_bindless_texture : require
 
-layout (location=0) in vec2 vs_textureCoordinate;
-layout (location=3) flat in float wvalue;
+layout (location =0) in vec2 vs_textureCoordinate;
+layout (location =3) flat in float wvalue;
 layout (location = 4) in VS_IN
 {
     flat int imageno;

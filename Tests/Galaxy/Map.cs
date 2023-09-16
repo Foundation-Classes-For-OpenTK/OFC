@@ -451,7 +451,7 @@ namespace TestOpenTk
             // Matrix calc holding transform info
 
             matrixcalc = new GLMatrixCalc();
-            matrixcalc.PerspectiveNearZDistance = 1f;
+            matrixcalc.PerspectiveNearZDistance = 0.1f;
             matrixcalc.PerspectiveFarZDistance = 120000f / lyscale ;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
@@ -573,6 +573,9 @@ namespace TestOpenTk
 
         public void LoadState(MapSaver defaults)
         {
+            long gs = defaults.GetSetting("GALSTARS", (long)3);        // due to JSON all data comes back as longs
+            GalaxyStars = (int)gs;
+
             GalaxyDisplay = defaults.GetSetting("GD", true);
             StarDotsDisplay = defaults.GetSetting("SDD", true);
 
@@ -586,6 +589,7 @@ namespace TestOpenTk
 
             GalObjectDisplay = defaults.GetSetting("GALOD", true);
             SetAllGalObjectTypeEnables(defaults.GetSetting("GALOBJLIST", ""));
+
 
             EDSMRegionsEnable = defaults.GetSetting("ERe", false);
             EDSMRegionsOutlineEnable = defaults.GetSetting("ERoe", false);
@@ -601,6 +605,7 @@ namespace TestOpenTk
 
         public void SaveState(MapSaver defaults)
         {
+            defaults.PutSetting("GALSTARS", GalaxyStars);
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
             defaults.PutSetting("TPD", TravelPathDisplay);
@@ -650,7 +655,7 @@ namespace TestOpenTk
 
             if (gridrenderable != null)
             {
-                gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
+                gridrenderable.InstanceCount = gridvertshader.ComputeGridSize(gl3dcontroller.MatrixCalc.LookAt.Y, gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
                 lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
 
                 gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, gridrenderable.InstanceCount);
@@ -675,7 +680,8 @@ namespace TestOpenTk
             {
                 galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f  : 0);        // set up the volumentric uniform
                 //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
-                galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
+                //galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
+                galaxyshader.SetFader(gl3dcontroller.MatrixCalc.EyePosition, gl3dcontroller.MatrixCalc.EyeDistance,gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
 
             long t3 = hptimer.ElapsedTicks;
@@ -689,7 +695,7 @@ namespace TestOpenTk
             if (galaxystars != null)
                 galaxystars.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
-            if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400)
+            if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400 && Math.Abs(gl3dcontroller.PosCamera.LookAt.Z) < 800)
                 galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.LookAt);
 
 
@@ -769,6 +775,8 @@ namespace TestOpenTk
         public bool GalaxyDisplay { get { return galaxyshader?.Enable ?? false; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
         public bool StarDotsDisplay { get { return stardots?.Enable ?? false; } set { stardots.Enable = value; glwfc.Invalidate(); } }
         public bool TravelPathDisplay { get { return travelpath?.Enable ?? false; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+
+        public int GalaxyStars { get { return galaxystars?.EnableMode ?? 0; } set { if (galaxystars != null) galaxystars.EnableMode = value; glwfc.Invalidate(); } }
 
         public void TravelPathRefresh() { travelpath.Refresh(); }   // travelpath.Refresh() manually after these have changed
         public DateTime TravelPathStartDate { get { return travelpath?.TravelPathStartDate ?? DateTime.MinValue; } set { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } }

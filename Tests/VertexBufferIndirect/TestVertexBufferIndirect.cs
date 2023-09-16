@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyight 2019-2021 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -49,9 +49,13 @@ namespace TestOpenTk
 
         GLVertexBufferIndirect dataindirectbuffer;
 
-        GLObjectsWithLabels sl;
+        GLObjectsWithLabels slc;
+        GLShaderPipeline findshaderc;
+
+        GLObjectsWithLabels slt;
+        GLShaderPipeline findshadert;
+
         GLSetOfObjectsWithLabels slset;
-        GLShaderPipeline findshader;
 
         public TestVertexBufferIndirect()
         {
@@ -71,15 +75,17 @@ namespace TestOpenTk
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PaintObjects = ControllerDraw;
-            gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 1f;
+            gl3dcontroller.MatrixCalc.PerspectiveNearZDistance = 0.01f;
             gl3dcontroller.MatrixCalc.PerspectiveFarZDistance= 1000f;
             gl3dcontroller.ZoomDistance = 20F;
+            gl3dcontroller.PosCamera.ZoomScaling = 1.02F;
+
             gl3dcontroller.Start(glwfc, new Vector3(0, 0, 0), new Vector3(110f, 0, 0f), 1F);
             glwfc.MouseClick += GLMouseClick;
 
             gl3dcontroller.KeyboardTravelSpeed = (ms,eyedist) =>
             {
-                return (float)ms / 40.0f;
+                return (float)ms / 250.0f;
             };
 
             items.Add(new GLColorShaderWorld(), "COSW");
@@ -123,28 +129,60 @@ namespace TestOpenTk
 
             #endregion
 
-            // sunshader needs vertex of globe
+            // globe shape
+            var shape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(2, 0.5f);
 
-            var sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
-            items.Add(sunvertex);
-            var sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
-            items.Add(sunshader);
+            // globe vertex
             var starshapebuf = new GLBuffer();
             items.Add(starshapebuf);
-            var shape = GLSphereObjectFactory.CreateSphereFromTriangles(1, 0.5f);
-            starshapebuf.AllocateFill(shape);
+            starshapebuf.AllocateFill(shape.Item1);
 
+            // globe tex coord
+            var starshapetexbuf = new GLBuffer();
+            items.Add(starshapetexbuf);
+            starshapetexbuf.AllocateFill(shape.Item2);
+
+            // sunshader for color 
+            var sunvertexcolor = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.FromArgb(255, 220, 220, 10), Color.FromArgb(255, 0, 0, 0) });
+            items.Add(sunvertexcolor);
+            var sunshadercolor = new GLShaderPipeline(sunvertexcolor, new GLPLStarSurfaceColorFragmentShader());
+            items.Add(sunshadercolor);
+
+            // sunshader for texture
+            var sunvertextexture = new GLPLVertexShaderModelWorldTextureAutoScale(20.0f, 1F, 2F, true);
+            var sunfragmenttexture = new GLPLFragmentShaderTexture2DWSelectorSunspot();
+            var sunshadertexture = new GLShaderPipeline(sunvertextexture, sunfragmenttexture);
+            items.Add(sunshadertexture);
+
+            // text shader
             int texunitspergroup = 16;      // opengl minimum texture units per frag shader
             // text shader uses a precomputed vertex shader (no vertex needed) expecting four draw points
             var textshader = new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
             items.Add(textshader);
 
+            // a texture 2d array with various star images
+            GLTexture2DArray starimagearray = new GLTexture2DArray();
+            Bitmap[] starbmps = new Bitmap[] { Properties.Resources.O, Properties.Resources.A, Properties.Resources.F, Properties.Resources.G, Properties.Resources.N };
+            Bitmap[] starbmpsreduced = starbmps.CropImages(new RectangleF(16, 16, 68, 68));
+            //for (int b = 0; b < starbmpsreduced.Length; b++)  starbmpsreduced[b].Save(@"c:\code\" + $"star{b}.bmp", System.Drawing.Imaging.ImageFormat.Png);
+            starimagearray.CreateLoadBitmaps(starbmpsreduced, SizedInternalFormat.Rgba8, ownbmp: true);
+            items.Add(starimagearray);
 
+            // to attach the texture to the render
+            GLRenderDataTexture starimagerdi = new GLRenderDataTexture(starimagearray);  // RDI is used to attach the texture
 
+            // find shader for sunvertexcolor
             GLStorageBlock block = new GLStorageBlock(20);
             GLStorageBlock debug = new GLStorageBlock(5);
             debug.AllocateBytes(5000);
-            findshader = items.NewShaderPipeline(null, sunvertex, null, null, new GLPLGeoShaderFindTriangles(block, 16, obeyculldistance:true,debugbuffer:debug), null, null, null);
+            findshaderc = items.NewShaderPipeline(null, sunvertexcolor, null, null, new GLPLGeoShaderFindTriangles(block, 64, obeyculldistance: true, debugbuffer: debug), null, null, null);
+
+
+            // find shader for sunvertexttexture
+            GLStorageBlock blockt = new GLStorageBlock(21);
+            GLStorageBlock debugt = new GLStorageBlock(6);
+            debugt.AllocateBytes(5000);
+            findshadert = items.NewShaderPipeline(null, sunvertextexture, null, null, new GLPLGeoShaderFindTriangles(blockt, 64, obeyculldistance: true, debugbuffer: debugt), null, null, null);
 
             Font fnt = new Font("MS sans serif", 16f);
 
@@ -170,7 +208,7 @@ namespace TestOpenTk
                     {
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
                     }
-                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Item1.Length, 0, array.Length, -1);
 
                     // fill buffer with Matrix4, store indirects into 1
 
@@ -199,7 +237,7 @@ namespace TestOpenTk
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Item1.Length, 0, array.Length, -1);
                 }
 
                 if (true)
@@ -210,7 +248,7 @@ namespace TestOpenTk
                     Random rnd = new Random(23);
                     for (int i = 0; i < array.Length; i++)
                         array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), 0);
-                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Length, 0, array.Length, -1);
+                    dataindirectbuffer.Fill(array, 0, array.Length, 0, shape.Item1.Length, 0, array.Length, -1);
 
                     // and 1
 
@@ -249,7 +287,7 @@ namespace TestOpenTk
                     renderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
                     // sunshader requires triangles vertexes
-                    rObjects.Add(sunshader, "sunshader", renderer);
+                    rObjects.Add(sunshadercolor, "sunshader", renderer);
                 }
 
                 if (true)
@@ -279,10 +317,10 @@ namespace TestOpenTk
 
             }
 
-            // DEMO Object with Labels
+            // DEMO Object with Labels - non textured colour
 
-            if (true)
-            { 
+            if (false)
+            {
                 GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
                 starrc.DepthTest = true;
                 starrc.DepthClamp = true;
@@ -292,13 +330,15 @@ namespace TestOpenTk
                 textrc.DepthTest = true;
                 textrc.ClipDistanceEnable = 1;
 
-                sl = new GLObjectsWithLabels();
-                var ris = sl.Create(texunitspergroup, 50, 50, starshapebuf, shape.Length , starrc, PrimitiveType.Triangles, new Size(128,32), textrc, SizedInternalFormat.Rgba8, 50);
-                rObjects.Add(sunshader, "SLsunshade", ris.Item1);
-                rObjects.Add(textshader, "SLtextshade", ris.Item2);
-                items.Add(sl);
+                slc = new GLObjectsWithLabels();
+                var ris = slc.Create(texunitspergroup, 50, 50, starshapebuf, null, shape.Item1.Length, starrc, PrimitiveType.Triangles, null ,new Size(128, 32), textrc, SizedInternalFormat.Rgba8, 50);
+                rObjects.Add(sunshadercolor, "SLsunshadeRO", ris.Item1);
+                rObjects.Add(textshader, "SLtextshadeRO", ris.Item2);
+                items.Add(slc);
 
                 int SectorSize = 10;
+
+                if (true)
                 {
                     Vector3 pos = new Vector3(0, 0, -15);
                     Vector4[] array = new Vector4[5];
@@ -306,7 +346,7 @@ namespace TestOpenTk
                     Random rnd = new Random(31);
                     for (int i = 0; i < array.Length; i++)
                     {
-                        if ( i == 1 )
+                        if (i == 1)
                         {
                             array[i] = new Vector4(0, 0, 0, -1);
                         }
@@ -317,12 +357,13 @@ namespace TestOpenTk
                     }
 
                     var mats = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
-                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(sl.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slc.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
 
                     List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
-                    sl.Add(array, mats, bmps, bref);
+                    slc.Add(array, mats, bmps, bref);
                     GLOFC.Utils.BitMapHelpers.Dispose(bmps);
                 }
+
                 if (false)
                 {
                     Vector3 pos = new Vector3(0, 0, 0);
@@ -336,8 +377,9 @@ namespace TestOpenTk
                     }
 
                     List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
-                    sl.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f,0), bref);
+                    slc.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0), bref);
                 }
+
                 if (false)
                 {
                     Vector3 pos = new Vector3(0, 0, 15);
@@ -351,11 +393,76 @@ namespace TestOpenTk
                     }
 
                     List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
-                    sl.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0), bref);
+                    slc.Add(array, text, fnt, Color.White, Color.DarkBlue, new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false, null, 0.5f, new Vector3(0, 0.6f, 0), bref);
                 }
 
-                System.Diagnostics.Debug.WriteLine($"Sets {sl.Blocks} Removed {sl.BlocksRemoved}");
+
+                System.Diagnostics.Debug.WriteLine($"Sets {slc.Blocks} Removed {slc.BlocksRemoved}");
             }
+
+            // DEMO Object with Labels - textured
+
+            if (true)
+            {
+                GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
+                starrc.DepthTest = true;
+                starrc.DepthClamp = false;
+                starrc.ClipDistanceEnable = 1;
+
+                var textrc = GLRenderState.Tri();       // text render is triangles are going to cull primitives which are deleted
+                textrc.DepthTest = true;
+                textrc.ClipDistanceEnable = 1;
+
+                slt = new GLObjectsWithLabels();
+                var ris = slt.Create(texunitspergroup, 50, 50, starshapebuf, starshapetexbuf, shape.Item1.Length, starrc, PrimitiveType.Triangles, starimagerdi, new Size(128, 32), textrc, SizedInternalFormat.Rgba8, 50);
+                rObjects.Add(sunshadertexture, "SLsunshadeT", ris.Item1);
+                rObjects.Add(textshader, "SLtextshadeT", ris.Item2);
+                items.Add(slt);
+
+                int SectorSize = 10;
+
+                if (true)
+                {
+                    Vector3 pos = new Vector3(-10, 0, -15);
+                    Vector4[] array = new Vector4[2];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), i % 5);
+
+                        text[i] = "TG0.r" + i;
+                    }
+
+                    var mats = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slt.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
+                    slt.Add(array, mats, bmps, bref);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
+                }
+                if (true)
+                {
+                    Vector3 pos = new Vector3(-12, 0, -15);
+                    Vector4[] array = new Vector4[2];
+                    string[] text = new string[array.Length];
+                    Random rnd = new Random(31);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array[i] = new Vector4(pos.X + rnd.Next(SectorSize), pos.Y + rnd.Next(SectorSize), pos.Z + rnd.Next(SectorSize), i % 5);
+
+                        text[i] = "TG1.r" + i;
+                    }
+
+                    var mats = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, 0.6f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+                    var bmps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slt.LabelSize, text, fnt, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, Color.White, Color.DarkBlue, 0.5f);
+
+                    List<GLObjectsWithLabels.BlockRef> bref = new List<GLObjectsWithLabels.BlockRef>();
+                    slt.Add(array, mats, bmps, bref);
+                    GLOFC.Utils.BitMapHelpers.Dispose(bmps);
+                }
+            }
+
 
             // Sets of..
 
@@ -371,7 +478,7 @@ namespace TestOpenTk
 
                 slset = new GLSetOfObjectsWithLabels("SLSet", rObjects, true ? 4 : texunitspergroup,
                                                             50, 10,
-                                                            sunshader, starshapebuf, shape.Length, starrc, PrimitiveType.Triangles,
+                                                            sunshadercolor, starshapebuf, null, shape.Item1.Length, starrc, PrimitiveType.Triangles, null,
                                                             textshader, new Size(128, 32), textrc, SizedInternalFormat.Rgba8,
                                                             3);
                 items.Add(slset);
@@ -537,27 +644,30 @@ namespace TestOpenTk
 
         protected void GLMouseClick(object v, GLMouseEventArgs e)
         {
-            if (sl != null)
+            if (e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                var index = sl.Find(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
-
-                if (index != null)
+                if (slt != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"found {index.Item1} {index.Item2}");
-                    //var namelist = sl.UserTags[index.Item1] as string[];
- //                   System.Diagnostics.Debug.WriteLine($"... {namelist[index.Item2]}");
+                    var index = slt.Find(findshadert, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size,4);
+
+                    if (index != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"found group {index.Item1} index {index.Item2}");
+                        //var namelist = sl.UserTags[index.Item1] as string[];
+                        //                   System.Diagnostics.Debug.WriteLine($"... {namelist[index.Item2]}");
+                    }
                 }
-            }
 
-            if (slset != null)
-            {
-                var find = slset.FindBlock(findshader, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size);
-                if (find != null)
+                if (slset != null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"SLSet {find.Item2} {find.Item3} {find.Item4} {find.Item5}");
-                    var userdata = slset.UserData[find.Item1[0].tag] as string[];
+                    var find = slset.FindBlock(findshaderc, glwfc.RenderState, e.WindowLocation, gl3dcontroller.MatrixCalc.ViewPort.Size,4);
+                    if (find != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"SLSet {find.Item2} {find.Item3} {find.Item4} {find.Item5}");
+                        var userdata = slset.UserData[find.Item1[0].tag] as string[];
 
-                    System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item4]}");
+                        System.Diagnostics.Debug.WriteLine($"... {userdata[find.Item4]}");
+                    }
                 }
             }
 

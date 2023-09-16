@@ -319,7 +319,7 @@ namespace TestOpenTk
 
             if (Math.Abs(lasteyedistance - gl3dcontroller.MatrixCalc.EyeDistance) > 10)     // a little histerisis
             {
-                i.InstanceCount = s.ComputeGridSize(gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
+                i.InstanceCount = s.ComputeGridSize(gl3dcontroller.MatrixCalc.LookAt.Y,gl3dcontroller.MatrixCalc.EyeDistance, out lastgridwidth);
                 lasteyedistance = gl3dcontroller.MatrixCalc.EyeDistance;
             }
 

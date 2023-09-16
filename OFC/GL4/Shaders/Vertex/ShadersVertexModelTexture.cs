@@ -371,6 +371,7 @@ void main(void)
         ///      location 1 : modelpos
         ///      location 2 : instance id
         ///      location 3 : worldpos w flat
+        ///      location 4 : drawid
         /// </summary>
         public GLPLVertexShaderModelWorldTextureAutoScale(float autoscale = 0, float autoscalemin = 1f, float autoscalemax = 3f, bool useeyedistance = true)
         {
@@ -392,7 +393,7 @@ void main(void)
         {
             return
 @"
-#version 450 core
+#version 460 core
 #include UniformStorageBlocks.matrixcalc.glsl
 #include Shaders.Functions.vec4.glsl
 
@@ -413,10 +414,11 @@ layout (location = 2) out VS_OUT
 {
     flat int vs_instanced;
 } vs_out;
-layout (location = 4) out VS_OUT2
+layout (location = 3) out VS_OUT2
 {
     flat float vs_wvalue;
 } vs_out2;
+layout (location = 4) out flat int drawid;       // 4.6 item
 
 const float autoscale = 0;
 const float autoscalemax = 0;
@@ -429,6 +431,7 @@ void main(void)
     vs_out.vs_instanced = gl_InstanceID;
     vs_out2.vs_wvalue = worldposition.w;
     vs_textureCoordinate = texco;
+    drawid = gl_DrawID;
 
     vec4 mpos= vec4(modelposition.xyz,1);
     vec4 wpos = vec4(worldposition.xyz,0);

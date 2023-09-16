@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -31,6 +31,7 @@ namespace GLOFC.GL4.Buffers
     /// The object drawn is defined by its objectshader, and its model vertices are in objectbuffer (start of) of objectlength
     /// Object shader will get vertex attribute 0 = objectbuffer vector4s, and vertex 1 = worldpositions of items added (instance divided)
     /// use with text shader GLShaderPipeline(new GLPLVertexShaderQuadTextureWithMatrixTranslation(), new GLPLFragmentShaderTexture2DIndexedMulti(0,0,true, texunitspergroup));
+    /// or with a vertex shader taking binding from 0: object vertex, (optional text coords), world positions
     /// multiple textures can be bound to carry the text labels, the number given by textures, limited by opengl texture limit per fragment shader(GetMaxTextureDepth())
     /// that gives the number of objects that can be produced 
     /// </summary>
@@ -55,21 +56,23 @@ namespace GLOFC.GL4.Buffers
         /// </summary>
         /// <param name="textures"> number of 2D textures to allow maximum (limited by GL)</param>
         /// <param name="estimateditemspergroup">Estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.</param>
-        /// <param name="mingroups">Minimum groups to have</param>
-        /// <param name="objectbuffer">Object buffer to use</param>
-        /// <param name="objectvertexes">Number of object vertexes</param>
+        /// <param name="mingroups">Minimum groups to have, set to 1 if you dont care</param>
+        /// <param name="objectshapebuffer">Object shape vertex buffer to use (Vector4)</param>
+        /// <param name="objecttexcoordbuffer">Texture co-ord buffer to use (Vector2), null if no tex coords</param>
+        /// <param name="objectvertexes">Number of object shape vertexes (Vector4)</param>
         /// <param name="objrc">The object render state control</param>
         /// <param name="objpt">The object draw primitive type</param>
+        /// <param name="objectridata">Render Item Data for the object, null if none</param>
         /// <param name="texturesize">The size of the label</param>
         /// <param name="textrc">The text render state</param>
         /// <param name="textureformat">The texture format for the text</param>
         /// <param name="debuglimittexture">For debug, set this to limit maximum number of entries. 0 = off</param>
-        /// <returns></returns>
+        /// <returns>Two render items, first for object, second for label</returns>
         public Tuple<GLRenderableItem,GLRenderableItem> Create(
                                 int textures,      
                                 int estimateditemspergroup,      
                                 int mingroups,     
-                                GLBuffer objectbuffer, int objectvertexes , GLRenderState objrc,  PrimitiveType objpt,  
+                                GLBuffer objectshapebuffer, GLBuffer objecttexcoordbuffer, int objectvertexes , GLRenderState objrc,  PrimitiveType objpt,  IGLRenderItemData objectridata, 
                                 Size texturesize, GLRenderState textrc, SizedInternalFormat textureformat, 
                                 int debuglimittexture = 0)  
         {
@@ -99,11 +102,24 @@ namespace GLOFC.GL4.Buffers
             // create the vertex indirect buffer
             dataindirectbuffer = new GLVertexBufferIndirect(items,vertbufsize, GLBuffer.WriteIndirectArrayStride * groupcount, true,BufferUsageHint.DynamicDraw);
 
-            // objects 
-            ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, objpt, objrc,
-                                                                        objectbuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
+            if (objecttexcoordbuffer == null)
+            {
+                // objects 
+                ObjectRenderer = GLRenderableItem.CreateVector4Vector4(items, objpt, objrc,
+                                                                        objectshapebuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
                                                                         dataindirectbuffer.Vertex, 0, // binding 1 is vertex's world positions, offset 0
-                                                                        null, 0, 1);        // no ic, second divisor 1
+                                                                        objectridata, 0, 1);        // no ic, second divisor 1
+            }
+            else
+            {
+                ObjectRenderer = GLRenderableItem.CreateVector4Vector2Vector4(items, objpt, objrc,
+                                                                        objectshapebuffer, 0, 0,     // binding 0 is shapebuf, offset 0, no draw count yet
+                                                                        objecttexcoordbuffer,0,   // binding 1 is texcoord buffer, offset 0
+                                                                        dataindirectbuffer.Vertex, 0, // binding 2 is vertex's world positions, offset 0
+                                                                        objectridata, 0, 1);        // no ic, second divisor 1
+
+            }
+
             ObjectRenderer.BaseIndexOffset = 0;     // offset in bytes where commands are stored
             ObjectRenderer.MultiDrawCountStride = GLBuffer.WriteIndirectArrayStride;
 
@@ -236,11 +252,12 @@ namespace GLOFC.GL4.Buffers
         /// <param name="glstate">Render state</param>
         /// <param name="pos">Position on screen of find point</param>
         /// <param name="size">Screen size</param>
+        /// <param name="margin">For point items, what error in x/y is acceptable for recognition</param>
         /// <returns>Return block list render group and index into it, or null</returns>
-        public Tuple<int, int> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
+        public Tuple<int, int> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size, int margin = 10)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(pos, size);
+            geo.SetScreenCoords(pos, size, margin);
             ObjectRenderer.Execute(findshader, glstate); 
             var res = geo.GetResult();
             if (res != null)

@@ -148,7 +148,7 @@ namespace TestOpenTk
 
                 sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
                          autoscale: 30, autoscalemin: 1f, autoscalemax: 2f, useeyedistance:false); // below scale, 1f, above scale, scale up to x times (eyedist/scale)
-                sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceFragmentShader());
+                sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceColorFragmentShader());
                 items.Add(sunshader);
 
                 var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);

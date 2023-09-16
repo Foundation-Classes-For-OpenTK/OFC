@@ -35,7 +35,7 @@ namespace GLOFC.GL4.Shaders.Geo
         /// <summary> Access to the buffer used to store search results </summary>
         public GLStorageBlock VectorOutBuffer { get; set; }
         /// <summary> Access to the debug buffer if debug buffering is enabled, else null</summary>
-        static public GLStorageBlock DebugCalcBuffer { get; set; }
+        public GLStorageBlock DebugCalcBuffer { get; set; }
 
         /// <summary>
         /// Constructor
@@ -81,12 +81,13 @@ namespace GLOFC.GL4.Shaders.Geo
             Vector4 v = new Vector4((float)cursorpos.X / (windowsize.Width / 2) - 1.0f, 1.0f - (float)cursorpos.Y / (windowsize.Height / 2), 0, 0);   // convert to clip space
             GL.ProgramUniform4(Id, 10, v);
             float pixd = (float)(margin / (float)((windowsize.Width + windowsize.Height) / 2 / 2));
-            //System.Diagnostics.Debug.WriteLine("Geo Find set Cursor {0} Pixd {1}", v , pixd);
             GL.ProgramUniform1(Id, 11, pixd);
+
+            //System.Diagnostics.Debug.WriteLine($"Geo Find set Cursor {cursorpos} windowsize {windowsize} margin {margin} pixd area {pixd} U10={v}");
         }
 
         /// <summary>
-        /// Setting this value OR in this group ID with the index to return extra info 
+        /// Setting this value OR in this group ID with the gl_drawid to return extra info 
         /// </summary>
         public void SetGroup(int g)
         {
@@ -103,15 +104,21 @@ namespace GLOFC.GL4.Shaders.Geo
         }
 
         /// <summary>
-        /// Get results
+        /// Get results, sorted so lowest z is first.
         /// </summary>
-        /// <returns>null or vec4 array. Each vec4: PrimitiveID, InstanceID, average Z of triangle points, draw ID | group</returns>
+        /// <returns>null or vec4 array. Each vec4: PrimitiveID (-1 if whole detect), InstanceID, average Z of triangle points, draw ID | group</returns>
         public Vector4[] GetResult()
         {
             GLMemoryBarrier.All();
 
+            VectorOutBuffer.StartRead(0);
+            int count = Math.Min(VectorOutBuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
+            int examined = VectorOutBuffer.ReadInt();       // atomic counter keeps on going if it exceeds max results, so limit to it
+
             if (DebugCalcBuffer != null)
             {
+                System.Diagnostics.Debug.WriteLine($"Geo Find results sorted found {count} checked {examined}");
+
                 int cstride = 8;
                 DebugCalcBuffer.StartRead(0);
                 int calccount = DebugCalcBuffer.ReadInt() * cstride;
@@ -126,18 +133,19 @@ namespace GLOFC.GL4.Shaders.Geo
                 }
             }
 
-            VectorOutBuffer.StartRead(0);
-            int count = Math.Min(VectorOutBuffer.ReadInt(), maximumresults);       // atomic counter keeps on going if it exceeds max results, so limit to it
-
             Vector4[] d = null;
 
             if (count > 0)
             {
                 d = VectorOutBuffer.ReadVector4s(count);      // align 16 for vec4
 
-                //System.Diagnostics.Debug.WriteLine($"Geo Find results {count}");  for (int i = 0; i < d.Length; i++) System.Diagnostics.Debug.WriteLine($"  {i} {d[i]}");
-
                 Array.Sort(d, delegate (Vector4 left, Vector4 right) { return left.Z.CompareTo(right.Z); });
+
+                if (DebugCalcBuffer != null)
+                {
+                    for (int i = 0; i < d.Length; i++) 
+                        System.Diagnostics.Debug.WriteLine($"  {i} PrimId {d[i].X} Instance {d[i].Y} avgz {d[i].Z} drawid|grp {d[i].W}");
+                }
             }
 
             VectorOutBuffer.StopReadWrite();
@@ -182,7 +190,8 @@ out gl_PerVertex
 const int bindingoutdata = 1;
 layout (binding = bindingoutdata, std430) buffer Positions      // StorageBlock - holds results
 {
-    uint count;
+    uint count;     // ones found
+    uint examined;  // total triangles checked
     vec4 values[];
 };
 
@@ -221,18 +230,8 @@ void main(void)
         vec4 p1 = gl_in[1].gl_Position / gl_in[1].gl_Position.w;        
         vec4 p2 = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
 
-        if ( debugoutput && gl_PrimitiveIDIn==0)               // this debug output helps a lot!
-        {
-            uint pos = atomicAdd(calccount,1)*8;
-            calcdata[pos+0] = gl_in[0].gl_Position;
-            calcdata[pos+1] = gl_in[1].gl_Position;
-            calcdata[pos+2] = gl_in[2].gl_Position;
-            calcdata[pos+3] = p0;
-            calcdata[pos+4] = p1;
-            calcdata[pos+5] = p2;
-            calcdata[pos+6] = screencoords;
-            calcdata[pos+7] = vec4(gl_PrimitiveIDIn,instance[0],drawid[0],gl_in[0].gl_CullDistance[0]);
-        }
+        if ( debugoutput )
+            atomicAdd(examined,1); // for debug only
 
         if ( !forwardsfacing || PMSquareS(p0,p1,p2) < 0 )     // if wound okay, so its forward facing (p0->p1 vector, p2 is on the right)
         {
@@ -245,12 +244,23 @@ void main(void)
                 {
                     float avgz = (p0.z+p1.z+p2.z)/3;
                     values[ipos] = vec4(-1,instance[0],avgz,drawid[0] | group);
-                    //values[ipos] = vec4(p0.x,instance[0],avgz,drawid[0] | group);
+
+                    if ( debugoutput )
+                    {
+                        uint pos = atomicAdd(calccount,1)*8;
+                        calcdata[pos+0] = p0;
+                        calcdata[pos+1] = p1;
+                        calcdata[pos+2] = p2;
+                        calcdata[pos+3] = screencoords;
+                        calcdata[pos+4] = vec4(abs(p0.x-screencoords.x), abs(p0.y-screencoords.y), pointdist , 0 );
+                        calcdata[pos+5] = vec4(pointdist-abs(p0.x-screencoords.x), pointdist-abs(p0.y-screencoords.y), 0 , 0 );
+                        calcdata[pos+7] = vec4(-1,instance[0],drawid[0],gl_in[0].gl_CullDistance[0]);
+                    }
                 }
             }
             else 
             {
-                if ( p0.z > 0 && p1.z > 0 && p2.z > 0 && p0.z <1 && p1.z < 1 && p2.z < 1)       // all must be on screen
+                if ( p0.z > -1 && p1.z > -1 && p2.z > -1 && p0.z <1 && p1.z < 1 && p2.z < 1)       // all must be on screen
                 {
                     float p0s = PMSquareS(p0,p1,screencoords);      // perform point to line detection on all three lines
                     float p1s = PMSquareS(p1,p2,screencoords);
@@ -263,6 +273,16 @@ void main(void)
                         {
                             float avgz = (p0.z+p1.z+p2.z)/3;
                             values[ipos] = vec4(gl_PrimitiveIDIn,instance[0],avgz,drawid[0] | group);
+
+                            if ( debugoutput )
+                            {
+                                uint pos = atomicAdd(calccount,1)*8;
+                                calcdata[pos+0] = p0;
+                                calcdata[pos+1] = p1;
+                                calcdata[pos+2] = p2;
+                                calcdata[pos+3] = screencoords;
+                                calcdata[pos+7] = vec4(gl_PrimitiveIDIn,instance[0],drawid[0],gl_in[0].gl_CullDistance[0]);
+                            }
                         }
                     }
                 }   

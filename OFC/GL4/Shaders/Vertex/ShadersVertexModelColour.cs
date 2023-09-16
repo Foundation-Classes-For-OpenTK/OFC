@@ -414,7 +414,7 @@ out gl_PerVertex {
         float gl_ClipDistance[];
     };
 
-layout (location= 0) out vec4 vs_color;
+layout (location = 0) out vec4 vs_color;
 
 void main(void)
 {

@@ -360,7 +360,7 @@ namespace GLOFC.GL4
         }
 
         /// <summary> Two Vector4s, both in buffers. Second vector can be instance divided.  In attributes 0,1</summary>
-        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int buf1off, int drawcount, GLBuffer buf2, int buf2off = 0, 
+        public static GLRenderableItem CreateVector4Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, GLBuffer buf1, int buf1off, int drawcount, GLBuffer buf2, int buf2off = 0,
                                         IGLRenderItemData id = null, int ic = 1, int seconddivisor = 0)
         {
             var va = items.NewArray();
@@ -369,7 +369,27 @@ namespace GLOFC.GL4
 
             buf2.Bind(va, 1, buf2off, 16, seconddivisor);   // binding index 1
             va.Attribute(1, 1, 4, VertexAttribType.Float);  // attribute 1
-            return new GLRenderableItem(prim,pt,drawcount, va, id, ic);
+            return new GLRenderableItem(prim, pt, drawcount, va, id, ic);
+        }
+
+        /// <summary> Vector4 buffer, Vector2 buffer, Vector4 buffer. Third vector can be instance divided.  In attributes 0,1,2</summary>
+        public static GLRenderableItem CreateVector4Vector2Vector4(GLItemsList items, PrimitiveType prim, GLRenderState pt, 
+                                        GLBuffer buf1, int buf1off, int drawcount,
+                                        GLBuffer buf2, int buf2off,
+                                        GLBuffer buf3, int buf3off,
+                                        IGLRenderItemData id = null, int ic = 1, int thirddivisor = 0)
+        {
+            var va = items.NewArray();
+            buf1.Bind(va, 0, buf1off, 16);          // binding index 0
+            va.Attribute(0, 0, 4, VertexAttribType.Float);  // attribute 0
+
+            buf2.Bind(va, 1, buf2off, 8);   // binding index 1
+            va.Attribute(1, 1, 2, VertexAttribType.Float);  // attribute 1, 2 floats note
+
+            buf3.Bind(va, 2, buf3off, 16, thirddivisor);   // binding index 2
+            va.Attribute(2, 2, 4, VertexAttribType.Float);  // attribute 2
+
+            return new GLRenderableItem(prim, pt, drawcount, va, id, ic);
         }
 
         /// <summary> Vector4 and Vector2. Second vector can be instance divided.  In attributes 0,1</summary>

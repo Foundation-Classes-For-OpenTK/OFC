@@ -162,7 +162,7 @@ namespace TestOpenTk
             if ( true )
             {
                 var sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Green, Color.Red, Color.Blue });
-                var sunfragment = new GLPLStarSurfaceFragmentShader();
+                var sunfragment = new GLPLStarSurfaceColorFragmentShader();
                 var sunshader = new GLShaderPipeline(sunvertex, sunfragment);
                 items.Add(sunshader, "StarColorShader");
 
@@ -203,7 +203,7 @@ namespace TestOpenTk
                 GLRenderableItem ri = GLRenderableItem.CreateVector4Vector4(items, PrimitiveType.Triangles, rt, shape, pos, null, pos.Length, 1);
 
                 var vertshader = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Red, Color.Green, Color.Blue });
-                var shader = new GLShaderPipeline(vertshader, new GLPLStarSurfaceFragmentShader());
+                var shader = new GLShaderPipeline(vertshader, new GLPLStarSurfaceColorFragmentShader());
                 items.Add(shader, "STAR-M2");
                 rObjects.Add(shader, ri);
             }
@@ -242,7 +242,7 @@ namespace TestOpenTk
                 var rot = (float)(-zeroone20s * Math.PI * 2);
                 vertshader.ModelTranslation = Matrix4.CreateRotationY(rot);
 
-                var fragshader = items.Shader("StarColorShader").GetShader<GLPLStarSurfaceFragmentShader>(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
+                var fragshader = items.Shader("StarColorShader").GetShader<GLPLStarSurfaceColorFragmentShader>(OpenTK.Graphics.OpenGL4.ShaderType.FragmentShader);
                 fragshader.TimeDeltaSpots = zeroone500s;
                 fragshader.TimeDeltaSurface = timediv100s;
             }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -47,17 +47,22 @@ namespace GLOFC.GL4.Buffers
 
         /// <summary>
         /// Constructor
+        /// The object shader should accept either binding 0 = object shape, 1 = world positions (no tex coords) or
+        /// binding 0 = object shape, 1 = tex coords for shape, 2 = world positions (with tex coords buffer)
+        /// The text shader should be new GLShaderPipeline(new GLPLVertexShaderMatrixTriStripTexture(), new GLPLFragmentShaderTexture2DIndexMulti(0, 0, true, texunitspergroup));
         /// </summary>
         /// <param name="name">Name of set</param>
         /// <param name="rlist">Render list to draw into</param>
         /// <param name="textures"> number of 2D textures to allow maximum (limited by GL)</param>
         /// <param name="estimateditemspergroup">Estimated objects per group, this adds on vertext buffer space to allow for mat4 alignment. Smaller means more allowance.</param>
-        /// <param name="mingroups">Minimum number of groups</param>
+        /// <param name="mingroups">Minimum groups to have, set to 1 if you dont care</param>
         /// <param name="objectshader">Shader for objects</param>
-        /// <param name="objectbuffer">Object buffer to use</param>
+        /// <param name="objectshapebuffer">Object shape vertex buffer to use (Vector4)</param>
+        /// <param name="objecttexcoordbuffer">Texture co-ord buffer to use (Vector2), null if no tex coords</param>
         /// <param name="objectvertexes">Number of object vertexes</param>
         /// <param name="objrc">The object render state control</param>
         /// <param name="objpt">The object draw primitive type</param>
+        /// <param name="objectridata">Render Item Data for the object, null if none</param>
         /// <param name="textshader">Text shader for labels</param>
         /// <param name="texturesize">The size of the label</param>
         /// <param name="textrc">The text render state</param>
@@ -68,8 +73,9 @@ namespace GLOFC.GL4.Buffers
                                         int textures,      
                                         int estimateditemspergroup,     
                                         int mingroups,      // minimum number of groups
-                                        IGLProgramShader objectshader, GLBuffer objectbuffer, int objectvertexes, GLRenderState objrc, PrimitiveType objpt,   // object shader, buffer, vertexes and its rendercontrol
-                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc, SizedInternalFormat textureformat,  // text shader, text size, and rendercontrol
+                                        IGLProgramShader objectshader, GLBuffer objectshapebuffer, GLBuffer objecttexcoordbuffer, int objectvertexes, 
+                                                            GLRenderState objrc, PrimitiveType objpt, IGLRenderItemData objectridata, 
+                                        IGLProgramShader textshader, Size texturesize ,  GLRenderState textrc, SizedInternalFormat textureformat,  
                                         int debuglimittexturedepth = 0)     // set to limit texture depth per set
         {
             this.name = name;
@@ -78,10 +84,12 @@ namespace GLOFC.GL4.Buffers
             this.estimateditemspergroup = estimateditemspergroup;
             this.mingroups = mingroups;
             this.objectshader = objectshader;
-            this.objectbuffer = objectbuffer;
+            this.objectshapebuffer = objectshapebuffer;
+            this.objecttexcoordbuffer = objecttexcoordbuffer;
             this.objectvertexescount = objectvertexes;
             this.objrc = objrc;
             this.objpt = objpt;
+            this.objectridata = objectridata;
             this.textshader = textshader;
             this.texturesize = texturesize;
             this.textrc = textrc;
@@ -289,14 +297,17 @@ namespace GLOFC.GL4.Buffers
         /// <param name="glstate">Render state</param>
         /// <param name="pos">Position on screen of find point</param>
         /// <param name="size">Screen size</param>
-        /// <returns>Return tuple of set, render group, render index in group, z of find, or null</returns>
-        public Tuple<int,int,int,float> Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
+        /// <param name="margin">For point items, what error in x/y is acceptable for recognition</param>
+        /// <returns>Return array of tuple of set, render group, render index in group, z of find, or null, in z order</returns>
+        public Tuple<int,int,int,float>[] Find(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size, int margin = 10)
         {
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
-            geo.SetScreenCoords(pos, size);
+            geo.SetScreenCoords(pos, size, margin);
             findshader.Start(null);     // this clears the buffer
 
             int setno = 0;
+
+            System.Diagnostics.Debug.WriteLine($"Execute SetOfObjectsWithLabels Find");
 
             foreach (var s in set)      
             {
@@ -306,14 +317,51 @@ namespace GLOFC.GL4.Buffers
 
             findshader.Finish();    // finish shader
 
-            var res = geo.GetResult();
+            var res = geo.GetResult();      // sorted in best z order
+
             if (res != null)
             {
-               // System.Diagnostics.Debug.WriteLine("Set Found something"); for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine($"  {i} S:{(int)res[i].W>>18} G:{(int)res[i].W & 0x3ffff} I:{res[i].Y} Z:{res[i].Z} raw {res[i]}");
-                return new Tuple<int,int, int,float>(((int)res[0].W) >> 18, ((int)res[0].W) & 0x3ffff, (int)res[0].Y, res[0].Z);
+                var normarray = res.Select(x => new Tuple<int, int, int, float>(((int)x.W) >> 18, ((int)x.W) & 0x3ffff, (int)x.Y, x.Z)).ToArray();
+                return normarray;
             }
             else
                 return null;
+        }
+
+        /// <summary>
+        /// Get user data associated with a find result
+        /// </summary>
+        /// <param name="findresult">A tuple from the find function containing information on set,group,item and z</param>
+        /// <returns>Returns null, or 
+        /// item1 = return the list of block references associated with this find
+        /// item2 = the normalised count index inside the block
+        ///</returns>
+
+        public Tuple<List<GLObjectsWithLabels.BlockRef>, int> FindUserData(Tuple<int, int, int, float> findresult)
+        {
+            if (findresult.Item1 >= 0 && findresult.Item1 < set.Count)     // #3272 reported an out of range here, AMD Card, suspect GC issues, but cover it up
+            {
+                GLObjectsWithLabels s = set[findresult.Item1];     // this is set
+
+                var fb = BlockList.Find(x => x.Find(y => y.owl == s && y.blockindex == findresult.Item2) != null);     // find (set,blockindex) in block list
+
+                if (fb != null)
+                {
+                    int c = 0;
+                    foreach (var br in fb)      // until we get to owl/blockindex, count previous block counts so we get a cumulative total
+                    {
+                        if (br.owl == s && br.blockindex == findresult.Item2)
+                            break;
+                        c += br.count;
+                    }
+
+                    var refc = new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, findresult.Item2, findresult.Item3, c + findresult.Item3, findresult.Item4);
+
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int>(fb, findresult.Item3 + c);
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -323,6 +371,7 @@ namespace GLOFC.GL4.Buffers
         /// <param name="glstate">Render state</param>
         /// <param name="pos">Position on screen of find point</param>
         /// <param name="size">Screen size</param>
+        /// <param name="margin">For point items, what error in x/y is acceptable for recognition</param>
         /// <returns>Returns null, or 
         /// item1 = return the list of blocks
         /// item2 = the found block
@@ -330,28 +379,28 @@ namespace GLOFC.GL4.Buffers
         /// item4 = the total index into the data (summed up)
         /// item5 = the z of the find
         ///</returns>
-       
-        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size)
-        {
-            var ret = Find(findshader, glstate, pos, size);       // return set, group, index, z
-            if (ret != null && ret.Item1 >= 0 && ret.Item1 < set.Count)     // #3272 reported an out of range here, AMD Card, suspect GC issues, but cover it up
-            {
-                GLObjectsWithLabels s = set[ret.Item1];     // this is set
 
-                var fb = BlockList.Find(x => x.Find(y => y.owl == s && y.blockindex == ret.Item2) != null);     // find (set,blockindex) in block list
+        public Tuple<List<GLObjectsWithLabels.BlockRef>,int,int,int,float> FindBlock(GLShaderPipeline findshader, GLRenderState glstate, Point pos, Size size, int margin = 10)
+        {
+            var ret = Find(findshader, glstate, pos, size, margin);       // return set, group, index, z
+            if (ret != null && ret[0].Item1 >= 0 && ret[0].Item1 < set.Count)     // #3272 reported an out of range here, AMD Card, suspect GC issues, but cover it up
+            {
+                GLObjectsWithLabels s = set[ret[0].Item1];     // this is set
+
+                var fb = BlockList.Find(x => x.Find(y => y.owl == s && y.blockindex == ret[0].Item2) != null);     // find (set,blockindex) in block list
 
                 if ( fb != null )
                 {
                     int c = 0;
                     foreach (var br in fb)      // until we get to owl/blockindex, count previous block counts so we get a cumulative total
                     {
-                        if (br.owl == s && br.blockindex == ret.Item2)
+                        if (br.owl == s && br.blockindex == ret[0].Item2)
                             break;
                         c += br.count;
                     }
 
                     // return block list, and real index into it
-                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, ret.Item2, ret.Item3, c + ret.Item3, ret.Item4);      
+                    return new Tuple<List<GLObjectsWithLabels.BlockRef>, int, int, int, float>(fb, ret[0].Item2, ret[0].Item3, c + ret[0].Item3, ret[0].Item4);
                 }
             }
 
@@ -362,7 +411,10 @@ namespace GLOFC.GL4.Buffers
         private void AddSet()       // add a new set
         {
             var owl = new GLObjectsWithLabels();
-            var ris = owl.Create(textures, estimateditemspergroup, mingroups, objectbuffer, objectvertexescount, objrc, objpt, texturesize, textrc, textureformat, limittexturedepth);
+            var ris = owl.Create(textures, estimateditemspergroup, mingroups, 
+                                    objectshapebuffer, objecttexcoordbuffer, objectvertexescount, objrc, objpt, objectridata, 
+                                            texturesize, textrc, textureformat, limittexturedepth);
+
             robjects.Add(objectshader, name + "O" + (setnumber).ToStringInvariant(), ris.Item1);
             robjects.Add(textshader, name + "T" + (setnumber++).ToStringInvariant(), ris.Item2);
             set.Add(owl);
@@ -379,10 +431,12 @@ namespace GLOFC.GL4.Buffers
         private int mingroups;                              // minimum groups to ask for
 
         private IGLProgramShader objectshader;              // object data
-        private GLBuffer objectbuffer;
+        private GLBuffer objectshapebuffer;
+        private GLBuffer objecttexcoordbuffer;
         private int objectvertexescount;
         private GLRenderState objrc;
         private PrimitiveType objpt;
+        private IGLRenderItemData objectridata;
 
         private IGLProgramShader textshader;                // text data
         private Size texturesize;

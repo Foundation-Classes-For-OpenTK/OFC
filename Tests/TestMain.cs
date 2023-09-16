@@ -85,7 +85,8 @@ namespace TestOpenTk
                 System.Diagnostics.Debug.WriteLine($"UBS={GL4Statics.GetMaxUniformBlockSize()}");
                 GL4Statics.GetMaxUniformBuffers(out int v, out int f, out int g, out int tc, out int te);
                 System.Diagnostics.Debug.WriteLine($"UB v{v} f{f} g{g} tc{tc} te{te}");
-                System.Diagnostics.Debug.WriteLine($"tex layers {GL4Statics.GetMaxTextureDepth()} ");
+                System.Diagnostics.Debug.WriteLine($"image size {GL4Statics.GetMaxTextureWidthAndHeight()} ");
+                System.Diagnostics.Debug.WriteLine($"tex array depth {GL4Statics.GetMaxTextureDepth()} ");
                 System.Diagnostics.Debug.WriteLine($"Vertex attribs {GL4Statics.GetMaxVertexAttribs()} ");
                 System.Diagnostics.Debug.WriteLine($"Shader storage buffer bindings {GL4Statics.GetShaderStorageMaxBindingNumber()} ");
             }
