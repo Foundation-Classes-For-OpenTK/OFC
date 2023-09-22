@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=3.3.2.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -59,6 +61,12 @@
     <Compile Include="BaseUtils\CommandArgs.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\xml.cs" />
+    <Compile Include="BitMaps\TestBindlessBitmaps.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BitMaps\TestBindlessBitmaps.designer.cs">
+      <DependentUpon>TestBindlessBitmaps.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrameBuffer\TestRenderBuffer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -84,6 +92,7 @@
       <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
     </Compile>
     <Compile Include="Galaxy\Bookmarks.cs" />
+    <Compile Include="Galaxy\Images.cs" />
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Galaxy\GalMapObjects.cs" />
     <Compile Include="Galaxy\GalMapRegions.cs" />
@@ -353,6 +362,9 @@
     <Compile Include="Volumetrics\ShaderTestVolumetricNoise.designer.cs">
       <DependentUpon>ShaderTestVolumetricNoise.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="BitMaps\TestBindlessBitmaps.resx">
+      <DependentUpon>TestBindlessBitmaps.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FrameBuffer\TestRenderBuffer.resx">
       <DependentUpon>TestRenderBuffer.cs</DependentUpon>
     </EmbeddedResource>

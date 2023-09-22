@@ -35,6 +35,8 @@ namespace GLOFC.GL4.Controls
         public float FaceColorScaling { get { return faceColorScaling; } set { faceColorScaling = value; Invalidate(); } }
         /// <summary> Show focus box when focused </summary>
         public bool ShowFocusBox { get { return showfocusbox; } set { showfocusbox = value; Invalidate(); } }
+        /// <summary> When clicked on, grab the focus </summary>
+        public bool SetFocusOnClick { get; set; } = true;
 
         private protected GLButtonBase(string name, Rectangle window) : base(name, window)
         {
@@ -117,6 +119,7 @@ namespace GLOFC.GL4.Controls
             {
                 if (Focused)
                 {
+                    //System.Diagnostics.Debug.WriteLine($"Paint button {Name} focus rectangle in {MouseDownColor}");
                     using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     {
                         gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));

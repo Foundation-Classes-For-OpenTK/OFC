@@ -21,11 +21,15 @@ namespace GLOFC.GL4.Controls
     /// </summary>
     public class GLPanel : GLBaseControl
     {
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsContainer"/>
+        public override bool IsContainer { get; } = true;
+
         /// <summary> Construtor with name, bounds, and optional back color</summary>
-        public GLPanel(string name, Rectangle location, Color? backcolour = null) : base(name, location)
+        public GLPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
         {
             BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
             BorderColorNI = DefaultPanelBorderColor;
+            EnableThemer = enablethemer;
         }
 
         /// <summary> Default Constructor </summary>
@@ -47,6 +51,7 @@ namespace GLOFC.GL4.Controls
             DockPercent = dockpercentage;
             SetNI(size: sizep);
         }
+
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControlPostChild(Size)"/>
         protected override void SizeControlPostChild(Size parentsize)

@@ -64,7 +64,7 @@ namespace GLOFC
         public GLProfile Profile { get ; }
 
         /// <summary> Is context current to opengl </summary>
-        bool IsCurrent();
+        bool IsContextCurrent();
 
         /// <summary> Resize call back </summary>
         Action<GLWindowControl> Resize { get; set; }

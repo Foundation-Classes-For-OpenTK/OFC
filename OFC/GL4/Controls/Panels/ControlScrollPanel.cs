@@ -24,12 +24,12 @@ namespace GLOFC.GL4.Controls
 
     public class GLScrollPanel : GLPanel
     {
-        /// <summary> Vertical scroll range </summary>
-        public int VertScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Height - Height) : 0; } }
+        /// <summary> Vertical scroll range - the amount the client contents are bigger than the control height </summary>
+        public int VertScrollRange { get { return (LevelBitmap != null) ? Math.Max(0, LevelBitmap.Height - Height) : 0; } }
         /// <summary> Vertical scroll position get and set </summary>
         public int VertScrollPos { get { return ScrollOffset.Y; } set { SetScrollPos(ScrollOffset.X, value); } }
-        /// <summary> Horizontal scroll range </summary>
-        public int HorzScrollRange { get { return (LevelBitmap != null) ? (LevelBitmap.Width - Width) : 0; } }
+        /// <summary> Horizontal scroll range - the amount the client contents are bigger than the control height</summary>
+        public int HorzScrollRange { get { return (LevelBitmap != null) ? Math.Max(0, (LevelBitmap.Width - Width)) : 0; } }
         /// <summary> Horizontal scroll position get and set </summary>
         public int HorzScrollPos { get { return ScrollOffset.X; } set { SetScrollPos(value, ScrollOffset.Y); } }
 
@@ -41,6 +41,13 @@ namespace GLOFC.GL4.Controls
         {
             BorderColorNI = DefaultVerticalScrollPanelBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+        }
+
+        /// <summary> Construct with name and location, backcolor and themer enable </summary>
+        public GLScrollPanel(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
+        {
+            EnableThemer = enablethemer;
+            BackColorNI = backcolor;
         }
 
         /// <summary> Default Constructor </summary>
@@ -66,21 +73,26 @@ namespace GLOFC.GL4.Controls
                 int childwidth = r.Left + r.Right;
                 int childheight = r.Bottom + r.Top;
 
+                //   System.Diagnostics.Debug.WriteLine($"Scroll Panel measured {childwidth} {childheight} in {Bounds}");
+
                 needbitmap = childheight > Height || childwidth > Width;
 
                 if (needbitmap)
                 {
-                    if ( LevelBitmap == null || childwidth != LevelBitmap.Width || childheight != LevelBitmap.Height) // if height is different, or width is different
+                    if (LevelBitmap == null || childwidth != LevelBitmap.Width || childheight != LevelBitmap.Height) // if height is different, or width is different
                     {
-                        //System.Diagnostics.Debug.WriteLine($"RecursiveLayout make SP bitmap {childwidth} {childheight}");
+                        //  System.Diagnostics.Debug.WriteLine($"Scroll Panel {Name} made new bitmap {childwidth} {childheight}");
+
                         MakeLevelBitmap(childwidth, childheight);
+                        System.Diagnostics.Debug.Assert(LevelBitmap != null);
                     }
                 }
             }
 
-            if ( !needbitmap && LevelBitmap != null)
+            if (!needbitmap && LevelBitmap != null)
             {
-                MakeLevelBitmap(0,0);       // dispose of bitmap
+                //   System.Diagnostics.Debug.WriteLine($"Scroll Panel {Name} is bigger than client area no need for bitmap");
+                MakeLevelBitmap(0, 0);       // dispose of bitmap
             }
         }
 
@@ -89,8 +101,11 @@ namespace GLOFC.GL4.Controls
         {
             // called to paint, with gr set to image to paint into
 
-            if ( LevelBitmap != null )
-                gr.DrawImage(LevelBitmap, 0,0, new Rectangle(ScrollOffset.X, ScrollOffset.Y, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
+            if (LevelBitmap != null)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Scroll panel draw bitmap");
+                gr.DrawImage(LevelBitmap, 0, 0, new Rectangle(ScrollOffset.X, ScrollOffset.Y, ClientWidth, ClientHeight), GraphicsUnit.Pixel);
+            }
         }
 
         private void SetScrollPos(int hpos, int vpos)

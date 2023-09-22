@@ -143,7 +143,11 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {
+            if (SetFocusOnClick)
+                SetFocus();
+
             base.OnMouseDown(e);
+
             if ( !e.Handled)
             {
                 int halfway = ClientRectangle.Height / 2;

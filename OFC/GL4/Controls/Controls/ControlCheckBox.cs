@@ -64,23 +64,29 @@ namespace GLOFC.GL4.Controls
             Invalidate();
         }
 
-        /// <summary> Construct with name, bounds, text </summary>
+        /// <summary> Construct with name, bounds, text. Default is a normal checkbox. Use also for radio buttons </summary>
         public GLCheckBox(string name, Rectangle location, string text) : base(name, location)
         {
-            BorderColorNI = Color.Transparent;
-            BackColorGradientAltNI = BackColorNI = Color.Transparent;
+            BorderColorNI = DefaultButtonBorderColor;
+            BackColorGradientAltNI = BackColorNI = Color.Transparent;       // transparent for radio/checkboxes
             TextNI = text;
             CheckOnClick = true;
             Focusable = true;
             InvalidateOnFocusChange = true;
         }
 
-        /// <summary> Construct with name, bounds, image checked, image unchecked </summary>
-        public GLCheckBox(string name, Rectangle location, Image chk, Image unchk) : this(name, location,"")
+        /// <summary> Construct with name, bounds, image checked, image unchecked, background color (default is form background) </summary>
+        public GLCheckBox(string name, Rectangle location, Image chk, Image unchk, Color? background = null) : base(name,location)
         {
+            BorderColorNI = DefaultButtonBorderColor;
+            BackColorGradientAltNI = BackColorNI = background ?? DefaultFormBackColor;
+            Text = null;
             Image = chk;
             ImageUnchecked = unchk;
             Appearance = CheckBoxAppearance.Button;
+            CheckOnClick = true;
+            Focusable = true;
+            InvalidateOnFocusChange = true;
         }
 
         /// <summary> Default Constructor </summary>
@@ -97,6 +103,13 @@ namespace GLOFC.GL4.Controls
                 CheckBoxAutoSize();
         }
 
+        protected override void DrawBack(Rectangle area, Graphics gr, Color backgroundcolor, Color bcgradientalt, int bcgradientdir)
+        {
+            if (BackColor == Color.Transparent)
+                System.Diagnostics.Trace.WriteLine($"****OFC WARNING**** CheckBox {Name} is in button mode but background is transparent - this mode requires a back color to paint properly");
+            base.DrawBack(area, gr, backgroundcolor, bcgradientalt, bcgradientdir);
+        }
+
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
@@ -104,13 +117,14 @@ namespace GLOFC.GL4.Controls
             float backdisscaling = Enabled ? 1.0f : BackDisabledScaling;
             float foredisscaling = Enabled ? 1.0f : ForeDisabledScaling;
 
+            //System.Diagnostics.Debug.WriteLine($"Paint CheckBox {Name} : e {Enabled} h {Hover} sfb {ShowFocusBox} f {Focused}");
+
             if (Appearance == CheckBoxAppearance.Button)
             {
+                Rectangle marea = ClientRectangle;
+
                 if (Enabled)
                 {
-                    Rectangle marea = ClientRectangle;
-                    marea.Inflate(-2, -2);
-
                     if (Hover)
                     {
                         using (var b = new LinearGradientBrush(marea, MouseOverColor, MouseOverColor.Multiply(FaceColorScaling), 90))
@@ -121,18 +135,31 @@ namespace GLOFC.GL4.Controls
                         using (var b = new LinearGradientBrush(marea, ButtonFaceColor, ButtonFaceColor.Multiply(FaceColorScaling), 90))
                             gr.FillRectangle(b, marea);
                     }
+
+                    if (ShowFocusBox)
+                    {
+                        if (Focused)
+                        {
+                            using (Pen p1 = new Pen(MouseDownColor) { DashStyle = DashStyle.Dash })
+                            {
+                                gr.DrawRectangle(p1, new Rectangle(marea.Left, marea.Top, marea.Width - 1, marea.Height - 1));
+                            }
+                        }
+
+                        marea.Inflate(-1, -1);
+                    }
                 }
 
                 if (hasimages)
-                    DrawImage(ClientRectangle, gr);
+                    DrawImage(marea, gr);
 
                 if (Text.HasChars())
                 {
                     using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
-                        DrawText(ClientRectangle, gr, fmt);
+                        DrawText(marea, gr, fmt);
                 }
             }
-            else if ( Appearance == CheckBoxAppearance.Normal )
+            else if (Appearance == CheckBoxAppearance.Normal)
             {
                 Rectangle tickarea = ClientRectangle;
                 Rectangle textarea = ClientRectangle;
@@ -293,7 +320,6 @@ namespace GLOFC.GL4.Controls
 
         private CheckBoxAppearance appearance { get; set; } = CheckBoxAppearance.Normal;
         private ContentAlignment checkalign { get; set; } = ContentAlignment.MiddleCenter;
-
         private Image imageUnchecked { get; set; } = null;               // set if using different images for unchecked
         private Image imageIndeterminate { get; set; } = null;           // optional for intermediate
         private System.Drawing.Imaging.ImageAttributes drawnImageAttributesUnchecked = null;         // if unchecked image does not exist, use this for image scaling

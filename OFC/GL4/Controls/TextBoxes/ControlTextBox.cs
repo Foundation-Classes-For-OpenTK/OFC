@@ -27,6 +27,14 @@ namespace GLOFC.GL4.Controls
             MultiLineMode = false;
         }
 
+        /// <summary> Constructor with name, bounds, text, colors</summary>
+        public GLTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, text)
+        {
+            EnableThemer = enablethemer;
+            BackColor = backcolor;
+            ForeColor = forecolor;
+        }
+
         /// <summary> Default constructor </summary>
         public GLTextBox() : this("TB?", DefaultWindowRectangle, "")
         {

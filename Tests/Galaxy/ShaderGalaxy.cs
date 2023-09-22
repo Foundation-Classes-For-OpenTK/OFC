@@ -94,7 +94,7 @@ void main(void)
         {
             if (!perspective)
             {
-                GL.ProgramUniform1(this.Id, 10, -1);
+                GL.ProgramUniform1(this.Id, 10, -1f);       // must use -1f
             }
             else
             {
@@ -106,6 +106,7 @@ void main(void)
                 // System.Diagnostics.Debug.WriteLine($"Galbrightness {eyepos} {eyedistance} {disttocentre} : {centrev} {vertr} {eyedr} = {value}");
                 GL.ProgramUniform1(this.Id, 10, value);
             }
+
         }
     }
 

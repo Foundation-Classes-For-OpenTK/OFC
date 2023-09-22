@@ -33,11 +33,12 @@ namespace GLOFC.GL4.Controls
 
         /// <summary> Construct giving name, bounds, text, forecolor, optional backcolor </summary>
 
-        public GLLabel(string name, Rectangle location, string text, Color forecolor, Color? backcolor = null) : this(name, location,text)
+        public GLLabel(string name, Rectangle location, string text, Color forecolor, Color? backcolor = null, bool enablethemer = true) : this(name, location,text)
         {
             foreColor = forecolor;
             if ( backcolor.HasValue)
                 this.BackColorNI = backcolor.Value;
+            EnableThemer = enablethemer;
         }
 
         /// <summary> Default Constructor </summary>

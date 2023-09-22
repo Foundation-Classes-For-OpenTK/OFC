@@ -52,7 +52,7 @@ namespace GLOFC.WinForm
         public GLWindowControl.GLProfile Profile { get { return glControl.Profile; } }
 
         /// <summary> Is GL context ours? </summary>
-        public bool IsCurrent() { var ctx = GLStatics.GetContext(); return glControl.Context.IsCurrent && ctx == context; }
+        public bool IsContextCurrent() { var ctx = GLStatics.GetContext(); return glControl.Context.IsCurrent && ctx == context; }
 
         /// <summary> Resize call back </summary>
         public Action<GLWindowControl> Resize { get; set; } = null;
@@ -351,7 +351,7 @@ namespace GLOFC.WinForm
             if (EnsureCurrent)
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
 
-            System.Diagnostics.Debug.Assert(IsCurrent());
+            System.Diagnostics.Debug.Assert(IsContextCurrent());
 
             if (RenderState == null)
             {

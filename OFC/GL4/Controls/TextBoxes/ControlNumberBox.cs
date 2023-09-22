@@ -147,7 +147,7 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFocusChanged(FocusEvent, GLBaseControl)"/>
         protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
-            if ( evt == FocusEvent.Deactive )     // if lost focus
+            if ( evt == FocusEvent.Deactivated )     // if lost focus
             {
                 if (!IsValid)           // if text box is not valid, go back to the original colour with no change event
                     Value = number;
@@ -169,6 +169,14 @@ namespace GLOFC.GL4.Controls
             Minimum = float.MinValue;
             Maximum = float.MaxValue;
             Value = value;
+        }
+
+        /// <summary> Constructor with name, bounds, initial value, colours </summary>
+        public GLNumberBoxFloat(string name, Rectangle pos, float value, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, value)
+        {
+            BackColor = backcolor;
+            ForeColor = forecolor;
+            EnableThemer = enablethemer;
         }
 
         /// <summary> Default conctructor </summary>
@@ -211,6 +219,14 @@ namespace GLOFC.GL4.Controls
             Value = value;
         }
 
+        /// <summary> Constructor with name, bounds, initial value, colours </summary>
+        public GLNumberBoxDouble(string name, Rectangle pos, double value, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, value)
+        {
+            BackColor = backcolor;
+            ForeColor = forecolor;
+            EnableThemer = enablethemer;
+        }
+
         /// <summary> Default conctructor </summary>
         public GLNumberBoxDouble() : this("NBD", DefaultWindowRectangle, 0)
         {
@@ -249,6 +265,14 @@ namespace GLOFC.GL4.Controls
             Maximum = long.MaxValue;
             Value = value;
             Format = "D";
+        }
+
+        /// <summary> Constructor with name, bounds, initial value, colours </summary>
+        public GLNumberBoxLong(string name, Rectangle pos, long value, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, value)
+        {
+            BackColor = backcolor;
+            ForeColor = forecolor;
+            EnableThemer = enablethemer;
         }
 
         /// <summary> Default conctructor </summary>

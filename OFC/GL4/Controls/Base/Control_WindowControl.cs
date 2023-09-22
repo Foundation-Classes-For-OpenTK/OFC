@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -13,7 +13,9 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 // Purposely not documented - no need
 #pragma warning disable 1591
@@ -29,7 +31,11 @@ namespace GLOFC.GL4.Controls
         private GLBaseControl currentfocus = null;                  
         private GLBaseControl mousedowninitialcontrol = null;       // track where mouse down occurred
 
-        private bool SetFocus(GLBaseControl newfocus)    // null to clear focus, true if focus taken
+        // and a list of modal forms maintained for display control instance
+        internal List<GLBaseControl> modalforms = new List<GLBaseControl>();
+
+        // null to clear focus, else control to focus on. true if focus taken
+        private bool SetFocus(GLBaseControl newfocus)    
         {
             if (newfocus == currentfocus)       // no action if the same
                 return true;
@@ -53,15 +59,15 @@ namespace GLOFC.GL4.Controls
 
             OnGlobalFocusChanged(oldfocus, newfocus);
 
-            //            System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}' {2}", oldfocus?.Name, newfocus?.Name, Environment.StackTrace);
+            //System.Diagnostics.Debug.WriteLine("Focus changed from '{0}' to '{1}'", oldfocus?.Name, newfocus?.Name);
 
             if (currentfocus != null)           // if we have a focus, inform losing it, and cancel it
             {
-                currentfocus.OnFocusChanged(FocusEvent.Deactive, newfocus);
+                currentfocus.OnFocusChanged(FocusEvent.Deactivated, newfocus);
 
                 for (var c = currentfocus.Parent; c != null; c = c.Parent)      // inform change up and including the GLForm
                 {
-                    c.OnFocusChanged(FocusEvent.ChildDeactive, newfocus);
+                    c.OnFocusChanged(FocusEvent.ChildDeactivated, newfocus);
                     if (c is GLForm)
                         break;
                 }
@@ -86,7 +92,8 @@ namespace GLOFC.GL4.Controls
             return true;
         }
 
-        protected void ControlRemoved(GLBaseControl other)     // called on ControlDisplay, to inform it that a control has been removed
+        // called on ControlDisplay, to inform it that a control has been removed
+        protected void ControlRemoved(GLBaseControl other)     
         {
             if (currentfocus == other)
                 currentfocus = null;
@@ -94,13 +101,29 @@ namespace GLOFC.GL4.Controls
                 currentmouseover = null;
         }
 
+        // this is used if in modal as a marker to indicate we have clicked on something but we want to block it.
+
+        static private GLLabel dummyblockingcontrol = new GLLabel("Disabled due to modal",new Rectangle(0,0,0,0), "");        
+
+        // mouse entering gl window, hooked to ControlDisplay only
         protected void Gc_MouseEnter(GLWindowControl sender, GLMouseEventArgs e)
         {
             Gc_MouseLeave(sender, e);       // leave current
 
             SetViewScreenCoord(ref e);
 
-            currentmouseover = FindControlOver(e.ScreenCoord, out Point leftover);
+            var controlover = FindControlOver(e.ScreenCoord, out Point leftover);
+
+            // if we have modal forms active, and its not a it or a child of the active form, its like mousing over nothing, 
+            // assign to the nothing control so its not the desktop, or null
+
+            if (controlover != null && modalforms.Count > 0 && !modalforms.Last().IsThisOrChildOf(controlover))
+            {
+                //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} due to modal");
+                controlover = dummyblockingcontrol;
+            }
+
+            currentmouseover = controlover;
 
             if (currentmouseover != null)
             {
@@ -114,6 +137,8 @@ namespace GLOFC.GL4.Controls
                     currentmouseover.OnMouseEnter(e);
             }
         }
+
+        // mouse leaving gl window, hooked to ControlDisplay only
         protected void Gc_MouseLeave(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (currentmouseover != null)
@@ -133,14 +158,23 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+
+        // Mouse move on gl window, hooked to control display
         protected void Gc_MouseMove(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
             //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} MousePos {3}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, FindDisplay().MouseWindowPosition);
 
-            GLBaseControl c = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display
+            GLBaseControl controlover = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display (null)
 
-            if (c != currentmouseover)      // if different, either going active or inactive
+            // if we have modal forms active, and its not a it or a child of the active form, its like mousing over nothing
+            if (controlover != null && modalforms.Count > 0 && !modalforms.Last().IsThisOrChildOf(controlover))
+            {
+                //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} due to modal");
+                controlover = dummyblockingcontrol;
+            }
+
+            if (controlover != currentmouseover)      // if different, either going active or inactive
             {
                 mousedowninitialcontrol = null;     // because we moved away from mouse down control, its now null
 
@@ -150,7 +184,7 @@ namespace GLOFC.GL4.Controls
 
                     if (currentmouseover.MouseButtonsDown != GLMouseEventArgs.MouseButtons.None)   // click and drag, can't change control while mouse is down
                     {
-                       // System.Diagnostics.Debug.WriteLine($"Captured WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} Bnd {e.BoundsLocation} {currentmouseover?.Name} @ {currentmouseoverscreenpos}");
+                        // System.Diagnostics.Debug.WriteLine($"Captured WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} Bnd {e.BoundsLocation} {currentmouseover?.Name} @ {currentmouseoverscreenpos}");
                         GlobalMouseMove?.Invoke(e);     // we move, with the currentmouseover
 
                         if (currentmouseover.Enabled)       // and send to control if enabled
@@ -165,12 +199,12 @@ namespace GLOFC.GL4.Controls
                         currentmouseover.OnMouseLeave(e);
                 }
 
-                currentmouseover = c;   // change to new value
+                currentmouseover = controlover;   // change to new value
 
                 if (currentmouseover != null)       // now, are we going over a new one?
                 {
                     SetControlLocation(ref e, currentmouseover);    // reset location etc
-                   // System.Diagnostics.Debug.WriteLine($"Changed to WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} bnd {e.BoundsLocation} {currentmouseover?.Name} @ {currentmouseoverscreenpos}");
+                                                                    // System.Diagnostics.Debug.WriteLine($"Changed to WLoc {e.WindowLocation} VP {e.ViewportLocation} SLoc {e.ScreenCoord} bnd {e.BoundsLocation} {currentmouseover?.Name} @ {currentmouseoverscreenpos}");
 
                     currentmouseover.Hover = true;
 
@@ -213,6 +247,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // Mouse down on gl window, hooked to control display
         protected void Gc_MouseDown(GLWindowControl sender, GLMouseEventArgs e)
         {
             // System.Diagnostics.Debug.WriteLine("GC Mouse down");
@@ -241,9 +276,11 @@ namespace GLOFC.GL4.Controls
                     this.OnMouseDown(e);
             }
         }
+
+        // Mouse up on gl window, hooked to control display
         protected void Gc_MouseUp(GLWindowControl sender, GLMouseEventArgs e)
         {
-            SetViewScreenCoord(ref e);
+            SetViewScreenCoord(ref e);          // set up viewport/screen coord
 
             if (currentmouseover != null)
             {
@@ -263,9 +300,10 @@ namespace GLOFC.GL4.Controls
             mousedowninitialcontrol = null;
         }
 
+        // Mouse click on gl window, hooked to control display
         protected void Gc_MouseClick(GLWindowControl sender, GLMouseEventArgs e)
         {
-            SetViewScreenCoord(ref e);
+            SetViewScreenCoord(ref e);          // set up viewport/screen coord
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
@@ -291,9 +329,10 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // Mouse double click on gl window, hooked to control display
         protected void Gc_MouseDoubleClick(GLWindowControl sender, GLMouseEventArgs e)
         {
-            SetViewScreenCoord(ref e);
+            SetViewScreenCoord(ref e);          // set up viewport/screen coord
 
             if (mousedowninitialcontrol == currentmouseover && currentmouseover != null)        // clicks only occur if mouse is still over initial control
             {
@@ -318,6 +357,7 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        // Mouse wheel on gl window, hooked to control display
         protected void Gc_MouseWheel(GLWindowControl sender, GLMouseEventArgs e)
         {
             if (currentmouseover != null && currentmouseover.Enabled)
@@ -403,7 +443,7 @@ namespace GLOFC.GL4.Controls
             if (currentfocus != null && currentfocus.Enabled)
             {
                 if (!(currentfocus is GLForm))
-                    currentfocus.FindForm()?.OnKeyDown(e);          // reflect to form
+                    currentfocus.FindForm()?.OnKeyDown(e);         // reflect to form
 
                 if (!e.Handled)                                    // send to control
                     currentfocus.OnKeyDown(e);

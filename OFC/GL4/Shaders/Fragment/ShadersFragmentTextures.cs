@@ -116,7 +116,8 @@ void main(void)
     }
 
     /// <summary>
-    /// Shader for a 2D Array texture bound using instance to pick between them. Use with GLVertexShaderTextureMatrixTransform
+    /// Shader for a 2D Array texture bound using instance to pick between them. 
+    /// Use with GLVertexShaderTextureMatrixTransform for instance
     /// discard if alpha is too small or replace with colour
     /// </summary>
 
@@ -126,7 +127,7 @@ void main(void)
         /// Constructor
         /// Requires:
         ///      location 0 : vs_texturecoordinate : vec2 of texture co-ord
-        ///      location 2 : vs_in.vs_instance - instance id to pick texture (added by offset in constructor)E. 
+        ///      location 2 : vs_in.vs_instance - instance id to pick texture (added by offset in constructor). 
         ///      location 3 : alpha (if alpha blend enabled) float
         ///      tex binding : textureObject : 2D Array texture
         /// </summary>

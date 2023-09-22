@@ -97,6 +97,8 @@ namespace GLOFC.GL4.Controls
             CheckBox.KeyDown += OnKeyFromChild;
             CheckBox.CheckChanged += checkboxchanged;
             CheckBox.MouseDown += (o1, e1) => { selectedpart = -1; Invalidate(); };
+            CheckBox.EnableThemer = false;       // we don't allow themeing on composite elements
+
             Add(CheckBox);
 
             UpDown.Clicked += updownchanged;
@@ -104,6 +106,7 @@ namespace GLOFC.GL4.Controls
             UpDown.ShowFocusBox = false;
             UpDown.KeyDown += OnKeyFromChild;
             UpDown.GiveFocusToParent = true;
+            UpDown.EnableThemer = false;       // we don't allow themeing on composite elements
             Add(UpDown);
 
             CalendarSelect.Image = Properties.Resources.Calendar;
@@ -111,6 +114,7 @@ namespace GLOFC.GL4.Controls
             CalendarSelect.ImageStretch = true;
             CalendarSelect.MouseClick += calclicked;
             CalendarSelect.GiveFocusToParent = true;
+            CalendarSelect.EnableThemer = false;       // we don't allow themeing on composite elements
             Add(CalendarSelect);
 
             Calendar.Visible = false;

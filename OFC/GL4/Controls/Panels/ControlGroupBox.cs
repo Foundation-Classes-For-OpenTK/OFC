@@ -26,6 +26,9 @@ namespace GLOFC.GL4.Controls
         /// <summary> Group box text height value</summary>
         public int GroupBoxTextHeight { get { return (Font?.ScalePixels(20) ?? 20) + GBMargins * 2; } }
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsContainer"/>
+        public override bool IsContainer { get; } = true;
+
         /// <summary> Constructor with name, title, bounds </summary>
         public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
         {

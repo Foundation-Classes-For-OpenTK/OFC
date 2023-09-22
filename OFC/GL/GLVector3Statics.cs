@@ -189,5 +189,37 @@ namespace GLOFC
 
             return lookat - eyerel * distance;
         }
+
+        /// <summary>
+        /// To string, invariant, with separator
+        /// </summary>
+        /// <param name="v">Value</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Invariant string of values</returns>
+        public static string ToStringInvariant(this Vector3 v, char separ = ',')
+        {
+            return string.Format( System.Globalization.CultureInfo.InvariantCulture,"{0}{1}{2}{3}{4}", v.X, separ, v.Y, separ, v.Z);
+        }
+
+        /// <summary>
+        /// Parse a string for a vector 3 invariant
+        /// </summary>
+        /// <param name="s">string</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Vector3 or null </returns>
+        public static Vector3? InvariantParseVector3(this string s, char separ = ',')
+        {
+            string[] sl = s.Split(separ);
+            if (sl.Length == 3)
+            {
+                float? x = sl[0].InvariantParseFloatNull();
+                float? y = sl[1].InvariantParseFloatNull();
+                float? z = sl[2].InvariantParseFloatNull();
+                if (x != null && y != null && z != null)
+                    return new Vector3(x.Value, y.Value, z.Value);
+            }
+
+            return null;
+        }
     }
 }

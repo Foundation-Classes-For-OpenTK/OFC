@@ -77,43 +77,65 @@ namespace GLOFC.GL4.Controls
         public bool AutoSizeToTitle { get; set; } = false;             
 
         /// <summary> When set, Autosize should set MinimumSize to this on autosize, so the form can't be sized below this </summary>
-        public bool SetMinimumSizeOnAutoSize { get; set; } = false;                
+        public bool SetMinimumSizeOnAutoSize { get; set; } = false;
         /// <summary> Title bar height computed</summary>
         public int TitleBarHeight { get { return (Font?.ScalePixels(20) ?? 20) + FormMargins * 2; } }
 
+        /// <summary> Margin around form for border </summary>
+        public int FormMargins { get; private set; }
+        /// <summary> Form padding size </summary>
+        public int FormPadding { get; private set; }
+        /// <summary> Form Border Width </summary>
+        public int FormBorderWidth { get; private set; }
 
-        /// <summary> Constructor with name, title and bounds</summary>
-        public GLForm(string name, string title, Rectangle location) : base(name, location)
+        /// <summary> Constructor with name, title and bounds, fixedpos </summary>
+        public GLForm(string name, string title, Rectangle location, bool fixedpos = false, int margin = 2, int padding  = 2, int borderwidth = 1) : base(name, location)
         {
-            minimumsize = new Size(32, 32);
+            FormMargins = margin;
+            FormPadding = padding;
+            FormBorderWidth = borderwidth;
+            SetMinimumSizeNI(new Size(32, 32));
             text = title;
             ForeColor = DefaultFormTextColor;
             BackColor = DefaultFormBackColor;
-            SetNI(padding: new PaddingType(FormPadding), margin: new MarginType(FormMargins,TitleBarHeight ,FormMargins,FormMargins), borderwidth: FormBorderWidth);
+            SetNI(padding: new PaddingType(FormPadding), margin: new MarginType(FormMargins, TitleBarHeight, FormMargins, FormMargins), borderwidth: FormBorderWidth);
             BorderColorNI = DefaultFormBorderColor;
             Focusable = true;           // we can focus, but we always pass on the focus to the first child focus
+            if (fixedpos)
+            {
+                Resizeable = Moveable = false;
+            }
         }
+
+        /// <summary> Constructor with name, title and bounds, fixedpos, colors</summary>
+        public GLForm(string name, string title, Rectangle location, Color backcolor, Color forecolor, bool fixedpos = false, bool enablethemer = true) : this(name, title, location, fixedpos)
+        {
+            BackColor = backcolor;
+            ForeColor = forecolor;
+            EnableThemer = enablethemer;
+        }
+
 
         /// <summary> Default constructor </summary>
         public GLForm() : this("F?", "", DefaultWindowRectangle)
         {
         }
 
-        /// <summary> Close form. May not close if FormClosing denies it </summary>
+        /// <summary> Close form. May not close if FormClosing denies it. If allowed, calls ForceClose()</summary> 
         public void Close()
         {
             GLHandledArgs e = new GLHandledArgs();
             OnClose(e);
             if ( !e.Handled )
             {
-                OnClosed();
-                Remove(this);
+                ForceClose();
             }
         }
 
-        /// <summary> Force a close </summary>
+        /// <summary> Force a close unconditionally </summary>
         public void ForceClose()    
         {
+            FindDisplay()?.RemoveModalForm(this);
             OnClosed();
             Remove(this);
         }
@@ -123,9 +145,13 @@ namespace GLOFC.GL4.Controls
         /// <summary> Called on shown. Override if required in derived classes </summary>
         public virtual void OnShown()   // only called if top level form
         {
-            lastchildfocus = FindNextTabChild(-1);      // try the tab order
+            var res = FindNextTabChild(-1, int.MaxValue);      // try the tab order
+            lastchildfocus =  res.Item1;
             if (lastchildfocus != null)     // if found a focusable child, set it
+            {
+                //System.Diagnostics.Debug.WriteLine($"Form {this.Name} OnShown selects {lastchildfocus.Name} as focus with tabno {lastchildfocus.TabOrder}");
                 lastchildfocus.SetFocus();
+            }
             Shown?.Invoke(this);
         }
 
@@ -358,20 +384,26 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnKeyDown(GLKeyEventArgs)"/>
-        protected override void OnKeyDown(GLKeyEventArgs e)       // forms gets first dibs at keys of children
+        protected override void OnKeyDown(GLKeyEventArgs e)       
         {
+            // forms gets first dibs at keys of children
             base.OnKeyDown(e);
-            //System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
+
+           // System.Diagnostics.Debug.WriteLine("Form key " + e.KeyCode);
+
             if (!e.Handled && TabChangesFocus && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
                 bool forward = e.Shift == false;
-                GLBaseControl next = FindNextTabChild(lastchildfocus?.TabOrder??-1,forward);
-                if (next == null)
-                    next = FindNextTabChild(forward ?-1 : int.MaxValue,forward);
-                if (next != null)
+                var res = FindNextTabChild(lastchildfocus?.TabOrder ?? -1, int.MaxValue, forward);
+                if (res.Item1 == null)
                 {
-                    lastchildfocus = next;
-                    next.SetFocus();
+                    res = FindNextTabChild(forward ? -1 : int.MaxValue, int.MaxValue, forward);
+                }
+                if (res.Item1 != null)
+                {
+                    lastchildfocus = res.Item1;
+                   // System.Diagnostics.Debug.WriteLine($"Form {this.Name} Tab selects {lastchildfocus.Name} as focus");
+                    lastchildfocus.SetFocus();
                 }
 
                 e.Handled = true;
@@ -379,13 +411,13 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFocusChanged(FocusEvent, GLBaseControl)"/>
-        protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto) // called if we get focus (focused=true) or if child gets focused (focused=false)
+        protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
-            if (evt == FocusEvent.ChildFocused)     // need to take a note
+            if (evt == FocusEvent.ChildFocused)     // need to take a note of any children of us that was focused
             {
-                if (ControlsZ.Contains(fromto))
+                if ( IsThisOrChildOf(fromto))       // is it one of ours?
                 {
-                    //System.Diagnostics.Debug.WriteLine("Form saw child focused {0} '{1}'", evt, fromto?.Name);
+                   // System.Diagnostics.Debug.WriteLine($"Form Focus Control {Name} saw child focused {fromto?.Name}");
                     lastchildfocus = fromto;
                 }
             }
@@ -393,8 +425,8 @@ namespace GLOFC.GL4.Controls
             {
                 if (lastchildfocus != null)
                 {
+                  //  System.Diagnostics.Debug.WriteLine($"Form Focus Control {Name} focus, focus on child {lastchildfocus.Name}");
                     lastchildfocus.SetFocus();
-                    //System.Diagnostics.Debug.WriteLine("Form focus, focus on child");
                 }
             }
         }
@@ -410,10 +442,6 @@ namespace GLOFC.GL4.Controls
         private Rectangle originalwindow;
         private DialogResultEnum dialogResult = DialogResultEnum.None;
         private GLBaseControl lastchildfocus = null;
-
-        private const int FormMargins = 2;
-        private const int FormPadding = 2;
-        private const int FormBorderWidth = 1;
 
         #endregion
     }

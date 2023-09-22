@@ -131,6 +131,11 @@ namespace TestOpenTk
         {
             settings[id] = value;
         }
+
+        public void DeleteSetting(string id)
+        {
+            settings.Remove(id);
+        }
     }
 
 

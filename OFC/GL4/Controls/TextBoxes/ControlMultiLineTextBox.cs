@@ -132,6 +132,15 @@ namespace GLOFC.GL4.Controls
 
         }
 
+        /// <summary> Construct with name, bounds, text contents, colors </summary>
+        public GLMultiLineTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos,text)
+        {
+            EnableThemer = enablethemer;
+            BackColor = backcolor;
+            ForeColor = forecolor;
+        }
+
+
         /// <summary> Default Constructor </summary>
         public GLMultiLineTextBox() : this("TBML?", DefaultWindowRectangle, "")
         {
@@ -1476,8 +1485,7 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        private int CurrentDisplayableLines { get { return ((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / LineHeight); } }
-        private int MaxDisplayableLines { get { return ClientRectangle.Height / LineHeight; } }
+        private int CurrentDisplayableLines { get { return Math.Max(1,((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / LineHeight)); } }
 
         // cursor and marker info
 

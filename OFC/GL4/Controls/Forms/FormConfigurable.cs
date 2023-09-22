@@ -420,11 +420,6 @@ namespace GLOFC.GL4.Controls
                         Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
                     };
 
-                    b.Return += (sender) =>
-                    {
-                        Entry en = (Entry)(((GLBaseControl)sender).Tag);
-                        Trigger?.Invoke(this, en, en.Name, this.callertag);       // pass back the logical name of dialog, the name of the control, the caller tag
-                    };
                 }
                 else if (control is GLCheckBox)
                 {

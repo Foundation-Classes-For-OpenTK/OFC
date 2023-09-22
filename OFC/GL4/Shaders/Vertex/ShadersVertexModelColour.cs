@@ -176,7 +176,8 @@ void main(void)
     }                                   // don't do it everywhere it can get into an interderminate state per vertex
     else
     {
-        gl_CullDistance[0] = 1;
+        gl_CullDistance[0] = 1;     // must do this, as setting it only in discard causes artifacts
+
         basecolor = colours[int(worldposition.w)];
 
         modelpos = modelposition.xyz;

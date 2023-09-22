@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -362,7 +362,7 @@ void main(void)
         /// Requires:
         ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
         ///      location 1 : texco-ords 
-        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, w is ignored and passed thru to fragment shader
+        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, if w less than minus 1 its culled, else it is passed thru to fragment shader
         ///      uniform buffer 0 : GL MatrixCalc
         ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
         /// Out:
@@ -406,6 +406,7 @@ out gl_PerVertex {
         vec4 gl_Position;
         float gl_PointSize;
         float gl_ClipDistance[];
+        float gl_CullDistance[];
     };
 
 layout( location = 0) out vec2 vs_textureCoordinate;
@@ -427,35 +428,44 @@ const bool useeyedistance = true;
 
 void main(void)
 {
-    vs_modelpos = modelposition.xyz;
-    vs_out.vs_instanced = gl_InstanceID;
-    vs_out2.vs_wvalue = worldposition.w;
-    vs_textureCoordinate = texco;
-    drawid = gl_DrawID;
-
-    vec4 mpos= vec4(modelposition.xyz,1);
-    vec4 wpos = vec4(worldposition.xyz,0);
-
-    if ( autoscale>0)
+    if ( worldposition.w <= -1 )
     {
-        float scale;
-        if ( useeyedistance )
+        gl_CullDistance[0] = -1;        // so, if we set it once, we need to set it always, for somereason the compiler if its sees it set and you
+    }                                   // don't do it everywhere it can get into an interderminate state per vertex
+    else
+    {
+        gl_CullDistance[0] = 1;     // must do this, as setting it only in discard causes artifacts
+
+        vs_modelpos = modelposition.xyz;
+        vs_out.vs_instanced = gl_InstanceID;
+        vs_out2.vs_wvalue = worldposition.w;
+        vs_textureCoordinate = texco;
+        drawid = gl_DrawID;
+
+        vec4 mpos= vec4(modelposition.xyz,1);
+        vec4 wpos = vec4(worldposition.xyz,0);
+
+        if ( autoscale>0)
         {
-            scale = mc.EyeDistance/autoscale;
-        }
-        else
-        {
-            float d = distance(mc.EyePosition,wpos);            // find distance between eye and world pos
-            scale = d/autoscale;
+            float scale;
+            if ( useeyedistance )
+            {
+                scale = mc.EyeDistance/autoscale;
+            }
+            else
+            {
+                float d = distance(mc.EyePosition,wpos);            // find distance between eye and world pos
+                scale = d/autoscale;
+            }
+
+            scale = clamp(scale,autoscalemin,autoscalemax);
+            mpos = Scale(mpos,scale);
         }
 
-        scale = clamp(scale,autoscalemin,autoscalemax);
-        mpos = Scale(mpos,scale);
-    }
-
-    vec4 modelrot = objecttransform * mpos;
-    vec4 wp = modelrot + wpos;
-    gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+        vec4 modelrot = objecttransform * mpos;
+        vec4 wp = modelrot + wpos;
+        gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+    }   
 }
 ";
         }

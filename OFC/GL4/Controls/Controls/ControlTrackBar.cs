@@ -275,7 +275,11 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
+            if (SetFocusOnClick)
+                SetFocus(); 
+
             base.OnMouseClick(e);
+
             if (!e.Handled)
             {
                 if (!mousedrag)
@@ -292,6 +296,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
+
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseDown(GLMouseEventArgs)"/>
         protected override void OnMouseDown(GLMouseEventArgs e)
         {

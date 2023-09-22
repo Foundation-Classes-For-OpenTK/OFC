@@ -173,10 +173,12 @@ namespace TestOpenTk
 
                 int taborder = 0;
 
+                GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
+                pform.Add(lab1);
+
                 if (true)
                 {
-                    GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
-                    pform.Add(lab1);
+                    GLPanel p1 = new GLPanel("Panelbasic", new Rectangle(0, 0, 350, 100), Color.AliceBlue);
 
                     GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Configuration Dialog");
                     b1.Margin = new MarginType(2);
@@ -185,7 +187,7 @@ namespace TestOpenTk
                     b1.Padding = new PaddingType(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
-                    pform.Add(b1);
+                    p1.Add(b1);
 
                     GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Msg1");
                     b2.Image = TestControls.Properties.Resources.ImportSphere;
@@ -194,9 +196,9 @@ namespace TestOpenTk
                     b2.TextAlign = ContentAlignment.MiddleRight;
                     b2.Click += (c, ev) => { MsgDialog1(); };
                     b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
-                    pform.Add(b2);
+                    p1.Add(b2);
 
-                    GLButton b3 = new GLButton("B3", new Rectangle(100, 10, 80, 30), "Font");
+                    GLButton b3 = new GLButton("B3", new Rectangle(130, 10, 80, 30), "Font");
                     b3.Margin = new MarginType(2);
                     b3.TabOrder = taborder++;
                     b3.Padding = new PaddingType(5);
@@ -205,27 +207,29 @@ namespace TestOpenTk
                     {
                         displaycontrol.Font = new Font("Times", 12);
                     };
-                    pform.Add(b3);
+                    p1.Add(b3);
 
                     GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
                     b4.TabOrder = taborder++;
                     b4.Padding = new PaddingType(2);
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
-                    pform.Add(b4);
+                    p1.Add(b4);
 
-                    GLButton b5 = new GLButton("B5", new Rectangle(200, 10, 80, 30), "Conf2");
+                    GLButton b5 = new GLButton("B5", new Rectangle(220, 10, 80, 30), "Conf2");
                     b5.TabOrder = taborder++;
                     b5.Padding = new PaddingType(2);
                     b5.ToolTipText = "Button 5 tip\r\nLine 2 of it";
                     b5.Click += (c, ev) => { ConfDialog2(); };
-                    pform.Add(b5);
+                    p1.Add(b5);
 
                     GLButton b6 = new GLButton("B3", new Rectangle(200, 50, 80, 30), "Disabled");
                     b6.TabOrder = taborder++;
                     b6.ToolTipText = "Button 6 tip\r\nLine 2 of it";
                     b6.Enabled = false;
-                    pform.Add(b6);
+                    p1.Add(b6);
+
+                    pform.Add(p1);
 
                 }
 
@@ -368,12 +372,14 @@ namespace TestOpenTk
                     gla.Font = new Font("Ms Sans Serif", 12);
                     gla.PerformAutoCompleteInThread += (s, a, set) =>
                     {
-                        var r = new List<string>() { "one", "two", "three" };
+                        var r = new List<string>() { "one", "onetwo", "onethree", "two", "three" };
                         foreach (var x in r)
                         {
                             if (x.StartsWith(s) || s.IsEmpty())
                                 set.Add(x);
                         }
+
+                        System.Threading.Thread.Sleep(2000);
                     };
                     gla.SelectedEntry += (s) => { System.Diagnostics.Debug.WriteLine($"Autocomplete selected {s.Text}"); };
                     pform.Add(gla);
@@ -409,6 +415,7 @@ namespace TestOpenTk
 
             if (true)
             {
+                int taborder = 0;
                 GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 800));
                 pform2.BackColor = Color.FromArgb(200, Color.Red);
                 pform2.Font = new Font("Ms sans serif", 10);
@@ -422,6 +429,7 @@ namespace TestOpenTk
                 GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 40));
                 tb1.SmallChange = 5;
                 tb1.FaceColorScaling = 0.5f;
+                tb1.TabOrder = taborder++;
                 pform2.Add(tb1);
 
                 GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 140, 40, 380));
@@ -436,12 +444,14 @@ namespace TestOpenTk
                 tb2.Maximum = 500;
                 tb2.Value = 10;
                 tb2.TickFrequency = 10;
+                tb2.TabOrder = taborder++;
                 pform2.Add(tb2);
 
                 GLTrackBar tb3 = new GLTrackBar("Trackbar", new Rectangle(100, 140, 40, 380));
                 tb3.HorizontalTrackbar = false;
                 tb3.Image = TestControls.Properties.Resources.dotted2;
                 tb3.ImageStretch = true;        // stretch to Needlesize percent
+                tb3.TabOrder = taborder++;
                 pform2.Add(tb3);
                }
 

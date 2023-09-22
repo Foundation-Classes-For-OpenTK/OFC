@@ -23,7 +23,15 @@ namespace GLOFC.GL4.Controls
     /// Panel with scroll bar
     /// </summary>
     public class GLScrollPanelScrollBar : GLBaseControl
-    {
+    {        
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsContainer"/>
+        public override bool IsContainer { get; } = true;
+
+        /// <summary> Return or set the scroll value </summary>
+        public int HorzScrollPos { get { return horzscrollbar.Value; } set { horzscrollbar.Value = value; scrollpanel.HorzScrollPos = value; } }
+        /// <summary> Return or set the scroll value </summary>
+        public int VertScrollPos { get { return vertscrollbar.Value; } set { vertscrollbar.Value = value; scrollpanel.VertScrollPos = value; } }
+
         /// <summary> Scroll panelback color</summary>
         public Color ScrollBackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
 
@@ -46,6 +54,9 @@ namespace GLOFC.GL4.Controls
         /// <summary> Disable autosize </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
+        /// <summary> BackColor of control - overriden to send to internal scroll panel </summary>
+        public new Color BackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
+
         /// <summary> Construct with name and location </summary>
         public GLScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
         {
@@ -55,23 +66,35 @@ namespace GLOFC.GL4.Controls
             scrollpanel = new GLScrollPanel(name+"_VSP");
             scrollpanel.Dock = DockingType.Fill;
             scrollpanel.BackColor = BackColor;
+            scrollpanel.EnableThemer = false;       // we don't allow the themer to run on composite parts
+            scrollpanel.RejectFocus = true;
             base.Add(scrollpanel);  // base because we don't want to use the overrides
 
             vertscrollbar = new GLVerticalScrollBar(name + "_SVert");
             vertscrollbar.Dock = DockingType.Right;
             vertscrollbar.Width = ScrollBarWidth;
+            vertscrollbar.EnableThemer = false;       // we don't allow the themer to run on composite parts
             base.Add(vertscrollbar);     // last added always goes to top of z-order
             vertscrollbar.Scroll += VScrolled;
 
             horzscrollbar = new GLHorizontalScrollBar(name + "_SHorz");
             horzscrollbar.Dock = DockingType.Bottom;
             horzscrollbar.Height =ScrollBarWidth;
+            horzscrollbar.EnableThemer = false;       // we don't allow the themer to run on composite parts
             base.Add(horzscrollbar);     // last added always goes to top of z-order
             horzscrollbar.Scroll += HScrolled;
 
             horzscrollbar.Theme = vertscrollbar.Theme;                  // set theme for horz scroll bar to same as vertical scroll bar
             vertscrollbar.Theme.Parents.Add(horzscrollbar);             // and add it to Parents so when it gets changed, we invalidate both
         }
+
+        /// <summary> Construct with name and location, backcolor and themer enable </summary>
+        public GLScrollPanelScrollBar(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
+        {
+            EnableThemer = enablethemer;
+            BackColorNI = backcolor;
+        }
+
 
         /// <summary> Empty Construct</summary>
         public GLScrollPanelScrollBar(string name = "SPSB?") : this(name, DefaultWindowRectangle)
@@ -85,9 +108,19 @@ namespace GLOFC.GL4.Controls
             InvalidateLayout();
         }
 
-        private GLVerticalScrollBar vertscrollbar;
-        private GLHorizontalScrollBar horzscrollbar;
-        private GLScrollPanel scrollpanel;
+        /// <summary>
+        /// Remove all controls from scroll panel, intercepted from normal control remove
+        /// </summary>
+        public void Remove()                                                          
+        {
+            scrollpanel.Remove();
+        }
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.FindNextTabChild(int, int, bool)"/>
+        public override Tuple<GLBaseControl, int> FindNextTabChild(int tabno, int mindist, bool forward = true)
+        {
+            return scrollpanel.FindNextTabChild(tabno, mindist, forward);
+        }
 
         private void VScrolled(GLBaseControl c, GLScrollBar.ScrollEventArgs e)
         {
@@ -107,10 +140,16 @@ namespace GLOFC.GL4.Controls
 
             base.PerformRecursiveLayout();   // the docking sorts out the positioning of the controls
 
-            vertscrollbar.Maximum = scrollpanel.VertScrollRange + vertscrollbar.LargeChange;
-            horzscrollbar.Maximum = scrollpanel.HorzScrollRange + horzscrollbar.LargeChange;
-         //   System.Diagnostics.Debug.WriteLine($"Scroll panel range {horzscrollbar.Maximum} {vertscrollbar.Maximum}");
+          //  System.Diagnostics.Debug.WriteLine($"Set scroll panel ranges {scrollpanel.VertScrollRange} {scrollpanel.HorzScrollRange} in {Bounds}");
+
+            vertscrollbar.Maximum = scrollpanel.VertScrollRange;
+            horzscrollbar.Maximum = scrollpanel.HorzScrollRange;
         }
+
+        private GLVerticalScrollBar vertscrollbar;
+        private GLHorizontalScrollBar horzscrollbar;
+        private GLScrollPanel scrollpanel;
+
     }
 }
 

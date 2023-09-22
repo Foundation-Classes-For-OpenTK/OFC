@@ -30,6 +30,13 @@ namespace GLOFC.GL4.Controls
             BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
         }
 
+        /// <summary> Construct with name and location, backcolor and themer enable </summary>
+        public GLTableLayoutPanel(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
+        {
+            EnableThemer = enablethemer;
+            BackColorNI = backcolor;
+        }
+
         /// <summary> Default Constructor </summary>
         public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
         {

@@ -33,7 +33,7 @@ namespace TestOpenTk
         private const int SectorSize = 100;
         private const int MaxRequestedSectors = 10;
 
-        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, float sunsize, GLStorageBlock findbufferresults)
+        public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, Tuple<GLTexture2DArray, long[]> starimagearrayp, float sunsize, GLStorageBlock findbufferresults)
         {
             // globe shape
             var shape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(2, 0.5f);
@@ -49,12 +49,7 @@ namespace TestOpenTk
             startexcoordbuf.AllocateFill(shape.Item2);
 
             // a texture 2d array with various star images
-            starimagearray = new GLTexture2DArray();
-            Bitmap[] starbmps = new Bitmap[] { Properties.Resources.O, Properties.Resources.A, Properties.Resources.F, Properties.Resources.G, Properties.Resources.N };
-            Bitmap[] starbmpsreduced = starbmps.CropImages(new RectangleF(16, 16, 68, 68));
-            //for (int b = 0; b < starbmpsreduced.Length; b++)  starbmpsreduced[b].Save(@"c:\code\" + $"star{b}.bmp", System.Drawing.Imaging.ImageFormat.Png);
-            starimagearray.CreateLoadBitmaps(starbmpsreduced, SizedInternalFormat.Rgba8, ownbmp: true);
-            items.Add(starimagearray);
+            starimagearray = starimagearrayp;
 
             // the sun shader
             sunvertexshader = new GLPLVertexShaderModelWorldTextureAutoScale(autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
@@ -62,7 +57,7 @@ namespace TestOpenTk
             sunshader = new GLShaderPipeline(sunvertexshader, sunfragmenttexture);
             items.Add(sunshader);
 
-            GLRenderDataTexture rdt = new GLRenderDataTexture(starimagearray);  // RDI is used to attach the texture
+            GLRenderDataTexture rdt = new GLRenderDataTexture(starimagearray.Item1);  // RDI is used to attach the texture
 
             GLRenderState starrc = GLRenderState.Tri();     // render is triangles, with no depth test so we always appear
             starrc.DepthTest = true;
@@ -81,7 +76,7 @@ namespace TestOpenTk
 
             items.Add(slset);
 
-            var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);
+            var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 32768);
             findshader = items.NewShaderPipeline(null, sunvertexshader, null, null, geofind , null, null, null);
         }
 
@@ -214,8 +209,11 @@ namespace TestOpenTk
             Random rnd = new Random((int)(d.pos.X * d.pos.Y) + 1);
             for (int i = 0; i < array.Length; i++)
             {
+                int imgi = i % starimagearray.Item2.Length;
+
                 array[i] = new Vector4(d.pos.X + rnd.Next(SectorSize), d.pos.Y + rnd.Next(SectorSize), d.pos.Z + rnd.Next(SectorSize), 
-                    i%5);   // colour selector
+                    imgi == 0 ? -1 : starimagearray.Item2[imgi]);   // image selector, with optional demo of off
+
                 text[i] = $"{array[i].X:0.###},{array[i].Y:0.###},{array[i].Z:0.###}:{i}";
             }
 
@@ -289,9 +287,8 @@ namespace TestOpenTk
         private GLPLVertexShaderModelWorldTextureAutoScale sunvertexshader;
         private GLBuffer starshapebuf;
         private GLBuffer startexcoordbuf;
-        private GLTexture2DArray starimagearray;
+        private Tuple<GLTexture2DArray, long[]> starimagearray;
         private GLShaderPipeline textshader;     // text shader
-
 
         private GLShaderPipeline findshader;    // find shader for lookups
 

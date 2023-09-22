@@ -154,7 +154,11 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)       // clicking on this needs to see if checkonclick is on
         {
+            if (SetFocusOnClick)
+                SetFocus();
+
             base.OnMouseClick(e);
+
             if ( !e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Left)
                 OnClick();
         }
@@ -162,6 +166,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Call to perform Click functionality  </summary>
         public virtual void OnClick()
         {
+
             if ( CheckOnClick && (!UserCanOnlyCheck || CheckState != CheckStateType.Checked))
             {
                 SetCheckState(CheckState == CheckStateType.Unchecked ? CheckStateType.Checked : CheckStateType.Unchecked, true);

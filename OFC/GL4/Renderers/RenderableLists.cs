@@ -179,6 +179,8 @@ namespace GLOFC.GL4
                             if (verbose) System.Diagnostics.Trace.WriteLine("  Operation " + shaderri.Item1.GetType().Name);
                             shaderri.Item1.Start(c);                        // operations just start, but don't change the current shader
                         }
+
+                        System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
                     }
                     else if (renderlist.Find(x=>x.Item2.Visible)!=null)     // some must be visible
                     {
@@ -193,12 +195,16 @@ namespace GLOFC.GL4
                                 currentstate.ApplyState(curshader.RenderState,"From shader");
 
                             curshader.Start(c);                             // start the program - if compute shader, or operation, this executes the code
+
+                            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
                         }
 
                         //System.Diagnostics.Trace.WriteLine("Shader " + kvp.Item1.GetType().Name);
 
                         foreach (var g in renderlist)
                         {
+                            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
                             var renderableitem = g.Item2;
 
                             if (renderableitem != null && renderableitem.Visible)                    // Make sure its visible and not empty slot
@@ -219,10 +225,14 @@ namespace GLOFC.GL4
                                     lastapplied = renderableitem.RenderState;
                                 }
 
+                                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
                                 if (verbose) System.Diagnostics.Trace.WriteLine("  Render " + g.Item1 + " shader " + shaderri.Item1.GetType().Name);
 
                                 renderableitem.Render();
                                 //System.Diagnostics.Trace.WriteLine("....Render Over " + g.Item1);
+
+                                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
                             }
                             else
                             {
@@ -241,12 +251,15 @@ namespace GLOFC.GL4
                 }
             }
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
             if (curshader != null)
                 curshader.Finish();
 
             if (verbose) System.Diagnostics.Trace.WriteLine("***End RList");
             GL.UseProgram(0);           // final clean up
             GL.BindProgramPipeline(0);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
         }
 
         // add a shader, under a name, indicate if at end, and if allowed to end join

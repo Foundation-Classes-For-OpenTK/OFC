@@ -24,8 +24,6 @@ namespace GLOFC.GL4.Controls
     {
         /// <summary> Callback when button is clicked </summary>
         public Action<GLBaseControl, GLMouseEventArgs> Click { get; set; } = null;
-        /// <summary> Callback when return is pressed </summary>
-        public Action<GLBaseControl> Return { get; set; } = null;
 
         /// <summary> Construct with name and bounds</summary>
         public GLButton(string name, Rectangle location) : base(name, location)
@@ -69,6 +67,7 @@ namespace GLOFC.GL4.Controls
         {
             if (ClientWidth < 1 || ClientHeight<1)
                 return;
+            //System.Diagnostics.Debug.WriteLine($"Paint button {Name} focus {Focused}");
             PaintButtonFace(ClientRectangle, gr, PaintButtonFaceColor());
             PaintButtonTextImageFocus(ClientRectangle, gr,true);
         }
@@ -76,7 +75,11 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
+            if (SetFocusOnClick)
+                SetFocus();
+
             base.OnMouseClick(e);
+
             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
                 OnClick(e);
         }
@@ -92,15 +95,10 @@ namespace GLOFC.GL4.Controls
         {
             if ( e.KeyChar == 13 )
             {
-                OnReturn();
+                OnClick(new GLMouseEventArgs(Point.Empty));
             }
         }
 
-        /// <summary> Call to perform Return functionality  </summary>
-        public virtual void OnReturn()
-        {
-            Return?.Invoke(this);
-        }
 
     }
 }

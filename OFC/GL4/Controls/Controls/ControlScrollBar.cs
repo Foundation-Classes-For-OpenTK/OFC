@@ -426,7 +426,7 @@ namespace GLOFC.GL4.Controls
 
         private void SetValues(int v, int max, int min, int lc, int sc, bool limittousermax = false)   
         {
-            //System.Diagnostics.Debug.WriteLine("Set Scroll " + v + " min " + min + " max " + max + " lc "+ lc + " sc "+ sc + " Usermax "+ UserMaximum);
+           // System.Diagnostics.Debug.WriteLine("Set Scroll " + Name + " " + v + " min " + min + " max " + max + " lc "+ lc + " sc "+ sc + " Usermax "+ UserMaximum);
             smallchange = sc;                                   // has no effect on display of control
             bool iv = false;
 

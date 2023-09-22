@@ -102,6 +102,38 @@ namespace GLOFC
             return new Vector4(vxz.X, y, vxz.Y, w);
         }
 
+        /// <summary>
+        /// To string, invariant, with separator
+        /// </summary>
+        /// <param name="v">Value</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Invariant string of values</returns>
+        public static string ToStringInvariant(this Vector2 v, char separ = ',')
+        {
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}{1}{2}", v.X, separ, v.Y);
+        }
+
+        /// <summary>
+        /// Parse a string for a vector 2 invariant
+        /// </summary>
+        /// <param name="s">string</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Vector2 or null </returns>
+        public static Vector2? InvariantParseVector2(this string s, char separ = ',')
+        {
+            string[] sl = s.Split(separ);
+            if (sl.Length == 2)
+            {
+                float? x = sl[0].InvariantParseFloatNull();
+                float? y = sl[1].InvariantParseFloatNull();
+                if (x != null && y != null)
+                    return new Vector2(x.Value, y.Value);
+            }
+
+            return null;
+        }
+
+
 
     }
 }

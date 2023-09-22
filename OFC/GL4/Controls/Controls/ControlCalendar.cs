@@ -56,12 +56,15 @@ namespace GLOFC.GL4.Controls
             ButLeft.Size = new Size(24, 24);
             ButLeft.Name = "CalLeft";
             ButLeft.GiveFocusToParent = true;
+            ButLeft.EnableThemer = false;       // we don't allow themeing on composite elements
+
             ButRight.Symbol = GLButtonTextBase.SymbolType.RightTriangle;
             ButRight.Click += GoRight;
             ButRight.Dock = DockingType.TopRight;
             ButRight.Size = new Size(24, 24);
             ButRight.Name = "CalRight";
             ButRight.GiveFocusToParent= true;
+            ButRight.EnableThemer = false;       // we don't allow themeing on composite elements
 
             Add(ButLeft);
             Add(ButRight);
@@ -251,7 +254,11 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnMouseClick(GLMouseEventArgs)"/>
         protected override void OnMouseClick(GLMouseEventArgs e)
         {
+            if (SetFocusOnClick)
+                SetFocus();
+            
             base.OnMouseClick(e);
+            
             int hover = HoveringOver(e.Location);
             if (hover >= 0)
             {

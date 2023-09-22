@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -173,6 +173,10 @@ namespace GLOFC.GL4.Controls
         /// <summary> Tool tip text to display for this control </summary>
         public string ToolTipText { get; set; } = null;
 
+        // Is Container 
+        /// <summary> Is this a container of other controls (Panels/GroupBoxes etc) </summary>
+        public virtual bool IsContainer { get; } = false;
+
         // Table layout
         /// <summary> For table layouts, this is the row the control is placed in </summary>
         public int Row { get { return row; } set { row = value; ParentInvalidateLayout(); } }
@@ -263,11 +267,11 @@ namespace GLOFC.GL4.Controls
             /// <summary> Control has focused</summary>
             Focused,   // 
             /// <summary> Control has deactivated </summary>
-            Deactive,   // 
+            Deactivated,   // 
             /// <summary> Child has focused </summary>
             ChildFocused,   // 
             /// <summary> Child has deactivated </summary>
-            ChildDeactive
+            ChildDeactivated
         };
         /// <summary>Focus of control or child of control has changed </summary>
         public Action<GLBaseControl, FocusEvent, GLBaseControl> FocusChanged { get; set; } = null;     
@@ -292,16 +296,16 @@ namespace GLOFC.GL4.Controls
 
         // globals
         /// <summary>Called whenever the focus changed, Para1=from, Para2=to. Either may be null.
-        /// Only active on GLControlDisplay</summary>
+        /// Only valid to hook on GLControlDisplay</summary>
         public Action<GLBaseControl, GLBaseControl> GlobalFocusChanged { get; set; } = null;
         /// <summary>Called when an control has been clicked, indicating control and mouse arguments
-        /// Only active on GLControlDisplay</summary>
+        /// Only valid to hook on GLControlDisplay</summary>
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseClick { get; set; } = null;
         /// <summary>Called when an control has had mouse down, indicating control and mouse arguments.  If not over a control, GLBaseControl is null
-        /// Only active on GLControlDisplay</summary>
+        /// Only valid to hook on GLControlDisplay</summary>
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;
         /// <summary>Called when the mouse is moved. Mouse arguments give control its over and location
-        /// Only active on GLControlDisplay</summary>
+        /// Only valid to hook on GLControlDisplay</summary>
         public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       
 
         // global Thermer
@@ -334,16 +338,17 @@ namespace GLOFC.GL4.Controls
             return false;
         }
 
-        /// <summary> Find next tab, either forward or backwards, from this tab number</summary>
-        public GLBaseControl FindNextTabChild(int tabno, bool forward = true)       
+        /// <summary> Find next tab, either forward or backwards, from this tab number. For certain panels, go into it and find a tab</summary>
+        public virtual Tuple<GLBaseControl, int> FindNextTabChild(int tabno, int mindist, bool forward = true)
         {
             GLBaseControl found = null;
-            int mindist = int.MaxValue;
 
-            foreach (var c in childrenz)
+            foreach (var c in ControlsZ)
             {
-                if (c.Focusable && c.Visible && c.Enabled )
+                if (c.Focusable && c.Visible && c.Enabled)
                 {
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child {this.Name} {tabno} {mindist} {forward} in child {c.Name} {c.TabOrder}");
+
                     int dist = c.TabOrder - tabno;
 
                     if (forward ? dist > 0 : dist < 0)
@@ -353,12 +358,24 @@ namespace GLOFC.GL4.Controls
                         {
                             mindist = dist;
                             found = c;
+                            //System.Diagnostics.Debug.WriteLine($"Find tab child best so far is {mindist} in child {found.Name} {found.TabOrder}");
                         }
                     }
                 }
+                else if (c.IsContainer)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child >> {c.Name}");
+                    var res = c.FindNextTabChild(tabno, mindist, forward);
+                    if (res.Item1 != null)  // if found one better
+                    {
+                        found = res.Item1;
+                        mindist = res.Item2;
+                    }
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child << {c.Name}");
+                }
             }
 
-            return found;
+            return new Tuple<GLBaseControl, int>(found, mindist);
         }
 
         /// <summary> Return area needed for visible children, with an optional test to reject children from the test</summary>
@@ -388,7 +405,7 @@ namespace GLOFC.GL4.Controls
         public virtual void Invalidate()    // overridden in controldisplay
         {
             //System.Diagnostics.Debug.WriteLine("Invalidate " + Name);
-            NeedRedraw = true;
+            needredraw = true;
 
             if (BackColor == Color.Transparent)   // if we are transparent, we need the parent also to redraw to force it to redraw its background.
             {
@@ -518,7 +535,7 @@ namespace GLOFC.GL4.Controls
 
             CheckZOrder();      // verify its okay 
 
-            if ( EnableThemer)
+            if ( child.EnableThemer)
                 Themer?.Invoke(child);      // global themer
 
             OnControlAdd(this, child);
@@ -536,14 +553,27 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary> Remove child control from parent, and disposes of it and all its children. Control is now not reattachable.</summary>
-        public static void Remove(GLBaseControl child)    
-        {                                                  
+        public static void Remove(GLBaseControl child)
+        {
             if (child.Parent != null) // if attached
             {
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, true, true);
                 parent.InvalidateLayout(null);          // invalidate parent, and indicate null so it knows the child has been removed
-                child.NeedRedraw = true;                // next time, it will need to be drawn if reused
+                child.needredraw = true;                // next time, it will need to be drawn if reused
+            }
+        }
+
+        /// <summary> Remove these child control from parent, and disposes of it and all its children. Control is now not reattachable. use Predicate if you want to select</summary>
+        public void Remove(Predicate<GLBaseControl> removeit = null)
+        {
+            var list = new List<GLBaseControl>(childrenz);
+            foreach (var control in list)
+            {
+                if (removeit == null || removeit(control))
+                {
+                    Remove(control);
+                }
             }
         }
 
@@ -555,7 +585,7 @@ namespace GLOFC.GL4.Controls
                 GLBaseControl parent = child.Parent;
                 parent.RemoveControl(child, false, false);
                 parent.InvalidateLayout(null);
-                child.NeedRedraw = true;        // next time, it will need to be drawn
+                child.needredraw = true;        // next time, it will need to be drawn
             }
         }
 
@@ -665,13 +695,25 @@ namespace GLOFC.GL4.Controls
         /// <summary>
         /// Find screen co-ordinates of control
         /// </summary>
+        /// <param name="clientpos">Offset is bounds if false, client if true</param>
+        /// <returns>Screen co-ordinate</returns>
+
+        public Point FindScreenCoords(bool clientpos = false)
+        {
+            return FindScreenCoords(Point.Empty, clientpos);
+        }
+
+        /// <summary>
+        /// Find screen co-ordinates of control
+        /// </summary>
         /// <param name="offset">Offset in control, either bounds or client, dependent on clientpos</param>
         /// <param name="clientpos">Offset is bounds if false, client if true</param>
         /// <returns>Screen co-ordinate</returns>
 
-        // given a point x in control relative to bounds, in bitmap space (so not scaled), what is its screen coords
         public Point FindScreenCoords(Point offset, bool clientpos = false)
         {
+            // given a point x in control relative to bounds, in bitmap space (so not scaled), what is its screen coords
+
             if ( clientpos )
             {
                 offset.X += ClientLeftMargin;

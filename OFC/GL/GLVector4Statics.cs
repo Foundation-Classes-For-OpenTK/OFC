@@ -202,5 +202,39 @@ namespace GLOFC
 
             return "{" + t + "}";
         }
+
+        /// <summary>
+        /// To string, invariant, with separator
+        /// </summary>
+        /// <param name="v">Value</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Invariant string of values</returns>
+        public static string ToStringInvariant(this Vector4 v, char separ = ',')
+        {
+            return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}{1}{2}{3}{4}{5}{6}", v.X, separ, v.Y, separ, v.Z, separ, v.W);
+        }
+
+        /// <summary>
+        /// Parse a string for a vector 4 invariant
+        /// </summary>
+        /// <param name="s">string</param>
+        /// <param name="separ">Character uses as vector parts delimiter</param>
+        /// <returns>Vector4 or null </returns>
+        public static Vector4? InvariantParseVector4(this string s, char separ = ',')
+        {
+            string[] sl = s.Split(separ);
+            if (sl.Length == 4)
+            {
+                float? x = sl[0].InvariantParseFloatNull();
+                float? y = sl[1].InvariantParseFloatNull();
+                float? z = sl[2].InvariantParseFloatNull();
+                float? w = sl[3].InvariantParseFloatNull();
+                if (x != null && y != null && z != null && w != null)
+                    return new Vector4(x.Value, y.Value, z.Value,w.Value);
+            }
+
+            return null;
+        }
+
     }
 }

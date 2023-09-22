@@ -45,7 +45,7 @@ namespace TestOpenTk
     {
         public List<HistoryEntry> Unfilteredlist { get { return unfilteredlist; } }
         public List<HistoryEntry> CurrentList { get { return currentfilteredlist; } }       // whats being displayed
-        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = textrenderer.Enable = value; } }
+        public bool Enable { get { return tapeshader.Enable; } set { tapeshader.Enable = sunshader.Enable = textrenderer.Enable = value; } }
         public int MaxStars { get; }
         public DateTime TravelPathStartDate { get; set; } = new DateTime(2014, 12, 14);
         public DateTime TravelPathEndDate { get; set; } = DateTime.UtcNow.AddMonths(1);
@@ -59,7 +59,7 @@ namespace TestOpenTk
 
         // tested to 50K+ stars, tested updating a single one
 
-        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<HistoryEntry> incomingsys, float sunsize, float tapesize, 
+        public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, Tuple<GLTexture2DArray, long[]> starimagearrayp, List<HistoryEntry> incomingsys, float sunsize, float tapesize, 
                             GLStorageBlock bufferfindresults, bool depthtest)
         {
             this.sunsize = sunsize;
@@ -68,12 +68,12 @@ namespace TestOpenTk
 
             unfilteredlist = incomingsys;
 
-            IntCreatePath(items, rObjects, bufferfindresults);
+            IntCreatePath(items, rObjects, starimagearrayp, bufferfindresults);
         }
 
         public void Refresh()
         {
-            IntCreatePath(null, null, null);  // refilters
+            IntCreatePath(null, null, null, null);  // refilters
         }
 
         public void AddSystem(HistoryEntry he)
@@ -83,7 +83,7 @@ namespace TestOpenTk
         }
 
 
-        private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, GLStorageBlock bufferfindresults)
+        private void IntCreatePath(GLItemsList items, GLRenderProgramSortedList rObjects, Tuple<GLTexture2DArray, long[]> starimagearrayp, GLStorageBlock bufferfindresults)
         {
             HistoryEntry lastone = lastpos != -1 && lastpos < currentfilteredlist.Count ? currentfilteredlist[lastpos] : null;  // see if lastpos is there, and store it
 
@@ -101,11 +101,14 @@ namespace TestOpenTk
                     currentfilteredlist = unfilteredlist;
             }
 
-                // do date filter on currentfilteredlist
+            if (starimagearrayp != null) // first time..
+                starimagearray = starimagearrayp;
+            
+            // do date filter on currentfilteredlist
 
-            lastpos = lastone == null ? -1 : currentfilteredlist.IndexOf(lastone);        // may be -1, may have been removed
+                lastpos = lastone == null ? -1 : currentfilteredlist.IndexOf(lastone);        // may be -1, may have been removed
 
-            var positionsv4 = currentfilteredlist.Select(x => new Vector4((float)x.System.X, (float)x.System.Y, (float)x.System.Z, 0)).ToArray();
+            var positionsv4 = currentfilteredlist.Select((x,i) => new Vector4((float)x.System.X, (float)x.System.Y, (float)x.System.Z, starimagearray.Item2[ i % starimagearray.Item2.Length] )).ToArray();
             var colours = currentfilteredlist.Select(x => x.JumpColor).ToArray();
             float seglen = tapesize * 10;
 
@@ -142,33 +145,49 @@ namespace TestOpenTk
                 // now the stars
 
                 starposbuf = items.NewBuffer();         // where we hold the vertexes for the suns, used by renderer and by finder
-
                 starposbuf.AllocateFill(positionsv4);
+
                 //Vector4[] vectors = starposbuf.ReadVector4s(0, starposbuf.Length / 16);
 
-                sunvertex = new GLPLVertexShaderModelCoordWorldAutoscale(new Color[] { Color.Yellow, Color.FromArgb(255, 230, 230, 1) },
-                         autoscale: 30, autoscalemin: 1f, autoscalemax: 2f, useeyedistance:false); // below scale, 1f, above scale, scale up to x times (eyedist/scale)
-                sunshader = new GLShaderPipeline(sunvertex, new GLPLStarSurfaceColorFragmentShader());
+                // globe shape
+                var shape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(2, sunsize);
+
+                // globe vertex
+                starshapebuf = new GLBuffer();
+                items.Add(starshapebuf);
+                starshapebuf.AllocateFill(shape.Item1);
+
+                // globe tex coord
+                startexcoordbuf = new GLBuffer();
+                items.Add(startexcoordbuf);
+                startexcoordbuf.AllocateFill(shape.Item2);
+
+                // the sun shader
+                sunvertexshader = new GLPLVertexShaderModelWorldTextureAutoScale(autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
+                var sunfragmenttexture = new GLPLFragmentShaderTexture2DWSelectorSunspot();
+                sunshader = new GLShaderPipeline(sunvertexshader, sunfragmenttexture);
                 items.Add(sunshader);
 
-                var shape = GLSphereObjectFactory.CreateSphereFromTriangles(2, sunsize);
+                GLRenderDataTexture rdt = new GLRenderDataTexture(starimagearray.Item1);  // RDI is used to attach the texture
 
-                GLRenderState rt = GLRenderState.Tri();     // render is triangles
-                rt.DepthTest = depthtest;
-                rt.DepthClamp = true;
-                renderersun = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, rt, shape, starposbuf, 0, null, currentfilteredlist.Count, 1);
+                GLRenderState starrc = GLRenderState.Tri();     // render is triangles
+                starrc.DepthTest = depthtest;
+                starrc.DepthClamp = true;
+                renderersun = GLRenderableItem.CreateVector4Vector2Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, starrc, 
+                                            starshapebuf, 0 , shape.Item1.Length, 
+                                            startexcoordbuf, 0,
+                                            starposbuf,0, 
+                                            rdt, currentfilteredlist.Count, 1);
                 rObjects.Add(sunshader,"travelpath-suns", renderersun);
 
                 // find compute
 
-                var geofind = new GLPLGeoShaderFindTriangles(bufferfindresults, 16);
-                findshader = items.NewShaderPipeline(null, sunvertex, null, null, geofind, null, null, null);
-                rifind = GLRenderableItem.CreateVector4Vector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Triangles, GLRenderState.Tri(), shape, starposbuf, ic: currentfilteredlist.Count, seconddivisor: 1);
+                var geofind = new GLPLGeoShaderFindTriangles(bufferfindresults, 32748);
+                findshader = items.NewShaderPipeline(null, sunvertexshader, null, null, geofind, null, null, null);
 
                 // Sun names, handled by textrenderer
                 textrenderer = new GLBitmaps("bm-travelmap",rObjects, new Size(128, 40), depthtest: depthtest, cullface: false);
                 items.Add(textrenderer);
-
             }
 
             // update the vertexes
@@ -185,7 +204,7 @@ namespace TestOpenTk
             starposbuf.AllocateFill(positionsv4);       // and update the star position buffers so find and sun renderer works
             renderersun.InstanceCount = positionsv4.Length; // update the number of suns to draw.
 
-            rifind.InstanceCount = positionsv4.Length;  // update the find list
+            //tbd rifind.InstanceCount = positionsv4.Length;  // update the find list
 
             // name bitmaps
 
@@ -216,25 +235,24 @@ namespace TestOpenTk
             time = time % rotperiodms;
             float fract = (float)time / rotperiodms;
             float angle = (float)(2 * Math.PI * fract);
-            sunvertex.ModelTranslation = Matrix4.CreateRotationY(-angle);
             float scale = Math.Max(1, Math.Min(4, eyedistance / 5000));
-            //System.Diagnostics.Debug.WriteLine("Scale {0}", scale);
-            sunvertex.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
-            //if ( eyedistance < 2000)
-                tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
+
+            sunvertexshader.ModelTranslation = Matrix4.CreateRotationY(-angle);
+            sunvertexshader.ModelTranslation *= Matrix4.CreateScale(scale);           // scale them a little with distance to pick them out better
+            tapefrag.TexOffset = new Vector2(-(float)(time % 2000) / 2000, 0);
         }
 
         // Find at point, return found and z point
 
         public HistoryEntry FindSystem(Point loc, GLRenderState state, Size viewportsize, out float z)
         {
-            z = 0;
+            //tbd
+            z = float.MaxValue;
 
             var geo = findshader.GetShader<GLPLGeoShaderFindTriangles>(OpenTK.Graphics.OpenGL4.ShaderType.GeometryShader);
             geo.SetScreenCoords(loc, viewportsize);
 
-            rifind.Execute(findshader, state); 
-
+            renderersun.Execute(findshader, state);
             var res = geo.GetResult();
             if (res != null)
             {
@@ -301,15 +319,17 @@ namespace TestOpenTk
         private GLBuffer tapepointbuf;
         private GLRenderableItem ritape;
 
-        private GLShaderPipeline sunshader;
-        private GLPLVertexShaderModelCoordWorldAutoscale sunvertex;
+        private GLShaderPipeline sunshader;     // sun drawer
+        private GLPLVertexShaderModelWorldTextureAutoScale sunvertexshader;
+        private GLBuffer starshapebuf;
+        private GLBuffer startexcoordbuf;
         private GLBuffer starposbuf;
+        private Tuple<GLTexture2DArray, long[]> starimagearray;
         private GLRenderableItem renderersun;
 
         private GLBitmaps textrenderer;     // star names
 
         private GLShaderPipeline findshader;        // finder
-        private GLRenderableItem rifind;
 
         private List<HistoryEntry> currentfilteredlist;
         private List<HistoryEntry> unfilteredlist;

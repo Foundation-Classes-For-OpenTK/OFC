@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 
-// Purposely not documented - no need
-#pragma warning disable 1591
 
 namespace GLOFC.GL4.Controls
 {
@@ -28,36 +26,78 @@ namespace GLOFC.GL4.Controls
     {
         #region For Inheritors
 
-        // create the control. set autosize if width/height = 0 , controls are created suspended
-        protected GLBaseControl(string name, Rectangle location)
+        /// <summary>
+        /// Create the control. set autosize if width/height = 0 , controls are created suspended
+        /// </summary>
+        /// <param name="name">control name</param>
+        /// <param name="bounds">bounds</param>
+        protected GLBaseControl(string name, Rectangle bounds)
         {
             this.Name = name;
 
-            if (location.Width == 0 || location.Height == 0)
+            if (bounds.Width == 0 || bounds.Height == 0)
             {
-                location.Width = location.Height = 10;  // nominal
+                bounds.Width = bounds.Height = 10;  // nominal
                 AutoSize = true;
             }
 
             lastlocation = Point.Empty;
             lastsize = Size.Empty;
-            window = location;
+            window = bounds;
             suspendLayoutCount = 1;         // we create suspended
 
             CalcClientRectangle();
         }
 
+        /// <summary>
+        /// The default window to apply 
+        /// </summary>
         static protected readonly Rectangle DefaultWindowRectangle = new Rectangle(0, 0, 10, 10);
 
-        // all inheritors should use these NI functions
-        // in constructors of inheritors or for Layout/SizeControl overrides
-        // these change without invalidation or layout 
-        // must be public due to external derived controls needed it
+        /// <summary>
+        /// Set Border Color
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
         public Color BorderColorNI { set { bordercolor = value; } }
+        /// <summary>
+        /// Set Back Color
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
         public Color BackColorNI { set { backcolor = value; } }
+        /// <summary>
+        /// Set Back Gradient Color
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
         public Color BackColorGradientAltNI { set { backcolorgradientalt = value; } }
+        /// <summary>
+        /// Set if visible
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
         public bool VisibleNI { set { visible = value; } }
+        /// <summary>
+        /// Set minimum size of control
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
+        /// <param name="size">size</param>
+        public void SetMinimumSizeNI(Size size) { minimumsize = size; }
+        /// <summary>
+        /// Set maximum size of control
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
+        /// <param name="size">size</param>
+        public void SetMaximumSizeNI(Size size) { maximumsize = size; }
 
+        /// <summary>
+        /// Set multiple parameters at once.  If null, don't change this particular parameter
+        /// All inheritors should use these NI functions in constructors of inheritors or for Layout/SizeControl overrides. These change without invalidation or layout 
+        /// </summary>
+        /// <param name="location">change top left</param>
+        /// <param name="size">change size</param>
+        /// <param name="clientsize">change client size, therefore change bounds</param>
+        /// <param name="margin">change margin</param>
+        /// <param name="padding">change padding</param>
+        /// <param name="borderwidth">change borderwidth</param>
+        /// <param name="clipsizetobounds">Size is clipped to the current width/height</param>
         public void SetNI(Point? location = null, Size? size = null, Size? clientsize = null, MarginType? margin = null, PaddingType? padding = null,
                             int? borderwidth = null, bool clipsizetobounds = false)
         {
@@ -105,8 +145,13 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // recursively go thru children, bottom child first, and remove everything 
-        protected virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        
+        /// <summary>
+        /// Recursively go thru children, bottom child first, and remove everything 
+        /// </summary>
+        /// <param name="child">who to remove</param>
+        /// <param name="dispose">if to dispose of the child</param>
+        /// <param name="removechildren">if to remove children of the control</param>
+        internal virtual void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)        
         {
             if (removechildren)
             {
@@ -132,16 +177,25 @@ namespace GLOFC.GL4.Controls
             childreniz.Remove(child);
             CheckZOrder();
         }
- 
-        // make a bitmap for this level of this size - needs to be public due to external derived controls needing it
-        public void MakeLevelBitmap(int width , int height)     
+
+        /// <summary>
+        /// Make a bitmap for this level of this size - needs to be public due to external derived controls needing it 
+        /// Internal use only
+        /// </summary>
+        internal void MakeLevelBitmap(int width , int height)     
         {
             levelbmp?.Dispose();
             levelbmp = null;
             if (width > 0 && height > 0)
+            {
                 levelbmp = new Bitmap(width, height);
+            }
         }
 
+        /// <summary>
+        /// Animate children then itself
+        /// </summary>
+        /// <param name="ts">timestamp</param>
         internal void Animate(ulong ts)
         {
             if (Visible)
@@ -159,18 +213,23 @@ namespace GLOFC.GL4.Controls
 
         #region Internal sizing and layout
 
-        // called by above giving child reason (or null for remove) for invalidate layout
-        // overriden by display control to pick a better method to just relayout the relevant child
-        // normally we don't care about which child caused it
-        // go thru this function - don't every call invalidate then performlayout as it won't be properly overriden otherwise !
+        /// <summary>
+        /// Called by above giving child reason (or null for remove) for invalidate layout
+        /// overriden by display control to pick a better method to just relayout the relevant child
+        /// normally we don't care about which child caused it
+        /// go thru this function - don't every call invalidate then performlayout as it won't be properly overriden otherwise !
+        /// </summary>
+        /// <param name="child">reaspm fpr removal, may be null, debug only</param>
+
         private protected virtual void InvalidateLayout(GLBaseControl child)
         {
             //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
             Invalidate();
             PerformLayout();
         }
-
-        // called by displaycontrol on chosen child. Only display control can call this
+        /// <summary>
+        /// Called by displaycontrol on chosen child. Only display control can call this 
+        /// </summary>
         internal void PerformLayoutAndSize()
         {
             Size us = Size;
@@ -194,7 +253,9 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // Perform a recursive size, on our children
+        /// <summary>
+        /// Perform a recursive size, on our children. May be overridden by a inheritor
+        /// </summary>
         protected void PerformRecursiveSize()   
         {
             //if ( childrenz.Count>0) System.Diagnostics.Debug.WriteLine($"{Name} Perform size of children {size}");
@@ -210,23 +271,30 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        // override to auto size before children. 
-        // Only use the NI functions to change size. You can change position as well if you want to
+        /// <summary>
+        /// Override to auto size before children.  
+        /// Only use the NI functions to change size. You can change position as well if you want to
+        /// </summary>
         protected virtual void SizeControl(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Size " + Name + " area est is " + parentclientrect);
         }
 
-        // override to auto size after the children sized themselves.
-        // Only use the NI functions to change size. You can change position as well if you want to
+        /// <summary>
+        /// Override to auto size after the children sized themselves.
+        /// Only use the NI functions to change size. You can change position as well if you want to
+        /// </summary>
+        /// <param name="parentclientrect">Parent client rectangle for sizing information</param>
         protected virtual void SizeControlPostChild(Size parentclientrect)
         {
             //System.Diagnostics.Debug.WriteLine("Post Size " + Name + " area est is " + parentclientrect);
         }
 
-        // performed after sizing, layout children on your control.
-        // pass our client rectangle to the children and let them layout to it
-        // if you override and do not call base, call ClearLayoutFlags after procedure to clear the layout
+        /// <summary>
+        /// Performed after sizing, layout children on your control.
+        /// Pass our client rectangle to the children and let them layout to it
+        /// If you override and do not call base, call ClearLayoutFlags after procedure to clear the layout
+        /// </summary>
         protected virtual void PerformRecursiveLayout()     // Layout all the children, and their dependents 
         {
             Rectangle area = ClientRectangle;
@@ -244,20 +312,29 @@ namespace GLOFC.GL4.Controls
             ClearLayoutFlags();
         }
 
-        // clear layout. Must be public for external derived classes
+        /// <summary>
+        /// Clear Layout flags to indicate layout has completed
+        /// </summary>
         public void ClearLayoutFlags()
         { 
             suspendLayoutCount = 0;   // we can't be suspended
             needLayout = false;     // we have layed out
         }
-        internal void CallPerformRecursiveLayout()        // because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
+
+        /// <summary>
+        /// Because you can't call from an inheritor, even though your the same class, silly, done this way for visibility
+        /// </summary>
+        internal void CallPerformRecursiveLayout()      
         {
             PerformRecursiveLayout();
         }
 
-        // standard layout function, layout yourself inside the area, return area left.
-        // you can override this one to perform your own specific layout
-        // if so, you must call CalcClientRectangle 
+        /// <summary>
+        /// standard layout function. First layout yourself inside the area then return area left.
+        /// You can override this to perform your own specific layout
+        /// if so, you must call CalcClientRectangle to update internal variables
+        /// </summary>
+        /// <param name="parentarea">Area available to you, modify to say what area is left.</param>
         public virtual void Layout(ref Rectangle parentarea)
         {
           //  System.Diagnostics.Debug.WriteLine($"{Name} Layout {parentarea} {docktype} {Anchor}");
@@ -409,11 +486,14 @@ namespace GLOFC.GL4.Controls
             //  System.Diagnostics.Debug.WriteLine($"{Name} Layout over with {parentarea}");
         }
 
-        // gr = null at start, else gr used by parent
-        // bounds = area that our control occupies on the bitmap, in bitmap co-ords. This may be outside of the clip area below if the child is outside of the client area of its parent control
-        // cliparea = area that we can draw into, in bitmap co-ords, so we don't exceed the bounds of any parent clip areas above us. clipareas are continually narrowed
-        // we must be visible to be called. Children may not be visible
-
+        /// <summary>
+        /// Redraw youself and your children call
+        /// </summary>
+        /// <param name="parentgr">if null, use the level bitmap of this control, passed down to children to draw into</param>
+        /// <param name="bounds">Area that our control occupies on the bitmap, in bitmap co-ords. This may be outside of the clip area below if the child is outside of the client area of its parent control</param>
+        /// <param name="cliparea">area that we can draw into, in bitmap co-ords, so we don't exceed the bounds of any parent clip areas above us. clipareas are continually narrowed</param>
+        /// <param name="forceredraw">For a redraw even if its NeedRedraw flag is false</param>
+        /// <returns>trur if redrawn or any child redrew</returns>
         internal virtual bool Redraw(Graphics parentgr, Rectangle bounds, Rectangle cliparea, bool forceredraw)
         {
             Graphics backgr = parentgr;
@@ -429,12 +509,12 @@ namespace GLOFC.GL4.Controls
 
             bool redrawn = false;
 
-            if (NeedRedraw || forceredraw)          // if we need a redraw, or we are forced to draw by a parent redrawing above us.
+            if (needredraw || forceredraw)          // if we need a redraw, or we are forced to draw by a parent redrawing above us.
             {
                 //System.Diagnostics.Debug.WriteLine("redraw {0}->{1} Bounds {2} clip {3} client {4} ({5},{6},{7},{8}) nr {9} fr {10}", Parent?.Name, Name, bounds, cliparea, ClientRectangle, ClientLeftMargin, ClientTopMargin, ClientRightMargin, ClientBottomMargin, NeedRedraw, forceredraw);
 
                 forceredraw = true;             // all children, force redraw      
-                NeedRedraw = false;             // we have been redrawn
+                needredraw = false;             // we have been redrawn
                 redrawn = true;                 // and signal up we have been redrawn
 
                 backgr.SetClip(cliparea);           // set graphics to the clip area which includes the border so we can draw the background/border
@@ -442,7 +522,6 @@ namespace GLOFC.GL4.Controls
 
                 if (Width > 0 && Height > 0)        // no point drawing nothing
                 {
-                    //System.Diagnostics.Debug.WriteLine($"{Name} PaintBack {bounds} clip {cliparea} {BackColor}");
                     DrawBack(new Rectangle(0, 0, Width, Height), backgr, BackColor, BackColorGradientAlt, BackColorGradientDir);
 
                     DrawBorder(backgr, BorderColor, BorderWidth);
@@ -551,30 +630,44 @@ namespace GLOFC.GL4.Controls
             return redrawn;
         }
 
-        // draw border area, override to draw something different. Co-ords are at 0,0 and clip area set to whole window bounds
-        protected virtual void DrawBorder(Graphics gr, Color bc, float bw)
+        /// <summary>
+        /// Draw border area, override to draw something different. Co-ords are at 0,0 and clip area set to whole window bounds 
+        /// </summary>
+        /// <param name="gr">Graphics to draw into</param>
+        /// <param name="bordercolor">Border colour</param>
+        /// <param name="borderwidth">Border size</param>
+        protected virtual void DrawBorder(Graphics gr, Color bordercolor, float borderwidth)
         {
-            if (bw > 0)
+            if (borderwidth > 0)
             {
                 Rectangle rectarea = new Rectangle(Margin.Left,
                                                 Margin.Top,
                                                 Width - Margin.TotalWidth - 1,
                                                 Height - Margin.TotalHeight - 1);
 
-                using (var p = new Pen(bc, bw))
+                using (var p = new Pen(bordercolor, borderwidth))
                 {
                     gr.DrawRectangle(p, rectarea);
                 }
             }
         }
 
-        // draw back area - override to paint something different. Co-ords are at 0,0 and clip area set to whole window bounds
-        protected virtual void DrawBack(Rectangle area, Graphics gr, Color bc, Color bcgradientalt, int bcgradientdir)
+        /// <summary>
+        /// Draw back of control, override to draw something different. 
+        /// </summary>
+        /// <param name="area">Area to draw into. Co-ords are at 0,0 and clip area set to whole window bounds </param>
+        /// <param name="gr">Graphics to draw into</param>
+        /// <param name="backgroundcolor">Color to draw</param>
+        /// <param name="bcgradientalt">Alternate gradient color</param>
+        /// <param name="bcgradientdir">Gradient direction</param>
+        protected virtual void DrawBack(Rectangle area, Graphics gr, Color backgroundcolor, Color bcgradientalt, int bcgradientdir)
         {
-            if ( levelbmp != null)                  // if we own a bitmap, reset back to transparent, erasing anything that we drew before
+            //System.Diagnostics.Debug.WriteLine($"Draw Back {Name} with {bc} in {area}");
+
+            if ( levelbmp != null)                  // if we own a bitmap, reset it all to transparent whatever the color is below
                 gr.Clear(Color.Transparent);       
 
-            if (bc != Color.Transparent)            // and draw what the back colour is
+            if (backgroundcolor != Color.Transparent)            // and draw what the back colour is
             {
                 if ( levelbmp == null )             // if we are a normal control, we need to start from the pixels inside us being transparent
                     gr.Clear(Color.Transparent);    // erasing anything that we drew before, because if we have half alpha in the colour, it will build up
@@ -582,20 +675,24 @@ namespace GLOFC.GL4.Controls
                 if (bcgradientdir != int.MinValue)
                 {
                     //System.Diagnostics.Debug.WriteLine("Background " + Name +  " " + bounds + " " + bc + " -> " + bcgradientalt );
-                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(area, bc, bcgradientalt, bcgradientdir))
+                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(area, backgroundcolor, bcgradientalt, bcgradientdir))
                         gr.FillRectangle(b, area);       // linear grad brushes do not respect smoothing mode, btw
                 }
                 else
                 {
                     //System.Diagnostics.Debug.WriteLine("Background " + Name + " " + bounds + " " + backcolor);
-                    using (Brush b = new SolidBrush(bc))     // always fill, so we get back to start
+                    using (Brush b = new SolidBrush(backgroundcolor))     // always fill, so we get back to start
                         gr.FillRectangle(b, area);
                 }
             }
         }
 
-        // called with the clip set to your ClientRectangle or less. See Multilinetextbox code if you need to further reduce the clip area
-        // Co-ords are 0,0 - top left client rectangle. May be smaller than client rectange if clipped by parent
+        /// <summary>
+        /// Paint your foreground. Controls must override this
+        /// Called with the clip set to your ClientRectangle or less. 
+        /// See Multilinetextbox for an example code if you need to further reduce the clip area
+        /// </summary>
+        /// <param name="gr">Graphics to draw into</param>
         protected virtual void Paint(Graphics gr)              
         {
             //System.Diagnostics.Debug.WriteLine("Paint {0}", Name);
@@ -605,7 +702,12 @@ namespace GLOFC.GL4.Controls
 
         #region UI Overrides
 
-        protected  virtual void OnMouseLeave(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse has left control. 
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseLeave(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("leave " + Name + " " + e.Location);
             MouseLeave?.Invoke(this, e);
@@ -617,6 +719,11 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <summary>
+        /// Mouse has entered control. 
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
         protected virtual void OnMouseEnter(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("enter " + Name + " " + e.Location + " " + InvalidateOnEnterLeave);
@@ -629,7 +736,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected  virtual void OnMouseUp(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse button has been released
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseUp(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("up   " + Name + " " + e.Location + " " + e.Button);
             MouseUp?.Invoke(this, e);
@@ -638,7 +750,12 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
         }
 
-        protected  virtual void OnMouseDown(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse button has been pressed
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseDown(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("down " + Name + " " + e.Location + " " + e.Button + " " + MouseButtonsDown);
             MouseDown?.Invoke(this, e);
@@ -649,19 +766,34 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        protected  virtual void OnMouseClick(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse was clicked on control
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseClick(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("click " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
             MouseClick?.Invoke(this, e);
         }
 
-        protected  virtual void OnMouseDoubleClick(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse has double clicked on control. 
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseDoubleClick(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("doubleclick " + Name + " " + e.Button + " " + e.Clicks + " " + e.Location);
             MouseDoubleClick?.Invoke(this, e);
         }
 
-        protected  virtual void OnMouseMove(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse has moved over control
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseMove(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Over " + Name + " " + e.Location);
             MouseMove?.Invoke(this, e);
@@ -670,36 +802,68 @@ namespace GLOFC.GL4.Controls
                 Invalidate();
         }
 
-        protected  virtual void OnMouseWheel(GLMouseEventArgs e)
+        /// <summary>
+        /// Mouse wheen has moved while over control
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnMouseWheel(GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("Over " + Name + " " + e.Location);
             MouseWheel?.Invoke(this, e);
         }
 
-        protected  virtual void OnKeyDown(GLKeyEventArgs e)     // GLForm above control gets this as well, and can cancel call to control by handling it
+        /// <summary>
+        /// Key has been pressed when control is focused
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnKeyDown(GLKeyEventArgs e)     // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyDown?.Invoke(this, e);
         }
 
-        protected  virtual void OnKeyUp(GLKeyEventArgs e)       // GLForm above control gets this as well, and can cancel call to control by handling it
+        /// <summary>
+        /// Key has been released when control is focused
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnKeyUp(GLKeyEventArgs e)       // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyUp?.Invoke(this, e);
         }
 
-        protected  virtual void OnKeyPress(GLKeyEventArgs e)    // GLForm above control gets this as well, and can cancel call to control by handling it
+        /// <summary>
+        /// Keycode has been pressed when control is focused
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnKeyPress(GLKeyEventArgs e)    // GLForm above control gets this as well, and can cancel call to control by handling it
         {
             KeyPress?.Invoke(this, e);
         }
 
-        protected  virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)  // focused elements or parents up to GLForm gets this as well
+        /// <summary>
+        /// Focus has changed to/from the control
+        /// Override to implement custom features, you normally call back to this as your first action.
+        /// </summary>
+        /// <param name="focused">Indicates focus action, either Focused on control, Deactivated, or one of your children has been Focused or Deactivated</param>
+        /// <param name="ctrl">Control which focus event has happened on</param>
+        protected virtual void OnFocusChanged(FocusEvent focused, GLBaseControl ctrl)  // focused elements or parents up to GLForm gets this as well
         {
             this.focused = focused == FocusEvent.Focused;
+            //System.Diagnostics.Debug.WriteLine($"On Focus Changed {Name} to {focused} = {this.focused} fi {InvalidateOnFocusChange}");
             if (InvalidateOnFocusChange)
                 Invalidate();
             FocusChanged?.Invoke(this, focused, ctrl);
         }
 
-        protected  virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
+        /// <summary>
+        /// Override this to see all focus events, not just on yourself.
+        /// </summary>
+        /// <param name="from">Focus changed from this (may be null if no focus)</param>
+        /// <param name="to">Focus is now here (may be null if clicked on no controls)</param>
+        protected virtual void OnGlobalFocusChanged(GLBaseControl from, GLBaseControl to) // everyone gets this
         {
             GlobalFocusChanged?.Invoke(from, to);
             List<GLBaseControl> list = new List<GLBaseControl>(childrenz); // copy of, in case the caller closes something
@@ -707,7 +871,12 @@ namespace GLOFC.GL4.Controls
                 c.OnGlobalFocusChanged(from, to);
         }
 
-        protected virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        /// <summary>
+        /// Override this to see all mouse clicks, not just on yourself
+        /// </summary>
+        /// <param name="ctrl">Control which was clicked</param>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnGlobalMouseClick(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseClick?.Invoke(ctrl, e);
@@ -716,7 +885,12 @@ namespace GLOFC.GL4.Controls
                 c.OnGlobalMouseClick(ctrl, e);
         }
 
-        protected virtual void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e) // everyone gets this
+        /// <summary>
+        /// Override this to see all mouse down events, not just on yourself
+        /// </summary>
+        /// <param name="ctrl">Control which was clicked</param>
+        /// <param name="e">Window and mouse event parameters</param>
+        protected virtual void OnGlobalMouseDown(GLBaseControl ctrl, GLMouseEventArgs e)
         {
             //System.Diagnostics.Debug.WriteLine("In " + Name + " Global click in " + ctrl.Name);
             GlobalMouseDown?.Invoke(ctrl, e);
@@ -725,40 +899,59 @@ namespace GLOFC.GL4.Controls
                 c.OnGlobalMouseDown(ctrl, e);
         }
 
+        /// <summary>
+        /// Override this to see font change events on the control
+        /// You can also hook to the FontCHanged Action
+        /// </summary>
         protected virtual void OnFontChanged()
         {
             FontChanged?.Invoke(this);
         }
 
-        protected  virtual void OnResize()
+        /// <summary>
+        /// Override this to see size change events on the control
+        /// You can also hook to the Resize Action
+        /// </summary>
+        protected virtual void OnResize()
         {
             //System.Diagnostics.Debug.WriteLine($"On Resize {Name}");
             Resize?.Invoke(this);
         }
 
-        protected  virtual void OnMoved()
+        /// <summary>
+        /// Override this to see position change events on the control
+        /// You can also hook to the Moved Action
+        /// </summary>
+        protected virtual void OnMoved()
         {
             Moved?.Invoke(this);
         }
 
-        protected  virtual void OnControlAdd(GLBaseControl parent, GLBaseControl child)     // fired to both the parent and child
+        /// <summary>
+        /// Override this to see new controls added as children to the control
+        /// You can also hook to the ControlAdd Action
+        /// </summary>
+        protected virtual void OnControlAdd(GLBaseControl parent, GLBaseControl child)     // fired to both the parent and child
         {
             ControlAdd?.Invoke(parent, child);
         }
 
-        protected  virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
+        /// <summary>
+        /// Override this to see children controls removed to the control
+        /// You can also hook to the ControlRemove Action
+        /// </summary>
+        protected virtual void OnControlRemove(GLBaseControl parent, GLBaseControl ctrlbeingremoved) // fired to both the parent and child
         {
             ControlRemove?.Invoke(parent, ctrlbeingremoved);
         }
 
         #endregion
 
-
         #region Implementation
 
         // Set Position, clipped to max/min size, causing an invalidation layout at parent level, only if changed
 
-        protected virtual void SetPos(int left, int top, int width, int height)
+        internal virtual void SetPos(int left, int top, int width, int height)
         {
             width = Math.Max(width, minimumsize.Width);
             width = Math.Min(width, maximumsize.Width);
@@ -789,7 +982,7 @@ namespace GLOFC.GL4.Controls
                 if (resized)
                     OnResize();
 
-                NeedRedraw = true;
+                needredraw = true;
 
                 Parent?.InvalidateLayout(this);
             }
@@ -845,25 +1038,26 @@ namespace GLOFC.GL4.Controls
                 c.ClearFlagsDown();
         }
 
+        /// <summary>
+        /// Dispose of resources of this control. 
+        /// </summary>
         public virtual void Dispose()
         {
             levelbmp?.Dispose();
             levelbmp = null;
         }
 
-        public void DumpTrees(int l, GLBaseControl prev)
+        internal void ClearRedraw()
         {
-            string prefix = new string(' ',64).Substring(0, l);
-            System.Diagnostics.Debug.WriteLine("{0}{1} {2}", prefix, Name, Parent == prev ? "OK" : "Not linked");
-            if (childrenz.Count > 0)
-            {
-                foreach (var c in childrenz)
-                    c.DumpTrees(l + 2, this);
-            }
+            needredraw = false;
+        }
+        internal void ClearSuspendLayout()
+        {
+            suspendLayoutCount = 0;
         }
 
-        protected bool NeedRedraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
-        public bool TopLevelControlUpdate { get; set; } = false;        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
+        private bool needredraw { get; set; } = true;         // we need to redraw, therefore all children also redraw
+        internal bool TopLevelControlUpdate { get; set; } = false;        // Top level windows only, indicate need to recalculate due to Opacity or Scale change
 
         private Bitmap levelbmp;       // set if the level has a new bitmap.  Controls under Form always does. Other ones may if they scroll
         private Point scrolloffset;     // offset of bit map
@@ -876,11 +1070,11 @@ namespace GLOFC.GL4.Controls
         private Rectangle window;       // total area owned, in parent co-ords
         private PaddingType padding;
         private MarginType margin;
-        protected Size minimumsize = new Size(0, 0);
-        protected Size maximumsize = new Size(int.MaxValue, int.MaxValue);
+        private Size minimumsize = new Size(0, 0);
+        private Size maximumsize = new Size(int.MaxValue, int.MaxValue);
 
         private bool needLayout  = false;        // need a layout after suspend layout was called
-        protected int suspendLayoutCount = 0;        // suspend layout is on
+        private int suspendLayoutCount = 0;        // suspend layout is on
 
         private bool enabled = true;
         private bool visible  = true;
@@ -915,6 +1109,7 @@ namespace GLOFC.GL4.Controls
 
         private GLBaseControl parent  = null;       // its parent, or null if not connected or GLDisplayControl
 
+        // z order
         private List<GLBaseControl> childrenz = new List<GLBaseControl>();
         private List<GLBaseControl> childreniz = new List<GLBaseControl>();
 

@@ -174,6 +174,7 @@ namespace TestOpenTk
                 mtb.TabOrder = taborder++;
                 mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
                 mtb.FlashingCursor = false;
+                mtb.BackColor = Color.Yellow;
                 pform.Add(mtb);
 
             }
@@ -200,6 +201,7 @@ namespace TestOpenTk
                 mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
                 mtb.TabOrder = taborder++;
                 mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
+                mtb.BackColor = Color.Blue;
                 pform.Add(mtb);
                 //mtb.FlashingCursor = false;
                 //mtb.ReadOnly = true;
@@ -221,6 +223,8 @@ namespace TestOpenTk
                 tb1.Font = new Font("Arial", 12);
                 tb1.ReturnPressed += (c1) => { System.Diagnostics.Debug.WriteLine($"Return pressed on text box"); };
                 tb1.TabOrder = taborder++;
+                tb1.BackColor = Color.AliceBlue;
+                tb1.ForeColor = Color.Red;
                 pform.Add(tb1);
             }
 

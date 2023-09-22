@@ -43,7 +43,7 @@ namespace GLOFC.GL4.Controls
         // Width,Height,Size,Focused implemented by GLBaseControl
 
         /// <summary> Is context current to opengl </summary>
-        public bool IsCurrent()  {  return glwin.IsCurrent();  }
+        public bool IsContextCurrent()  {  return glwin.IsContextCurrent();  }
 
         // Resize implemented by GLBaseControl, as is Key/Mouse events
 
@@ -142,7 +142,7 @@ namespace GLOFC.GL4.Controls
             glwin.Resize += Gc_Resize;
             glwin.Paint += Gc_Paint;
 
-            suspendLayoutCount = 0;     
+            ClearSuspendLayout();
         }
 
         /// <summary>
@@ -152,11 +152,11 @@ namespace GLOFC.GL4.Controls
         /// <param name="ts">Time stamp from Paint</param>
         public void Render(GLRenderState currentstate, ulong ts)
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsContextCurrent(), "Context incorrect");
 
             //System.Diagnostics.Debug.WriteLine("Render");
 
-            NeedRedraw = false;
+            ClearRedraw();
             RequestRender = false;
 
             if (ControlsIZ.Count > 0)       // only action if children present
@@ -290,8 +290,53 @@ namespace GLOFC.GL4.Controls
             base.Add(child, atback);
         }
 
+        /// <summary>
+        /// Call to add a modal form. Only controls in the modal form are active, other controls are inert
+        /// </summary>
+        /// <param name="form">The form to make modal</param>
+       
+        public void AddModalForm(GLForm form)
+        {
+            Add(form, false);
+            modalforms.Add(form);
+            System.Diagnostics.Debug.WriteLine($"Add modal form");
+        }
+
+        /// <summary>
+        /// Do not normally call this as its automatically called from Form.ForceClose (or via Close) 
+        /// Remove from from modal list
+        /// </summary>
+        /// <param name="form">The form being removed</param>
+        public void RemoveModalForm(GLForm form)
+        {
+            if (modalforms.Count > 0)
+            {
+                if (modalforms.Last() == form)
+                {
+                    if (modalforms.Count > 1 && form.IsThisOrChildrenFocused())        // if it has the focus
+                    {
+                        var focusform = modalforms[modalforms.Count - 2];
+                        System.Diagnostics.Debug.WriteLine($"Modal form {form.Name} has a focus, pass back to {focusform.Name}");
+                        focusform.SetFocus();
+                    }
+
+                    modalforms.RemoveAt(modalforms.Count - 1);
+                }
+                else
+                    System.Diagnostics.Debug.WriteLine($"Tried to remove modal form {form.Name} but not at end - coding error");
+            }
+            else
+                System.Diagnostics.Debug.WriteLine($"No modal forms active");
+        }
+
+        /// <summary>
+        /// Is modal forms active?
+        /// </summary>
+        /// <returns>true if any modal forms are active</returns>
+        public bool ModalFormsActive { get { return modalforms.Count > 0; } } 
+
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.RemoveControl(GLBaseControl, bool, bool)"/>
-        protected override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
+        internal override void RemoveControl(GLBaseControl child, bool dispose, bool removechildren)
         {
             bool ourchild = ControlsZ.Contains(child);      // record before removecontrol updates controlz list
 
@@ -321,7 +366,7 @@ namespace GLOFC.GL4.Controls
         // update the vertex buffer with positions
         private void UpdateVertexPositionsTextures(bool forceupdatetextures = false)        
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsContextCurrent(), "Context incorrect");
 
             if (ControlsZ.Count > 0)            // may end up with nothing to draw, in which case, don't update anything
             {
@@ -426,7 +471,7 @@ namespace GLOFC.GL4.Controls
 
         /// <summary> Do not use on control display </summary>
         [Obsolete("Do not use this call on displaycontrol", true)]
-        protected new void SetPos(int left, int top, int width, int height) {  }
+        internal new void SetPos(int left, int top, int width, int height) {  }
 
         /// <summary> Internal interface do not use </summary>
         public void SetCursor(GLWindowControl.GLCursorType t)
@@ -452,7 +497,7 @@ namespace GLOFC.GL4.Controls
         // window is painting - hooked up to GLWindowControl Paint function. ts is elapsed time in ms.
         private void Gc_Paint(ulong ts)
         {
-            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsCurrent(), "Context incorrect");
+            System.Diagnostics.Debug.Assert(context == GLStatics.GetContext() && IsContextCurrent(), "Context incorrect");
             Paint?.Invoke(ts);
         }
 

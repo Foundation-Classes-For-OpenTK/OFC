@@ -42,6 +42,7 @@ namespace TestOpenTk
     {
         void PutSetting<T>(string id, T value);
         T GetSetting<T>(string id, T defaultvalue);
+        void DeleteSetting(string id);
     }
 
     public class Map
@@ -74,6 +75,7 @@ namespace TestOpenTk
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
         private GalaxyStars galaxystars = null;
+        private Images images;
 
         private Bookmarks bookmarks;
 
@@ -120,7 +122,7 @@ namespace TestOpenTk
             items.Add(new GLMatrixCalcUniformBlock(), "MCUB");     // create a matrix uniform block 
 
             int lyscale = 1;
-            int front = -20000 / lyscale, back = front + 90000/lyscale , left = -45000/lyscale , right = left + 90000/lyscale , vsize = 2000/lyscale;
+            int front = -20000 / lyscale, back = front + 90000 / lyscale, left = -45000 / lyscale, right = left + 90000 / lyscale, vsize = 2000 / lyscale;
 
             if (false)     // debug bounding box
             {
@@ -152,7 +154,7 @@ namespace TestOpenTk
 
                 float h = 0;
 
-                int dist = 1000/lyscale ;
+                int dist = 1000 / lyscale;
                 Color cr = Color.FromArgb(100, Color.White);
                 rObjects.Add(items.Shader("COS-1L"),    // horizontal
                              GLRenderableItem.CreateVector4Color4(items, PrimitiveType.Lines, rl,
@@ -172,6 +174,12 @@ namespace TestOpenTk
             int ctrlo = 2048 | 32 | 64;
             ctrlo = -1;
             //ctrlo = 32 | 64 | 256;
+
+
+            if (true)
+            {
+                images = new Images(items, rObjects);
+            }
 
             if ((ctrlo & 1) != 0) // galaxy
             {
@@ -225,7 +233,7 @@ namespace TestOpenTk
                 galaxyshader.StartAction += (a, m) => { galtex.Bind(galtexbinding); noise3d.Bind(gnoisetexbinding); gaussiantex.Bind(gdisttexbinding); };      // shader requires these, so bind using shader
 
                 GLRenderState rt = GLRenderState.Tri();
-                galaxyrenderable = GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.Points,rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
+                galaxyrenderable = GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.Points, rt);   // no vertexes, all data from bound volumetric uniform, no instances as yet
                 rObjects.Add(galaxyshader, "galshader", galaxyrenderable);
             }
 
@@ -243,14 +251,14 @@ namespace TestOpenTk
                 edsmgalmapregions.CreateObjects("edsmregions", items, rObjects, edsmmapping, 8000, corr: corr);
             }
 
-            if ((ctrlo & 4) != 0) 
+            if ((ctrlo & 4) != 0)
             {
                 elitemapregions = new GalMapRegions();
                 elitemapregions.CreateObjects("eliteregions", items, rObjects, eliteregions, 8000);
                 EliteRegionsEnable = false;
             }
 
-            if ((ctrlo & 8) != 0) 
+            if ((ctrlo & 8) != 0)
             {
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
@@ -287,7 +295,7 @@ namespace TestOpenTk
                             int c = Math.Min(Math.Max(i * i * i / 120000, 1), 40);
                             //int c = Math.Min(Math.Max(i * i * i / 24000000, 1), 40);
 
-                            dist *= 2000/lyscale ;
+                            dist *= 2000 / lyscale;
                             //System.Diagnostics.Debug.WriteLine("{0} {1} : dist {2} c {3}", x, z, dist, c);
                             //System.Diagnostics.Debug.Write(c);
                             GLPointsFactory.RandomStars4(buf, c, gx, gx + xcw, gz, gz + zch, (int)dist, (int)-dist, rnd, w: 0.8f);
@@ -302,7 +310,7 @@ namespace TestOpenTk
 
                 stardots = new GalaxyStarDots();
                 items.Add(stardots);
-                GLRenderState rc = GLRenderState.Points(1);       
+                GLRenderState rc = GLRenderState.Points(1);
                 rc.DepthTest = false; // note, if this is true, there is a wierd different between left and right in view.. not sure why
                 rObjects.Add(stardots, "stardots", GLRenderableItem.CreateVector4(items, OpenTK.Graphics.OpenGL4.PrimitiveType.Points, rc, buf, points));
                 System.Diagnostics.Debug.WriteLine("Stars " + points);
@@ -310,20 +318,20 @@ namespace TestOpenTk
 
             rObjects.Add(new GLOperationClearDepthBuffer()); // clear depth buffer and now use full depth testing on the rest
 
-            if ((ctrlo & 16) != 0) 
-            {
-                items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
-                items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
-                var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
+            //if ((ctrlo & 16) != 0) // no longer used in main program
+            //{
+            //    items.Add(new GLTexture2D(Properties.Resources.StarFlare2, SizedInternalFormat.Rgba8), "lensflare");
+            //    items.Add(new GLPointSpriteShader(items.Tex("lensflare"), 64, 40), "PS");
+            //    var p = GLPointsFactory.RandomStars4(1000, 0, 25899/lyscale, 10000/lyscale, 1000/lyscale, -1000/lyscale);
 
-                GLRenderState rps = GLRenderState.PointsByProgram();
- 
-                rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items,PrimitiveType.Points, rps, p, 
-                                        new Color4[] { Color.White }));
+            //    GLRenderState rps = GLRenderState.PointsByProgram();
 
-            }
+            //    rObjects.Add(items.Shader("PS"), "starsprites", GLRenderableItem.CreateVector4Color4(items,PrimitiveType.Points, rps, p, 
+            //                            new Color4[] { Color.White }));
 
-            if ((ctrlo & 32) != 0) 
+            //}
+
+            if ((ctrlo & 32) != 0)
             {
                 gridvertshader = new DynamicGridVertexShader(Color.Cyan);
                 //items.Add(gridvertshader, "PLGRIDVertShader");
@@ -340,7 +348,7 @@ namespace TestOpenTk
 
             }
 
-            if ((ctrlo & 64) != 0) 
+            if ((ctrlo & 64) != 0)
             {
                 gridbitmapvertshader = new DynamicGridCoordVertexShader();
                 var frag = new GLPLFragmentShaderTexture2DIndexed(0);
@@ -356,6 +364,14 @@ namespace TestOpenTk
                 rObjects.Add(items.Shader("DYNGRIDBitmap"), "DYNGRIDBitmapRENDER", GLRenderableItem.CreateNullVertex(OpenTK.Graphics.OpenGL4.PrimitiveType.TriangleStrip, rl, drawcount: 4, instancecount: 9));
             }
 
+            var starimagearray = new GLTexture2DArray();
+            Bitmap[] starbmps = new Bitmap[] { Properties.Resources.O, Properties.Resources.A, Properties.Resources.F, Properties.Resources.G, Properties.Resources.N };
+            Bitmap[] starbmpsreduced = starbmps.CropImages(new RectangleF(16, 16, 68, 68));
+            //for (int b = 0; b < starbmpsreduced.Length; b++)  starbmpsreduced[b].Save(@"c:\code\" + $"star{b}.bmp", System.Drawing.Imaging.ImageFormat.Png);
+            starimagearray.CreateLoadBitmaps(starbmpsreduced, SizedInternalFormat.Rgba8, ownbmp: true);
+            items.Add(starimagearray);
+            long[] starimagearraycontrolword = { 0, 1 + 65536, 2, 3, 4 + 65536 };
+
             GLStorageBlock findresults = items.NewStorageBlock(findblock);
 
             float sunsize = .5f;
@@ -367,17 +383,17 @@ namespace TestOpenTk
                 Color[] colors = new Color[] { Color.Red, Color.Green, Color.Blue, Color.White, Color.Black, Color.Purple, Color.Yellow };
                 for (int j = 0; j <= 200; j++)
                 {
-                    Color jc = colors[(j/30) % colors.Length];
+                    Color jc = colors[(j / 30) % colors.Length];
                     int i = j * 10;
                     string name = "Kyli Flyuae AA-B h" + j.ToString();
                     if (i < 30000)
                         pos.Add(new HistoryEntry(start, name, i + rnd.Next(50), rnd.Next(50), i, jc));
                     else if (i < 60000)
-                        pos.Add(new HistoryEntry(start, name, 60000 - i + rnd.Next(50), rnd.Next(50), i,jc));
+                        pos.Add(new HistoryEntry(start, name, 60000 - i + rnd.Next(50), rnd.Next(50), i, jc));
                     else if (i < 90000)
-                        pos.Add(new HistoryEntry(start, name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i,jc));
-                    else 
-                        pos.Add(new HistoryEntry(start, name, -30000 +(i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000,jc));
+                        pos.Add(new HistoryEntry(start, name, -(i - 60000) + rnd.Next(50), rnd.Next(50), 120000 - i, jc));
+                    else
+                        pos.Add(new HistoryEntry(start, name, -30000 + (i - 90000) + rnd.Next(50), rnd.Next(50), -i + 120000, jc));
 
                     start = start.AddDays(1);
                 }
@@ -385,27 +401,27 @@ namespace TestOpenTk
                 // tested to 50k stars
 
                 travelpath = new TravelPath(1000);
-                travelpath.Create(items, rObjects, pos, sunsize, sunsize, findresults, true);
+                travelpath.Create(items, rObjects, new Tuple<GLTexture2DArray, long[]>(starimagearray, starimagearraycontrolword), pos, sunsize, sunsize, findresults, true);
                 travelpath.SetSystem(0);
             }
 
             if ((ctrlo & 256) != 0)
             {
                 galmapobjects = new GalMapObjects();
-                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findresults,true);
+                galmapobjects.CreateObjects(items, rObjects, edsmmapping, findresults, true);
             }
 
             if ((ctrlo & 512) != 0)
             {
-                galaxystars = new GalaxyStars(items, rObjects, sunsize, findresults);
+                galaxystars = new GalaxyStars(items, rObjects, new Tuple<GLTexture2DArray, long[]>(starimagearray, starimagearraycontrolword), sunsize, findresults);
             }
 
             if ((ctrlo & 1024) != 0)
             {
-                rightclickmenu = new GLContextMenu("RightClickMenu",    
+                rightclickmenu = new GLContextMenu("RightClickMenu",
                     new GLMenuItem("RCMInfo", "Information")
                     {
-                        MouseClick = (s,e) => {
+                        MouseClick = (s, e) => {
                             if (e.Button == GLMouseEventArgs.MouseButtons.Left)
                             {
                                 var nl = NameLocationDescription(rightclickmenu.Tag);
@@ -452,20 +468,20 @@ namespace TestOpenTk
 
             matrixcalc = new GLMatrixCalc();
             matrixcalc.PerspectiveNearZDistance = 0.1f;
-            matrixcalc.PerspectiveFarZDistance = 120000f / lyscale ;
+            matrixcalc.PerspectiveFarZDistance = 120000f / lyscale;
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
             // menu system
 
-            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f,0.00001f);       // hook form to the window - its the master
+            displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f, 0.00001f);       // hook form to the window - its the master
             displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Font = new Font("Arial", 10f);
             displaycontrol.Paint += (ts) => {
                 galaxymenu?.UpdateCoords(gl3dcontroller);
                 displaycontrol.Animate(glwfc.ElapsedTimems);
                 GLStatics.ClearDepthBuffer();         // clear the depth buffer, so we are on top of all previous renders.
-                displaycontrol.Render(glwfc.RenderState, ts); 
+                displaycontrol.Render(glwfc.RenderState, ts);
             };
             displaycontrol.SetFocus();
 
@@ -473,7 +489,7 @@ namespace TestOpenTk
 
             gl3dcontroller = new Controller3D();
             gl3dcontroller.PosCamera.ZoomMax = 5000;     // gives 5ly
-            gl3dcontroller.ZoomDistance = 3000F/lyscale;
+            gl3dcontroller.ZoomDistance = 3000F / lyscale;
             gl3dcontroller.PosCamera.ZoomMin = 0.1f;
             gl3dcontroller.PosCamera.ZoomScaling = 1.1f;
             gl3dcontroller.YHoldMovement = true;
@@ -481,7 +497,7 @@ namespace TestOpenTk
             gl3dcontroller.KeyboardTravelSpeed = (ms, eyedist) =>
             {
                 double eyedistr = Math.Pow(eyedist, 1.0);
-                float v =  (float)Math.Max(eyedistr / 1200, 0);
+                float v = (float)Math.Max(eyedistr / 1200, 0);
                 //System.Diagnostics.Debug.WriteLine("Speed " + eyedistr + " "+ v);
                 return (float)ms * v;
             };
@@ -495,49 +511,52 @@ namespace TestOpenTk
             displaycontrol.MouseClick += MouseClickOnMap;
 
 
-            galaxymenu = new MapMenu(this);
+            galaxymenu = new MapMenu(this, images);
 
             // Autocomplete text box at top for searching
 
             GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]);
 
-            tbac.PerformAutoCompleteInUIThread = (s, a,set) =>
+            if (tbac != null)
             {
-                System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
-                var glist = edsmmapping.GalacticMapObjects.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
-                List<string> list = glist.Select(x => x.Name).ToList();
-                list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
-                foreach (var x in list)
-                    set.Add(x);
-            };
+                tbac.PerformAutoCompleteInUIThread = (s, a, set) =>
+                {
+                    System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
+                    var glist = edsmmapping.GalacticMapObjects.Where(x => s.Length < 3 ? x.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x).ToList();
+                    List<string> list = glist.Select(x => x.Name).ToList();
+                    list.AddRange(travelpath.CurrentList.Where(x => s.Length < 3 ? x.System.Name.StartsWith(s, StringComparison.InvariantCultureIgnoreCase) : x.System.Name.Contains(s, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.System.Name));
+                    foreach (var x in list)
+                        set.Add(x);
+                };
 
-            tbac.SelectedEntry = (a) =>     // in UI thread
-            {
-                System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
-                System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
-                var gmo = edsmmapping.GalacticMapObjects.Find(x => x.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
-                if (gmo != null)
+                tbac.SelectedEntry = (a) =>     // in UI thread
                 {
-                    System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.Points[0]);
-                    gl3dcontroller.SlewToPosition(new Vector3((float)gmo.Points[0].X, (float)gmo.Points[0].Y, (float)gmo.Points[0].Z), -1);
-                }
-                else
-                {
-                    var he = travelpath.CurrentList.Find(x => x.System.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
-                    if (he != null)
+                    System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread
+                    System.Diagnostics.Debug.WriteLine("Selected " + tbac.Text);
+                    var gmo = edsmmapping.GalacticMapObjects.Find(x => x.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                    if (gmo != null)
                     {
-                        System.Diagnostics.Debug.WriteLine("Move to sys " + he.System.Name);
-                        gl3dcontroller.SlewToPosition(new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z), -1);
+                        System.Diagnostics.Debug.WriteLine("Move to gmo " + gmo.Points[0]);
+                        gl3dcontroller.SlewToPosition(new Vector3((float)gmo.Points[0].X, (float)gmo.Points[0].Y, (float)gmo.Points[0].Z), -1);
                     }
                     else
-                        tbac.InErrorCondition = true;
-                }
-            };
+                    {
+                        var he = travelpath.CurrentList.Find(x => x.System.Name.Equals(tbac.Text, StringComparison.InvariantCultureIgnoreCase));
+                        if (he != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Move to sys " + he.System.Name);
+                            gl3dcontroller.SlewToPosition(new Vector3((float)he.System.X, (float)he.System.Y, (float)he.System.Z), -1);
+                        }
+                        else
+                            tbac.InErrorCondition = true;
+                    }
+                };
+            }
 
-            if (galaxystars!= null)
+            if (galaxystars != null)
                 galaxystars.Start();
 
-            if ( false)        // enable for debug buffer
+            if (false)        // enable for debug buffer
             {
                 debugbuffer = new GLStorageBlock(31, true);
                 debugbuffer.AllocateBytes(32000, OpenTK.Graphics.OpenGL4.BufferUsageHint.DynamicCopy);       // set size of vec buffer
@@ -549,7 +568,7 @@ namespace TestOpenTk
                 GLRenderState rc = GLRenderState.Tri(cullface: false);
                 rc.DepthTest = false;
 
-                Vector3[] markers = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, -5, 0), new Vector3(0, -5-3.125f/2f, 0) };
+                Vector3[] markers = new Vector3[] { new Vector3(0, 0, 0), new Vector3(0, -5, 0), new Vector3(0, -5 - 3.125f / 2f, 0) };
 
                 for (int i = 0; i < markers.Length; i++)
                 {
@@ -566,7 +585,7 @@ namespace TestOpenTk
             string shaderlog = GLShaderLog.ShaderLog;
             if (shaderlog.HasChars())
                 MessageBox.Show(shaderlog, "Shader Log - report to EDD");
-            if ( GLShaderLog.Okay == false )
+            if (GLShaderLog.Okay == false)
                 MessageBox.Show(shaderlog, "Map broken - abort");
 
         }
@@ -584,12 +603,14 @@ namespace TestOpenTk
             TravelPathStartDateEnable = defaults.GetSetting("TPSDE", false);
             TravelPathEndDate = defaults.GetSetting("TPED", DateTime.UtcNow.AddMonths(1));
             TravelPathEndDateEnable = defaults.GetSetting("TPEDE", false);
-            if ( TravelPathStartDateEnable || TravelPathEndDateEnable )
+            if (TravelPathStartDateEnable || TravelPathEndDateEnable)
                 travelpath.Refresh();       // and refresh it if we set the data
 
             GalObjectDisplay = defaults.GetSetting("GALOD", true);
             SetAllGalObjectTypeEnables(defaults.GetSetting("GALOBJLIST", ""));
 
+            ImagesEnable = defaults.GetSetting("ImagesEnable", true);
+            images.LoadFromString(defaults.GetSetting("ImagesList", ""));
 
             EDSMRegionsEnable = defaults.GetSetting("ERe", false);
             EDSMRegionsOutlineEnable = defaults.GetSetting("ERoe", false);
@@ -601,6 +622,10 @@ namespace TestOpenTk
             EliteRegionsShadingEnable = defaults.GetSetting("ELse", false);
             EliteRegionsTextEnable = defaults.GetSetting("ELte", true);
             gl3dcontroller.SetPositionCamera(defaults.GetSetting("POSCAMERA", ""));     // go thru gl3dcontroller to set default position, so we reset the model matrix
+
+            images.Add(new Images.ImageEntry(@"c:\code\picture1.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
+            images.Add(new Images.ImageEntry(@"c:\code\picture2.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
+            //    images.Add(new Images.ImageEntry(@"c:\code\picture3.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
         }
 
         public void SaveState(MapSaver defaults)
@@ -609,7 +634,7 @@ namespace TestOpenTk
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
             defaults.PutSetting("TPD", TravelPathDisplay);
-            defaults.PutSetting("TPSD", TravelPathStartDate );
+            defaults.PutSetting("TPSD", TravelPathStartDate);
             defaults.PutSetting("TPSDE", TravelPathStartDateEnable);
             defaults.PutSetting("TPED", TravelPathEndDate);
             defaults.PutSetting("TPEDE", TravelPathEndDateEnable);
@@ -624,6 +649,8 @@ namespace TestOpenTk
             defaults.PutSetting("ELse", EliteRegionsShadingEnable);
             defaults.PutSetting("ELte", EliteRegionsTextEnable);
             defaults.PutSetting("POSCAMERA", gl3dcontroller.PosCamera.StringPositionCamera);
+            defaults.PutSetting("ImagesEnable", images.Enable);
+            //  defaults.PutSetting("ImagesList", images.ImageStringList());
         }
 
         #endregion
@@ -633,7 +660,8 @@ namespace TestOpenTk
         public void Systick()
         {
             var cdmt = gl3dcontroller.HandleKeyboardSlewsAndInvalidateIfMoved(true, OtherKeys);
-             glwfc.Invalidate();
+            //if (cdmt)
+            glwfc.Invalidate();
         }
 
         double fpsavg = 0;
@@ -645,7 +673,7 @@ namespace TestOpenTk
         {
             long t1 = hptimer.ElapsedTicks;
             //TBD
-        //    GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
+            //    GL.Finish();      // use GL finish to ensure last frame is done - if we are operating above sys tick rate, this will be small time. If we are rendering too much, it will stall
             long t2 = hptimer.ElapsedTicks;
 
             GLMatrixCalcUniformBlock mcb = ((GLMatrixCalcUniformBlock)items.UB("MCUB"));
@@ -661,6 +689,8 @@ namespace TestOpenTk
                 gridvertshader.SetUniforms(gl3dcontroller.MatrixCalc.LookAt, lastgridwidth, gridrenderable.InstanceCount);
             }
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);      // ensure clear before start
+
             if (gridbitmapvertshader != null)
             {
                 float coordfade = lastgridwidth == 10000 ? (0.7f - (c3d.MatrixCalc.EyeDistance / 20000).Clamp(0.0f, 0.7f)) : 0.7f;
@@ -668,36 +698,51 @@ namespace TestOpenTk
                 gridbitmapvertshader.ComputeUniforms(lastgridwidth, gl3dcontroller.MatrixCalc, gl3dcontroller.PosCamera.CameraDirection, coordscol, Color.Transparent);
             }
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
             if (edsmgalmapregions != null)
                 edsmgalmapregions.SetY(gl3dcontroller.PosCamera.LookAt.Y);
+
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
 
             if (elitemapregions != null)
                 elitemapregions.SetY(gl3dcontroller.PosCamera.LookAt.Y);
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
             // set the galaxy volumetric block
 
             if (galaxyrenderable != null)
             {
-                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f  : 0);        // set up the volumentric uniform
-                //System.Diagnostics.Debug.WriteLine("GI {0}", galaxyrendererable.InstanceCount);
-                //galaxyshader.SetDistance(gl3dcontroller.MatrixCalc.InPerspectiveMode ? c3d.MatrixCalc.EyeDistance : -1f);
-                galaxyshader.SetFader(gl3dcontroller.MatrixCalc.EyePosition, gl3dcontroller.MatrixCalc.EyeDistance,gl3dcontroller.MatrixCalc.InPerspectiveMode);
+                galaxyrenderable.InstanceCount = volumetricblock.Set(gl3dcontroller.MatrixCalc, volumetricboundingbox, gl3dcontroller.MatrixCalc.InPerspectiveMode ? 50.0f : 0);        // set up the volumentric uniform
+
+                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
+                galaxyshader.SetFader(gl3dcontroller.MatrixCalc.EyePosition, gl3dcontroller.MatrixCalc.EyeDistance, gl3dcontroller.MatrixCalc.InPerspectiveMode);
             }
+
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
 
             long t3 = hptimer.ElapsedTicks;
 
-            if ( travelpath != null)
+            if (travelpath != null)
                 travelpath.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
-            if ( galmapobjects != null)
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
+            if (galmapobjects != null)
                 galmapobjects.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
+
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
 
             if (galaxystars != null)
                 galaxystars.Update(time, gl3dcontroller.MatrixCalc.EyeDistance);
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
+
             if (galaxystars != null && gl3dcontroller.MatrixCalc.EyeDistance < 400 && Math.Abs(gl3dcontroller.PosCamera.LookAt.Z) < 800)
                 galaxystars.Request9BoxConditional(gl3dcontroller.PosCamera.LookAt);
 
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out glasserterr), glasserterr);      // ensure clear before start
 
             long t4 = hptimer.ElapsedTicks;
 
@@ -709,12 +754,12 @@ namespace TestOpenTk
             var tmr2 = new GLOperationQueryTimeStamp();
             tmr1.Execute(null);
 
-            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose:false);
+            rObjects.Render(glwfc.RenderState, gl3dcontroller.MatrixCalc, verbose: false);
             tmr2.Execute(null);
 
             // GL.QueryCounter(queryID[1], QueryCounterTarget.Timestamp);
 
-         //   GL.Flush(); // ensure everything is in the grapghics pipeline
+            //   GL.Flush(); // ensure everything is in the grapghics pipeline
 
             //while (tmr2.IsAvailable() == false)
             //    ;
@@ -760,43 +805,45 @@ namespace TestOpenTk
             tmr2.Dispose();
             if (diff > 0)
             {
-//                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");
-//                System.Diagnostics.Debug.WriteLine($" finish {(t2 - t1) * 1000000 / Stopwatch.Frequency,5} t3 {(t3 - t2) * 1000000 / Stopwatch.Frequency,4} t4 {(t4 - t3) * 1000000 / Stopwatch.Frequency,4} render {(t5 - t4) * 1000000 / Stopwatch.Frequency,5} tot {(t5 - t1) * 1000000 / Stopwatch.Frequency,5}");
+                //                System.Diagnostics.Debug.Write($"Frame {hptimer.ElapsedMilliseconds,6} {diff,3} fps {fpsavg:#.0} frames {frametimes[0],3} {frametimes[1],3} {frametimes[2],3} {frametimes[3],3} {frametimes[4],3} {frametimes[5],3} sec {galaxystars.Sectors,3}");
+                //                System.Diagnostics.Debug.WriteLine($" finish {(t2 - t1) * 1000000 / Stopwatch.Frequency,5} t3 {(t3 - t2) * 1000000 / Stopwatch.Frequency,4} t4 {(t4 - t3) * 1000000 / Stopwatch.Frequency,4} render {(t5 - t4) * 1000000 / Stopwatch.Frequency,5} tot {(t5 - t1) * 1000000 / Stopwatch.Frequency,5}");
             }
             //            this.Text = "FPS " + fpsavg.ToString("N0") + " Looking at " + gl3dcontroller.MatrixCalc.TargetPosition + " eye@ " + gl3dcontroller.MatrixCalc.EyePosition + " dir " + gl3dcontroller.Pos.CameraDirection + " Dist " + gl3dcontroller.MatrixCalc.EyeDistance + " Zoom " + gl3dcontroller.Pos.ZoomFactor;
         }
 
         long[] frametimes = new long[6];
 
-#endregion
+        #endregion
 
-#region Turn on/off, move, etc.
+        #region Turn on/off, move, etc.
 
-        public bool GalaxyDisplay { get { return galaxyshader?.Enable ?? false; } set { galaxyshader.Enable = value; glwfc.Invalidate(); } }
-        public bool StarDotsDisplay { get { return stardots?.Enable ?? false; } set { stardots.Enable = value; glwfc.Invalidate(); } }
-        public bool TravelPathDisplay { get { return travelpath?.Enable ?? false; } set { travelpath.Enable = value; glwfc.Invalidate(); } }
+        public bool GalaxyDisplay { get { return galaxyshader?.Enable ?? false; } set { if (galaxyshader != null) { galaxyshader.Enable = value; glwfc.Invalidate(); } } }
+        public bool StarDotsDisplay { get { return stardots?.Enable ?? false; } set { if (stardots != null) { stardots.Enable = value; glwfc.Invalidate(); } } }
+        public bool TravelPathDisplay { get { return travelpath?.Enable ?? false; } set { if (travelpath != null) { travelpath.Enable = value; glwfc.Invalidate(); } } }
 
         public int GalaxyStars { get { return galaxystars?.EnableMode ?? 0; } set { if (galaxystars != null) galaxystars.EnableMode = value; glwfc.Invalidate(); } }
 
         public void TravelPathRefresh() { travelpath.Refresh(); }   // travelpath.Refresh() manually after these have changed
-        public DateTime TravelPathStartDate { get { return travelpath?.TravelPathStartDate ?? DateTime.MinValue; } set { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } }
-        public bool TravelPathStartDateEnable { get { return travelpath?.TravelPathStartDateEnable ?? false; } set { if (travelpath.TravelPathStartDateEnable != value) { travelpath.TravelPathStartDateEnable = value; } } }
-        public DateTime TravelPathEndDate { get { return travelpath?.TravelPathEndDate ?? DateTime.MinValue; } set { if (travelpath.TravelPathEndDate != value) { travelpath.TravelPathEndDate = value; } } }
-        public bool TravelPathEndDateEnable { get { return travelpath?.TravelPathEndDateEnable ?? false; } set { if (travelpath.TravelPathEndDateEnable != value) { travelpath.TravelPathEndDateEnable = value; } } }
+        public DateTime TravelPathStartDate { get { return travelpath?.TravelPathStartDate ?? DateTime.MinValue; } set { if (travelpath != null) { if (travelpath.TravelPathStartDate != value) { travelpath.TravelPathStartDate = value; } } } }
+        public bool TravelPathStartDateEnable { get { return travelpath?.TravelPathStartDateEnable ?? false; } set { if (travelpath != null) { if (travelpath.TravelPathStartDateEnable != value) { travelpath.TravelPathStartDateEnable = value; } } } }
+        public DateTime TravelPathEndDate { get { return travelpath?.TravelPathEndDate ?? DateTime.MinValue; } set { if (travelpath != null) { if (travelpath.TravelPathEndDate != value) { travelpath.TravelPathEndDate = value; } } } }
+        public bool TravelPathEndDateEnable { get { return travelpath?.TravelPathEndDateEnable ?? false; } set { if (travelpath != null) { if (travelpath.TravelPathEndDateEnable != value) { travelpath.TravelPathEndDateEnable = value; } } } }
 
-        public bool GalObjectDisplay { get { return galmapobjects?.Enable ?? false; } set { galmapobjects.Enable = value; glwfc.Invalidate(); } }
+        public bool GalObjectDisplay { get { return galmapobjects?.Enable ?? false; } set { if (galmapobjects != null) { galmapobjects.Enable = value; glwfc.Invalidate(); } } }
         public void SetGalObjectTypeEnable(string id, bool state) { galmapobjects.SetGalObjectTypeEnable(id, state); glwfc.Invalidate(); }
         public bool GetGalObjectTypeEnable(string id) { return galmapobjects?.GetGalObjectTypeEnable(id) ?? false; }
-        public void SetAllGalObjectTypeEnables(string set) { galmapobjects.SetAllEnables(set); glwfc.Invalidate(); }
-        public string GetAllGalObjectTypeEnables() { return galmapobjects.GetAllEnables(); }
-        public bool EDSMRegionsEnable { get { return edsmgalmapregions?.Enable ?? false; } set { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions?.Outlines ?? false; } set { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions?.Regions ?? false; } set { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions?.Text ?? false; } set { edsmgalmapregions.Text = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsEnable { get { return elitemapregions?.Enable ?? false; } set { elitemapregions.Enable = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsOutlineEnable { get { return elitemapregions?.Outlines ?? false; } set { elitemapregions.Outlines = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsShadingEnable { get { return elitemapregions?.Regions ?? false; } set { elitemapregions.Regions = value; glwfc.Invalidate(); } }
-        public bool EliteRegionsTextEnable { get { return elitemapregions?.Text ?? false; } set { elitemapregions.Text = value; glwfc.Invalidate(); } }
+        public void SetAllGalObjectTypeEnables(string set) { if (galmapobjects != null) { galmapobjects.SetAllEnables(set); glwfc.Invalidate(); } }
+        public string GetAllGalObjectTypeEnables() { return galmapobjects?.GetAllEnables() ?? ""; }
+        public bool EDSMRegionsEnable { get { return edsmgalmapregions?.Enable ?? false; } set { if (edsmgalmapregions != null) { edsmgalmapregions.Enable = value; glwfc.Invalidate(); } } } 
+        public bool EDSMRegionsOutlineEnable { get { return edsmgalmapregions?.Outlines ?? false; } set { if (edsmgalmapregions != null) { edsmgalmapregions.Outlines = value; glwfc.Invalidate(); } } }
+        public bool EDSMRegionsShadingEnable { get { return edsmgalmapregions?.Regions ?? false; } set { if (edsmgalmapregions != null) { edsmgalmapregions.Regions = value; glwfc.Invalidate(); } } }
+        public bool EDSMRegionsTextEnable { get { return edsmgalmapregions?.Text ?? false; } set { if (edsmgalmapregions != null) { edsmgalmapregions.Text = value; glwfc.Invalidate(); } } }
+        public bool EliteRegionsEnable { get { return elitemapregions?.Enable ?? false; } set { if (elitemapregions != null) { elitemapregions.Enable = value; glwfc.Invalidate(); } } }
+        public bool EliteRegionsOutlineEnable { get { return elitemapregions?.Outlines ?? false; } set { if (elitemapregions != null) { elitemapregions.Outlines = value; glwfc.Invalidate(); } } }
+        public bool EliteRegionsShadingEnable { get { return elitemapregions?.Regions ?? false; } set { if (elitemapregions != null) { elitemapregions.Regions = value; glwfc.Invalidate(); } } }
+        public bool EliteRegionsTextEnable { get { return elitemapregions?.Text ?? false; } set { if (elitemapregions != null) { elitemapregions.Text = value; glwfc.Invalidate(); } } }
+
+        public bool ImagesEnable { get { return images?.Enable ?? false; } set { if (images != null) { images.Enable = value; glwfc.Invalidate(); } } }
 
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {

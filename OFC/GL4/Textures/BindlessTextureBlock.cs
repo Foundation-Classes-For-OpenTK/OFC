@@ -55,6 +55,17 @@ namespace GLOFC.GL4.Textures
             StopReadWrite();
             System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
         }
+
+        /// <summary> Write ARBID to the bindless texture handle block. Block should be preallocated </summary>
+        public void WriteHandle(IGLTexture texture , int pos)
+        {
+            StartWrite(sizeof(long) * 2 * pos);
+            Write(texture.AcquireArbId());    // ARBS are stored as 128 bit numbers, so two longs
+            Write((long)0);
+            StopReadWrite();
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+        }
+
     }
 }
 
