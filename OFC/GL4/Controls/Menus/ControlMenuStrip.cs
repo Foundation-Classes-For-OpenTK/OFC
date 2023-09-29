@@ -158,10 +158,8 @@ namespace GLOFC.GL4.Controls
                     Point p = FindScreenCoords(offset);     // find this point in bounds on screen
 
                     submenu = new GLMenuStrip(Name + "." + mi.Name, new Rectangle(p.X, p.Y, 200, 200));        // size is immaterial , autosize both
+                    submenu.Owner = this;                   // associate with us
                     submenu.ScaleWindow = FindScaler();
-
-                    //System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
-
                     submenu.Font = Font;
                     submenu.BackColor = this.BackColor;
                     submenu.BackColorGradientAlt = this.BackColorGradientAlt;
@@ -174,9 +172,10 @@ namespace GLOFC.GL4.Controls
                     submenu.TopMost = true;
                     submenu.BorderWidth = SubMenuBorderWidth;
                     submenu.SubMenuBorderWidth = SubMenuBorderWidth;
-
                     submenu.AddItems(mi.SubMenuItems);
                     submenu.SetSelected(-1);                                    // release all items for hover highlighting
+
+                    //System.Diagnostics.Debug.WriteLine("Open menu " + submenu.Name + " " + submenu.Bounds);
 
                     AddToDesktop(submenu);
 

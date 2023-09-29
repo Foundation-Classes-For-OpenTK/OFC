@@ -36,25 +36,34 @@ namespace GLOFC.GL4.Controls
         /// <summary> Disable autosize. Not supported </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
-        /// <summary> Constructor with name and bounds </summary>
-        public GLScrollPanel(string name, Rectangle location) : base(name, location)
-        {
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
-        }
-
-        /// <summary> Construct with name and location, backcolor and themer enable </summary>
-        public GLScrollPanel(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
-        {
-            EnableThemer = enablethemer;
-            BackColorNI = backcolor;
-        }
-
         /// <summary> Default Constructor </summary>
         public GLScrollPanel(string name = "SP?") : this(name, DefaultWindowRectangle)
         {
         }
 
+        /// <summary> Construtor with name, bounds, and optional back color, enable theme</summary>
+        public GLScrollPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
+        {
+            BackColorGradientAltNI = BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultScrollPanelBackColor;
+            BorderColorNI = DefaultScrollPanelBorderColor;
+            EnableThemer = enablethemer;
+        }
+
+        /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
+        public GLScrollPanel(string name, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
+        {
+            Dock = type;
+            DockPercent = dockpercent;
+        }
+
+        /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
+        public GLScrollPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
+        {
+            Dock = type;
+            DockPercent = dockpercentage;
+            SetNI(size: sizep);
+        }
+  
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout"/>
         protected override void PerformRecursiveLayout()
         {

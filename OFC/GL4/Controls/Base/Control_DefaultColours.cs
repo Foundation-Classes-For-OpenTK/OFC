@@ -33,14 +33,14 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultButtonBorderColor = SystemColors.ControlText;
         static public Color DefaultButtonForeColor = SystemColors.ControlText;      // text
         static public Color DefaultMouseOverButtonColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultMouseDownButtonColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultMouseDownButtonColor = Color.FromArgb(150, 150, 150);
 
         static public Color DefaultListBoxBackColor = SystemColors.Window;
         static public Color DefaultListBoxBorderColor = SystemColors.ControlText;
         static public Color DefaultListBoxForeColor = SystemColors.WindowText;
         static public Color DefaultListBoxLineSeparColor = Color.Green;
-        static public Color DefaultListBoxMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultListBoxSelectedItemColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultListBoxMouseOverColor = DefaultMouseOverButtonColor;
+        static public Color DefaultListBoxSelectedItemColor = DefaultMouseDownButtonColor;
 
         static public Color DefaultComboBoxBackColor = SystemColors.Window;
         static public Color DefaultComboBoxFaceColor = SystemColors.Window;
@@ -49,12 +49,12 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultScrollbarBackColor = SystemColors.Control;
         static public Color DefaultScrollbarBorderColor = SystemColors.ControlText;
-        static public Color DefaultScrollbarSliderColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultScrollbarSliderColor = DefaultMouseOverButtonColor;
         static public Color DefaultScrollbarArrowColor = SystemColors.ControlText;
         static public Color DefaultScrollbarArrowButtonFaceColor = SystemColors.Control;
         static public Color DefaultScrollbarArrowButtonBorderColor = SystemColors.ControlText;
-        static public Color DefaultScrollbarMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultScrollbarMouseDownColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultScrollbarMouseOverColor = DefaultMouseOverButtonColor;
+        static public Color DefaultScrollbarMouseDownColor = DefaultMouseDownButtonColor;
         static public Color DefaultScrollbarThumbColor = SystemColors.Control;
         static public Color DefaultScrollbarThumbBorderColor = SystemColors.ControlText;
 
@@ -73,8 +73,8 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultFlowLayoutBackColor = SystemColors.Control;
         static public Color DefaultFlowLayoutBorderColor = SystemColors.ControlText;
 
-        static public Color DefaultVerticalScrollPanelBorderColor = SystemColors.ControlText;
-        static public Color DefaultVerticalScrollPanelBackColor = SystemColors.Control;
+        static public Color DefaultScrollPanelBorderColor = SystemColors.ControlText;
+        static public Color DefaultScrollPanelBackColor = SystemColors.Control;
 
         static public Color DefaultDTPForeColor = SystemColors.WindowText;
         static public Color DefaultDTPBackColor = SystemColors.Window;
@@ -88,8 +88,8 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultCheckColor = SystemColors.ControlText;
         static public Color DefaultCheckBoxBorderColor = SystemColors.ControlText;
         static public Color DefaultCheckBoxInnerColor = SystemColors.Window;
-        static public Color DefaultCheckMouseOverColor = Color.FromArgb(200, 200, 200);
-        static public Color DefaultCheckMouseDownColor = Color.FromArgb(230, 230, 230);
+        static public Color DefaultCheckMouseOverColor = DefaultMouseOverButtonColor;
+        static public Color DefaultCheckMouseDownColor = DefaultMouseDownButtonColor;
 
         static public Color DefaultTextBoxErrorColor = Color.OrangeRed;
         static public Color DefaultTextBoxHighlightColor = Color.Red;
@@ -102,12 +102,12 @@ namespace GLOFC.GL4.Controls
         static public Color DefaultTabControlSelectedBackColor = SystemColors.Control;
         static public Color DefaultTabControlNotSelectedBackColor = SystemColors.Control;
         static public Color DefaultTabControlNotSelectedForeColor = SystemColors.ControlText;
-        static public Color DefaultTabControlMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultTabControlMouseOverColor = DefaultMouseOverButtonColor;
 
         static public Color DefaultMenuBackColor = SystemColors.Control;
         static public Color DefaultMenuBorderColor = SystemColors.ControlText;
         static public Color DefaultMenuForeColor = SystemColors.ControlText;
-        static public Color DefaultMenuMouseOverColor = Color.FromArgb(200, 200, 200);
+        static public Color DefaultMenuMouseOverColor = DefaultMouseOverButtonColor;
         static public Color DefaultMenuIconStripBackColor = Color.FromArgb(220, 220, 220);
 
         static public Color DefaultToolTipBackColor = SystemColors.Info;       // text
@@ -132,8 +132,8 @@ namespace GLOFC.GL4.Controls
 
         static public Color DefaultTrackBarBarColor = Color.Gray;
         static public Color DefaultTrackBarTickColor = Color.FromArgb(255, 192, 192, 192);
-        static public Color DefaultTrackMouseOverColor = Color.FromArgb(255, 210, 210, 210);
-        static public Color DefaultTrackMouseDownColor = Color.FromArgb(255, 230, 220, 220);
+        static public Color DefaultTrackMouseOverColor = DefaultMouseOverButtonColor;
+        static public Color DefaultTrackMouseDownColor = DefaultMouseDownButtonColor;
 
         #endregion
 

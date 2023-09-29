@@ -125,6 +125,7 @@ void main(void)
         /// <param name="arbbinding">Texture binding point</param>
         /// <param name="alphablend">Allows alpha to be passed from the vertex shader to this</param>
         /// <param name="alphazerocolour">Allows a default colour to show for zero alpha samples</param>
+        /// <param name="maxbitmaps">Maximum number of bitmaps supported</param>
 
         public GLPLFragmentShaderTextureBindlessIndexed(int offset, int arbbinding = 1, bool alphablend = false, Color? alphazerocolour = null, int maxbitmaps = 1024)
         {

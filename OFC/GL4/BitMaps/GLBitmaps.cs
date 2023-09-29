@@ -119,7 +119,7 @@ namespace GLOFC.GL4.Bitmaps
                             StringFormat textformat = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,   
                             float alphafadescalar = 0, 
-                            float alphafadepos = 0,
+                            float alphafadepos = 1,
                             bool visible = true
                          )
         {
@@ -161,14 +161,14 @@ namespace GLOFC.GL4.Bitmaps
                             Vector3 rotationradians,        
                             bool rotatetoviewer = false, bool rotateelevation = false,   
                             float alphafadescalar = 0, 
-                            float alphafadepos = 0,
+                            float alphafadepos = 1,
                             bool ownbitmap = false,
                             bool visible=  true
                          )
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Bitmaps detected context incorrect");
 
-            Matrix4 mat = GLPLVertexShaderMatrixTriStripTexture.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
+            Matrix4 mat = GLStaticsMatrix4.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var gpc = matrixbuffers.Add(tag, ownbitmap ? bmp : null, mat);     // group, pos, total in group
           //  System.Diagnostics.Debug.WriteLine("Make bitmap {0} {1} {2} at {3}", gpc.Item1, gpc.Item2, gpc.Item3 , worldpos);

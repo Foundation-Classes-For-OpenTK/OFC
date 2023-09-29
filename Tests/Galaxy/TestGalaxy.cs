@@ -58,8 +58,9 @@ namespace TestOpenTk
             mapdefaults.ReadFromDisk(@"c:\code\mapdef.txt");
 
             map = new Map();
-            map.Start(glwfc, edsmmapping, eliteRegions);
+            map.Start(glwfc, edsmmapping, eliteRegions, (a)=> { BeginInvoke((MethodInvoker)(() => { a.Invoke(); })); });
             map.LoadState(mapdefaults);
+            map.LoadBitmaps();
 
             systemtimer.Start();
         }

@@ -902,14 +902,16 @@ namespace GLOFC.GL4.Controls
         protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)    
         {
             base.OnControlAdd(parent, child);
-            if (child == this && !IsFontDefined)    // if we have not defined a font, on attach we need to finish again, because the font has changed from the default
-                Finish(true, false, false);
+            // font may have changed, we have better do a recalc
+            CalcLineHeight();    
+            Finish(true, false, false);
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
         protected override void OnFontChanged()
         {
             base.OnFontChanged();
+            //System.Diagnostics.Debug.WriteLine($"On font changed in MLTB {Font.Name} {Font.Height}");
             CalcLineHeight();
             Finish(invalidate: false, clearselection: false, restarttimer: false);        // no need to invalidate again, it will
         }
@@ -978,6 +980,7 @@ namespace GLOFC.GL4.Controls
             if (!MultiLineMode)     // if we are in no LF mode (ie. Textbox) then use TextAlign to format area
             {
                 usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, LineHeight));
+                //usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, usablearea.Height));
             }
 
             return usablearea;
@@ -1074,8 +1077,9 @@ namespace GLOFC.GL4.Controls
 
                         if (s.Length > 0)
                         {
+                            //System.Diagnostics.Debug.WriteLine($"Draw '{s}' into text box {usablearea} cr {ClientRectangle} b { Bounds} font {Font.ToString()} {Font.Height}");
+
                             gr.DrawString(s, Font, textb, usablearea, pfmt);        // need to paint to pos not in an area
-                           // System.Diagnostics.Debug.WriteLine($"Draw '{s}' into text box {usablearea} cr {ClientRectangle} b { Bounds} font {Font.ToString()}");
                             // useful for debug
 
                             //Pen pr = new Pen(Color.Red);
@@ -1480,7 +1484,7 @@ namespace GLOFC.GL4.Controls
             // so MS sand serif at 8.25 or 12 if you just rely on Font.Height cuts the bottom off. So use a bit of text to find the mininum. Seems ok with Arial/MS Sans Serif
             var area = BitMapHelpers.MeasureStringInBitmap("AAjjqqyyy", Font);
             lineheight = Math.Max(Font.Height+1,(int)(area.Height+0.4999));
-          //  System.Diagnostics.Debug.WriteLine($"Line {area} {Font.Height} {Font.ToString()} = {LineHeight}");
+            //System.Diagnostics.Debug.WriteLine($"Calc Line height {area} {Font.Height} {Font.ToString()} = {LineHeight}");
         }
 
         #endregion

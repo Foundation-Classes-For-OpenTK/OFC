@@ -119,13 +119,15 @@ namespace GLOFC.GL4.Controls
             {
                 if (Focused)
                 {
-                    //System.Diagnostics.Debug.WriteLine($"Paint button {Name} focus rectangle in {MouseDownColor}");
+                    //System.Diagnostics.Debug.WriteLine($"Paint button {Name} focus rectangle {buttonarea} in {MouseDownColor}");
+
                     using (var p = new Pen(MouseDownColor) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
                     {
                         gr.DrawRectangle(p, new Rectangle(buttonarea.Left, buttonarea.Top, buttonarea.Width - 1, buttonarea.Height - 1));
                     }
                 }
-                buttonarea.Inflate(new Size(-1, -1));
+
+                buttonarea.Inflate(new Size(-2, -2));
             }
 
             if (Image != null && paintimage)

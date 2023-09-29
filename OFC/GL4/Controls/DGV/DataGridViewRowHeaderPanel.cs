@@ -27,8 +27,8 @@ namespace GLOFC.GL4.Controls
 
         public GLDataGridViewRowHeaderPanel(string name, Rectangle location) : base(name, location)
         {
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+            BorderColorNI = DefaultScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultScrollPanelBackColor;
             autoscroll.Tick += (t, tick) =>
             {
                 GLDataGridView dgv = Parent as GLDataGridView;

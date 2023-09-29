@@ -39,6 +39,7 @@ namespace GLOFC.GL4
         /// vec4 EyePosition;			// vertex position, before ModelMatrix
         /// float EyeDistance;          // between eye and target
         /// mat4 ScreenMatrix;			// for co-ordinate transforms between screen coords and display coords
+        /// bool Perspective;           // if in perspective mode (note bool takes up 4 bytes, tested, so can be written as an int write)
         /// } mc;
         /// 
         /// Include in your project by #include UniformStorageBlocks.matrixcalc.glsl

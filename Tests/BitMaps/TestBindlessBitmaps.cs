@@ -149,10 +149,11 @@ namespace TestOpenTk
             if ( true)
             {
                 btb = new GLBindlessTextureBitmaps("BTB1", rObjects, 3);
-                btb.Add("B1", null, Properties.Resources.dotted, 1, new Vector3(10, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 2), 0, 0));
-                btb.Add("B2", null, Properties.Resources.dotted2, 1, new Vector3(20, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 2), 0, 0));
-                btb.Add("B3", null, Properties.Resources.EDSMUnknown, 1, new Vector3(-20, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 3), 0, 0));
-                btb.Add("T1", null, "test of text writing", Font, Color.Yellow, Color.Blue, new Size(128,24), new Vector3(-20, 0, 20), new Vector3(10, 0, 3), new Vector3((float)(-Math.PI / 3), 0, 0));
+                items.Add(btb);
+                btb.Add("B1", null, Properties.Resources.dotted, 1, new Vector3(10, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 2), 0, 0),false,false,0,0.5f);
+                btb.Add("B2", null, Properties.Resources.dotted2, 1, new Vector3(20, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 2), 0, 1));
+                btb.Add("B3", null, Properties.Resources.EDSMUnknown, 1, new Vector3(-20, 0, 0), new Vector3(10, 10, 10), new Vector3((float)(-Math.PI / 3), 0, 1));
+                btb.Add("T1", null, "test of text writing", Font, Color.Yellow, Color.Blue, new Size(128,24), new Vector3(-20, 0, 20), new Vector3(10, 0, 3), new Vector3((float)(-Math.PI / 3), 0, 1));
             }
 
             #endregion
@@ -169,6 +170,7 @@ namespace TestOpenTk
         private void ShaderTest_Closed(object sender, EventArgs e)
         {
             items.Dispose();
+            GLStatics.VerifyAllDeallocated();
         }
 
         private void ControllerDraw(Controller3D mc, ulong unused)
@@ -237,7 +239,7 @@ namespace TestOpenTk
             }
             if (kb.HasBeenPressed(Keys.L, GLOFC.Controller.KeyboardMonitor.ShiftState.None))
             {
-                btb.Add("L", null, Properties.Resources.GeyserPOI, 1, new Vector3(0, 0, 0), new Vector3(10, 0, 10), new Vector3((float)(-Math.PI / 2), 0, 0));
+                btb.Add("L", null, Properties.Resources.GeyserPOI, 1, new Vector3(0, 0, 0), new Vector3(10, 0, 10), new Vector3((float)(-Math.PI / 2), 0, 1));
                 glwfc.Invalidate();
             }
 

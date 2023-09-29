@@ -41,31 +41,32 @@ namespace GLOFC.GL4.Controls
         /// <summary> Padding around flow positions to space out the flow</summary>
         public PaddingType FlowPadding { get { return flowPadding; } set { flowPadding = value; InvalidateLayout(); } }
 
-        /// <summary> Construct with name and bounds </summary>
-        public GLFlowLayoutPanel(string name, Rectangle location) : base(name, location)
+        /// <summary> Default Constructor </summary>
+        public GLFlowLayoutPanel() : this("FLP?", DefaultWindowRectangle)
         {
-            BorderColorNI = DefaultFlowLayoutBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultFlowLayoutBackColor;
         }
 
-        /// <summary> Construct with name, docking type and docking percent </summary>
-        public GLFlowLayoutPanel(string name, DockingType type, float dockpercent) : base(name, DefaultWindowRectangle)
+        /// <summary> Construtor with name, bounds, and optional back color, enable theme</summary>
+        public GLFlowLayoutPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
+        {
+            BackColorGradientAltNI = BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultFlowLayoutBackColor;
+            BorderColorNI = DefaultFlowLayoutBorderColor;
+            EnableThemer = enablethemer;
+        }
+
+        /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
+        public GLFlowLayoutPanel(string name, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
-        /// <summary> Construct with name, size, docking type and docking percentage </summary>
-        public GLFlowLayoutPanel(string name, Size sizep, DockingType type, float dockpercentage) : base(name, DefaultWindowRectangle)
+        /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
+        public GLFlowLayoutPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
         {
             Dock = type;
             DockPercent = dockpercentage;
             SetNI(size: sizep);
-        }
-
-        /// <summary> Default Constructor</summary>
-        public GLFlowLayoutPanel() : this("TLP?",DefaultWindowRectangle)
-        {
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.SizeControlPostChild(Size)"/>

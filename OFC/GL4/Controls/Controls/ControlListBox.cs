@@ -89,7 +89,7 @@ namespace GLOFC.GL4.Controls
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }
 
         /// <summary> Construct with name, bounds and items </summary>
-        public GLListBox(string n, Rectangle pos, List<string> texts) : base(n,pos)
+        public GLListBox(string name, Rectangle pos, List<string> texts) : base(name,pos)
         {
             items = texts;
             Focusable = true;
@@ -99,14 +99,15 @@ namespace GLOFC.GL4.Controls
             SetNI(margin: new MarginType(0), borderwidth: 1, padding: new PaddingType(1));
             InvalidateOnFocusChange = true;
             InvalidateOnEnterLeave = true;
-            scrollbar = new GLScrollBar();
-            scrollbar.Name = n + "_SB";
+
+            scrollbar = new GLScrollBar(name+"_SB");
             scrollbar.Dock = DockingType.Right;
             scrollbar.SmallChange = 1;
             scrollbar.LargeChange = 1;
             scrollbar.Width = 20;
             scrollbar.Visible = false;
             scrollbar.Scroll += (s, e) => { if (firstindex != e.NewValue) { firstindex = e.NewValue; Invalidate(); } };
+            scrollbar.EnableThemer = false;
             Add(scrollbar);
         }
 

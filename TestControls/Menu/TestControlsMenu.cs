@@ -294,7 +294,6 @@ namespace TestOpenTk
         {
             if ( h.HasBeenPressed(Keys.F1, KeyboardMonitor.ShiftState.None))
             {
-                displaycontrol.DumpTrees(0,null);
             }
 
         }

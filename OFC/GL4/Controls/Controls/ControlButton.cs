@@ -68,7 +68,12 @@ namespace GLOFC.GL4.Controls
             if (ClientWidth < 1 || ClientHeight<1)
                 return;
             //System.Diagnostics.Debug.WriteLine($"Paint button {Name} focus {Focused}");
-            PaintButtonFace(ClientRectangle, gr, PaintButtonFaceColor());
+
+            // we reduce the face area by the focus box reserved area..
+            var buttonfacearea = ShowFocusBox ? new Rectangle(2,2, ClientRectangle.Width - 4, ClientRectangle.Height - 4) : ClientRectangle;
+            PaintButtonFace(buttonfacearea, gr, PaintButtonFaceColor());
+
+            // we pass the whole client rectangle for text image use
             PaintButtonTextImageFocus(ClientRectangle, gr,true);
         }
 

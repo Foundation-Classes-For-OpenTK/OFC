@@ -73,13 +73,13 @@ namespace GLOFC.GL4.Controls
         public Color SelectedColor { get { return selectedColor; } set { selectedColor = value; Invalidate(); } }
 
         /// <summary> Checkbox control, for theming </summary>
-        public GLCheckBox CheckBox { get; set; } = new GLCheckBox();              // access for setting colours
+        public GLCheckBox CheckBox { get; set; } 
         /// <summary> Up down control, for theming </summary>
-        public GLUpDownControl UpDown { get; set; } = new GLUpDownControl();
+        public GLUpDownControl UpDown { get; set; }
         /// <summary> Calendar select button control, for theming </summary>
-        public GLButton CalendarSelect { get; set; } = new GLButton();
+        public GLButton CalendarSelect { get; set; } 
         /// <summary> Calendar control, control, for theming </summary>
-        public GLCalendar Calendar { get; set; } = new GLCalendar();
+        public GLCalendar Calendar { get; set; }
 
         /// <summary> In Calandar? </summary>
         public bool InCalendar { get { return Calendar.Visible; } }
@@ -92,6 +92,7 @@ namespace GLOFC.GL4.Controls
 
             datetimevalue = datetime;
 
+            CheckBox = new GLCheckBox(name + "_CB", DefaultWindowRectangle,"");              // access for setting colours
             CheckBox.BackColor = Color.Transparent;
             CheckBox.CheckOnClick = true;
             CheckBox.KeyDown += OnKeyFromChild;
@@ -101,6 +102,7 @@ namespace GLOFC.GL4.Controls
 
             Add(CheckBox);
 
+            UpDown =  new GLUpDownControl(name+ "_UD", DefaultWindowRectangle);
             UpDown.Clicked += updownchanged;
             UpDown.BackColor = Color.Transparent;
             UpDown.ShowFocusBox = false;
@@ -109,7 +111,7 @@ namespace GLOFC.GL4.Controls
             UpDown.EnableThemer = false;       // we don't allow themeing on composite elements
             Add(UpDown);
 
-            CalendarSelect.Image = Properties.Resources.Calendar;
+            CalendarSelect = new GLButton(name+"_Calsel", DefaultWindowRectangle, Properties.Resources.Calendar, true);
             CalendarSelect.BackColor = Color.Transparent;
             CalendarSelect.ImageStretch = true;
             CalendarSelect.MouseClick += calclicked;
@@ -117,10 +119,13 @@ namespace GLOFC.GL4.Controls
             CalendarSelect.EnableThemer = false;       // we don't allow themeing on composite elements
             Add(CalendarSelect);
 
+            Calendar = new GLCalendar(name+"_Calendar", DefaultWindowRectangle);
             Calendar.Visible = false;
             Calendar.ValueChanged += calselected;
             Calendar.OtherKeyPressed += calotherkey;
             Calendar.AutoSize = true;
+            CalendarSelect.EnableThemer = false;       // we don't allow themeing on composite elements
+            Calendar.Owner = this;                     // associate it with us so its considered a child of us
 
             Focusable = true;
             InvalidateOnFocusChange = true;

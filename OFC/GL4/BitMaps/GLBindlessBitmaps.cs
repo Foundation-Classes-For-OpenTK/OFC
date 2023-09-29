@@ -48,17 +48,14 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="cullface">True to cull face</param>
         /// <param name="depthtest">True to depth test</param>
         /// <param name="yfixed">Set true to fix Y co-ord externally</param>
-        /// <param name="maxpergroup">Maximum number of bitmaps per group</param>
+        /// <param name="maxbitmaps">Maximum number of bitmaps to hold</param>
         public GLBindlessTextureBitmaps(string name, GLRenderProgramSortedList rlist, int arbblock = 3,
-                                            bool cullface = true, bool depthtest = true, int maxpergroup = int.MaxValue, bool yfixed = false, int maxbitmaps = 1024)
+                                            bool cullface = true, bool depthtest = true, bool yfixed = false, int maxbitmaps = 1024)
         {
             this.name = name;
             this.context = GLStatics.GetContext();
 
-            int maxdepthpertexture = GL4Statics.GetMaxTextureDepth();     // limits the number of textures per 2darray
-            int max = Math.Min(maxdepthpertexture, maxpergroup);        //note RI uses a VertexArray to load the matrix in, so not limited by that (max size of uniform buffer)
-
-            matrixbuffers = new GLMatrixBufferWithGenerations(items, max);
+            matrixbuffers = new GLMatrixBufferWithGenerations(items, maxbitmaps);
 
             renderlist = rlist;
 
@@ -125,8 +122,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <summary>
         /// Remove generation X from list, excepting these tags which are set to currentgeneration
         /// </summary>
-        /// <param name="removegeneration">Remove all generations less or equal to this generation</param>
-        /// <param name="currentgeneration">Current generation</param>
+        /// <param name="removegenerationbelow">Remove all generations less or equal to this generation</param>
         /// <param name="tagtoentries">Tag to entry list to update on removal of each item, this tag is removed from this list on removal</param>
         /// <param name="keeplist">if keeplist is set, and its in the list, the generation is reset to currentgeneration and its kept</param>
         /// <returns>return relative index giving the different between the current gen and the maximum generation found</returns>
@@ -163,6 +159,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="font">Font</param>
         /// <param name="forecolor">Fore color</param>
         /// <param name="backcolor">Back color</param>
+        /// <param name="bitmapsize">Size of bitmap to make text into</param>
         /// <param name="worldpos">Position of bitmap in world</param>
         /// <param name="size">Size to draw bitmap in world.</param>
         /// <param name="rotationradians">Rotation of bitmap (ignored if rotates below are on)</param>
@@ -182,7 +179,7 @@ namespace GLOFC.GL4.Bitmaps
                             StringFormat textformat = null, float backscale = 1.0f,
                             bool rotatetoviewer = false, bool rotateelevation = false,
                             float alphafadescalar = 0,
-                            float alphafadepos = 0,
+                            float alphafadepos = 1,
                             bool visible = true
                          )
         {
@@ -204,7 +201,7 @@ namespace GLOFC.GL4.Bitmaps
         /// <param name="bmp">Bitmap</param>
         /// <param name="bmpmipmaplevels">The bitmap mip map levels</param>
         /// <param name="worldpos">Position of bitmap in world</param>
-        /// <param name="size">Size to draw bitmap in world.</param>
+        /// <param name="size">Size to draw bitmap in world (X/Z only)</param>
         /// <param name="rotationradians">Rotation of bitmap (ignored if rotates below are on)</param>
         /// <param name="rotatetoviewer">True to rotate to viewer in azimuth</param>
         /// <param name="rotateelevation">True to rotate to viewer in elevation</param>
@@ -221,7 +218,7 @@ namespace GLOFC.GL4.Bitmaps
                             Vector3 rotationradians,
                             bool rotatetoviewer = false, bool rotateelevation = false,
                             float alphafadescalar = 0,
-                            float alphafadepos = 0,
+                            float alphafadepos = 1,
                             bool ownbitmap = false,
                             bool visible = true,
                             OpenTK.Graphics.OpenGL4.SizedInternalFormat textureformat = OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8
@@ -229,12 +226,12 @@ namespace GLOFC.GL4.Bitmaps
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Bitmaps detected context incorrect");
 
-            Matrix4 mat = GLPLVertexShaderMatrixTriStripTexture.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
+            Matrix4 mat = GLStaticsMatrix4.CreateMatrix(worldpos, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, 0, visible);
 
             var posi = matrixbuffers.Add(tag, data, mat, CurrentGeneration);     
 
             var glb = new GLTexture2D(bmp, textureformat, bmpmipmaplevels, bmpmipmaplevels, ownbitmap);
-         //   items.Add(glb);
+            items.Add(glb);
 
             if (renderableitem == null)
             {

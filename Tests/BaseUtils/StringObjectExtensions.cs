@@ -70,7 +70,40 @@ public static class ObjectExtensionsStrings2
         return res;
     }
 
+    public static string SafeFileString(this string normal)
+    {
+        normal = normal.Replace("*", "_star");      // common ones rename
+        normal = normal.Replace("/", "_slash");
+        normal = normal.Replace("\\", "_slash");
+        normal = normal.Replace(":", "_colon");
+        normal = normal.Replace("?", "_qmark");
 
+        char[] invalid = System.IO.Path.GetInvalidFileNameChars();
+        foreach (char c in invalid)
+            normal = normal.Replace(c, '_'); // all others _
+
+        return normal;
+    }
+
+    public static string Replace(this string str, string oldValue, string newValue, StringComparison comparison)
+    {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder(str.Length * 4);
+
+        int previousIndex = 0;
+        int index = str.IndexOf(oldValue, comparison);
+        while (index != -1)
+        {
+            sb.Append(str.Substring(previousIndex, index - previousIndex));
+            sb.Append(newValue);
+            index += oldValue.Length;
+
+            previousIndex = index;
+            index = str.IndexOf(oldValue, index, comparison);
+        }
+        sb.Append(str.Substring(previousIndex));
+
+        return sb.ToString();
+    }
 
 }
 

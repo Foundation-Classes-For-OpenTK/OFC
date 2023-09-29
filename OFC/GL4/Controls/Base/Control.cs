@@ -158,6 +158,11 @@ namespace GLOFC.GL4.Controls
         // heirarchy
         /// <summary> Parent of control. </summary>
         public GLBaseControl Parent { get { return parent; } }
+        /// <summary> Owner of control, if Parent is not the owner.  Normally null
+        /// Used for disconnected popups such as list boxes which are placed on the display control. 
+        /// taken into consideration in IsThisOrChildOf
+        /// </summary>
+        public GLBaseControl Owner { get; set; } = null;
         /// <summary> Find the top level display control. </summary>
         public GLControlDisplay FindDisplay() { return this is GLControlDisplay ? this as GLControlDisplay : parent?.FindDisplay(); }
         /// <summary> Find the control under the top level display control which this control belongs to. Null if can't find </summary>
@@ -222,8 +227,13 @@ namespace GLOFC.GL4.Controls
         /// <summary> TopMost, set to force window to top and stay there </summary>
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
-        /// <summary> Allow theming of control using the static Themer</summary>
+        /// <summary> Allow theming of control using the static GLBaseControl.Themer callback
+        /// If enable themer is disabled, then all child controls are not themed either
+        /// </summary>
         public bool EnableThemer { get; set; } = true;
+
+        /// <summary> Does the control and all its parents have EnableThemer on? </summary>
+        public bool IsAllThemed { get { if (EnableThemer == false) return false; else if (Parent == null) return EnableThemer; else return Parent.IsAllThemed; } }
 
         /// <summary> Cursor shape which is displayed when hovering over this control </summary>
         public GLWindowControl.GLCursorType Cursor { get { return cursor; } set { if (value != cursor) { cursor = value; FindDisplay()?.Gc_CursorTo(this, value); } } }
@@ -312,15 +322,28 @@ namespace GLOFC.GL4.Controls
         /// <summary>Hook to theme controls as they are added to the display </summary>
         public static Action<GLBaseControl> Themer = null;
 
-        /// <summary> Return if this control is us or a child of us.</summary>
+        /// <summary> Return if this control is us or a child of us, or if the child is owned by us</summary>
         public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
         {
+            //System.Diagnostics.Debug.WriteLine($"Checking {this.Name} For ownership");
+
             if (ctrl == this)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is a child of tree");
                 return true;
-            foreach( var c in childrenz)
+            }
+            else if ( ctrl.Owner == this)
+            {
+                //System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is directly owned by {this.Name}");
+                return true;
+            }
+
+            foreach ( var c in childrenz)
             {
                 if (c.IsThisOrChildOf(ctrl))
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -338,44 +361,15 @@ namespace GLOFC.GL4.Controls
             return false;
         }
 
-        /// <summary> Find next tab, either forward or backwards, from this tab number. For certain panels, go into it and find a tab</summary>
-        public virtual Tuple<GLBaseControl, int> FindNextTabChild(int tabno, int mindist, bool forward = true)
+        /// <summary>
+        /// Find next tab, either forward or backwards, from this tab number. For certain panels, go into it and find a tab</summary>
+        /// </summary>
+        /// <param name="tabno">current tab number, or -1 for find first</param>
+        /// <param name="forward">true to go forward, else backwards</param>
+        /// <returns></returns>
+        public virtual GLBaseControl FindNextTabChild(int tabno, bool forward = true)
         {
-            GLBaseControl found = null;
-
-            foreach (var c in ControlsZ)
-            {
-                if (c.Focusable && c.Visible && c.Enabled)
-                {
-                    //System.Diagnostics.Debug.WriteLine($"Find tab child {this.Name} {tabno} {mindist} {forward} in child {c.Name} {c.TabOrder}");
-
-                    int dist = c.TabOrder - tabno;
-
-                    if (forward ? dist > 0 : dist < 0)
-                    {
-                        dist = Math.Abs(dist);
-                        if (dist < mindist)
-                        {
-                            mindist = dist;
-                            found = c;
-                            //System.Diagnostics.Debug.WriteLine($"Find tab child best so far is {mindist} in child {found.Name} {found.TabOrder}");
-                        }
-                    }
-                }
-                else if (c.IsContainer)
-                {
-                    //System.Diagnostics.Debug.WriteLine($"Find tab child >> {c.Name}");
-                    var res = c.FindNextTabChild(tabno, mindist, forward);
-                    if (res.Item1 != null)  // if found one better
-                    {
-                        found = res.Item1;
-                        mindist = res.Item2;
-                    }
-                    //System.Diagnostics.Debug.WriteLine($"Find tab child << {c.Name}");
-                }
-            }
-
-            return new Tuple<GLBaseControl, int>(found, mindist);
+            return FindNextTabChild(tabno, int.MaxValue, forward).Item1;
         }
 
         /// <summary> Return area needed for visible children, with an optional test to reject children from the test</summary>
@@ -535,15 +529,37 @@ namespace GLOFC.GL4.Controls
 
             CheckZOrder();      // verify its okay 
 
-            if ( child.EnableThemer)
+            // if child and parent and optional owner have theme enabled, theme child
+
+            if ( child.IsAllThemed && (child.Owner?.EnableThemer ?? true))
+            {
                 Themer?.Invoke(child);      // global themer
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"Child {child?.Name} not themed parent {this.Name} owner {this.Owner?.Name}");
+            }
 
             OnControlAdd(this, child);
             child.OnControlAdd(this, child);
             InvalidateLayout(child);        // we are invalidated and layout due to this child
         }
 
-        /// <summary> Add a range of items to this control as children </summary>
+        /// <summary>
+        /// Add with tab order set
+        /// </summary>
+        /// <param name="child">Child control</param>
+        /// <param name="tabno">ref to hold tab number</param>
+        public virtual void Add(GLBaseControl child, ref int tabno)
+        {
+            Add(child);
+            child.TabOrder = tabno++;
+        }
+
+        /// <summary>
+        /// Add a range of items to this control as children
+        /// </summary>
+        /// <param name="list">enumeration of controls to add</param>
         public virtual void AddItems(IEnumerable<GLBaseControl> list)
         {
             SuspendLayout();

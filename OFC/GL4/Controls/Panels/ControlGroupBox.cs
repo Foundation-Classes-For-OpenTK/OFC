@@ -29,33 +29,34 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsContainer"/>
         public override bool IsContainer { get; } = true;
 
+        /// <summary> Default Constructor</summary>
+        public GLGroupBox() : this("GB?", "", DefaultWindowRectangle)
+        {
+        }
+
         /// <summary> Constructor with name, title, bounds </summary>
-        public GLGroupBox(string name, string title, Rectangle location) : base(name, location)
+        public GLGroupBox(string name, string title, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
         {
             SetNI(padding: new PaddingType(GBPadding), margin: new MarginType(GBMargins, GroupBoxTextHeight, GBMargins, GBMargins), borderwidth: GBBorderWidth);
-            BackColorGradientAltNI = BackColorNI = DefaultGroupBoxBackColor;
+            BackColorGradientAltNI = BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultGroupBoxBackColor;
             BorderColorNI = DefaultGroupBoxBorderColor;
+            EnableThemer = enablethemer;
             foreColor = DefaultGroupBoxForeColor;
             text = title;
         }
 
         /// <summary> Constructor with name, title, docking type, docking percent </summary>
-        public GLGroupBox(string name, string title, DockingType type, float dockpercent) : this(name, title, DefaultWindowRectangle)
+        public GLGroupBox(string name, string title, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, title, DefaultWindowRectangle,backcolour,enablethemer)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
         /// <summary> Constructor with name, title, size, docking type, docking percent </summary>
-        public GLGroupBox(string name, string title, Size sizep, DockingType type, float dockpercentage) : this(name, title, new Rectangle(new Point(0,0),sizep))
+        public GLGroupBox(string name, string title, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, title, new Rectangle(new Point(0,0),sizep),backcolour,enablethemer)
         {
             Dock = type;
             DockPercent = dockpercentage;
-        }
-
-        /// <summary> Default Constructor</summary>
-        public GLGroupBox() : this("GB?", "", DefaultWindowRectangle)
-        {
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>

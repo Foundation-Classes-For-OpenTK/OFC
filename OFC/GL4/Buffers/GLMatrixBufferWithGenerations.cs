@@ -24,8 +24,10 @@ namespace GLOFC.GL4.Buffers
     internal static class NamespaceDoc { } // just for documentation purposes
 
     /// <summary>
-    /// Class holds a Buffer, filled with Matrices. Used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation
-    /// [0,3] = image index, [1,3] = ctrl word ( less than 0 not shown, 0++ ctrl as per GLPL)
+    /// Class holds a Buffer, filled with Matrices. 
+    /// Used normally by GLPLVertexShaderQuadTextureWithMatrixTranslation or GLPLVertexShaderMatrixTriStripTexture
+    /// [0,3] = image index, 
+    /// [1,3] = ctrl word ( less than 0 not shown, 0++ ctrl as per GLPL)
     /// You can delete by tag name or clear all
     /// You can delete by generation
     /// </summary>
@@ -84,6 +86,8 @@ namespace GLOFC.GL4.Buffers
 
             //System.Diagnostics.Debug.WriteLine("Pos {0} Matrix {1}", pos, mat);
             matrix[0, 3] = pos;     // store pos of image in stack
+
+          //  System.Diagnostics.Debug.WriteLine($"Matrix {matrix.ToString()}");
 
             MatrixBuffer.StartWrite(GLLayoutStandards.Mat4size * pos, GLLayoutStandards.Mat4size);
             MatrixBuffer.Write(matrix);

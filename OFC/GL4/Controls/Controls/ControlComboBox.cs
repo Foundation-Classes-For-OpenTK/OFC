@@ -82,13 +82,16 @@ namespace GLOFC.GL4.Controls
         /// <summary> Construct with name, bounds and list of items</summary>
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)
         {
-            Items = itms;
             InvalidateOnEnterLeave = true;
             Focusable = true;
             InvalidateOnFocusChange = true;
+            
+            dropdownbox = new GLListBox(name + "_lb", DefaultWindowRectangle, itms);
             dropdownbox.Visible = false;
             dropdownbox.SelectedIndexChanged += dropdownchanged;
             dropdownbox.OtherKeyPressed += dropdownotherkey;
+            dropdownbox.EnableThemer = false;
+
             BorderColorNI = DefaultComboBoxBorderColor;
             BackColorGradientAltNI = BackColorNI = DefaultComboBoxBackColor;
             foreColor = DefaultComboBoxForeColor;
@@ -157,7 +160,7 @@ namespace GLOFC.GL4.Controls
                 using (Pen p1 = new Pen(MouseOverColor) { DashStyle = DashStyle.Dash })
                 {
                     Rectangle fr = textbox;
-                    fr.Inflate(-1, -1);
+                    fr.Inflate(-2, -2);
                     gr.DrawRectangle(p1, fr);
                 }
             }
@@ -274,13 +277,14 @@ namespace GLOFC.GL4.Controls
                 var p = FindScreenCoords(new Point(0, Height));
                 dropdownbox.Bounds = new Rectangle(p.X, p.Y, Width - ClientLeftMargin - ClientRightMargin, Height);
                 dropdownbox.ScaleWindow = FindScaler();
-                dropdownbox.Name = Name + "-Dropdown";
+                dropdownbox.Name = Name + "_Dropdown";
                 dropdownbox.TopMost = true;
                 dropdownbox.AutoSize = true;
                 dropdownbox.Font = Font;
                 dropdownbox.Visible = true;
                 dropdownbox.ShowFocusBox = true;
                 dropdownbox.HighlightSelectedItem = true;
+                dropdownbox.Owner = this;                      // associate it with us so its considered a child of us
                 dropdownbox.ResumeLayout();
                 AddToDesktop(dropdownbox);             // attach to display, not us, so it shows over everything
                 DropDownStateChanged?.Invoke(this, true);
@@ -321,8 +325,7 @@ namespace GLOFC.GL4.Controls
             SelectedIndexChanged?.Invoke(this);
         }
 
-
-        private GLListBox dropdownbox = new GLListBox();
+        private GLListBox dropdownbox;
         private Color comboboxFaceColor = DefaultComboBoxFaceColor;
         private float faceColorScaling = 1.0F;
 

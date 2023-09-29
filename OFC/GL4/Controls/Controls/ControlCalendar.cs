@@ -35,9 +35,9 @@ namespace GLOFC.GL4.Controls
         public DateTime Value { get { return datetimevalue; } set { datetimevalue = datetimecursor = value; Invalidate(); } }
 
         /// <summary> The left calendar button, for theming purposes </summary>
-        public GLButton ButLeft { get; set; } = new GLButton();
+        public GLButton ButLeft { get; set; } 
         /// <summary> The right calendar button, for theming purposes </summary>
-        public GLButton ButRight { get; set; } = new GLButton();
+        public GLButton ButRight { get; set; }
 
         /// <summary> Culture of calendar. Default is CurrentCulture </summary>
         public CultureInfo Culture { get { return culture; } set { culture = value; Invalidate(); } }
@@ -50,19 +50,19 @@ namespace GLOFC.GL4.Controls
             foreColor = DefaultCalendarForeColor;
             BackColorNI = BackColorGradientAltNI = DefaultCalendarBackColor;
 
+            ButLeft = new GLButton(name + "_ButLeft", DefaultWindowRectangle);
             ButLeft.Symbol = GLButtonTextBase.SymbolType.LeftTriangle;
             ButLeft.Click += GoLeft;
             ButLeft.Dock = DockingType.TopLeft;
             ButLeft.Size = new Size(24, 24);
-            ButLeft.Name = "CalLeft";
             ButLeft.GiveFocusToParent = true;
             ButLeft.EnableThemer = false;       // we don't allow themeing on composite elements
 
+            ButRight = new GLButton(name + "_ButRight", DefaultWindowRectangle);
             ButRight.Symbol = GLButtonTextBase.SymbolType.RightTriangle;
             ButRight.Click += GoRight;
             ButRight.Dock = DockingType.TopRight;
             ButRight.Size = new Size(24, 24);
-            ButRight.Name = "CalRight";
             ButRight.GiveFocusToParent= true;
             ButRight.EnableThemer = false;       // we don't allow themeing on composite elements
 

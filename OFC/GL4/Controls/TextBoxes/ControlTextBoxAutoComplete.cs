@@ -111,6 +111,8 @@ namespace GLOFC.GL4.Controls
 
         private protected override void OnTextChanged()
         {
+            base.OnTextChanged();
+
             //System.Diagnostics.Debug.WriteLine("{0} AC text change event", Environment.TickCount % 10000);
 
             if (InErrorCondition)               // cancel any error condition on typing
@@ -141,6 +143,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnFocusChanged(FocusEvent evt, GLBaseControl fromto)
         {
             base.OnFocusChanged(evt, fromto);
+
             if (evt == FocusEvent.Deactivated && fromto != ListBox)
             {
                 //System.Diagnostics.Debug.WriteLine("{0} AC focus {1} not to list box so cancel", Environment.TickCount % 10000, evt);
@@ -207,6 +210,8 @@ namespace GLOFC.GL4.Controls
                 ListBox.Location = sc;
                 ListBox.Items = autocompletestrings.ToList();
                 ListBox.ScaleWindow = FindScaler();
+                ListBox.Owner = this;
+                ListBox.Name = Name + "_LB";
 
                 if (ListBox.Parent == null)
                     AddToDesktop(ListBox);

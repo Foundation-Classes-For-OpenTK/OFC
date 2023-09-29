@@ -153,6 +153,7 @@ namespace TestOpenTk
             gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
             displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
+            GLBaseControl.Themer = Theme;
 
             GLForm pform;
 
@@ -173,21 +174,17 @@ namespace TestOpenTk
 
                 int taborder = 0;
 
-                GLLabel lab1 = new GLLabel("Lab1", new Rectangle(400, 0, 0, 0), "From Check");
-                pform.Add(lab1);
-
                 if (true)
                 {
-                    GLPanel p1 = new GLPanel("Panelbasic", new Rectangle(0, 0, 350, 100), Color.AliceBlue);
+                    GLPanel pn = new GLPanel("Panelbut", new Rectangle(0, 0, 400, 100), Color.AliceBlue);
 
-                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 30), "Configuration Dialog");
-                    b1.Margin = new MarginType(2);
-                    b1.AutoSize = true;
+                    GLButton b1 = new GLButton("B1", new Rectangle(5, 10, 80, 24), "ConfigD");
+                    b1.BorderWidth = 1;
+                    //b1.ShowFocusBox = false;
                     b1.TabOrder = taborder++;
-                    b1.Padding = new PaddingType(5);
                     b1.Click += (c, ev) => { ConfDialog(); };
                     b1.ToolTipText = "Button 1 tip\r\nLine 2 of it";
-                    p1.Add(b1);
+                    pn.Add(b1);
 
                     GLButton b2 = new GLButton("B2", new Rectangle(5, 50, 0, 0), "Msg1");
                     b2.Image = TestControls.Properties.Resources.ImportSphere;
@@ -196,7 +193,7 @@ namespace TestOpenTk
                     b2.TextAlign = ContentAlignment.MiddleRight;
                     b2.Click += (c, ev) => { MsgDialog1(); };
                     b2.ToolTipText = "Button 2 tip\r\nLine 2 of it";
-                    p1.Add(b2);
+                    pn.Add(b2);
 
                     GLButton b3 = new GLButton("B3", new Rectangle(130, 10, 80, 30), "Font");
                     b3.Margin = new MarginType(2);
@@ -207,105 +204,142 @@ namespace TestOpenTk
                     {
                         displaycontrol.Font = new Font("Times", 12);
                     };
-                    p1.Add(b3);
+                    pn.Add(b3);
 
                     GLButton b4 = new GLButton("B4", new Rectangle(100, 50, 80, 30), "Msg2");
                     b4.TabOrder = taborder++;
                     b4.Padding = new PaddingType(2);
                     b4.ToolTipText = "Button 4 tip\r\nLine 2 of it";
                     b4.Click += (c, ev) => { MsgDialog2(); };
-                    p1.Add(b4);
+                    pn.Add(b4);
 
-                    GLButton b5 = new GLButton("B5", new Rectangle(220, 10, 80, 30), "Conf2");
+                    GLButton b5 = new GLButton("B5", new Rectangle(210, 10, 80, 30), "Conf2");
                     b5.TabOrder = taborder++;
                     b5.Padding = new PaddingType(2);
                     b5.ToolTipText = "Button 5 tip\r\nLine 2 of it";
                     b5.Click += (c, ev) => { ConfDialog2(); };
-                    p1.Add(b5);
+                    pn.Add(b5);
 
                     GLButton b6 = new GLButton("B3", new Rectangle(200, 50, 80, 30), "Disabled");
                     b6.TabOrder = taborder++;
                     b6.ToolTipText = "Button 6 tip\r\nLine 2 of it";
                     b6.Enabled = false;
-                    p1.Add(b6);
+                    pn.Add(b6);
 
-                    pform.Add(p1);
+                    GLButton b7 = new GLButton("B3", new Rectangle(300, 10, 80, 30), "Form2");
+                    b7.TabOrder = taborder++;
+                    b7.ToolTipText = "Button 7 tip\r\nLine 2 of it";
+                    b7.Click += (c, ev) => CreateForm2();
+                    pn.Add(b7);
+
+                    pform.Add(pn);
 
                 }
 
                 if (true)
                 {
-                    GLComboBox cb1 = new GLComboBox("CB", new Rectangle(0, 100, 0, 0), new List<string>() { "one", "two", "three" });
+                    GLPanel pn = new GLPanel("PanelComboBox", new Rectangle(0, 110, 400, 100), Color.AliceBlue);
+                    
+                    pn.EnableThemer = false;
+
+                    GLComboBox cb1 = new GLComboBox("ComboBox1", new Rectangle(4, 4, 0, 0), new List<string>() { "one", "two", "three" });
                     cb1.Margin = new MarginType(16, 8, 16, 8);
                     cb1.TabOrder = taborder++;
                     cb1.ToolTipText = "Combo Box";
-                    pform.Add(cb1);
+                    pn.Add(cb1);
 
-                    GLComboBox cbstars = new GLComboBox("GalaxyStarsNumber", new Rectangle(100, 100, 100, 32));
+                    GLComboBox cbstars = new GLComboBox("ComboBox2", new Rectangle(130, 4, 100, 32));
                     cbstars.ToolTipText = "Control how many stars are shown when zoomes in";
                     cbstars.Items = new List<string>() { "Ultra", "High", "Medium", "Low" };
                     cbstars.TabOrder = taborder++;
                     var list = new List<int>() { 1000000, 500000, 250000, 100000 };
                     int itemno = 1;
                     cbstars.SelectedIndex = itemno >= 0 ? itemno : 1;       // high default
-                    pform.Add(cbstars);
+                    pn.Add(cbstars);
+
+                    pform.Add(pn);
                 }
 
                 if (true)
                 {
+                    GLPanel pn = new GLPanel("PanelCheckbox", new Rectangle(0, 220, 400, 100), Color.AliceBlue);
 
-                    GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(0, 150, 0, 0), "Normal");
-                    chk1.Margin = new MarginType(16, 0, 0, 0);
+                    GLCheckBox chk1 = new GLCheckBox("Checkbox1", new Rectangle(4, 4, 0, 0), "Normal");
                     chk1.TabOrder = taborder++;
-                    pform.Add(chk1);
-                    GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(100, 150, 0, 0), "Radio");
+                    chk1.BackColor = Color.Yellow;
+                    pn.Add(chk1);
+
+                    GLCheckBox chk2 = new GLCheckBox("Checkbox2", new Rectangle(80, 4, 0, 0), "Radio");
                     chk2.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk2.TabOrder = taborder++;
                     chk2.Checked = true;
-                    pform.Add(chk2);
-                    GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(200, 150, 0, 0), "Button");
+                    pn.Add(chk2);
+                    GLCheckBox chk3 = new GLCheckBox("Checkbox3", new Rectangle(160, 4, 60, 20), "Button");
                     chk3.Appearance = GLCheckBox.CheckBoxAppearance.Button;
                     chk3.TabOrder = taborder++;
                     chk3.BackColor = Color.FromArgb(200, 200, 200);
-                    pform.Add(chk3);
-                    GLCheckBox chk4 = new GLCheckBox("Checkbox4", new Rectangle(300, 150, 0, 0), "");
+                    pn.Add(chk3);
+                    GLCheckBox chk4 = new GLCheckBox("Checkbox4", new Rectangle(240, 4, 24, 24), "");     // with no text
                     chk4.TabOrder = taborder++;
-                    pform.Add(chk4);
-                    GLCheckBox chk5 = new GLCheckBox("Checkbox5", new Rectangle(350, 150, 0, 0), "R1");
+                    chk4.TickBoxReductionRatio = 1;
+                    pn.Add(chk4);
+                    GLCheckBox chk4a = new GLCheckBox("Checkbox4a", new Rectangle(270, 4, 24, 24), TestControls.Properties.Resources.dotted, TestControls.Properties.Resources.dotted2);     // with no text
+                    chk4a.TabOrder = taborder++;
+                    pn.Add(chk4a);
+
+                    GLCheckBox chk4b = new GLCheckBox("Checkbox4b", new Rectangle(300, 4, 24, 24), TestControls.Properties.Resources.dotted, TestControls.Properties.Resources.dotted2);     // with no text
+                    chk4b.TabOrder = taborder++;
+                    chk4b.Text = "H";
+                    pn.Add(chk4b);
+
+
+                    GLCheckBox chk5 = new GLCheckBox("R1", new Rectangle(4, 30, 0, 0), "R1");
                     chk5.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk5.GroupRadioButton = true;
                     chk5.TabOrder = taborder++;
-                    pform.Add(chk5);
-                    GLCheckBox chk6 = new GLCheckBox("Checkbox6", new Rectangle(400, 150, 0, 0), "R2");
+                    pn.Add(chk5);
+                    GLCheckBox chk6 = new GLCheckBox("R2", new Rectangle(50, 30, 0, 0), "R2");
                     chk6.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk6.GroupRadioButton = true;
                     chk6.TabOrder = taborder++;
-                    pform.Add(chk6);
-                    GLCheckBox chk7 = new GLCheckBox("Checkbox7", new Rectangle(0, 175, 0, 0), "Disabled");
+                    pn.Add(chk6);
+
+                    GLCheckBox chk6a = new GLCheckBox("R2", new Rectangle(100, 30, 0, 0), "R3");
+                    chk6a.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
+                    chk6a.GroupRadioButton = true;
+                    chk6a.TabOrder = taborder++;
+                    pn.Add(chk6a);
+
+
+                    GLCheckBox chk7 = new GLCheckBox("Checkbox7", new Rectangle(4, 60, 0, 0), "Disabled");
                     chk7.TabOrder = taborder++;
                     chk7.Enabled = false;
-                    pform.Add(chk7);
-                    GLCheckBox chk8 = new GLCheckBox("Checkbox8", new Rectangle(100, 175, 0, 0), "Disabled");
+                    pn.Add(chk7);
+                    GLCheckBox chk8 = new GLCheckBox("Checkbox8", new Rectangle(80, 60, 0, 0), "Disabled");
                     chk8.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk8.TabOrder = taborder++;
                     chk8.Enabled = false;
-                    pform.Add(chk8);
-                    GLCheckBox chk9 = new GLCheckBox("Checkbox9", new Rectangle(200, 175, 0, 0), "CDisabled");
+                    pn.Add(chk8);
+                    GLCheckBox chk9 = new GLCheckBox("Checkbox9", new Rectangle(160, 60, 0, 0), "CDisabled");
                     chk9.TabOrder = taborder++;
                     chk9.Enabled = false;
                     chk9.Checked = true;
-                    pform.Add(chk9);
-                    GLCheckBox chk10 = new GLCheckBox("Checkbox10", new Rectangle(300, 175, 0, 0), "CDisabled");
+                    pn.Add(chk9);
+                    GLCheckBox chk10 = new GLCheckBox("Checkbox10", new Rectangle(240, 60, 0, 0), "CDisabled");
                     chk10.Appearance = GLCheckBox.CheckBoxAppearance.Radio;
                     chk10.TabOrder = taborder++;
                     chk10.Enabled = false;
                     chk10.Checked = true;
-                    pform.Add(chk10);
+                    pn.Add(chk10);
+
+                    pform.Add(pn);
                 }
 
                 if (true)
                 {
-                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(0, 210, 500, 30), DateTime.Now);
+                    GLPanel pn = new GLPanel("Paneldtp", new Rectangle(0, 330, 400, 100), Color.AliceBlue);
+
+                    GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(4,4 ,390, 30), DateTime.Now);
                     dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
                     dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
                     //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
@@ -316,58 +350,68 @@ namespace TestOpenTk
                     dtp.AutoSize = true;
                     //dtp.Culture = CultureInfo.GetCultureInfo("es");
                     dtp.TabOrder = taborder++;
-                    pform.Add(dtp);
+                    pn.Add(dtp);
+                    pform.Add(pn);
                 }
 
                 if (true)
                 {
+                    GLPanel pn = new GLPanel("PanelListBox", new Rectangle(0, 440, 400, 100), Color.AliceBlue);
+
                     List<string> i1 = new List<string>() { "one two three four five six seven eight", "two", "three", "four", "five", "six", "seven is very long too to check", "eight", "nine", "ten", "eleven", "twelve" };
-                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(0, 260, 260, 100), i1);
+                    GLListBox lb1 = new GLListBox("LB1", new Rectangle(4,4, 260, 90), i1);
                     lb1.Font = new Font("Microsoft Sans Serif", 12f);
                     lb1.TabOrder = taborder++;
                     lb1.ShowFocusBox = true;
                     lb1.ScrollBarTheme.SliderColor = Color.AliceBlue;
                     lb1.ScrollBarTheme.ThumbButtonColor = Color.Blue;
                     //lb1.FitToItemsHeight = false;
-                    pform.Add(lb1);
+                    pn.Add(lb1);
+                    pform.Add(pn);
                     lb1.SelectedIndexChanged += (s, si) => { System.Diagnostics.Debug.WriteLine("Selected index " + si); };
                 }
 
                 if (true)
                 {
-                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(0, 600, 26, 46));
+                    GLPanel pn = new GLPanel("PanelUpDown", new Rectangle(0, 550, 400, 100), Color.AliceBlue);
+                    GLUpDownControl upc1 = new GLUpDownControl("UPC1", new Rectangle(4,4, 26, 46));
                     upc1.TabOrder = taborder++;
-                    pform.Add(upc1);
+                    pn.Add(upc1);
+                    pform.Add(pn);
                     upc1.Clicked += (s, upe) => System.Diagnostics.Debug.WriteLine("Up down control {0} {1}", s.Name, upe);
                 }
 
                 if (true)
                 {
-                    GLCalendar cal = new GLCalendar("Cal", new Rectangle(500, 10, 300, 200));
+                    GLPanel pn = new GLPanel("PanelCal", new Rectangle(450, 0, 400, 200), Color.AliceBlue);
+
+                    GLCalendar cal = new GLCalendar("Cal", new Rectangle(4,4, 300, 190));
                     cal.TabOrder = taborder++;
                     //cal.Culture = CultureInfo.GetCultureInfo("es");
-                    cal.AutoSize = true;
+                    //cal.AutoSize = true;
                     cal.Font = new Font("Arial", 10);
-                    pform.Add(cal);
+                    pn.Add(cal);
+                    pform.Add(pn);
                 }
 
                 if (true)
                 {
-                    GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(500, 250, 100, 25), 23.4f);
-                    glf.BackColor = Color.AliceBlue;
+                    GLPanel pn = new GLPanel("PanelNumberBoxAutocomplete", new Rectangle(450, 210, 400, 100), Color.AliceBlue);
+
+                    GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(4,4, 100, 25), 23.4f);
                     glf.TabOrder = taborder++;
                     glf.Font = new Font("Ms Sans Serif", 12);
                     glf.Minimum = -1000;
                     glf.Maximum = 1000;
                     glf.ValueChanged += (a) => { System.Diagnostics.Debug.WriteLine("GLF value changed"); };
                     glf.ValidityChanged += (a, b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
-                    pform.Add(glf);
+                    pn.Add(glf);
 
-                    GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(610, 250, 40, 15), "Value");
+                    GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(120,4, 60, 24), "Value");
                     glfbut.Click += (e1, b1) => { glf.Value = 20.22f; };
-                    pform.Add(glfbut);
+                    pn.Add(glfbut);
 
-                    GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(500, 300, 100, 25));
+                    GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(4,40, 100, 25));
                     gla.TabOrder = taborder++;
                     gla.Font = new Font("Ms Sans Serif", 12);
                     gla.PerformAutoCompleteInThread += (s, a, set) =>
@@ -379,25 +423,15 @@ namespace TestOpenTk
                                 set.Add(x);
                         }
 
-                        System.Threading.Thread.Sleep(2000);
+                        System.Threading.Thread.Sleep(200);
                     };
                     gla.SelectedEntry += (s) => { System.Diagnostics.Debug.WriteLine($"Autocomplete selected {s.Text}"); };
-                    pform.Add(gla);
-                }
-
-                if (true)
-                {
-                    GLButton b1 = new GLButton("BD1", new Rectangle(5, 10, 80, 30), "Bottom 1");
-                    b1.TabOrder = taborder++;
-                    b1.Dock = DockingType.Bottom;
-                    displaycontrol.Add(b1);
-                    GLButton b2 = new GLButton("BD2", new Rectangle(5, 10, 80, 30), "Bottom 2");
-                    b2.TabOrder = taborder++;
-                    b2.Dock = DockingType.Bottom;
-                    displaycontrol.Add(b2);
+                    pn.Add(gla);
+                    pform.Add(pn);
                 }
 
                 displaycontrol.Add(pform);
+
 
                 displaycontrol.GlobalMouseDown += (ctrl, ex) =>
                 {
@@ -415,48 +449,6 @@ namespace TestOpenTk
 
             if (true)
             {
-                int taborder = 0;
-                GLForm pform2 = new GLForm("Form2", "Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 800));
-                pform2.BackColor = Color.FromArgb(200, Color.Red);
-                pform2.Font = new Font("Ms sans serif", 10);
-                pform2.BackColorGradientDir = 90;
-                pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
-                displaycontrol.Add(pform2);
-
-                GLButton b1 = new GLButton("*********** F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
-                pform2.Add(b1);
-
-                GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 40));
-                tb1.SmallChange = 5;
-                tb1.FaceColorScaling = 0.5f;
-                tb1.TabOrder = taborder++;
-                pform2.Add(tb1);
-
-                GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 140, 40, 380));
-                tb2.TickFrequency = 12;
-                tb2.BarSize = 0.3f;
-                tb2.FaceColorScaling = 0.25f;
-                tb2.ButtonFaceColor = Color.Blue;
-                tb2.MouseOverColor = Color.Cyan;
-                tb2.HorizontalTrackbar = false;
-                tb2.ValueChanged += (s, value) => { System.Diagnostics.Debug.WriteLine($"Trackbar {value}"); };
-                tb2.Minimum = 10;
-                tb2.Maximum = 500;
-                tb2.Value = 10;
-                tb2.TickFrequency = 10;
-                tb2.TabOrder = taborder++;
-                pform2.Add(tb2);
-
-                GLTrackBar tb3 = new GLTrackBar("Trackbar", new Rectangle(100, 140, 40, 380));
-                tb3.HorizontalTrackbar = false;
-                tb3.Image = TestControls.Properties.Resources.dotted2;
-                tb3.ImageStretch = true;        // stretch to Needlesize percent
-                tb3.TabOrder = taborder++;
-                pform2.Add(tb3);
-               }
-
-            if (true)
-            {
                 GLToolTip tip = new GLToolTip("ToolTip");
                 displaycontrol.Add(tip);
             }
@@ -464,6 +456,66 @@ namespace TestOpenTk
 
 
             systemtimer.Start();
+        }
+
+        public void CreateForm2()
+        {
+            int taborder = 0;
+            GLForm pform2 = new GLForm("Form2", "Modal Form 2 GL Control demonstration", new Rectangle(1100, 0, 400, 800));
+            pform2.BackColor = Color.FromArgb(200, Color.Red);
+            pform2.Font = new Font("Ms sans serif", 10);
+            pform2.BackColorGradientDir = 90;
+            pform2.BackColorGradientAlt = Color.FromArgb(200, Color.Blue);
+
+            GLButton b1 = new GLButton("*********** F2B1", new Rectangle(5, 10, 80, 30), "F2B1");
+            pform2.Add(b1);
+
+            GLTrackBar tb1 = new GLTrackBar("Trackbar", new Rectangle(5, 50, 380, 40));
+            tb1.SmallChange = 5;
+            tb1.FaceColorScaling = 0.5f;
+            tb1.TabOrder = taborder++;
+            pform2.Add(tb1);
+
+            GLTrackBar tb2 = new GLTrackBar("Trackbar", new Rectangle(5, 100, 40, 180));
+            tb2.TickFrequency = 12;
+            tb2.BarSize = 0.3f;
+            tb2.FaceColorScaling = 0.25f;
+            tb2.ButtonFaceColor = Color.Blue;
+            tb2.MouseOverColor = Color.Cyan;
+            tb2.HorizontalTrackbar = false;
+            tb2.ValueChanged += (s, value) => { System.Diagnostics.Debug.WriteLine($"Trackbar {value}"); };
+            tb2.Minimum = 10;
+            tb2.Maximum = 500;
+            tb2.Value = 10;
+            tb2.TickFrequency = 10;
+            tb2.TabOrder = taborder++;
+            pform2.Add(tb2);
+
+            GLTrackBar tb3 = new GLTrackBar("Trackbar", new Rectangle(100, 100, 40, 180));
+            tb3.HorizontalTrackbar = false;
+            tb3.Image = TestControls.Properties.Resources.dotted2;
+            tb3.ImageStretch = true;        // stretch to Needlesize percent
+            tb3.TabOrder = taborder++;
+            pform2.Add(tb3);
+
+            if (true)
+            {
+                GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(10, 400, 200, 30), DateTime.Now);
+                dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
+                dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
+                //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
+                dtp.Font = new Font("Ms Sans Serif", 11);
+                dtp.ShowCheckBox = true;
+                dtp.ShowCalendar = true;
+                dtp.ShowUpDown = true;
+                dtp.AutoSize = true;
+                //dtp.Culture = CultureInfo.GetCultureInfo("es");
+                dtp.TabOrder = taborder++;
+                pform2.Add(dtp);
+            }
+
+
+            displaycontrol.AddModalForm(pform2);
         }
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
@@ -504,7 +556,7 @@ namespace TestOpenTk
                 if (ctrlname == "OK")
                     cform.Close();
             };
-            displaycontrol.Add(cform);
+            displaycontrol.AddModalForm(cform);
         }
 
         private void ConfDialog2()
@@ -522,7 +574,7 @@ namespace TestOpenTk
             cform.InstallStandardTriggers();
             cform.Init(new Point(200, 200), "Config Form Test Long Title and even longer one");
             cform.SetMinimumSizeOnAutoSize = true;
-            displaycontrol.Add(cform);      // display and autosize
+            displaycontrol.AddModalForm(cform);      // display and autosize
             cform.AutoSize = false;
             cform.Moveable = true;
             cform.Resizeable = true;
@@ -545,7 +597,7 @@ namespace TestOpenTk
             for (int i = 0; i < 100; i++)
                 t += "Line " + i + " is here" + Environment.NewLine;
 
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(int.MinValue, 500), t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel, callback:MsgReturn);
+            GLMessageBox.Show("MB", displaycontrol, new Point(int.MinValue, 500), t, "Caption", GLMessageBox.MessageBoxButtons.OKCancel, callback:MsgReturn);
         }
 
         private void MsgDialog2()
@@ -558,6 +610,13 @@ namespace TestOpenTk
             //GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, "Longer message message\r\nShorter than\r\nThe other", "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
             GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore, callback: MsgReturn);
         }
+
+        static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name} parent {ctrl.Parent?.Name} Owner {ctrl.Owner?.Name}");
+        }
+
+
 
         private void MsgReturn(GLMessageBox msg, DialogResultEnum res)
         {
@@ -579,9 +638,7 @@ namespace TestOpenTk
         {
             if ( h.HasBeenPressed(Keys.F1, KeyboardMonitor.ShiftState.None))
             {
-                displaycontrol.DumpTrees(0,null);
             }
-
         }
     }
 }

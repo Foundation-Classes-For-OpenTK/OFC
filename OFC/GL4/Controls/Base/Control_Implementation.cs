@@ -27,10 +27,10 @@ namespace GLOFC.GL4.Controls
         #region For Inheritors
 
         /// <summary>
-        /// Create the control. set autosize if width/height = 0 , controls are created suspended
+        /// Create the control. Note controls are created with suspended layout on
         /// </summary>
         /// <param name="name">control name</param>
-        /// <param name="bounds">bounds</param>
+        /// <param name="bounds">bounds. If width/height = 0 then AutoSize is enabled</param>
         protected GLBaseControl(string name, Rectangle bounds)
         {
             this.Name = name;
@@ -640,10 +640,11 @@ namespace GLOFC.GL4.Controls
         {
             if (borderwidth > 0)
             {
-                Rectangle rectarea = new Rectangle(Margin.Left,
-                                                Margin.Top,
-                                                Width - Margin.TotalWidth - 1,
-                                                Height - Margin.TotalHeight - 1);
+                int extborder = (int)borderwidth - 1;
+                Rectangle rectarea = new Rectangle(Margin.Left+ extborder,
+                                                Margin.Top+ extborder,
+                                                Width - Margin.TotalWidth - 1 - extborder,
+                                                Height - Margin.TotalHeight - 1 - extborder);
 
                 using (var p = new Pen(bordercolor, borderwidth))
                 {
@@ -947,6 +948,85 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
+        #region Tab Order
+
+        /// <summary>
+        /// Find next tab child, from this, down tree.
+        /// </summary>
+        /// <param name="tabno">Current tab</param>
+        /// <param name="mindist">set to int.Max on entry</param>
+        /// <param name="forward">direction, true = forward</param>
+        /// <returns></returns>
+        private Tuple<GLBaseControl, int> FindNextTabChild(int tabno, int mindist, bool forward = true)
+        {
+            GLBaseControl found = null;
+
+            foreach (var c in ControlsZ)
+            {
+                if (c.Focusable && c.Visible && c.Enabled)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child {this.Name} {tabno} {mindist} {forward} in child {c.Name} {c.TabOrder}");
+
+                    int dist = c.TabOrder - tabno;
+
+                    if (forward ? dist > 0 : dist < 0)
+                    {
+                        dist = Math.Abs(dist);
+                        if (dist < mindist)
+                        {
+                            mindist = dist;
+                            found = c;
+                            //System.Diagnostics.Debug.WriteLine($"Find tab child best so far is {mindist} in child {found.Name} {found.TabOrder}");
+                        }
+                    }
+                }
+                else if (c.IsContainer)
+                {
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child >> {c.Name}");
+                    var res = c.FindNextTabChild(tabno, mindist, forward);
+                    if (res.Item1 != null)  // if found one better
+                    {
+                        found = res.Item1;
+                        mindist = res.Item2;
+                    }
+                    //System.Diagnostics.Debug.WriteLine($"Find tab child << {c.Name}");
+                }
+            }
+
+            return new Tuple<GLBaseControl, int>(found, mindist);
+        }
+
+        /// <summary>
+        /// Find highest tab child
+        /// </summary>
+        /// <param name="curmax">set to -1 on entry</param>
+        /// <returns></returns>
+        private Tuple<GLBaseControl, int> FindHigestTabChild(int curmax = -1)
+        {
+            GLBaseControl found = null;
+
+            foreach (var c in ControlsZ)
+            {
+                if (c.Focusable && c.Visible && c.Enabled)
+                {
+                    if (c.TabOrder > curmax)
+                    {
+                        found = c;
+                        curmax = c.TabOrder;
+                    }
+                }
+                else if (c.IsContainer)
+                {
+                    var res = c.FindHigestTabChild(curmax);
+                    if (res.Item1 != null)  // if found one better
+                        curmax = res.Item2;
+                }
+            }
+
+            return new Tuple<GLBaseControl, int>(found, curmax);
+        }
+
+        #endregion
         #region Implementation
 
         // Set Position, clipped to max/min size, causing an invalidation layout at parent level, only if changed

@@ -185,6 +185,22 @@ namespace GLOFC.GL4.Controls
             }
         }
 
+        /// <summary>
+        /// Derived class can initialise this directly in constructor
+        /// </summary>
+        protected void SetCheckStateNI(CheckStateType t)
+        {
+            checkstate = t;
+        }
+
+        /// <summary>
+        /// Derived class can initialise this directly in constructor
+        /// </summary>
+        protected void SetCheckedNI(bool checkedp)
+        {
+            checkstate = checkedp ? GLCheckBoxBase.CheckStateType.Checked : GLCheckBoxBase.CheckStateType.Unchecked;
+        }
+         
         private CheckStateType checkstate { get; set; } = CheckStateType.Unchecked;
         private Color checkBoxBorderColor { get; set; } = DefaultCheckBoxBorderColor;
         private Color checkBoxInnerColor { get; set; } = DefaultCheckBoxInnerColor;    // Normal only inner colour

@@ -90,5 +90,86 @@ namespace GLOFC
             return mat;
         }
 
+        /// <summary>
+        /// Create a Viewing and Fading control matrix as used by shaders
+        ///              [col=3,row=0] is the image index, 
+        ///              [col=3,row=1] 0 rotate as per matrix, 1 means look at in azimuth, 2 look at in elevation and azimuth, less than 0 means cull primitive
+        ///              [col=3,row=2] Fade scaler, 0 = none.  
+        ///              [col=3,row=3] Fade Pos, 0 = none.   
+        ///                     scaler positive : fade out as eye goes in. formula is alpha = clamp((EyeDistance-fade pos)/Fade scalar,0,1). At EyeDistance less than fadepos, alpha is 0
+        ///                     scaler negative : fade in as eye goes in. alpha = clamp((fadepos-EyeDistance)/-Fade scalar,0,1). At EyeDistance greater than fadepos, alpha is 0
+        ///                     scaler = 0 : pos is absolute fade value in 0-1
+        /// </summary>
+        /// <param name="worldpos">Position</param>
+        /// <param name="size">Scale</param>
+        /// <param name="rotationradians">Rotation of object</param>
+        /// <param name="rotatetoviewer">True to rotate in azimuth to viewer</param>
+        /// <param name="rotateelevation">True to rotate in elevation to viewer</param>
+        /// <param name="alphafadescalar">Alpha fade scalar with EyeDistance (lookat-eye) or 0 disabled</param>
+        /// <param name="alphafadepos">Alpha fade distance (Negative for fade in, positive for fade out) or alpha fade value. </param>
+        /// <param name="imagepos">Image index into texture, passed to fragement shader</param>
+        /// <param name="visible">If visible</param>
+        /// <returns></returns>
+        static public Matrix4 CreateMatrix(Vector3 worldpos,
+                                    Vector3 size,       // Note if Y and Z are zero, then Z is set to same ratio to width as bitmap
+                                    Vector3 rotationradians,        // ignored if rotates are on
+                                    bool rotatetoviewer = false, bool rotateelevation = false,   // if set, rotationradians not used
+                                    float alphafadescalar = 0,
+                                    float alphafadepos = 1,
+                                    int imagepos = 0,
+                                    bool visible = true
+            )
+        {
+            Matrix4 mat = Matrix4.Identity;
+            mat = Matrix4.Mult(mat, Matrix4.CreateScale(size));
+            if (rotatetoviewer == false && rotationradians.LengthSquared > 0)   // if autorotating, no rotation is allowed. matrix is just scaling/translation
+            {
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationX(rotationradians.X));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationY(rotationradians.Y));
+                mat = Matrix4.Mult(mat, Matrix4.CreateRotationZ(rotationradians.Z));
+            }
+            mat = Matrix4.Mult(mat, Matrix4.CreateTranslation(worldpos));
+            mat[0, 3] = imagepos;
+            mat[1, 3] = !visible ? -1 : rotatetoviewer ? (rotateelevation ? 2 : 1) : 0;  // and rotation selection. This is master ctrl, <0 culled, >=0 shown
+            mat[2, 3] = alphafadescalar;
+            mat[3, 3] = alphafadepos;
+            return mat;
+        }
+
+        /// <summary>
+        /// Make multiple iewing and Fading control matrices
+        /// </summary>
+        /// <param name="worldpos">Positions array</param>
+        /// <param name="offset">Offset on each position</param>
+        /// <param name="size">Size of each</param>
+        /// <param name="rotationradians">Rotation of object</param>
+        /// <param name="rotatetoviewer">True to rotate in azimuth to viewer</param>
+        /// <param name="rotateelevation">True to rotate in elevation to viewer</param>
+        /// <param name="alphafadescalar">Alpha fade scalar with EyeDistance (lookat-eye) or 0 disabled</param>
+        /// <param name="alphafadepos">Alpha fade distance (Negative for fade in, positive for fade out) or alpha fade value. </param>
+        /// <param name="imagepos">Image index into texture, passed to fragement shader</param>
+        /// <param name="visible">If visible</param>
+        /// <param name="pos">Offset into worldpos array to start at</param>
+        /// <param name="length">Number of entries to take from world positions</param>
+        /// <returns></returns>
+        static public Matrix4[] CreateMatrices(Vector4[] worldpos, Vector3 offset,
+                                            Vector3 size, Vector3 rotationradians,
+                                            bool rotatetoviewer, bool rotateelevation,
+                                            float alphafadescalar = 0,
+                                            float alphafadepos = 1,
+                                            int imagepos = 0,
+                                            bool visible = true,
+                                            int pos = 0, int length = -1        // allowing you to pick out a part of the worldpos array
+                                            )
+        {
+            if (length == -1)
+                length = worldpos.Length - pos;
+
+            Matrix4[] mats = new Matrix4[length];
+            for (int i = 0; i < length; i++)
+                mats[i] = CreateMatrix(worldpos[i + pos].Xyz + offset, size, rotationradians, rotatetoviewer, rotateelevation, alphafadescalar, alphafadepos, imagepos, visible);
+            return mats;
+        }
+
     }
 }

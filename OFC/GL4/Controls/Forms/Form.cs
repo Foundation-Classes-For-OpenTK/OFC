@@ -145,8 +145,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Called on shown. Override if required in derived classes </summary>
         public virtual void OnShown()   // only called if top level form
         {
-            var res = FindNextTabChild(-1, int.MaxValue);      // try the tab order
-            lastchildfocus =  res.Item1;
+            var res = FindNextTabChild(-1);      // try the tab order
+            lastchildfocus =  res;
             if (lastchildfocus != null)     // if found a focusable child, set it
             {
                 //System.Diagnostics.Debug.WriteLine($"Form {this.Name} OnShown selects {lastchildfocus.Name} as focus with tabno {lastchildfocus.TabOrder}");
@@ -394,14 +394,14 @@ namespace GLOFC.GL4.Controls
             if (!e.Handled && TabChangesFocus && e.KeyCode == System.Windows.Forms.Keys.Tab)
             {
                 bool forward = e.Shift == false;
-                var res = FindNextTabChild(lastchildfocus?.TabOrder ?? -1, int.MaxValue, forward);
-                if (res.Item1 == null)
+                var res = FindNextTabChild(lastchildfocus?.TabOrder ?? -1, forward);
+                if (res == null)
                 {
-                    res = FindNextTabChild(forward ? -1 : int.MaxValue, int.MaxValue, forward);
+                    res = FindNextTabChild(forward ? -1 : int.MaxValue/2,forward);
                 }
-                if (res.Item1 != null)
+                if (res != null)
                 {
-                    lastchildfocus = res.Item1;
+                    lastchildfocus = res;
                    // System.Diagnostics.Debug.WriteLine($"Form {this.Name} Tab selects {lastchildfocus.Name} as focus");
                     lastchildfocus.SetFocus();
                 }

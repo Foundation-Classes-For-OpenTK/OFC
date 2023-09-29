@@ -57,18 +57,27 @@ namespace GLOFC.GL4.Controls
         /// <summary> BackColor of control - overriden to send to internal scroll panel </summary>
         public new Color BackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
 
-        /// <summary> Construct with name and location </summary>
-        public GLScrollPanelScrollBar(string name, Rectangle location) : base(name,location)
+        /// <summary> BackColor of control - overriden to send to internal scroll panel </summary>
+        public new Color BackColorGradientAlt { get { return scrollpanel.BackColorGradientAlt; } set { scrollpanel.BackColorGradientAlt = value; } }
+
+        /// <summary> Default Constructor </summary>
+        public GLScrollPanelScrollBar(string name = "SPSB?") : this(name, DefaultWindowRectangle)
         {
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+        }
+
+        /// <summary> Construtor with name, bounds, and optional back color, enable theme</summary>
+        public GLScrollPanelScrollBar(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name,location)
+        {
+            BorderColorNI = DefaultScrollPanelBorderColor;
+            EnableThemer = enablethemer;
 
             scrollpanel = new GLScrollPanel(name+"_VSP");
             scrollpanel.Dock = DockingType.Fill;
-            scrollpanel.BackColor = BackColor;
+            scrollpanel.BackColorGradientAltNI = scrollpanel.BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultScrollPanelBackColor;
             scrollpanel.EnableThemer = false;       // we don't allow the themer to run on composite parts
             scrollpanel.RejectFocus = true;
             base.Add(scrollpanel);  // base because we don't want to use the overrides
+
 
             vertscrollbar = new GLVerticalScrollBar(name + "_SVert");
             vertscrollbar.Dock = DockingType.Right;
@@ -88,23 +97,32 @@ namespace GLOFC.GL4.Controls
             vertscrollbar.Theme.Parents.Add(horzscrollbar);             // and add it to Parents so when it gets changed, we invalidate both
         }
 
-        /// <summary> Construct with name and location, backcolor and themer enable </summary>
-        public GLScrollPanelScrollBar(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
+        /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
+        public GLScrollPanelScrollBar(string name, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
         {
-            EnableThemer = enablethemer;
-            BackColorNI = backcolor;
+            Dock = type;
+            DockPercent = dockpercent;
         }
 
-
-        /// <summary> Empty Construct</summary>
-        public GLScrollPanelScrollBar(string name = "SPSB?") : this(name, DefaultWindowRectangle)
+        /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
+        public GLScrollPanelScrollBar(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
         {
+            Dock = type;
+            DockPercent = dockpercentage;
+            SetNI(size: sizep);
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Add(GLBaseControl, bool)"/>
         public override void Add(GLBaseControl other, bool atback = false)           // we need to override, since we want controls added to the scroll panel not us
         {
             scrollpanel.Add(other, atback);
+            InvalidateLayout();
+        }
+
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Add(GLBaseControl, ref int)"/>
+        public override void Add(GLBaseControl child, ref int tabno)
+        {
+            scrollpanel.Add(child, ref tabno);
             InvalidateLayout();
         }
 
@@ -117,9 +135,9 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.FindNextTabChild(int, int, bool)"/>
-        public override Tuple<GLBaseControl, int> FindNextTabChild(int tabno, int mindist, bool forward = true)
+        public override GLBaseControl FindNextTabChild(int tabno, bool forward = true)
         {
-            return scrollpanel.FindNextTabChild(tabno, mindist, forward);
+            return scrollpanel.FindNextTabChild(tabno, forward);
         }
 
         private void VScrolled(GLBaseControl c, GLScrollBar.ScrollEventArgs e)

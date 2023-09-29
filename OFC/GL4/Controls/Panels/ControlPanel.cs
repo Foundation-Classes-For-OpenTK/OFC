@@ -24,28 +24,28 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.IsContainer"/>
         public override bool IsContainer { get; } = true;
 
-        /// <summary> Construtor with name, bounds, and optional back color</summary>
-        public GLPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
-        {
-            BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
-            BorderColorNI = DefaultPanelBorderColor;
-            EnableThemer = enablethemer;
-        }
-
         /// <summary> Default Constructor </summary>
         public GLPanel() : this("P?", DefaultWindowRectangle)
         {
         }
 
+        /// <summary> Construtor with name, bounds, and optional back color, enable theme</summary>
+        public GLPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
+        {
+            BackColorGradientAltNI = BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultPanelBackColor;
+            BorderColorNI = DefaultPanelBorderColor;
+            EnableThemer = enablethemer;
+        }
+
         /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
-        public GLPanel(string name, DockingType type, float dockpercent, Color? backcolour = null) : this(name, DefaultWindowRectangle, backcolour)
+        public GLPanel(string name, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
         {
             Dock = type;
             DockPercent = dockpercent;
         }
 
         /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
-        public GLPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null) : this(name, DefaultWindowRectangle, backcolour)
+        public GLPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour ,enablethemer)
         {
             Dock = type;
             DockPercent = dockpercentage;

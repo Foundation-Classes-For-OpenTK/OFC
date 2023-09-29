@@ -60,9 +60,19 @@ namespace GLOFC.GL4.Controls
         {
             if (Visible == false)
             {
-                var size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(text, Font, StringFormat);
-                Location = new Point(pos.X + AutoPlacementOffset.X, pos.Y + AutoPlacementOffset.Y);
-                ClientSize = new Size((int)size.Width + 1, (int)size.Height + 1);
+                Location = new Point(pos.X + AutoPlacementOffset.X, pos.Y + AutoPlacementOffset.Y); // set to position
+
+                var screencooordmax = FindDisplay().MatrixCalc.ScreenCoordMax;      // ensure on screen
+
+                var size = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(text, Font, StringFormat, screencooordmax);  // measure, max size is this
+
+                ClientSize = new Size((int)size.Width + 1, (int)size.Height + 1);       // set to size
+
+                if (Right > screencooordmax.Width)                          // then check if overflowing X or Y
+                    Left -= (Right - screencooordmax.Width) + 4;
+                if (Bottom > screencooordmax.Height)
+                    Top -= (Bottom - screencooordmax.Height) + 4;
+
                 TopMost = true;
                 tiptext = text;
                 Visible = true;
@@ -110,7 +120,7 @@ namespace GLOFC.GL4.Controls
         {
             using (Brush br = new SolidBrush(ForeColor))
             {
-                System.Diagnostics.Debug.WriteLine("Tooltip paint " + tiptext);
+                //System.Diagnostics.Debug.WriteLine("Tooltip paint " + tiptext);
                 if (StringFormat != null)
                     gr.DrawString(tiptext, Font, br, ClientRectangle,StringFormat);
                 else

@@ -23,23 +23,32 @@ namespace GLOFC.GL4.Controls
     /// </summary>
     public class GLTableLayoutPanel : GLPanel
     {
-        /// <summary> Constructor with name and bounds </summary>
-        public GLTableLayoutPanel(string name, Rectangle location) : base(name, location)
-        {
-            BorderColorNI = DefaultTableLayoutBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultTableLayoutBackColor;
-        }
-
-        /// <summary> Construct with name and location, backcolor and themer enable </summary>
-        public GLTableLayoutPanel(string name, Rectangle location, Color backcolor, bool enablethemer = true) : this(name, location)
-        {
-            EnableThemer = enablethemer;
-            BackColorNI = backcolor;
-        }
-
         /// <summary> Default Constructor </summary>
-        public GLTableLayoutPanel() : this("TLP?",DefaultWindowRectangle)
+        public GLTableLayoutPanel() : this("TLP?", DefaultWindowRectangle)
         {
+        }
+
+        /// <summary> Construtor with name, bounds, and optional back color, enable theme</summary>
+        public GLTableLayoutPanel(string name, Rectangle location, Color? backcolour = null, bool enablethemer = true) : base(name, location)
+        {
+            BackColorGradientAltNI = BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultTableLayoutBackColor;
+            BorderColorNI = DefaultTableLayoutBorderColor;
+            EnableThemer = enablethemer;
+        }
+
+        /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>
+        public GLTableLayoutPanel(string name, DockingType type, float dockpercent, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
+        {
+            Dock = type;
+            DockPercent = dockpercent;
+        }
+
+        /// <summary> Constructor with name, size, docking type, docking percent, and optional backcolour</summary>
+        public GLTableLayoutPanel(string name, Size sizep, DockingType type, float dockpercentage, Color? backcolour = null, bool enablethemer = true) : this(name, DefaultWindowRectangle, backcolour, enablethemer)
+        {
+            Dock = type;
+            DockPercent = dockpercentage;
+            SetNI(size: sizep);
         }
 
         /// <summary>

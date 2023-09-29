@@ -6,20 +6,24 @@ using System.Drawing;
 using GLOFC.Utils;
 using static GLOFC.GL4.Controls.GLBaseControl;
 using OpenTK;
+using System.Web.UI.DataVisualization.Charting;
+using System.Linq;
+using System.Windows.Forms;
+using QuickJSON;
 
 namespace TestOpenTk
 {
     public class MapMenu
     {
         private Map map;
-        private Images images;
+        private ImageCache images;
         private GLLabel status;
         private const int iconsize = 32;
         private bool orderedclosemainmenu = false;  // import
 
         public const string EntryTextName = "MSEntryText";
 
-        public MapMenu(Map g, Images i)
+        public MapMenu(Map g, ImageCache i)
         {
             map = g;
             images = i;
@@ -32,9 +36,9 @@ namespace TestOpenTk
             menuimage.ToolTipText = "Open configuration menu";
             map.displaycontrol.Add(menuimage);
             menuimage.MouseClick = (o, e1) => {
-                ShowMenu(); 
+                //ShowMenu(); 
                 //ShowVector3Menu(new Vector3(1, 2, 3), "fred", (v)=> { System.Diagnostics.Debug.WriteLine($"Vector {v}"); });
-                //ShowImagesMenu(images.GetImageList());
+                ShowImagesMenu(images.GetImageList());
             };
 
             if (true)
@@ -60,7 +64,7 @@ namespace TestOpenTk
             }
 
 
-            GLToolTip maintooltip = new GLToolTip("MTT",Color.FromArgb(180,50,50,50));
+            GLToolTip maintooltip = new GLToolTip("MTT", Color.FromArgb(180, 50, 50, 50));
             maintooltip.ForeColor = Color.Orange;
             map.displaycontrol.Add(maintooltip);
 
@@ -84,10 +88,9 @@ namespace TestOpenTk
                 if (mapform != null && ctrl == map.displaycontrol && map.displaycontrol.ModalFormsActive == false && mapform.FormShown && !orderedclosemainmenu)
                 {
                     System.Diagnostics.Debug.WriteLine($"Ordered close");       // import
-                   ((GLForm)mapform).Close();
+                    ((GLForm)mapform).Close();
                 }
             };
-
         }
 
         // on menu button..
@@ -346,9 +349,9 @@ namespace TestOpenTk
 
                 GLCheckBox b1 = new GLCheckBox("ImagesEnable", new Rectangle(leftmargin, 0, iconsize, iconsize), Properties.Resources.ShowGalaxy, null);
                 b1.ToolTipText = "Enable Images";
-                b1.Checked = map.ImagesEnable;
+                b1.Checked = map.UserImagesEnable;
                 b1.CheckOnClick = true;
-                b1.CheckChanged += (e1) => { map.ImagesEnable = b1.Checked; };
+                b1.CheckChanged += (e1) => { map.UserImagesEnable = b1.Checked; };
                 imagesgb.Add(b1);
 
                 GLButton b2 = new GLButton("ImagesConfigure", new Rectangle(50, 0, iconsize, iconsize), Properties.Resources.ShowGalaxy, true);
@@ -363,84 +366,171 @@ namespace TestOpenTk
             map.displaycontrol.Add(pform);
         }
 
-        public void ShowImagesMenu(List<Images.ImageEntry> imagelist)
+
+        public void ShowImagesMenu(List<ImageCache.ImageEntry> imagelist)
         {
-            GLForm iform = new GLForm("Imagesmenu", "Configure Images", new Rectangle(100, 50, 700, 200), Color.FromArgb(220, 60, 60, 160), Color.Orange, true);
-            
+            GLForm iform = new GLForm("Imagesmenu", "Configure Images", new Rectangle(100, 50, 1200, 500), Color.FromArgb(220, 60, 60, 160), Color.Orange, true);
+
             // provide opening animation
             iform.ScaleWindow = new SizeF(0.0f, 0.0f);
-            iform.Animators.Add(new GLControlAnimateScale(10, 400, true, new SizeF(1, 1)));
+            iform.Animators.Add(new GLControlAnimateScale(10, 300, true, new SizeF(1, 1)));
 
             // and closing animation
             iform.FormClosing += (f, e) =>
             {
                 e.Handled = true;       // stop close
-                var ani = new GLControlAnimateScale(10, 400, true, new SizeF(0, 0));       // add a close animation
+                var ani = new GLControlAnimateScale(10, 200, true, new SizeF(0, 0));       // add a close animation
                 ani.FinishAction += (a, c, t) => { iform.ForceClose(); };   // when its complete, force close
                 iform.Animators.Add(ani);
             };
 
-            GLScrollPanelScrollBar spanel = new GLScrollPanelScrollBar("ImagesScrollPanel", new Rectangle(5,5,100,100), Color.Yellow);
-            spanel.Dock = DockingType.Fill;
+            GLScrollPanelScrollBar spanel = new GLScrollPanelScrollBar("ImagesScrollPanel", DockingType.Fill, 0F);
             spanel.EnableHorzScrolling = false;
             iform.Add(spanel);
-            map.displaycontrol.AddModalForm(iform);
 
-            PopulateImagesScrollPanel(spanel, imagelist, iform.ClientRectangle.Width - spanel.ScrollBarWidth);  // add after iform added to get correct scroll bar width
+
+            GLPanel top = new GLPanel("Paneltop", new Size(0, 32), DockingType.Top, 0F);
+            iform.Add(top);
+
+            List<ImageCache.ImageEntry> inbuiltlist = new List<ImageCache.ImageEntry>
+            {
+                new ImageCache.ImageEntry("EDAstro Indexed Heat Map", @"https://edastro.com/mapcharts/visited-systems-indexedheatmap.png",
+                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                new ImageCache.ImageEntry("EDAstro Indexed Log Heat Map", @"https://edastro.com/mapcharts/visited-systems-heatmap.png",
+                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                new ImageCache.ImageEntry("EDAstro Indexed Heat Map+Regions", @"https://edastro.com/mapcharts/visited-systems-indexedregions.jpg",
+                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                new ImageCache.ImageEntry("EDAstro Indexed Log Heat Map+Regions", @"https://edastro.com/mapcharts/visited-systems-regions.png",
+                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f)
+            };
+
+            GLComboBox presel = new GLComboBox("Preselects", new Rectangle(40, 4, 240, 24), inbuiltlist.Select(x => x.Name).ToList());
+
+            top.Add(presel);
+
+            map.displaycontrol.AddModalForm(iform);
+            iform.FormClosed += (s) => {
+                if (iform.DialogResult == GLForm.DialogResultEnum.OK)
+                    map.LoadBitmaps();
+            };
+
+            int availablewidth = iform.ClientRectangle.Width - spanel.ScrollBarWidth;
+
+            PopulateImagesScrollPanel(spanel, top, imagelist, availablewidth);  // add after iform added to get correct scroll bar width
+
+            presel.SelectedIndexChanged += (s) => {
+                imagelist.Add(inbuiltlist[presel.SelectedIndex]);
+                PopulateImagesScrollPanel(spanel, null, imagelist, availablewidth);
+                spanel.VertScrollPos = int.MaxValue;        // goto bottom
+            };
+            presel.TabOrder = 0;
+            presel.SetFocus();
         }
 
-        private void PopulateImagesScrollPanel( GLScrollPanelScrollBar spanel, List<Images.ImageEntry> imagelist, int width)
+        private void PopulateImagesScrollPanel( GLScrollPanelScrollBar spanel, GLPanel toppanel, List<ImageCache.ImageEntry> imagelist, int width)
         {
             spanel.SuspendLayout();
             spanel.Remove();
+
+            List<string> resourcenames = new List<string> { "dotted", "dotted2", "dotted1", "_2d", "_3d", "Backwards", "EDSMUnknown" };
+
+            int tabno = 1;
 
             int leftmargin = 4;
             int vpos = 10;
             int ypad = 10;
             int hpad = 8;
-            int taborder = 0;
             for( int entry = 0; entry < imagelist.Count; entry++)
             {
                 var ie = imagelist[entry];
 
-                GLCheckBox en = new GLCheckBox($"En{entry}", new Rectangle(leftmargin, vpos, iconsize, iconsize), Properties.Resources._3d, null);
-                en.Checked = ie.Enabled;
-                en.TabOrder = taborder++;
-                spanel.Add(en);
+                var cenable = new GLCheckBox($"En{entry}", new Rectangle(leftmargin, vpos, iconsize, iconsize), "", ie.Enabled);
+                cenable.CheckChanged += (s) => ie.Enabled = cenable.Checked;
+                spanel.Add(cenable,ref tabno);
 
-                GLTextBox tb = new GLTextBox("Tb", new Rectangle(en.Right + hpad, vpos, width - iconsize*7 - hpad * 8 - leftmargin * 2, iconsize), ie.ImagePathOrURL);
-                tb.TabOrder = taborder++;
-                spanel.Add(tb);
+                int spaceavailable = width - iconsize * 11 - hpad * 12 - leftmargin * 2;
 
-                var tl = new GLButton("tl", new Rectangle(tb.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                tl.Click += (s, e) => ShowVector3Menu(ie.TopLeft, tl.FindScreenCoords(), "Top Left", (v) => ie.TopLeft = v);
-                tl.TabOrder = taborder++;
-                spanel.Add(tl);
+                var name = new GLTextBoxAutoComplete("name", new Rectangle(cenable.Right + hpad, vpos, spaceavailable/3, iconsize), ie.Name);
+                name.TextChanged += (s) => { ie.Name = name.Text; };
+                spanel.Add(name, ref tabno);
 
-                var tr = new GLButton("tr", new Rectangle(tl.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                tr.Click += (s, e) => ShowVector3Menu(ie.TopRight, tr.FindScreenCoords(), "Top Right", (v) => ie.TopRight = v);
-                tr.TabOrder = taborder++;
-                spanel.Add(tr);
+                spaceavailable -= spaceavailable / 3 + hpad;
 
-                var bl = new GLButton("bl", new Rectangle(tr.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                bl.Click += (s, e) => ShowVector3Menu(ie.BottomLeft, bl.FindScreenCoords(), "Bottom Left", (v) => ie.BottomLeft = v);
-                bl.TabOrder = taborder++;
-                spanel.Add(bl);
+                var urlpath = new GLTextBoxAutoComplete("urlpath", new Rectangle(name.Right + hpad, vpos, spaceavailable, iconsize), ie.ImagePathOrURL);
+                urlpath.PerformAutoCompleteInThread += (input, sender, set) =>
+                {
+                    if (input.StartsWith("Resource:", StringComparison.InvariantCultureIgnoreCase))
+                        input = input.Substring(9);
+                    foreach (var x in resourcenames)
+                    {
+                        if (x.Contains(input, StringComparison.InvariantCultureIgnoreCase))
+                            set.Add("Resource:"+x);
+                    }
+                };
+                
+                urlpath.ToolTipText = "Use Resource:name for a resource, Image:name for a EDD icon, \"text\" for text, http:\\pathto for a internet image, or <path> for a local file";
+                urlpath.TextChanged += (s) => { ie.ImagePathOrURL = urlpath.Text; };
+                spanel.Add(urlpath, ref tabno);
 
-                var br = new GLButton("br", new Rectangle(bl.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                br.Click += (s, e) => ShowVector3Menu(ie.BottomRight, br.FindScreenCoords(), "Bottom Right", (v) => ie.BottomRight = v);
-                br.TabOrder = taborder++;
-                spanel.Add(br);
+                var ccentre = new GLButton("cent", new Rectangle(urlpath.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
+                ccentre.Click += (s, e) => ShowVector3Menu(ie.Centre, true, ccentre.FindScreenCoords(), "Centre", (v) => ie.Centre = v);
+                spanel.Add(ccentre, ref tabno);
 
-                GLButton delb = new GLButton("Del", new Rectangle(br.Right + hpad + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
+                var csize = new GLButton("size", new Rectangle(ccentre.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
+                csize.Click += (s, e) => ShowVector3Menu(new Point3D(ie.Size.X,ie.Size.Y,0), false, csize.FindScreenCoords(), "Size", (v) => ie.Size = new PointF(v.X,v.Y));
+                spanel.Add(csize, ref tabno);
+
+                var crot = new GLButton("rot", new Rectangle(csize.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
+                crot.Click += (s, e) => ShowVector3Menu(ie.RotationDegrees, true, crot.FindScreenCoords(), "Rotation Degrees", (v) => ie.RotationDegrees = v);
+                spanel.Add(crot, ref tabno);
+
+                var crotaz = new GLCheckBox("rotaz", new Rectangle(crot.Right + hpad, vpos, iconsize, iconsize), "",ie.RotateToViewer );
+                crotaz.ToolTipText = "Enables rotation to the viewer azimuth so it faces you";
+                crotaz.CheckChanged += (s) => ie.RotateToViewer = crotaz.Checked;
+                spanel.Add(crotaz, ref tabno);
+
+                var crotel = new GLCheckBox("rotel", new Rectangle(crotaz.Right + hpad, vpos, iconsize, iconsize), "", ie.RotateElevation );
+                crotel.ToolTipText = "Enables rotation to the viewer elevation so it faces you";
+                crotel.CheckChanged += (s) => ie.RotateElevation = crotel.Checked;
+                spanel.Add(crotel, ref tabno);
+
+                var calscalar = new GLNumberBoxFloat("scalar", new Rectangle(crotel.Right + hpad, vpos, iconsize * 3 / 2, iconsize), ie.AlphaFadeScalar);
+                calscalar.ToolTipText = "Alpha scaling by distance from eye. >0 fade out as distance decreases. <0 fade out as distance increase. 0 = fixed fade (determined by position)";
+                calscalar.Format = "0.#";
+                calscalar.ValueChanged += (s) => { ie.AlphaFadeScalar = calscalar.Value; };
+                calscalar.Minimum = 0;
+                spanel.Add(calscalar, ref tabno);
+
+                var calpos = new GLNumberBoxFloat("pos", new Rectangle(calscalar.Right + hpad, vpos, iconsize * 3 / 2, iconsize), ie.AlphaFadePosition);
+                calpos.ToolTipText = "if scalar != 0, Distance where fade starts/end. If scalar = 0, 0 = no fade, else fade between 0-1";
+                calpos.Format = "0.#";
+                calpos.ValueChanged += (s) => { ie.AlphaFadePosition = calpos.Value; };
+                calpos.Minimum = 0;
+                spanel.Add(calpos, ref tabno);
+
+                GLButton delb = new GLButton("Del", new Rectangle(calpos.Right + hpad + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
                 delb.Click += (s, e) => {
                     int sp = spanel.VertScrollPos;
                     imagelist.Remove(ie);
-                    PopulateImagesScrollPanel(spanel,imagelist,width);
+                    PopulateImagesScrollPanel(spanel,null,imagelist,width);
                     spanel.VertScrollPos = sp;
                 };
-                delb.TabOrder = taborder++;
-                spanel.Add(delb);
+                spanel.Add(delb, ref tabno);
+
+                if ( toppanel != null)
+                {
+                    toppanel.Add(new GLLabel("LEn", new Rectangle(cenable.Left, 4, iconsize + hpad, 20), "En"));
+                    toppanel.Add(new GLLabel("Lurl", new Rectangle(urlpath.Left, 4, 200, 20), "URL/Resource/Image/File"));
+                    toppanel.Add(new GLLabel("LPos", new Rectangle(ccentre.Left, 4, iconsize + hpad, 20), "Pos"));
+                    toppanel.Add(new GLLabel("LSize", new Rectangle(csize.Left, 4, iconsize + hpad, 20), "Size"));
+                    toppanel.Add(new GLLabel("LRot", new Rectangle(crot.Left, 4, iconsize + hpad, 20), "Rot"));
+                    toppanel.Add(new GLLabel("LDel", new Rectangle(delb.Left, 4, iconsize + hpad, 20), "Del"));
+                    toppanel.Add(new GLLabel("LMU", new Rectangle(delb.Right + hpad, 4, iconsize + hpad, 20), "Up"));
+                    toppanel.Add(new GLLabel("AZRot", new Rectangle(crotaz.Left , 4, iconsize + hpad, 20), "AZr"));
+                    toppanel.Add(new GLLabel("AZEl", new Rectangle(crotel.Left, 4, iconsize + hpad, 20), "ELr"));
+                    toppanel.Add(new GLLabel("als", new Rectangle(calscalar.Left, 4, iconsize*3/2 + hpad, 20), "AlSc"));
+                    toppanel.Add(new GLLabel("ald", new Rectangle(calpos.Left, 4, iconsize*3/2 + hpad, 20), "AlP/F"));
+                }
 
                 if (entry > 0)
                 {
@@ -455,60 +545,107 @@ namespace TestOpenTk
                             imagelist.Remove(previous);      // this makes our current be in the previous slot
                             imagelist.Insert(entryno, previous); // and we insert previous into our pos
                         }
-                        PopulateImagesScrollPanel(spanel,imagelist,width);
+                        PopulateImagesScrollPanel(spanel, null, imagelist, width);
                         spanel.VertScrollPos = sp;
                     };
-                    upb.TabOrder = taborder++;
-                    spanel.Add(upb);
+                    spanel.Add(upb, ref tabno);
                 }
 
-                vpos += en.Height + ypad;
+                vpos += cenable.Height + ypad;
             }
-
-            GLButton ok = new GLButton("OK", new Rectangle(width-leftmargin-80, vpos, 80, iconsize), "OK");
-            ok.Click += (s, e) =>
-            {
-                images.SetImageList(imagelist);
-                spanel.FindForm().Close();
-            };
-            ok.TabOrder = taborder++;
-            spanel.Add(ok);
 
             GLButton add = new GLButton("Add", new Rectangle(leftmargin, vpos, iconsize, iconsize), Properties.Resources._3d, true);
             add.Click += (s, e) =>
             {
-                imagelist.Add(new Images.ImageEntry("<path or url to>", true, new Vector3(-20000, 0, 20000), new Vector3(20000, 0, 20000), new Vector3(-20000, 0, -20000), new Vector3(-20000, 0, -20000)));
-                PopulateImagesScrollPanel(spanel,imagelist,width);
+                imagelist.Add(new ImageCache.ImageEntry("", "", true, new Point3D(0, 0, 0), new PointF(200, 200), new Point3D(0, 0, 0)));
+                PopulateImagesScrollPanel(spanel, null, imagelist, width);
                 spanel.VertScrollPos = int.MaxValue;        // goto bottom
             };
-            add.TabOrder = taborder++;
-            spanel.Add(add);
+            spanel.Add(add, ref tabno);
+
+            GLButton save = new GLButton("Save", new Rectangle(add.Right + hpad, vpos, iconsize*2, iconsize), "Save");
+            save.Click += (s, e) =>
+            {
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.FileName = "ImageList";
+                sfd.DefaultExt = "eddil";
+                sfd.Filter = "EDD Image List (*.eddil)|*.eddil|All Files (*.*)|*.*";
+                if ( sfd.ShowDialog() == DialogResult.OK)
+                {
+                    bool success = false;
+                    JArray ret = JToken.FromObjectWithError(imagelist, true, membersearchflags: System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).Array();
+                    if ( ret != null )
+                    {
+                        var str = ret.ToString(true);
+                        success = BaseUtils.FileHelpers.TryWriteToFile(sfd.FileName, str);
+                    }
+                    if (!success)
+                    {
+                        GLMessageBox.Show("m1", spanel, new Point(int.MinValue, 0), $"Failed to save {sfd.FileName}", "Error",
+                                    GLMessageBox.MessageBoxButtons.OK);
+                    }
+                }
+
+            };
+            spanel.Add(save, ref tabno);
+
+            GLButton load = new GLButton("Load", new Rectangle(save.Right + hpad, vpos, iconsize*2, iconsize), "Load");
+            load.Click += (s, e) =>
+            {
+                OpenFileDialog sfd = new OpenFileDialog();
+                sfd.FileName = "ImageList";
+                sfd.DefaultExt = "eddil";
+                sfd.Filter = "EDD Image List (*.eddil)|*.eddil|All Files (*.*)|*.*";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    bool success = false;
+                    string str = BaseUtils.FileHelpers.TryReadAllTextFromFile(sfd.FileName);
+                    if ( str != null)
+                    {
+                        JToken json = QuickJSON.JToken.Parse(str, QuickJSON.JToken.ParseOptions.CheckEOL);
+                        if (json != null)
+                        {
+                            var list = json.ToObject<List<ImageCache.ImageEntry>>();
+                            if (list != null)
+                            {
+                                imagelist = list;
+                                success = true;
+                            }
+                        }
+                    }
+
+                    if (success)
+                    {
+                        PopulateImagesScrollPanel(spanel, null, imagelist, width);
+                    }
+                    else
+                    {
+                        GLMessageBox.Show("m1", spanel, new Point(int.MinValue, 0), $"Failed to load {sfd.FileName}", "Error",
+                                    GLMessageBox.MessageBoxButtons.OK);
+                    }
+                }
+            };
+            spanel.Add(load, ref tabno);
+
+            GLButton ok = new GLButton("OK", new Rectangle(width - leftmargin - 80, vpos, 80, iconsize), "OK");
+            ok.Click += (s, e) =>
+            {
+                images.SetImageList(imagelist);
+                spanel.FindForm().DialogResult = GLForm.DialogResultEnum.OK;
+                spanel.FindForm().Close();
+            };
+            spanel.Add(ok, ref tabno);
 
             spanel.ResumeLayout();
         }
 
-        public void ShowVector3Menu(Vector3 value,Point pos, string name, Action<Vector3> onok)
+        public void ShowVector3Menu(Point3D value,bool vector3, Point pos, string name, Action<Point3D> onok)
         {
-            GLForm iform = new GLForm("XYZmenu", name, new Rectangle(pos, new Size(250, 150)), Color.FromArgb(110, 110, 110, 255), Color.Orange, true, true);
-            GLLabel xl = new GLLabel("xl", new Rectangle(4, 10, 20, 20), "X");
-            iform.Add(xl);
-            GLNumberBoxFloat x = new GLNumberBoxFloat("x", new Rectangle(30, 10, 200, 20),value.X);
-            x.TabOrder = 0;
-            iform.Add(x);
-            GLLabel yl = new GLLabel("xl", new Rectangle(4, 40, 20, 20), "Y");
-            iform.Add(yl);
-            GLNumberBoxFloat y = new GLNumberBoxFloat("y", new Rectangle(30, 40, 200, 20),value.Y);
-            y.TabOrder = 1;
-            iform.Add(y);
-            GLLabel zl = new GLLabel("xl", new Rectangle(4, 70, 20, 20), "Z");
-            iform.Add(zl);
-            GLNumberBoxFloat z = new GLNumberBoxFloat("z", new Rectangle(30, 70, 200, 20),value.Z);
-            z.TabOrder = 2;
-            iform.Add(z);
-            GLButton ok = new GLButton("ok", new Rectangle(150, 100, 80, 20), "OK");
-            ok.Click += (s, e) => { onok(new Vector3(x.Value, y.Value, z.Value)); iform.Close(); };
-            ok.TabOrder = 3;
-            iform.Add(ok);
+            GLFormVector3 iform = new GLFormVector3("Vectormenu", name, new Vector3(value.X, value.Y, value.Z), new Rectangle(pos, new Size(250, 150)), vector2: !vector3);
+            iform.DialogResultChanged += (s,e) => {
+                System.Diagnostics.Debug.WriteLine($"ON OK {iform.Value.X} {iform.Value.Y} {iform.Value.Z}");
+                onok(new Point3D(iform.Value.X, iform.Value.Y, vector3 ? iform.Value.Z : 0)); 
+            };
             map.displaycontrol.AddModalForm(iform);
         }
 
@@ -537,15 +674,17 @@ namespace TestOpenTk
             {
                 but.ButtonFaceColor = buttonface;
                 but.ForeColor = texc;
-                but.BackColor = buttonface;
-                but.BorderColor = buttonface;
+                but.BackColor = formback;
+                but.BorderColor = Color.FromArgb(255,90,90,90);
             }
 
             var cb = ctrl as GLCheckBox;
             if (cb != null)
             {
+                cb.BackColor = formback;
                 cb.ButtonFaceColor = buttonface;
-                cb.BackColor = formback;    //important image checkboxes need this
+                cb.CheckBoxInnerColor = texc;
+                cb.TickBoxReductionRatio = 0.7f;
             }
             var cmb = ctrl as GLComboBox;
             if (cmb != null)
@@ -572,13 +711,16 @@ namespace TestOpenTk
                 fr.ForeColor = texc;
             }
 
-            var tb = ctrl as GLTextBox;
+            var tb = ctrl as GLMultiLineTextBox;    // also autocomplete text box
             if (tb != null)
             {
                 tb.BackColor = formback;
                 tb.ForeColor = texc;
-                tb.BorderColor = Color.Gray;
-                tb.BorderWidth = 1;
+                if (!(tb.Parent is GLFormConfigurable))     // this is to stop themeing the box around the warning text
+                {
+                    tb.BorderColor = Color.Gray;
+                    tb.BorderWidth = 1;
+                }
             }
 
             var lb = ctrl as GLLabel;
@@ -621,6 +763,12 @@ namespace TestOpenTk
             if (sp != null)
             {
                 sp.BackColor = formback;
+            }
+
+            var p = ctrl as GLPanel;
+            if (p != null)
+            {
+                p.BackColor = formback;
             }
 
 

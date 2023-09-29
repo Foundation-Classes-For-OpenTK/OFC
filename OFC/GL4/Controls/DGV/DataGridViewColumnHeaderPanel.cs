@@ -28,8 +28,8 @@ namespace GLOFC.GL4.Controls
 
         public GLDataGridViewColumnHeaderPanel(string name, Rectangle location) : base(name, location)
         {
-            BorderColorNI = DefaultVerticalScrollPanelBorderColor;
-            BackColorGradientAltNI = BackColorNI = DefaultVerticalScrollPanelBackColor;
+            BorderColorNI = DefaultScrollPanelBorderColor;
+            BackColorGradientAltNI = BackColorNI = DefaultScrollPanelBackColor;
         }
 
         protected override void Paint(Graphics gr)

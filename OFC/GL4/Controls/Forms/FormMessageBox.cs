@@ -42,9 +42,9 @@ namespace GLOFC.GL4.Controls
             RetryCancel = 5
         }
 
-        /// <summary> Construct and display a message box </summary>
+        /// <summary> Display a modal message box </summary>
         /// <param name="name">Name of message box</param>
-        /// <param name="parent">Who to attach to as parent</param>
+        /// <param name="parent">Give a control to use to find the display control</param>
         /// <param name="location">Location relative to parent. Set to X=int.MinValue for center</param>
         /// <param name="text">Text for message box</param>
         /// <param name="caption">Caption for message box </param>
@@ -56,6 +56,33 @@ namespace GLOFC.GL4.Controls
         /// <param name="moveable">Indicate if dialog should be moveable</param>
         /// <param name="readonlymarked">Indicate if text is editable</param>
 
+        public static void Show(string name,
+                            GLBaseControl parent, Point location,
+                            string text, string caption,
+                            MessageBoxButtons buttons = MessageBoxButtons.OK, Font font = null,
+                            Color? backcolor = null, Color? forecolor = null,
+                            Action<GLMessageBox, DialogResultEnum> callback = null,
+                            bool moveable = true,
+                            bool readonlymarked = true)
+        {
+            new GLMessageBox(name, parent, location, text, caption, buttons, font, backcolor, forecolor, callback, moveable, readonlymarked,true);
+        }
+
+        /// <summary> Construct and display a message box </summary>
+        /// <param name="name">Name of message box</param>
+        /// <param name="parent">Give a control to use to find the display control</param>
+        /// <param name="location">Location relative to parent. Set to X=int.MinValue for center</param>
+        /// <param name="text">Text for message box</param>
+        /// <param name="caption">Caption for message box </param>
+        /// <param name="buttons">What buttons to display (OK is the default)</param>
+        /// <param name="font">What font to display the text in (null = parent font)</param>
+        /// <param name="backcolor">Back color of box (null = default)</param>
+        /// <param name="forecolor">Fore color (null = default)</param>
+        /// <param name="callback">Callback function, called when user has made a selection or hit close (result Cancel). May be null</param>
+        /// <param name="moveable">Indicate if dialog should be moveable</param>
+        /// <param name="readonlymarked">Indicate if text is editable</param>
+        /// <param name="modal">Is the form modal</param>
+
         public GLMessageBox( string name, 
                             GLBaseControl parent, Point location, 
                             string text, string caption, 
@@ -63,8 +90,11 @@ namespace GLOFC.GL4.Controls
                             Color? backcolor = null, Color? forecolor = null,
                             Action<GLMessageBox, DialogResultEnum> callback = null,
                             bool moveable = true,
-                            bool readonlymarked = true )
+                            bool readonlymarked = true,
+                            bool modal = false)
         {
+            System.Diagnostics.Trace.Assert(parent != null, "Must give parent in FormMessageBox");
+
             callbackfunc = callback;
 
             if (font == null)
@@ -87,7 +117,7 @@ namespace GLOFC.GL4.Controls
             tb.CursorToTop();
 
             const int butwidth = 80;
-            const int butheight = 20;
+            const int butheight = 28;
             const int textoffsettop = 10;
             const int butspacingundertext = 8;
             const int butxspacing = 20;
@@ -171,7 +201,15 @@ namespace GLOFC.GL4.Controls
                 }
             };
 
-            parent.AddToDesktop(cf);      // this autosizes the form
+            cf.Owner = parent;              // associate with parent
+            
+            GLControlDisplay cd = parent.FindDisplay();
+            System.Diagnostics.Trace.Assert(cd != null, "Can't find display control in FormMessageBox");
+            
+            if (modal)
+                cd.AddModalForm(cf);
+            else
+                cd.Add(cf);
 
             cf.AutoSize = false;            // now we turn autosize off, and allow it to move
             cf.Moveable = moveable;

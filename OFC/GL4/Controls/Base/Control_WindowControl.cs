@@ -170,7 +170,7 @@ namespace GLOFC.GL4.Controls
             // if we have modal forms active, and its not a it or a child of the active form, its like mousing over nothing
             if (controlover != null && modalforms.Count > 0 && !modalforms.Last().IsThisOrChildOf(controlover))
             {
-                //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} due to modal");
+                //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} pname `{controlover.Parent?.Name}` oname `{controlover.Owner?.Name}` due to modal");
                 controlover = dummyblockingcontrol;
             }
 

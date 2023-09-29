@@ -121,6 +121,7 @@
     <Compile Include="GL4\Controls\DGV\DataGridViewTopLeftPanel.cs" />
     <Compile Include="GL4\Controls\Forms\Form.cs" />
     <Compile Include="GL4\Controls\Forms\FormConfigurable.cs" />
+    <Compile Include="GL4\Controls\Forms\FormVector3.cs" />
     <Compile Include="GL4\Controls\Forms\FormMessageBox.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuItem.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuStrip.cs" />

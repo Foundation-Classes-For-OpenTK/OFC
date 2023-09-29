@@ -35,6 +35,9 @@ using GLOFC.GL4.Shaders.Sprites;
 using GLOFC.GL4.Operations;
 using GLOFC.GL4.ShapeFactory;
 using GLOFC.GL4.Textures;
+using System.Web.UI.DataVisualization.Charting;
+using System.Reflection;
+using GLOFC.GL4.Bitmaps;
 
 namespace TestOpenTk
 {
@@ -75,7 +78,11 @@ namespace TestOpenTk
         private GalMapRegions elitemapregions;
         private GalaxyStarDots stardots;
         private GalaxyStars galaxystars = null;
-        private Images images;
+
+        private ImageCache userimages;
+        private GLBindlessTextureBitmaps usertexturebitmaps;
+
+        private Action<Action> uiinvoker;
 
         private Bookmarks bookmarks;
 
@@ -86,10 +93,8 @@ namespace TestOpenTk
         // global buffer blocks used
         private const int volumenticuniformblock = 2;
         private const int findblock = 3;
-        //private const int findgeomapblock = 4;
-        //private const int findgalaxystars = 5;
-        //private const int findbookmarks = 6;
-
+        private const int userbitmapsarbblock = 4;
+        
         private System.Diagnostics.Stopwatch hptimer = new System.Diagnostics.Stopwatch();
 
         public Map()
@@ -107,11 +112,12 @@ namespace TestOpenTk
 
         #region Initialise
 
-        public void Start(GLOFC.WinForm.GLWinFormControl glwfc, GalacticMapping edsmmapping, GalacticMapping eliteregions)
+        public void Start(GLOFC.WinForm.GLWinFormControl glwfc, GalacticMapping edsmmapping, GalacticMapping eliteregions, Action<Action> uiinvoker)
         {
             this.glwfc = glwfc;
             this.edsmmapping = edsmmapping;
             this.elitemapping = eliteregions;
+            this.uiinvoker = uiinvoker;
 
             hptimer.Start();
 
@@ -172,13 +178,13 @@ namespace TestOpenTk
             }
 
             int ctrlo = 2048 | 32 | 64;
-            ctrlo = -1;
-            //ctrlo = 32 | 64 | 256;
+            ctrlo = 4096;
 
-
-            if (true)
+            if ((ctrlo & 4096) != 0)
             {
-                images = new Images(items, rObjects);
+                userimages = new ImageCache(items, rObjects);
+                usertexturebitmaps = new GLBindlessTextureBitmaps("UserBitmaps", rObjects, userbitmapsarbblock,false);
+                items.Add(usertexturebitmaps);
             }
 
             if ((ctrlo & 1) != 0) // galaxy
@@ -263,7 +269,7 @@ namespace TestOpenTk
                 int gran = 8;
                 Bitmap img = Properties.Resources.Galaxy_L180;
                 Bitmap heat = img.Function(img.Width / gran, img.Height / gran, mode: GLOFC.Utils.BitMapHelpers.BitmapFunction.HeatMap);
-                heat.Save(@"c:\code\heatmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                //heat.Save(@"c:\code\heatmap.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
 
                 Random rnd = new Random(23);
 
@@ -511,7 +517,7 @@ namespace TestOpenTk
             displaycontrol.MouseClick += MouseClickOnMap;
 
 
-            galaxymenu = new MapMenu(this, images);
+            galaxymenu = new MapMenu(this, userimages);
 
             // Autocomplete text box at top for searching
 
@@ -587,11 +593,13 @@ namespace TestOpenTk
                 MessageBox.Show(shaderlog, "Shader Log - report to EDD");
             if (GLShaderLog.Okay == false)
                 MessageBox.Show(shaderlog, "Map broken - abort");
-
+           
         }
 
         public void LoadState(MapSaver defaults)
         {
+            gl3dcontroller.ChangePerspectiveMode(defaults.GetSetting("GAL3DMode", true));
+
             long gs = defaults.GetSetting("GALSTARS", (long)3);        // due to JSON all data comes back as longs
             GalaxyStars = (int)gs;
 
@@ -609,8 +617,8 @@ namespace TestOpenTk
             GalObjectDisplay = defaults.GetSetting("GALOD", true);
             SetAllGalObjectTypeEnables(defaults.GetSetting("GALOBJLIST", ""));
 
-            ImagesEnable = defaults.GetSetting("ImagesEnable", true);
-            images.LoadFromString(defaults.GetSetting("ImagesList", ""));
+            UserImagesEnable = defaults.GetSetting("ImagesEnable", true);
+            userimages?.LoadFromString(defaults.GetSetting("ImagesList", ""));
 
             EDSMRegionsEnable = defaults.GetSetting("ERe", false);
             EDSMRegionsOutlineEnable = defaults.GetSetting("ERoe", false);
@@ -623,13 +631,11 @@ namespace TestOpenTk
             EliteRegionsTextEnable = defaults.GetSetting("ELte", true);
             gl3dcontroller.SetPositionCamera(defaults.GetSetting("POSCAMERA", ""));     // go thru gl3dcontroller to set default position, so we reset the model matrix
 
-            images.Add(new Images.ImageEntry(@"c:\code\picture1.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
-            images.Add(new Images.ImageEntry(@"c:\code\picture2.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
-            //    images.Add(new Images.ImageEntry(@"c:\code\picture3.txt", true, new Vector3(1, 2, 3), new Vector3(5, 6, 7), new Vector3(8, 9, 10), new Vector3(11, 12, 13)));
         }
 
         public void SaveState(MapSaver defaults)
         {
+            defaults.PutSetting("GAL3DMode", gl3dcontroller.MatrixCalc.InPerspectiveMode);
             defaults.PutSetting("GALSTARS", GalaxyStars);
             defaults.PutSetting("GD", GalaxyDisplay);
             defaults.PutSetting("SDD", StarDotsDisplay);
@@ -649,10 +655,59 @@ namespace TestOpenTk
             defaults.PutSetting("ELse", EliteRegionsShadingEnable);
             defaults.PutSetting("ELte", EliteRegionsTextEnable);
             defaults.PutSetting("POSCAMERA", gl3dcontroller.PosCamera.StringPositionCamera);
-            defaults.PutSetting("ImagesEnable", images.Enable);
-            //  defaults.PutSetting("ImagesList", images.ImageStringList());
+
+            defaults.PutSetting("ImagesEnable", UserImagesEnable);
+            if (userimages!=null)
+                defaults.PutSetting("ImagesList", userimages.ImageStringList());
         }
 
+        public void LoadBitmaps()
+        {
+            if (userimages != null)
+            {
+                usertexturebitmaps.Clear();
+                userimages.LoadBitmaps(Assembly.GetExecutingAssembly(), "TestOpenTk.Properties.Resources",
+                    (ie) =>
+                    {
+                        usertexturebitmaps.Add(null, null, ie.Bitmap, 1,
+                            new Vector3(ie.Centre.X, ie.Centre.Y, ie.Centre.Z),
+                            new Vector3(ie.Size.X, 0, ie.Size.Y),
+                            new Vector3(ie.RotationDegrees.X.Radians(), ie.RotationDegrees.Y.Radians(), ie.RotationDegrees.Z.Radians()),
+                            ie.RotateToViewer, ie.RotateElevation, ie.AlphaFadeScalar, ie.AlphaFadePosition);
+                    },
+                    (ie) => // http load
+                    {
+                        System.Threading.Tasks.Task.Run(() =>
+                        {
+                            string name = ie.ImagePathOrURL;
+                            string path = @"c:\code\" + ie.ImagePathOrURL.Replace("http://", "", StringComparison.InvariantCultureIgnoreCase).
+                                        Replace("https://", "", StringComparison.InvariantCultureIgnoreCase).SafeFileString();
+                            System.Diagnostics.Debug.WriteLine($"HTTP load {name} to {path}");
+
+                            bool res = BaseUtils.DownloadFile.HTTPDownloadFile(name, path, false, out bool newfile);
+
+                            if (res)
+                            {
+                                uiinvoker(() =>
+                                {
+                                    if (ie.LoadBitmap(path))
+                                    {
+                                        usertexturebitmaps.Add(null, null, ie.Bitmap, 1,
+                                            new Vector3(ie.Centre.X, ie.Centre.Y, ie.Centre.Z),
+                                            new Vector3(ie.Size.X, 0, ie.Size.Y),
+                                            new Vector3(ie.RotationDegrees.X.Radians(), ie.RotationDegrees.Y.Radians(), ie.RotationDegrees.Z.Radians()),
+                                            ie.RotateToViewer, ie.RotateElevation, ie.AlphaFadeScalar, ie.AlphaFadePosition);
+                                    }
+                                });
+                            }
+                        });
+                    },
+                    null);
+
+            }
+
+        }
+        
         #endregion
 
         #region Display
@@ -843,7 +898,7 @@ namespace TestOpenTk
         public bool EliteRegionsShadingEnable { get { return elitemapregions?.Regions ?? false; } set { if (elitemapregions != null) { elitemapregions.Regions = value; glwfc.Invalidate(); } } }
         public bool EliteRegionsTextEnable { get { return elitemapregions?.Text ?? false; } set { if (elitemapregions != null) { elitemapregions.Text = value; glwfc.Invalidate(); } } }
 
-        public bool ImagesEnable { get { return images?.Enable ?? false; } set { if (images != null) { images.Enable = value; glwfc.Invalidate(); } } }
+        public bool UserImagesEnable { get { return usertexturebitmaps?.Enable ?? false; } set { if (usertexturebitmaps != null) { usertexturebitmaps.Enable = value; glwfc.Invalidate(); } } }
 
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {

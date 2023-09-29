@@ -147,6 +147,17 @@ namespace GLOFC.Utils
             return new Rectangle(left, top, iw, ih);
         }
 
+        static public void DrawRectangleFromArea(this Graphics gr, Pen p1, Rectangle b)
+        {
+            gr.DrawRectangle(p1, new Rectangle(b.Left, b.Top, b.Width - 1, b.Height - 1));
+
+        }
+        static public void FillRectangleFromArea(this Graphics gr, Brush b1, Rectangle b)
+        {
+            gr.FillRectangle(b1, new Rectangle(b.Left, b.Top, b.Width - 1, b.Height - 1));
+
+        }
+
     }
 
 }

@@ -53,6 +53,7 @@ namespace GLOFC.GL4.Controls
         /// You always set Name, ControlType, Location, Size
         /// Other fields are specific to certain types and are set for them
         /// Tab order is in order added, unless the entry specifically overrides it.  If it does, next autotab follows on from this value. 
+        /// You can get feedback from the form using Trigger or DialogResultChanged (if you InstalledStandardTriggers or your triggers set DialogResult) 
         /// </summary>
 
         public class Entry

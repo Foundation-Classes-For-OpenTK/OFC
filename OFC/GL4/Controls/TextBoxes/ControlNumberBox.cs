@@ -27,10 +27,13 @@ namespace GLOFC.GL4.Controls
     {
         /// <summary> Set the format to print the number in 
         /// See <href>https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings</href></summary>
-        public string Format { get { return format; } set { format = value; base.Text = ConvertToString(Value); } }
+        public string Format { get { return format; } set { format = value; base.Text = ConvertToString(Value); Check(); } }
 
         /// <summary> Set the format culture to use. Default is CurrentCulture </summary>
-        public System.Globalization.CultureInfo FormatCulture { get { return culture; } set { culture = value; } }
+        public System.Globalization.CultureInfo FormatCulture { get { return culture; } set { culture = value; Check(); } }
+
+        /// <summary> Set the number styles </summary>
+        public System.Globalization.NumberStyles NumberStyles { get { return numstyles; } set { numstyles = value; Check(); } }
 
         /// <summary> Callback when value changes </summary>
         public Action<GLBaseControl> ValueChanged;
@@ -38,9 +41,9 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl,bool> ValidityChanged;
 
         /// <summary> Minimum value to allow. If outside, InErrorCondition will be set </summary>
-        public T Minimum { get { return minimum; } set { minimum = value; InErrorCondition = !IsValid; } }
+        public T Minimum { get { return minimum; } set { minimum = value; Check(); } }
         /// <summary> Maximum value to allow. If outside, InErrorCondition will be set </summary>
-        public T Maximum { get { return maximum; } set { maximum = value; InErrorCondition = !IsValid; } }
+        public T Maximum { get { return maximum; } set { maximum = value; Check(); } }
         /// <summary> Is the current text in box valid? </summary>
         public bool IsValid { get { return ConvertFromString(base.Text, out T v); } }
 
@@ -49,7 +52,7 @@ namespace GLOFC.GL4.Controls
         {
             othernumberbox = other;
             othercomparision = compare;
-            InErrorCondition = !IsValid;
+            Check();
         }
 
         /// <summary> Set the control blank but without an error </summary>
@@ -63,6 +66,7 @@ namespace GLOFC.GL4.Controls
         public void SetNonBlank()       
         {
             base.Text = ConvertToString(Value);
+            Check();
         }
 
         /// <summary> Get value of box (which is the last valid value) or set the value and the text box. No events are fired on set.</summary>
@@ -73,14 +77,20 @@ namespace GLOFC.GL4.Controls
             {
                 number = value;
                 base.Text = ConvertToString(number);
-                InErrorCondition = !ConvertFromString(base.Text, out T valunused);
+                Check();
             }
         }
 
         /// <summary> Get Text only. No set </summary>
-        public new string Text { get { return base.Text; } set { System.Diagnostics.Debug.Assert(false, "Can't set Number box"); } }   
+        public new string Text { get { return base.Text; } set { System.Diagnostics.Debug.Assert(false, "Can't set Number box"); } }
 
         #region Implementation
+
+        private void Check()
+        {
+            InErrorCondition = !IsValid;
+        }
+
         private protected GLNumberBox(string  name, Rectangle pos ) : base(name,pos)
         {
         }
@@ -94,6 +104,8 @@ namespace GLOFC.GL4.Controls
         private T maximum;
         private string format = "N";
         private System.Globalization.CultureInfo culture = System.Globalization.CultureInfo.CurrentCulture;
+        private System.Globalization.NumberStyles numstyles = System.Globalization.NumberStyles.None;
+
         private protected GLNumberBox<T> othernumberbox { get; set; } = null;             // attach to another box for validation
         private protected int othercomparision { get; set; } = 0;              // aka -2 (<=) -1(<) 0 (=) 1 (>) 2 (>=)
 
@@ -166,9 +178,11 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxFloat(string name, Rectangle pos, float value) : base(name, pos)
         {
+            NumberStyles = System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands;
             Minimum = float.MinValue;
             Maximum = float.MaxValue;
             Value = value;
+            Format = "G";
         }
 
         /// <summary> Constructor with name, bounds, initial value, colours </summary>
@@ -191,7 +205,7 @@ namespace GLOFC.GL4.Controls
 
         private protected override bool ConvertFromString(string t, out float number)
         {
-            bool ok = float.TryParse(t, System.Globalization.NumberStyles.Float, FormatCulture, out number) &&
+            bool ok = float.TryParse(t, NumberStyles, FormatCulture, out number) &&
                       number >= Minimum && number <= Maximum;
             if (ok && othernumberbox != null)
                 ok = number.CompareTo(othernumberbox.Value, othercomparision);
@@ -202,7 +216,8 @@ namespace GLOFC.GL4.Controls
         {
           return (char.IsDigit(c) || c == 8 ||
                     (c == FormatCulture.NumberFormat.CurrencyDecimalSeparator[0] && Text.IndexOf(FormatCulture.NumberFormat.CurrencyDecimalSeparator, StringComparison.Ordinal) == -1) ||
-                    (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0));
+                    (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0)) ||
+                    (c == FormatCulture.NumberFormat.NumberGroupSeparator[0] && (NumberStyles & System.Globalization.NumberStyles.AllowThousands) != 0);
         }
     }
 
@@ -214,9 +229,11 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxDouble(string name, Rectangle pos, double value) : base(name, pos)
         {
+            NumberStyles = System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands;
             Minimum = double.MinValue;
             Maximum = double.MaxValue;
             Value = value;
+            Format = "G";
         }
 
         /// <summary> Constructor with name, bounds, initial value, colours </summary>
@@ -238,7 +255,7 @@ namespace GLOFC.GL4.Controls
         }
         private protected override bool ConvertFromString(string t, out double number)
         {
-            bool ok = double.TryParse(t, System.Globalization.NumberStyles.Float, FormatCulture, out number) &&
+            bool ok = double.TryParse(t, NumberStyles, FormatCulture, out number) &&
                 number >= Minimum && number <= Maximum;
             if (ok && othernumberbox != null)
                 ok = number.CompareTo(othernumberbox.Value, othercomparision);
@@ -249,7 +266,8 @@ namespace GLOFC.GL4.Controls
         {
             return (char.IsDigit(c) || c == 8 ||
                 (c == FormatCulture.NumberFormat.CurrencyDecimalSeparator[0] && Text.IndexOf(FormatCulture.NumberFormat.CurrencyDecimalSeparator) == -1) ||
-                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0));
+                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0)) ||
+                (c == FormatCulture.NumberFormat.NumberGroupSeparator[0] && (NumberStyles & System.Globalization.NumberStyles.AllowThousands) != 0);
         }
     }
 
@@ -261,6 +279,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxLong(string name, Rectangle pos, long value) : base(name, pos)
         {
+            NumberStyles = System.Globalization.NumberStyles.AllowThousands;
             Minimum = long.MinValue;
             Maximum = long.MaxValue;
             Value = value;
@@ -287,7 +306,7 @@ namespace GLOFC.GL4.Controls
         
         private protected override bool ConvertFromString(string t, out long number)
         {
-            bool ok = long.TryParse(t, System.Globalization.NumberStyles.Integer, FormatCulture, out number) &&
+            bool ok = long.TryParse(t, NumberStyles, FormatCulture, out number) &&
                             number >= Minimum && number <= Maximum;
             if (ok && othernumberbox != null)
                 ok = number.CompareTo(othernumberbox.Value, othercomparision);
@@ -297,7 +316,8 @@ namespace GLOFC.GL4.Controls
         private protected override bool AllowedChar(char c)
         {
             return (char.IsDigit(c) || c == 8 ||
-                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0));
+                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0) ||
+                (c == FormatCulture.NumberFormat.NumberGroupSeparator[0]));
         }
     }
 

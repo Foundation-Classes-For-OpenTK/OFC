@@ -80,18 +80,29 @@ namespace GLOFC
         /// <summary> Fov Scaling factor </summary>
         public float FovFactor { get; set; } = 1.258925F;
 
-        /// <summary> Screen size, total, of GL window. </summary>
+        /// <summary> Screen size of GL window in pixels.
+        /// This may be different to the ScreenCoordMax if the user decides to use a fixed screen pixel size irrespective of the
+        /// actual display size.
+        /// </summary>
         public Size ScreenSize { get; protected set; }
 
-        /// <summary> Area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left </summary>
+        /// <summary> Area of window GL is drawing to - note 0,0 is top left, not the GL method of bottom left.
+        /// </summary>
         public Rectangle ViewPort { get; protected set; }
+
         /// <summary> Depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)</summary>
         public Vector2 DepthRange { get; set; } = new Vector2(0, 1);            
 
-        /// <summary> Screen co-ords max. Does not have to match the screensize. If not, you get a fixed scalable area</summary>
+        /// <summary> Screen co-ords max. Does not have to match the ScreenSize. 
+        /// If set, then the screen co-ords are fixed to this, and resizing the GL window does not affect the screen pixel addresses
+        /// ResizeViewPort sets both ScreenSize and ScreenCoordMax to the same value
+        /// Then set this to set up a fixed screen pixel size for controls to draw into
+        /// </summary>
         public Size ScreenCoordMax { get; set; }
 
-        /// <summary> Clip space size to use for screen coords, override to set up another</summary>
+        /// <summary> Clip space size to use for screen coords, override to set up another.
+        /// This is normally left alone, but could be changed to alter the screen pixel to GL clip space translation
+        /// set up in MatrixScreenCoordToClipSpace() </summary>
         public virtual SizeF ScreenCoordClipSpaceSize { get; set; } = new SizeF(2, 2);
         /// <summary> Origin in clip space (-1,1) = top left, screen coord (0,0)</summary>
         public virtual PointF ScreenCoordClipSpaceOffset { get; set; } = new PointF(-1, 1);
@@ -295,7 +306,9 @@ namespace GLOFC
             return curfov != Fov;
         }
 
-        /// <summary> Resize view port to newsize.</summary>
+        /// <summary> Resize view port to newsize.
+        /// This sets both the ScreenSize and ScreenCoordmax to the newsize given. This is normally the gl window control client size 
+        /// </summary>
         public virtual void ResizeViewPort(object sender, Size newsize)            // override to change view port to a custom one
         {
             System.Diagnostics.Debug.Assert(context == GLStatics.GetContext(), "Context incorrect");     // safety
@@ -317,12 +330,17 @@ namespace GLOFC
             OpenTK.Graphics.OpenGL.GL.DepthRange(DepthRange.X, DepthRange.Y);
         }
 
-        /// <summary> Get the matrix4 to translate screen co-ords to clip space</summary>
+        /// <summary> Get the matrix4 to allow translation of screen co-ords to clip space
+        /// clipx =  screenposx*ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width + ScreenCoordClipSpaceOffset.X
+        /// clipy =  -screenposy*ScreenCoordClipSpaceSize.Height / ScreenCoordMax.Height + ScreenCoordClipSpaceOffset.Y
+        /// nominally, ScreenCoordClipSpaceSize is (2,2) and ScreenCoordClipSpaceOffset is (-1,1). xc = xc * 2 / width - 1, xc = 0 gives -1, xc = width gives +1
+        /// This inverts the Y co-ord from 0,0 top to 0,0 bottom (openGL). So yc = ys * -2 / height + 1, yc = 0 gives +1 (top), yc = height gives -1 (bottom)
+        /// </summary>
         public virtual Matrix4 MatrixScreenCoordToClipSpace()             
         {
             Matrix4 screenmat = Matrix4.Zero;
-            screenmat.Column0 = new Vector4(ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width , 0, 0, ScreenCoordClipSpaceOffset.X);      // transform of x = x * 2 / width - 1
-            screenmat.Column1 = new Vector4(0.0f, -ScreenCoordClipSpaceSize.Height / ScreenCoordMax.Height, 0, ScreenCoordClipSpaceOffset.Y);  // transform of y = y * -2 / height +1, y = 0 gives +1 (top), y = sh gives -1 (bottom)
+            screenmat.Column0 = new Vector4(ScreenCoordClipSpaceSize.Width / ScreenCoordMax.Width , 0, 0, ScreenCoordClipSpaceOffset.X);      
+            screenmat.Column1 = new Vector4(0.0f, -ScreenCoordClipSpaceSize.Height / ScreenCoordMax.Height, 0, ScreenCoordClipSpaceOffset.Y);  
             screenmat.Column2 = new Vector4(0, 0, 1, 0);                  // transform of z = none
             screenmat.Column3 = new Vector4(0, 0, 0, 1);                  // transform of w = none
             return screenmat;

@@ -220,7 +220,7 @@ namespace TestOpenTk
             d.stars = array;       
             d.text = text;
             d.bitmaps = GLOFC.Utils.BitMapHelpers.DrawTextIntoFixedSizeBitmaps(slset.LabelSize, text, Font, System.Drawing.Text.TextRenderingHint.ClearTypeGridFit, ForeText, BackText, 0.5f, centertext:true);
-            d.textpos = GLPLVertexShaderMatrixTriStripTexture.CreateMatrices(array, new Vector3(0, -0.5f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
+            d.textpos = GLStaticsMatrix4.CreateMatrices(array, new Vector3(0, -0.5f, 0), new Vector3(2f, 0, 0.4f), new Vector3(-90F.Radians(), 0, 0), true, false);
 
             generatedsectors.Enqueue(d);       // d has been filled
             //System.Diagnostics.Debug.WriteLine($"{Environment.TickCount % 100000} {d.pos} {tno} end");
