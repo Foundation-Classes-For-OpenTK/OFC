@@ -41,17 +41,17 @@ namespace GLOFC.GL4.Controls
         /// <summary> Insert mode </summary>
         public bool Insert { get { return insert; } set { insert = value; Invalidate(); } }
         /// <summary> Set true so when first character is types the text box is cleared </summary>
-        public bool ClearOnFirstChar { get; set; } = false;                 
+        public bool ClearOnFirstChar { get; set; } = false;
         /// <summary> Allow control character in text </summary>
-        public bool AllowControlChars { get; set; } = false;                
+        public bool AllowControlChars { get; set; } = false;
         /// <summary> Set to make read only. No user editing is allowed, and editing commands will not work </summary>
-        public bool ReadOnly { get; set; } = false;                         
+        public bool ReadOnly { get; set; } = false;
         /// <summary> Controls where text is painted within control </summary>
-        public MarginType TextBoundary { get; set; } = new MarginType(0);         
+        public MarginType TextBoundary { get; set; } = new MarginType(0);
         /// <summary> Highlight back color for selection </summary>
-        public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }      
+        public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }
         /// <summary> Line separator color, default is line separator is off (Color.Transparent) </summary>
-        public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }      
+        public Color LineColor { get { return lineColor; } set { lineColor = value; Invalidate(); } }
         /// <summary> Set to enable a flashing cursor </summary>
         public bool FlashingCursor { get; set; } = true;
 
@@ -79,9 +79,11 @@ namespace GLOFC.GL4.Controls
         public int MaxLineLength { get; private set; } = 0;
 
         /// <summary> Enable vertical scroll bar</summary>
-        public bool EnableVerticalScrollBar { get { return vertscroller != null; } set { ScrollBars(value, horzscroller != null); } }
+        public bool EnableVerticalScrollBar { get { return vertscroller.Visible; } set { ScrollBars(value, horzscroller.Visible); } }
         /// <summary> Enable horizontal scroll bar </summary>
-        public bool EnableHorizontalScrollBar { get { return horzscroller != null; } set { ScrollBars(vertscroller != null, value); } }
+        public bool EnableHorizontalScrollBar { get { return horzscroller.Visible; } set { ScrollBars(vertscroller.Visible, value); } }
+        /// <summary> Scroll bar theme, to configure scroll bar look</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return vertscroller.Theme; } set { vertscroller.Theme = horzscroller.Theme = value; } }
         /// <summary> Scroll bar width </summary>
         public int ScrollBarWidth { get { return scrollbarwidth; } set { scrollbarwidth = value; Finish(true, true, true); } }
 
@@ -94,34 +96,64 @@ namespace GLOFC.GL4.Controls
         /// <summary> Height of lines. Note changing Font changes this</summary>
         public int LineHeight { get { return lineheight; } set { lineheight = value; Invalidate(); } }     // Line height
 
+        /// <summary> Right click menu, for adding options or themeing </summary>
+        public GLContextMenu RightClickMenu { get; }
+
         /// <summary> Construct with name, bounds and text contents </summary>
-        public GLMultiLineTextBox(string name, Rectangle pos, string text) : base(name, pos)
+        public GLMultiLineTextBox(string name, Rectangle pos, string text, bool enablethemer = true) : base(name, pos)
         {
             Focusable = true;
+            BackColorGradientAltNI = BackColorNI = DefaultTextBoxBackColor;
+            foreColor = DefaultTextBoxForeColor;
+
             this.text = text;
+            this.EnableThemer = enablethemer;
+
+            horzscroller = new GLScrollBar();
+            horzscroller.Name = Name + "_SBHorz";
+            horzscroller.HorizontalScroll = true;
+            horzscroller.Height = ScrollBarWidth;
+            horzscroller.Dock = DockingType.Bottom;
+            horzscroller.Visible = false;
+            horzscroller.RejectFocus = true;
+            horzscroller.EnableThemer = false;
+            Add(horzscroller);
+
+            vertscroller = new GLScrollBar();
+            vertscroller.Name = Name + "_SBVert";
+            vertscroller.Width = ScrollBarWidth;
+            vertscroller.Dock = DockingType.Right;
+            vertscroller.Visible = false;
+            vertscroller.RejectFocus = true;
+            vertscroller.EnableThemer = false;
+            Add(vertscroller);
+
+            horzscroller.Theme = vertscroller.Theme;        // use one theme between them
+
             cursortimer.Tick += CursorTick;
             CalcLineHeight();
             CalculateTextParameters();
             Finish(false, false, false);
-            foreColor = DefaultTextBoxForeColor;
-            BackColorGradientAltNI = BackColorNI = DefaultTextBoxBackColor;
 
-            rightclickmenu = new GLContextMenu("MLTBRightClickMenu",
-                        new GLMenuItem("MTLBEditCut", "Cut")
+            vertscroller.Scroll += (bc1, sa1) => { FirstDisplayedLine = sa1.NewValue; };
+            horzscroller.Scroll += (bc2, sa2) => { FirstDisplayedCharacter = sa2.NewValue; };
+
+            RightClickMenu = new GLContextMenu(Name+"_RightClickMenu", false,
+                        new GLMenuItem(Name+"_EditCut", "Cut")
                         {
                             MouseClick = (s, e) => {
                                 Cut();
                                 SetFocus();
                             }
                         },
-                        new GLMenuItem("MTLBCopy", "Copy")
+                        new GLMenuItem(Name+"_Copy", "Copy")
                         {
                             MouseClick = (s1, e1) => {
                                 Copy();
                                 SetFocus();
                             }
                         },
-                        new GLMenuItem("MTLBEditPaste", "Paste")
+                        new GLMenuItem(Name+"_EditPaste", "Paste")
                         {
                             MouseClick = (s1, e1) => {
                                 Paste();
@@ -133,13 +165,11 @@ namespace GLOFC.GL4.Controls
         }
 
         /// <summary> Construct with name, bounds, text contents, colors </summary>
-        public GLMultiLineTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos,text)
+        public GLMultiLineTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos,text, enablethemer)
         {
-            EnableThemer = enablethemer;
             BackColor = backcolor;
             ForeColor = forecolor;
         }
-
 
         /// <summary> Default Constructor </summary>
         public GLMultiLineTextBox() : this("TBML?", DefaultWindowRectangle, "")
@@ -751,7 +781,7 @@ namespace GLOFC.GL4.Controls
                 }
             }
 
-            if (vertscroller != null)
+            if (vertscroller.Visible)
             {
                 //System.Diagnostics.Debug.WriteLine("No lines {0} Max {1}", NumberOfLines, CurrentDisplayableLines);
                 bool newstate = NumberOfLines > CurrentDisplayableLines;
@@ -902,9 +932,13 @@ namespace GLOFC.GL4.Controls
         protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)    
         {
             base.OnControlAdd(parent, child);
-            // font may have changed, we have better do a recalc
-            CalcLineHeight();    
-            Finish(true, false, false);
+
+            if (child == this)
+            {
+                // font may have changed, we have better do a recalc
+                CalcLineHeight();
+                Finish(true, false, false);
+            }
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnFontChanged"/>
@@ -1388,9 +1422,9 @@ namespace GLOFC.GL4.Controls
             base.OnMouseClick(e);
             if ( !e.Handled && e.Button == GLMouseEventArgs.MouseButtons.Right)
             {
-                rightclickmenu.Font = RightClickMenuFont ?? Font;
-                rightclickmenu.ApplyToControlOfName("MTLBEdit*", a => a.Enabled = !ReadOnly);
-                rightclickmenu.Show(this.FindDisplay(), e.ScreenCoord);
+                RightClickMenu.Font = RightClickMenuFont ?? Font;
+                RightClickMenu.ApplyToControlOfName("MTLBEdit*", a => a.Enabled = !ReadOnly);
+                RightClickMenu.Show(this.FindDisplay(), e.ScreenCoord);
             }
         }
 
@@ -1401,14 +1435,12 @@ namespace GLOFC.GL4.Controls
             if (e.Delta < 0)
             {
                 FirstDisplayedLine += 1;
-                if (vertscroller != null)
-                    vertscroller.Value = FirstDisplayedLine;
+                vertscroller.Value = FirstDisplayedLine;
             }
             else
             {
                 FirstDisplayedLine -= 1;
-                if (vertscroller != null)
-                    vertscroller.Value = FirstDisplayedLine;
+                vertscroller.Value = FirstDisplayedLine;
             }
         }
 
@@ -1419,64 +1451,15 @@ namespace GLOFC.GL4.Controls
 
         private void ScrollBars(bool vert, bool horz)
         {
-            if (horz)
-            {
-                if (horzscroller == null)
-                {
-                    horzscroller = new GLScrollBar();
-                    horzscroller.Name = "MLTB-Horz";
-                    horzscroller.HorizontalScroll = true;
-                    horzscroller.Height = ScrollBarWidth;
-                    horzscroller.Dock = DockingType.Bottom;
-                    horzscroller.Visible = true;
-                    horzscroller.RejectFocus = true;
-                    horzscroller.Scroll += (bc2,sa2) => { FirstDisplayedCharacter = sa2.NewValue; };
-                    Add(horzscroller);
-                    Invalidate();
-                }
-            }
-            else
-            {
-                if (horzscroller != null)
-                {
-                    Remove(horzscroller);
-                    horzscroller = null;
-                    if (vertscroller != null)
-                        vertscroller.Padding = new PaddingType(0, 0, 0, 0);
-                    Invalidate();
-                }
-            }
-
-            if (vert)
-            {
-                if (vertscroller == null)
-                {
-                    vertscroller = new GLScrollBar();
-                    vertscroller.Name = "MLTB-Vert";
-                    vertscroller.Width = ScrollBarWidth;
-                    vertscroller.Dock = DockingType.Right;
-                    vertscroller.Visible = NumberOfLines > CurrentDisplayableLines;
-                    vertscroller.RejectFocus = true;
-                    vertscroller.Scroll += (bc1,sa1) => { FirstDisplayedLine = sa1.NewValue; };
-                    Add(vertscroller);
-                    Invalidate();
-                }
-            }
-            else
-            {
-                if (vertscroller != null)
-                {
-                    Remove(vertscroller);
-                    vertscroller = null;
-                    Invalidate();
-                }
-            }
+            vertscroller.Visible = vert;
+            vertscroller.Padding = new PaddingType(0, 0, 0, horz ? ScrollBarWidth : 0);
+            horzscroller.Visible = horz;
 
             //remove for now
-      //      if (horzscroller?.Visible ?? false)
-         //       horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
-            if (vertscroller?.Visible ?? false)
-                vertscroller.Padding = new PaddingType(0, 0, 0, horz ? ScrollBarWidth : 0);
+            //      if (horzscroller?.Visible ?? false)
+            //       horzscroller.Padding = new Padding(0, 0, vert ? ScrollBarWidth : 0, 0);
+
+            Invalidate();
         }
 
         private void CalcLineHeight()
@@ -1526,8 +1509,6 @@ namespace GLOFC.GL4.Controls
 
         private GLScrollBar vertscroller;
         private GLScrollBar horzscroller;
-
-        private GLContextMenu rightclickmenu;
 
         private bool insert = true;
 

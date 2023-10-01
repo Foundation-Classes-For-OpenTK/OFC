@@ -61,16 +61,16 @@ namespace GLOFC.GL4.Controls
         public bool HorizontalScroll { get; set; } = false;
 
         /// <summary> Themeing control for the scrollbar </summary>
-        public GLScrollBarTheme Theme { get; set; }
-
+        public GLScrollBarTheme Theme { get { return scrolltheme; } set { scrolltheme.Attached.Remove(this); scrolltheme = value; scrolltheme.Attached.Add(this); } }
+        
         /// <summary> Disable autosize </summary>
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         /// <summary> Constructor with name, bounds, scroll bar min and max</summary>
         public GLScrollBar(string name, Rectangle pos, int min, int max) : base(name, pos)
         {
-            Theme = new GLScrollBarTheme();
-            Theme.Parents.Add(this);
+            scrolltheme = new GLScrollBarTheme();
+            scrolltheme.Attached.Add(this);
             thumbvalue = minimum = min;
             maximum = max;
             BorderColorNI = DefaultScrollbarBorderColor;
@@ -85,7 +85,7 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>
         protected override void Paint(Graphics gr)
         {
-            using (Brush br = new SolidBrush(this.Theme.SliderColor))
+            using (Brush br = new SolidBrush(this.scrolltheme.SliderColor))
                 gr.FillRectangle(br, new Rectangle(sliderarea.Left, sliderarea.Top, sliderarea.Width, sliderarea.Height));
 
             DrawButton(gr, new Rectangle(decreasebuttonarea.Left, decreasebuttonarea.Top, decreasebuttonarea.Width, decreasebuttonarea.Height), MouseOver.MouseOverDecrease);
@@ -107,15 +107,15 @@ namespace GLOFC.GL4.Controls
                 if (!thumbenable)
                     return;
 
-                c1 = (mousepressed == but) ? Theme.MousePressedButtonColor : ((mouseover == but) ? Theme.MouseOverButtonColor : Theme.ThumbButtonColor);
-                c2 = c1.Multiply(Theme.ThumbColorScaling);
-                angle = HorizontalScroll ? ((Theme.ThumbDrawAngle +90)%360) : Theme.ThumbDrawAngle;
+                c1 = (mousepressed == but) ? scrolltheme.MousePressedButtonColor : ((mouseover == but) ? scrolltheme.MouseOverButtonColor : scrolltheme.ThumbButtonColor);
+                c2 = c1.Multiply(scrolltheme.ThumbColorScaling);
+                angle = HorizontalScroll ? ((scrolltheme.ThumbDrawAngle +90)%360) : scrolltheme.ThumbDrawAngle;
             }
             else
             {
-                c1 = (mousepressed == but) ? Theme.MousePressedButtonColor : ((mouseover == but) ? Theme.MouseOverButtonColor : Theme.ArrowButtonColor);
-                c2 = c1.Multiply(Theme.ArrowColorScaling);
-                angle = (but == MouseOver.MouseOverDecrease) ? Theme.ArrowUpDrawAngle : Theme.ArrowDownDrawAngle;
+                c1 = (mousepressed == but) ? scrolltheme.MousePressedButtonColor : ((mouseover == but) ? scrolltheme.MouseOverButtonColor : scrolltheme.ArrowButtonColor);
+                c2 = c1.Multiply(scrolltheme.ArrowColorScaling);
+                angle = (but == MouseOver.MouseOverDecrease) ? scrolltheme.ArrowUpDrawAngle : scrolltheme.ArrowDownDrawAngle;
                 if ( HorizontalScroll)
                     angle = (angle - 90) % 360;
             }
@@ -125,7 +125,7 @@ namespace GLOFC.GL4.Controls
 
             if (Enabled && thumbenable && !isthumb)
             {
-                using (Pen p2 = new Pen(Theme.ArrowColor))
+                using (Pen p2 = new Pen(scrolltheme.ArrowColor))
                 {
                     int hoffset = rect.Width / 3;
                     int voffset = rect.Height / 3;
@@ -170,7 +170,7 @@ namespace GLOFC.GL4.Controls
 
             if (but == mouseover || isthumb)
             {
-                using (Pen p = new Pen(isthumb ? Theme.ThumbBorderColor : Theme.ArrowBorderColor))
+                using (Pen p = new Pen(isthumb ? scrolltheme.ThumbBorderColor : scrolltheme.ArrowBorderColor))
                 {
                     Rectangle border = rect;
                     border.Width--; border.Height--;
@@ -464,6 +464,8 @@ namespace GLOFC.GL4.Controls
             Scroll?.Invoke(this, se);
         }
 
+        private GLScrollBarTheme scrolltheme;
+
         private Rectangle sliderarea;
         private Rectangle decreasebuttonarea;
         private Rectangle increasebuttonarea;
@@ -520,16 +522,18 @@ namespace GLOFC.GL4.Controls
         }
     }
 
+    // tbd?
+
     /// <summary>
     /// This is the themeing class for a scroll bar. One is attached to each scroll bar. It can be shared between multiple scroll bars on some controls.
     /// </summary>
     public class GLScrollBarTheme
     {
-        /// <summary> Scroll bar theme parents</summary>
-        public List<GLScrollBar> Parents { get; set; } = new List<GLScrollBar>();
+        /// <summary> Scroll bar theme users - who is using this </summary>
+        public List<GLScrollBar> Attached { get; set; } = new List<GLScrollBar>();
 
         /// <summary> Scroll bar back color</summary>
-        public Color BackColor { get { return Parents?[0].BackColor ?? Color.Transparent; } set { if (Parents != null) { foreach (var x in Parents) x.BackColor = value; } } }       
+        public Color BackColor { get { return Attached?[0].BackColor ?? Color.Transparent; } set { if (Attached != null) { foreach (var x in Attached) x.BackColor = value; } } }       
         /// <summary> Scroll bar arrow color</summary>
         public Color ArrowColor { get { return arrowcolor; } set { arrowcolor = value; Invalidate(); } }    
         /// <summary> Scroll bar slider color </summary>
@@ -570,10 +574,9 @@ namespace GLOFC.GL4.Controls
         private Color thumbBorderColor { get; set; } = GLBaseControl.DefaultScrollbarThumbBorderColor;
         private float thumbColorScaling { get; set; } = 0.5F;
         private float thumbDrawAngle { get; set; } = 0F;
-
         private void Invalidate()
         {
-            foreach (var x in Parents.DefaultIfEmpty())
+            foreach (var x in Attached.DefaultIfEmpty())
                 x.Invalidate();
         }
     }

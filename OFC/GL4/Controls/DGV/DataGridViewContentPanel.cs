@@ -18,12 +18,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 
-// Internal class for DGV, no documentation needed
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
-    public class GLDataGridViewContentPanel : GLPanel
+    internal class GLDataGridViewContentPanel : GLPanel
     {
         public Action<int, int, GLMouseEventArgs> MouseClickOnGrid;                // row (-1 outside bounds), col = -1 for row header
         public int HorzScroll { get { return ScrollOffset.X; } set { ScrollOffset = new Point(value, ScrollOffset.Y); Invalidate(); } }
@@ -518,7 +515,6 @@ namespace GLOFC.GL4.Controls
                 }
             }
         }
-
         protected override void OnMouseWheel(GLMouseEventArgs e)
         {
             base.OnMouseWheel(e);

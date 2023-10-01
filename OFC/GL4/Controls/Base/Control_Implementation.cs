@@ -670,8 +670,12 @@ namespace GLOFC.GL4.Controls
 
             if (backgroundcolor != Color.Transparent)            // and draw what the back colour is
             {
-                if ( levelbmp == null )             // if we are a normal control, we need to start from the pixels inside us being transparent
-                    gr.Clear(Color.Transparent);    // erasing anything that we drew before, because if we have half alpha in the colour, it will build up
+                // if we are a normal control, and the background colour is not full alpha
+                // we need to start from the pixels inside us being transparent
+                // erasing anything that we drew before, because if we have half alpha in the colour, it will build up
+
+                if ( levelbmp == null && backgroundcolor.A < 255 )   
+                    gr.Clear(Color.Transparent);    
 
                 if (bcgradientdir != int.MinValue)
                 {

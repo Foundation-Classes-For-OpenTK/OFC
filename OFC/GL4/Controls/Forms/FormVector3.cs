@@ -34,6 +34,11 @@ namespace GLOFC.GL4.Controls
         public Vector3 Value { get { return new Vector3(x.Value, y.Value, z?.Value??0); } }
 
         /// <summary>
+        /// Set the backcolor, and the colours of text boxes buttons in this form
+        /// </summary>
+        public new Color BackColor { get { return base.BackColor; } set { x.BackColor = y.BackColor = ok.BackColor = base.BackColor = value; if (z != null) z.BackColor = value; } }
+
+        /// <summary>
         /// Construct Vector3 form
         /// Demonstrates how to code a specific type of form
         /// Use form.DialogResultChanged to pick up the OK button as the dialog result will be set to OK by the button, and the form will then close.
@@ -79,6 +84,8 @@ namespace GLOFC.GL4.Controls
             ok.Click += (s, e) => { DialogResult= DialogResultEnum.OK; Close(); };
             ok.TabOrder = 3;
             Add(ok);
+
+            Resizeable = false;
         }
 
         private void OKValid(GLBaseControl c, bool value)

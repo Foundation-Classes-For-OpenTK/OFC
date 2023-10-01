@@ -76,8 +76,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Stop responding to up/down/left/right directly. Return will still work</summary>
         public bool DisableChangeKeys { get; set; } = false;
 
-        /// <summary> Scroll bar theme</summary>
-        public GLScrollBarTheme ScrollBarTheme { get { return dropdownbox.ScrollBarTheme; } }
+        /// <summary> Scroll bar theme, to configure scroll bar look</summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return dropdownbox.ScrollBarTheme; } set { dropdownbox.ScrollBarTheme = value; } }
 
         /// <summary> Construct with name, bounds and list of items</summary>
         public GLComboBox(string name, Rectangle location, List<string> itms) : base(name, location)

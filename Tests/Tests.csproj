@@ -43,7 +43,7 @@
     </Reference>
     <Reference Include="QuickJSON, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\QuickJSON\QuickJSON\bin\Release\net48\QuickJSON.dll</HintPath>
+      <HintPath>..\..\QuickJSON\QuickJSON\bin\Debug\net48\QuickJSON.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,7 +64,6 @@
     <Compile Include="BaseUtils\FileHelpers.cs" />
     <Compile Include="BaseUtils\HttpCom.cs" />
     <Compile Include="BaseUtils\HttpDownloadFile.cs" />
-    <Compile Include="BaseUtils\NumberObjectExtensions.cs" />
     <Compile Include="BaseUtils\ResponseData.cs" />
     <Compile Include="BaseUtils\StringObjectExtensions.cs" />
     <Compile Include="BaseUtils\xml.cs" />
@@ -99,7 +98,7 @@
       <DependentUpon>TestGalaxyDemo2.cs</DependentUpon>
     </Compile>
     <Compile Include="Galaxy\Bookmarks.cs" />
-    <Compile Include="BaseUtils\ImageCache.cs" />
+    <Compile Include="Galaxy\ImageCache.cs" />
     <Compile Include="Galaxy\GalaxyStars.cs" />
     <Compile Include="Galaxy\GalMapObjects.cs" />
     <Compile Include="Galaxy\GalMapRegions.cs" />

@@ -136,7 +136,7 @@ namespace GLOFC.GL4.Controls
         public Color UpperLeftBackColor { get { return upperleftbackcolor; } set { upperleftbackcolor = value; topleftpanel.Invalidate(); } }
 
         /// <summary> Scroll bar theme</summary>
-        public GLScrollBarTheme ScrollBarTheme { get { return vertscroll.Theme; } }
+        public GLScrollBarTheme ScrollBarTheme { get { return vertscroll.Theme; } set { vertscroll.Theme = horzscroll.Theme = value; } }
 
         // pixel positions
         /// <summary> Find pixel left position of column</summary>
@@ -164,37 +164,43 @@ namespace GLOFC.GL4.Controls
 
         /// <summary> Context menu for the grid
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what cell and location has been clicked on (row=col=-1 if none)</summary>
-        public GLContextMenu ContextMenuGrid;
+        public GLContextMenu ContextMenuGrid { get; set; } = null;
         /// <summary> Context menu for column headers
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what column and location has been clicked on. (col=-1 for top left)</summary>
-        public GLContextMenu ContextMenuColumnHeaders;     
+        public GLContextMenu ContextMenuColumnHeaders { get; set; } = null;
         /// <summary> Context menu for row headers.
         /// The context menu Opening callback is fed with a tag with the class RowColPos so it knows what row and location has been clicked on. </summary>
-        public GLContextMenu ContextMenuRowHeaders;      
+        public GLContextMenu ContextMenuRowHeaders { get; set; } = null;
 
         /// <summary> Construct with name and bounds</summary>
         public GLDataGridView(string name, Rectangle location) : base(name, location)
         {
-
             int sbwidth = 16;
             
             vertscroll = new GLVerticalScrollBar(name + "_VSB", new Rectangle(0, 0, sbwidth, 10), 0, 100);
             vertscroll.Dock = DockingType.Right;
+            vertscroll.EnableThemer = false;
             vertscroll.Scroll += (sb, se) => { contentpanel.FirstDisplayIndex = se.NewValue; };
+
             horzscroll = new GLHorizontalScrollBar(name + "_HSB", new Rectangle(0, 0, 10, sbwidth), 0, 100);
             horzscroll.Dock = DockingType.Bottom;
+            horzscroll.EnableThemer = false;
             horzscroll.Scroll += (sb, se) => { colheaderpanel.HorzScroll = contentpanel.HorzScroll = se.NewValue; };
-            horzscroll.Theme = vertscroll.Theme;        // use one theme between them
-            vertscroll.Theme.Parents.Add(horzscroll);
+
+            horzscroll.Theme = vertscroll.Theme;        // use the same one for both - they both attach
 
             rowheaderpanel = new GLDataGridViewRowHeaderPanel(name + "_RHP", location);
+            rowheaderpanel.EnableThemer = false;
             rowheaderpanel.Dock = DockingType.Left;
             contentpanel = new GLDataGridViewContentPanel(name + "_CP", rowheaderpanel, location);
+            contentpanel.EnableThemer = false;
             contentpanel.Dock = DockingType.Fill;
             rowheaderpanel.contentpanel = contentpanel;
             colheaderpanel = new GLDataGridViewColumnHeaderPanel(name + "_CHP", location);
+            colheaderpanel.EnableThemer = false;
             colheaderpanel.Dock = DockingType.Top;
             topleftpanel = new GLDataGridViewTopLeftHeaderPanel(name + "_TLP", location);
+            topleftpanel.EnableThemer = false;
             topleftpanel.Dock = DockingType.LeftTop;
             Add(contentpanel);
             Add(colheaderpanel);

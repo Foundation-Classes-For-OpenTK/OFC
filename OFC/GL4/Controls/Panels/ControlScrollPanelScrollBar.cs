@@ -36,7 +36,7 @@ namespace GLOFC.GL4.Controls
         public Color ScrollBackColor { get { return scrollpanel.BackColor; } set { scrollpanel.BackColor = value; } }
 
         /// <summary> Scroll bar theme</summary>
-        public GLScrollBarTheme ScrollBarTheme { get { return vertscrollbar.Theme; } }
+        public GLScrollBarTheme ScrollBarTheme { get { return vertscrollbar.Theme; } set { vertscrollbar.Theme = horzscrollbar.Theme; } }
 
         /// <summary> Controls of panel in Z order</summary>
         public override IList<GLBaseControl> ControlsZ { get { return scrollpanel.ControlsZ; } }      // read only
@@ -74,7 +74,7 @@ namespace GLOFC.GL4.Controls
             scrollpanel = new GLScrollPanel(name+"_VSP");
             scrollpanel.Dock = DockingType.Fill;
             scrollpanel.BackColorGradientAltNI = scrollpanel.BackColorNI = backcolour.HasValue ? backcolour.Value : DefaultScrollPanelBackColor;
-            scrollpanel.EnableThemer = false;       // we don't allow the themer to run on composite parts
+            scrollpanel.ThemerControl = ThemeControl.OffItselfOnly;       // themer does not run on scrollpanel but the children can theme
             scrollpanel.RejectFocus = true;
             base.Add(scrollpanel);  // base because we don't want to use the overrides
 
@@ -94,7 +94,6 @@ namespace GLOFC.GL4.Controls
             horzscrollbar.Scroll += HScrolled;
 
             horzscrollbar.Theme = vertscrollbar.Theme;                  // set theme for horz scroll bar to same as vertical scroll bar
-            vertscrollbar.Theme.Parents.Add(horzscrollbar);             // and add it to Parents so when it gets changed, we invalidate both
         }
 
         /// <summary> Constructor with name, docking type, docking percent, and optional backcolour</summary>

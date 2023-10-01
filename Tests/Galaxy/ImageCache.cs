@@ -1,5 +1,7 @@
-﻿using GLOFC.GL4;
+﻿using GLOFC;
+using GLOFC.GL4;
 using GLOFC.Utils;
+using OpenTK;
 using QuickJSON;
 using System;
 using System.Collections.Generic;
@@ -8,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Resources;
-using System.Web.UI.DataVisualization.Charting;
 
 namespace TestOpenTk
 {
@@ -21,11 +22,11 @@ namespace TestOpenTk
             public string ImagePathOrURL { get; set; }      // http:... or c:\ or Resource:<name>
 
             [JsonIgnore(JsonIgnoreAttribute.Operation.Include, "X", "Y", "Z")]
-            public Point3D Centre { get; set; }
+            public Vector3 Centre { get; set; }
             [JsonIgnore(JsonIgnoreAttribute.Operation.Include, "X", "Y")]
-            public PointF Size { get; set; }
-            [JsonIgnore(JsonIgnoreAttribute.Operation.Include, "X", "Y", "Z")] 
-            public Point3D RotationDegrees { get; set; }
+            public Vector2 Size { get; set; }
+            [JsonIgnore(JsonIgnoreAttribute.Operation.Include, "X", "Y","Z")]
+            public Vector3 RotationDegrees { get; set; }
             public bool RotateToViewer { get; set; }
             public bool RotateElevation { get; set; }
             public float AlphaFadeScalar { get; set; }
@@ -38,7 +39,7 @@ namespace TestOpenTk
             public ImageEntry()                             // need this for JSON -> object!
             {    }
 
-            public ImageEntry(string name, string path, bool enabled, Point3D centre, PointF size, Point3D rotation,
+            public ImageEntry(string name, string path, bool enabled, Vector3 centre, Vector2 size, Vector3 rotation,
                                 bool rotviewer = false, bool rotelevation = false, float alphafadescaler = 0, float alphafadepos = 1)
             {
                 Name = name; ImagePathOrURL = path; Enabled = enabled; Centre = centre; Size = size; RotationDegrees = rotation;
@@ -80,9 +81,9 @@ namespace TestOpenTk
                 var entries = s.Split('\u2346');
                 if ( entries.Length == 10)
                 {
-                    Point3D centre = entries[3].InvariantParsePoint3D();
-                    PointF? size = entries[4].InvariantParsePointF();
-                    Point3D rotationdeg = entries[5].InvariantParsePoint3D();
+                    Vector3? centre = entries[3].InvariantParseVector3();
+                    Vector2? size = entries[4].InvariantParseVector2();
+                    Vector3? rotationdeg = entries[5].InvariantParseVector3();
                     bool rotatetoviewer = entries[6].InvariantParseBool(false);
                     bool rotateelevation = entries[7].InvariantParseBool(false);
                     float alphafadescaler = entries[8].InvariantParseFloat(0);
@@ -90,7 +91,7 @@ namespace TestOpenTk
 
                     if ( centre != null && size != null && rotationdeg != null)
                     {
-                        images.Add(new ImageEntry(entries[0],entries[1], entries[2].InvariantParseBool(false), centre, size.Value, rotationdeg, rotatetoviewer,rotateelevation,alphafadescaler,alphafadeposition));
+                        images.Add(new ImageEntry(entries[0],entries[1], entries[2].InvariantParseBool(false), centre.Value, size.Value, rotationdeg.Value, rotatetoviewer,rotateelevation,alphafadescaler,alphafadeposition));
                     }
 
                 }

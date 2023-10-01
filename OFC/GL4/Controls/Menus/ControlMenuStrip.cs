@@ -58,14 +58,17 @@ namespace GLOFC.GL4.Controls
         /// <param name="name">Name of strip</param>
         /// <param name="location">location of strip</param>
         /// <param name="direction">Direction (Right or Down) </param>
+        /// <param name="enablethemer">If to theme </param>
         /// <param name="items">List of menu items</param>
-        public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : base(name, location)
+        public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, 
+                                bool enablethemer = true, params GLMenuItem[] items) : base(name, location)
         {
             BackColorGradientAltNI = BackColorNI = DefaultMenuBackColor;
             BorderColorNI = DefaultMenuBorderColor;
             FlowDirection = direction;
             FlowInZOrder = false;
             Focusable = true;       // allow focus to go to us, so we don't lost focus=null for the gfocus check
+            EnableThemer = enablethemer;
             timer.Tick += Timeout;
             foreach (var e in items)
                 Add(e);
@@ -83,9 +86,11 @@ namespace GLOFC.GL4.Controls
         /// <param name="dock">Docking mode</param>
         /// <param name="dockpercent">Docking percent</param>
         /// <param name="direction">Direction (Right or Down) </param>
+        /// <param name="enablethemer">If to theme </param>
         /// <param name="items">List of menu items</param>
-        public GLMenuStrip(string name, DockingType dock, float dockpercent, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, params GLMenuItem[] items) : 
-                            this(name, DefaultWindowRectangle, direction, items)
+        public GLMenuStrip(string name, DockingType dock, float dockpercent, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, 
+                                bool enablethemer = true, params GLMenuItem[] items) : 
+                            this(name, DefaultWindowRectangle, direction, enablethemer, items)
         {
             Dock = dock;
             DockPercent = dockpercent;
@@ -568,7 +573,7 @@ namespace GLOFC.GL4.Controls
     public class GLContextMenu : GLMenuStrip
     {
         /// <summary> Constructor with name and menu items </summary>
-        public GLContextMenu(string name, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, items)
+        public GLContextMenu(string name, bool enablethemer = true, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, enablethemer, items)
         {
         }
     }

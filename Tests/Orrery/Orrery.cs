@@ -170,7 +170,7 @@ namespace TestOpenTk
             status.BackColor = Color.FromArgb(50, 50, 50, 50);
             displaycontrol.Add(status);
 
-            rightclickmenubody = new GLContextMenu("RightClickMenuBody",
+            rightclickmenubody = new GLContextMenu("RightClickMenuBody", true,
                 new GLMenuItem("RCMInfo", "Information")
                 {
                     MouseClick = (s, e) =>
@@ -210,7 +210,7 @@ namespace TestOpenTk
                 ms["RCMUntrack"].Enabled = track != -1;
             };
 
-            rightclickmenuscreen = new GLContextMenu("RightClickMenuBody",
+            rightclickmenuscreen = new GLContextMenu("RightClickMenuBody", true,
                 new GLMenuItem("RCMSysDisplay", "System Display")
                 {
                     MouseClick = (s, e) =>

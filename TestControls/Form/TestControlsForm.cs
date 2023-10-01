@@ -154,6 +154,7 @@ namespace TestOpenTk
             displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
             GLBaseControl.Themer = Theme;
+            GLBaseControl.NoThemer = NoTheme;
 
             GLForm pform;
 
@@ -231,6 +232,11 @@ namespace TestOpenTk
                     b7.ToolTipText = "Button 7 tip\r\nLine 2 of it";
                     b7.Click += (c, ev) => CreateForm2();
                     pn.Add(b7);
+
+                    GLButton b8 = new GLButton("Brot", new Rectangle(300, 50, 30, 30), TestControls.Properties.Resources.Rotate,true);
+                    b8.ButtonFaceColor = Color.Red;
+                    b8.TabOrder = taborder++;
+                    pn.Add(b8);
 
                     pform.Add(pn);
 
@@ -614,6 +620,11 @@ namespace TestOpenTk
         static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it
         {
             System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name} parent {ctrl.Parent?.Name} Owner {ctrl.Owner?.Name}");
+        }
+
+        static void NoTheme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"No Theme {ctrl.GetType().Name} {ctrl.Name} parent {ctrl.Parent?.Name} Owner {ctrl.Owner?.Name}");
         }
 
 

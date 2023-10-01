@@ -156,6 +156,9 @@ namespace TestOpenTk
             displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
 
+            GLBaseControl.Themer = Theme;
+            GLBaseControl.NoThemer = NoTheme;
+
             GLForm pform = new GLForm("Form1", "GL Form demonstration", new Rectangle(0, 0, 1000, 800));
 
             int taborder = 0;
@@ -168,8 +171,8 @@ namespace TestOpenTk
                 mtb.Font = new Font("Ms Sans Serif", 24.25f);
                 //mtb.Font = new Font("Arial", 25f);
                 mtb.LineColor = Color.Green;
-                mtb.EnableVerticalScrollBar = true;
-                mtb.EnableHorizontalScrollBar = true;
+               // mtb.EnableVerticalScrollBar = true;
+              //  mtb.EnableHorizontalScrollBar = true;
                 mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
                 mtb.TabOrder = taborder++;
                 mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
@@ -180,7 +183,7 @@ namespace TestOpenTk
             }
 
 
-            if (true)
+            if (false)
             {
                 string l = "";
                 for (int i = 0; i < 5; i++)
@@ -217,7 +220,7 @@ namespace TestOpenTk
                 pform.Add(mtb2);
             }
 
-            if (true)
+            if (false)
             {
                 GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 300, 350, 40), "Text Box Which is a very long string of very many many characters");
                 tb1.Font = new Font("Arial", 12);
@@ -320,6 +323,15 @@ namespace TestOpenTk
             System.Diagnostics.Debug.WriteLine("!!! Message box " + res);
         }
 
+        static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name}");
+
+        }
+        static void NoTheme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"No Theme {ctrl.GetType().Name} {ctrl.Name}");
+        }
 
         private void Controller3dDraw(Controller3D mc, ulong unused)
         {

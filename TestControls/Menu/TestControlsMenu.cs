@@ -242,7 +242,7 @@ namespace TestOpenTk
                     ctx1.Add(cm3);
 
                     Color tc = Color.Orange;
-                    ctx2 = new GLContextMenu("CM1", new GLMenuItem[] {
+                    ctx2 = new GLContextMenu("CM1", true, new GLMenuItem[] {
                         new GLMenuItem("CM1A","MenuR1") { CheckOnClick = true, ForeColor = tc},
                         new GLMenuItem("CM1B","MenuR2") { CheckOnClick = true, Enabled = false, ForeColor = tc},
                         new GLMenuItem("CM1C","MenuR3") { CheckOnClick = true},

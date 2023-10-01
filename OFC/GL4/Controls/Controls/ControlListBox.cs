@@ -82,8 +82,8 @@ namespace GLOFC.GL4.Controls
         /// <summary> Show focus box around item instead of highlight </summary>
         public bool ShowFocusHighlight { get { return showfocushighlight; } set { showfocushighlight = value; Invalidate(); } }
 
-        /// <summary> Scroll bar theme</summary>
-        public GLScrollBarTheme ScrollBarTheme { get { return scrollbar.Theme; } }
+        /// <summary> Scroll bar theme, to configure scroll bar look </summary>
+        public GLScrollBarTheme ScrollBarTheme { get { return scrollbar.Theme; } set { scrollbar.Theme = value; } }
 
         /// <summary> Get scroll bar width </summary>
         public int ScrollBarWidth { get { return Font?.ScalePixels(20) ?? 20; } }

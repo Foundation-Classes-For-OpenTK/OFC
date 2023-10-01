@@ -147,6 +147,10 @@ namespace TestOpenTk
             gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
             displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
+
+            GLBaseControl.Themer = Theme;
+            GLBaseControl.NoThemer = NoTheme;
+
             pform = new GLForm("Form1", "GL Control demonstration", new Rectangle(10, 10, 700, 800));
 
             displaycontrol.Add(pform);
@@ -248,7 +252,7 @@ namespace TestOpenTk
                 }
 
                 {
-                    GLContextMenu cm = new GLContextMenu("CMColheader");
+                    GLContextMenu cm = new GLContextMenu("CMColheader", false);
                     GLMenuItem cm1 = new GLMenuItem("CM1A", "Colheader1");
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "ColHeader2");
                     cm.Add(cm1);
@@ -500,6 +504,16 @@ namespace TestOpenTk
             dgv.VerticalScrollVisible = !dgv.VerticalScrollVisible;
             buttonVertScroll.ForeColor = dgv.VerticalScrollVisible ? Color.Green : Color.Red;
 
+        }
+
+        static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name}");
+
+        }
+        static void NoTheme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            System.Diagnostics.Debug.WriteLine($"No Theme {ctrl.GetType().Name} {ctrl.Name}");
         }
     }
 }

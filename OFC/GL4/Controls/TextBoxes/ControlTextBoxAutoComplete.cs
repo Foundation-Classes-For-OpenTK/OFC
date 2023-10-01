@@ -54,8 +54,9 @@ namespace GLOFC.GL4.Controls
             ListBox.AutoSize = true;
             ListBox.SelectedIndexChanged += (c0, i) => {
                 //System.Diagnostics.Debug.WriteLine($"List box selected {ListBox.SelectedItem}");
-                Text = ListBox.SelectedItem;
                 CancelAutoComplete();
+                Text = ListBox.SelectedItem;
+                OnTextChanged();            // cause the text changed event..
                 SelectedEntry?.Invoke(this);
             };
             ListBox.OtherKeyPressed += (c1, e) => { if (e.KeyCode == System.Windows.Forms.Keys.Delete) CancelAutoComplete(); };

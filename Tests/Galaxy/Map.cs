@@ -424,7 +424,7 @@ namespace TestOpenTk
 
             if ((ctrlo & 1024) != 0)
             {
-                rightclickmenu = new GLContextMenu("RightClickMenu",
+                rightclickmenu = new GLContextMenu("RightClickMenu", true,
                     new GLMenuItem("RCMInfo", "Information")
                     {
                         MouseClick = (s, e) => {
@@ -669,8 +669,7 @@ namespace TestOpenTk
                 userimages.LoadBitmaps(Assembly.GetExecutingAssembly(), "TestOpenTk.Properties.Resources",
                     (ie) =>
                     {
-                        usertexturebitmaps.Add(null, null, ie.Bitmap, 1,
-                            new Vector3(ie.Centre.X, ie.Centre.Y, ie.Centre.Z),
+                        usertexturebitmaps.Add(null, null, ie.Bitmap, 1, ie.Centre, 
                             new Vector3(ie.Size.X, 0, ie.Size.Y),
                             new Vector3(ie.RotationDegrees.X.Radians(), ie.RotationDegrees.Y.Radians(), ie.RotationDegrees.Z.Radians()),
                             ie.RotateToViewer, ie.RotateElevation, ie.AlphaFadeScalar, ie.AlphaFadePosition);

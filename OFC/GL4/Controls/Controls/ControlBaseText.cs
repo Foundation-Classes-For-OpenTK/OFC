@@ -43,7 +43,7 @@ namespace GLOFC.GL4.Controls
         {
         }
 
-        /// <summary> Text </summary>
+        /// <summary> Set Text. Does not generate TextChanged events by programatically setting it. </summary>
         public string Text { get { return text; } set { text = value; TextValueChanged(); } }
 
         /// <summary> Text Alignment </summary>

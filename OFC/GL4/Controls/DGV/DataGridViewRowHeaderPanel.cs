@@ -16,12 +16,9 @@ using GLOFC.Utils;
 using System;
 using System.Drawing;
 
-// Internal class for DGV, no documentation needed
-#pragma warning disable 1591
-
 namespace GLOFC.GL4.Controls
 {
-    public class GLDataGridViewRowHeaderPanel : GLPanel
+    internal class GLDataGridViewRowHeaderPanel : GLPanel
     {
         public Action<int, GLMouseEventArgs> MouseClickRowHeader;                // -1 for top left cell
 

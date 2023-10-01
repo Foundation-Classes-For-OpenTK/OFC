@@ -227,13 +227,21 @@ namespace GLOFC.GL4.Controls
         /// <summary> TopMost, set to force window to top and stay there </summary>
         public bool TopMost { get { return topMost; } set { topMost = value; if (topMost) BringToFront(); } } // set to force top most
 
-        /// <summary> Allow theming of control using the static GLBaseControl.Themer callback
-        /// If enable themer is disabled, then all child controls are not themed either
-        /// </summary>
-        public bool EnableThemer { get; set; } = true;
-
-        /// <summary> Does the control and all its parents have EnableThemer on? </summary>
-        public bool IsAllThemed { get { if (EnableThemer == false) return false; else if (Parent == null) return EnableThemer; else return Parent.IsAllThemed; } }
+        /// <summary> Control themeing of components via the global GLBaseControl.Themer callback </summary>
+        public enum ThemeControl {
+            /// <summary> Themeing is off for itself and all children </summary>
+            Off,
+            /// <summary> Themeing is on for itself, children can decide if they want theming</summary>
+            On,
+            /// <summary> Themeing is off for itself, children can decide if they want theming</summary>
+            OffItselfOnly,
+        }
+        /// <summary> Allow theming of control using the static GLBaseControl.Themer callback </summary>
+        public ThemeControl ThemerControl { get; set; } = ThemeControl.On;
+        /// <summary> Allow a bool to turn themer on or off</summary>
+        public bool EnableThemer { get { return ThemerControl == ThemeControl.On; } set { ThemerControl = value ? ThemeControl.On : ThemeControl.Off; } } 
+        /// <summary> Does the control and all its parents allow themeing? </summary>
+        public bool IsThemeingAllowed { get { if (ThemerControl == ThemeControl.Off) return false; else if (Parent == null) return ThemerControl == ThemeControl.On; else return Parent.IsThemeingAllowed; } }
 
         /// <summary> Cursor shape which is displayed when hovering over this control </summary>
         public GLWindowControl.GLCursorType Cursor { get { return cursor; } set { if (value != cursor) { cursor = value; FindDisplay()?.Gc_CursorTo(this, value); } } }
@@ -316,11 +324,14 @@ namespace GLOFC.GL4.Controls
         public Action<GLBaseControl, GLMouseEventArgs> GlobalMouseDown { get; set; } = null;
         /// <summary>Called when the mouse is moved. Mouse arguments give control its over and location
         /// Only valid to hook on GLControlDisplay</summary>
-        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }       
+        public Action<GLMouseEventArgs> GlobalMouseMove { get; set; }
 
         // global Thermer
-        /// <summary>Hook to theme controls as they are added to the display </summary>
+        /// <summary>Hook to theme controls as they are added</summary>
         public static Action<GLBaseControl> Themer = null;
+        // global No Thermer
+        /// <summary>For debug purposes, Hook to show which controls were not themed on add </summary>
+        public static Action<GLBaseControl> NoThemer = null;
 
         /// <summary> Return if this control is us or a child of us, or if the child is owned by us</summary>
         public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
@@ -363,7 +374,6 @@ namespace GLOFC.GL4.Controls
 
         /// <summary>
         /// Find next tab, either forward or backwards, from this tab number. For certain panels, go into it and find a tab</summary>
-        /// </summary>
         /// <param name="tabno">current tab number, or -1 for find first</param>
         /// <param name="forward">true to go forward, else backwards</param>
         /// <returns></returns>
@@ -531,13 +541,14 @@ namespace GLOFC.GL4.Controls
 
             // if child and parent and optional owner have theme enabled, theme child
 
-            if ( child.IsAllThemed && (child.Owner?.EnableThemer ?? true))
+            if ( child.IsThemeingAllowed && (child.Owner?.EnableThemer ?? true))
             {
                 Themer?.Invoke(child);      // global themer
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"Child {child?.Name} not themed parent {this.Name} owner {this.Owner?.Name}");
+                NoThemer?.Invoke(child);    // indicate not themeing
+                //System.Diagnostics.Debug.WriteLine($"Child {child?.Name} not themed parent {this.Name} owner {this.Owner?.Name}");
             }
 
             OnControlAdd(this, child);

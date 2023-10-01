@@ -16,29 +16,29 @@ namespace TestOpenTk
     public class MapMenu
     {
         private Map map;
-        private ImageCache images;
         private GLLabel status;
         private const int iconsize = 32;
         private bool orderedclosemainmenu = false;  // import
 
         public const string EntryTextName = "MSEntryText";
 
-        public MapMenu(Map g, ImageCache i)
+        public MapMenu(Map g, ImageCache imagecache)
         {
             map = g;
-            images = i;
 
             GLBaseControl.Themer = Theme;
+            GLBaseControl.NoThemer = NoTheme;
 
             // names of MS* are on screen items hidden during main menu presentation
 
             GLImage menuimage = new GLImage("MSMainMenu", new Rectangle(10, 10, iconsize, iconsize), Properties.Resources.hamburgermenu);
             menuimage.ToolTipText = "Open configuration menu";
             map.displaycontrol.Add(menuimage);
-            menuimage.MouseClick = (o, e1) => {
-                //ShowMenu(); 
+            menuimage.MouseClick = (o, e1) =>
+            {
+                ShowMenu(imagecache); 
                 //ShowVector3Menu(new Vector3(1, 2, 3), "fred", (v)=> { System.Diagnostics.Debug.WriteLine($"Vector {v}"); });
-                ShowImagesMenu(images.GetImageList());
+                //ShowImagesMenu(imagecache.GetImageList());
             };
 
             if (true)
@@ -95,7 +95,7 @@ namespace TestOpenTk
 
         // on menu button..
 
-        public void ShowMenu()
+        public void ShowMenu(ImageCache imagecache)
         {
             map.displaycontrol.ApplyToControlOfName("InfoBoxForm*", (c) => { ((GLForm)c).Close(); });      // close any info box forms
             map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = false; });      // hide the visiblity of the on screen controls
@@ -115,12 +115,13 @@ namespace TestOpenTk
             pform.Animators.Add(new GLControlAnimateScale(10, 400, true, new SizeF(1, 1)));
 
             // and closing animation
-            pform.FormClosing += (f,e) => { 
+            pform.FormClosing += (f, e) =>
+            {
                 e.Handled = true;       // stop close
                 orderedclosemainmenu = true;
                 var ani = new GLControlAnimateScale(10, 400, true, new SizeF(0, 0));       // add a close animation
-                ani.FinishAction += (a, c, t) => { pform.ForceClose();  };   // when its complete, force close
-                pform.Animators.Add(ani); 
+                ani.FinishAction += (a, c, t) => { pform.ForceClose(); };   // when its complete, force close
+                pform.Animators.Add(ani);
             };
 
             {   // top buttons
@@ -188,7 +189,7 @@ namespace TestOpenTk
             }
 
             {
-                GLGroupBox tpgb = new GLGroupBox("TravelPathGB", "Travel Path", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize *2));
+                GLGroupBox tpgb = new GLGroupBox("TravelPathGB", "Travel Path", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize * 2));
                 pform.Add(tpgb);
 
                 GLCheckBox buttp = new GLCheckBox("TravelPath", new Rectangle(leftmargin, 0, iconsize, iconsize), Properties.Resources.StarDots, null);
@@ -234,7 +235,7 @@ namespace TestOpenTk
                 {
                     var gt = EliteDangerousCore.EDSM.GalMapType.VisibleTypes[i];
                     bool en = map.GetGalObjectTypeEnable(gt.TypeName);
-                    GLCheckBox butg = new GLCheckBox("GMSEL"+i, new Rectangle(0, 0, iconsize, iconsize), GalMapObjects.GalMapTypeIcons[gt.VisibleType.Value], null);
+                    GLCheckBox butg = new GLCheckBox("GMSEL" + i, new Rectangle(0, 0, iconsize, iconsize), GalMapObjects.GalMapTypeIcons[gt.VisibleType.Value], null);
                     butg.ToolTipText = "Enable/Disable " + gt.Description;
                     butg.Checked = en;
                     butg.CheckChanged += (e1) =>
@@ -356,7 +357,7 @@ namespace TestOpenTk
 
                 GLButton b2 = new GLButton("ImagesConfigure", new Rectangle(50, 0, iconsize, iconsize), Properties.Resources.ShowGalaxy, true);
                 b2.ToolTipText = "Configure Images";
-                b2.Click += (e, s) => ShowImagesMenu(images.GetImageList());
+                b2.Click += (e, s) => ShowImagesMenu(imagecache.GetImageList(), (list) => { imagecache.SetImageList(list); });
                 imagesgb.Add(b2);
 
                 vpos += imagesgb.Height + ypad;
@@ -367,7 +368,7 @@ namespace TestOpenTk
         }
 
 
-        public void ShowImagesMenu(List<ImageCache.ImageEntry> imagelist)
+        public void ShowImagesMenu(List<ImageCache.ImageEntry> imagelist, Action<List<ImageCache.ImageEntry>> onok )
         {
             GLForm iform = new GLForm("Imagesmenu", "Configure Images", new Rectangle(100, 50, 1200, 500), Color.FromArgb(220, 60, 60, 160), Color.Orange, true);
 
@@ -382,6 +383,8 @@ namespace TestOpenTk
                 var ani = new GLControlAnimateScale(10, 200, true, new SizeF(0, 0));       // add a close animation
                 ani.FinishAction += (a, c, t) => { iform.ForceClose(); };   // when its complete, force close
                 iform.Animators.Add(ani);
+                if (iform.DialogResult == GLForm.DialogResultEnum.OK)
+                    onok(imagelist);
             };
 
             GLScrollPanelScrollBar spanel = new GLScrollPanelScrollBar("ImagesScrollPanel", DockingType.Fill, 0F);
@@ -395,13 +398,13 @@ namespace TestOpenTk
             List<ImageCache.ImageEntry> inbuiltlist = new List<ImageCache.ImageEntry>
             {
                 new ImageCache.ImageEntry("EDAstro Indexed Heat Map", @"https://edastro.com/mapcharts/visited-systems-indexedheatmap.png",
-                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                        true,new Vector3(6140,0,18850),new Vector2(102300,102300),new Vector3(0,0,0),false,false,0,0.4f),
                 new ImageCache.ImageEntry("EDAstro Indexed Log Heat Map", @"https://edastro.com/mapcharts/visited-systems-heatmap.png",
-                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                        true,new Vector3(6140,0,18850),new Vector2(102300,102300),new Vector3(0,0,0),false,false,0,0.4f),
                 new ImageCache.ImageEntry("EDAstro Indexed Heat Map+Regions", @"https://edastro.com/mapcharts/visited-systems-indexedregions.jpg",
-                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f),
+                        true,new Vector3(6140,0,18850),new Vector2(102300,102300),new Vector3(0,0,0),false,false,0,0.4f),
                 new ImageCache.ImageEntry("EDAstro Indexed Log Heat Map+Regions", @"https://edastro.com/mapcharts/visited-systems-regions.png",
-                        true,new Point3D(6140,0,18850),new PointF(102300,102300),new Point3D(0,0,0),false,false,0,0.4f)
+                        true,new Vector3(6140,0,18850),new Vector2(102300,102300),new Vector3(0,0,0),false,false,0,0.4f)
             };
 
             GLComboBox presel = new GLComboBox("Preselects", new Rectangle(40, 4, 240, 24), inbuiltlist.Select(x => x.Name).ToList());
@@ -409,7 +412,8 @@ namespace TestOpenTk
             top.Add(presel);
 
             map.displaycontrol.AddModalForm(iform);
-            iform.FormClosed += (s) => {
+            iform.FormClosed += (s) =>
+            {
                 if (iform.DialogResult == GLForm.DialogResultEnum.OK)
                     map.LoadBitmaps();
             };
@@ -418,7 +422,8 @@ namespace TestOpenTk
 
             PopulateImagesScrollPanel(spanel, top, imagelist, availablewidth);  // add after iform added to get correct scroll bar width
 
-            presel.SelectedIndexChanged += (s) => {
+            presel.SelectedIndexChanged += (s) =>
+            {
                 imagelist.Add(inbuiltlist[presel.SelectedIndex]);
                 PopulateImagesScrollPanel(spanel, null, imagelist, availablewidth);
                 spanel.VertScrollPos = int.MaxValue;        // goto bottom
@@ -427,7 +432,7 @@ namespace TestOpenTk
             presel.SetFocus();
         }
 
-        private void PopulateImagesScrollPanel( GLScrollPanelScrollBar spanel, GLPanel toppanel, List<ImageCache.ImageEntry> imagelist, int width)
+        private void PopulateImagesScrollPanel(GLScrollPanelScrollBar spanel, GLPanel toppanel, List<ImageCache.ImageEntry> imagelist, int width)
         {
             spanel.SuspendLayout();
             spanel.Remove();
@@ -440,17 +445,17 @@ namespace TestOpenTk
             int vpos = 10;
             int ypad = 10;
             int hpad = 8;
-            for( int entry = 0; entry < imagelist.Count; entry++)
+            for (int entry = 0; entry < imagelist.Count; entry++)
             {
                 var ie = imagelist[entry];
 
                 var cenable = new GLCheckBox($"En{entry}", new Rectangle(leftmargin, vpos, iconsize, iconsize), "", ie.Enabled);
                 cenable.CheckChanged += (s) => ie.Enabled = cenable.Checked;
-                spanel.Add(cenable,ref tabno);
+                spanel.Add(cenable, ref tabno);
 
                 int spaceavailable = width - iconsize * 11 - hpad * 12 - leftmargin * 2;
 
-                var name = new GLTextBoxAutoComplete("name", new Rectangle(cenable.Right + hpad, vpos, spaceavailable/3, iconsize), ie.Name);
+                var name = new GLTextBoxAutoComplete("name", new Rectangle(cenable.Right + hpad, vpos, spaceavailable / 3, iconsize), ie.Name);
                 name.TextChanged += (s) => { ie.Name = name.Text; };
                 spanel.Add(name, ref tabno);
 
@@ -464,10 +469,10 @@ namespace TestOpenTk
                     foreach (var x in resourcenames)
                     {
                         if (x.Contains(input, StringComparison.InvariantCultureIgnoreCase))
-                            set.Add("Resource:"+x);
+                            set.Add("Resource:" + x);
                     }
                 };
-                
+
                 urlpath.ToolTipText = "Use Resource:name for a resource, Image:name for a EDD icon, \"text\" for text, http:\\pathto for a internet image, or <path> for a local file";
                 urlpath.TextChanged += (s) => { ie.ImagePathOrURL = urlpath.Text; };
                 spanel.Add(urlpath, ref tabno);
@@ -477,19 +482,19 @@ namespace TestOpenTk
                 spanel.Add(ccentre, ref tabno);
 
                 var csize = new GLButton("size", new Rectangle(ccentre.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                csize.Click += (s, e) => ShowVector3Menu(new Point3D(ie.Size.X,ie.Size.Y,0), false, csize.FindScreenCoords(), "Size", (v) => ie.Size = new PointF(v.X,v.Y));
+                csize.Click += (s, e) => ShowVector3Menu(new Vector3(ie.Size.X, ie.Size.Y, 0), false, csize.FindScreenCoords(), "Size", (v) => ie.Size = new Vector2(v.X, v.Y));
                 spanel.Add(csize, ref tabno);
 
                 var crot = new GLButton("rot", new Rectangle(csize.Right + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
                 crot.Click += (s, e) => ShowVector3Menu(ie.RotationDegrees, true, crot.FindScreenCoords(), "Rotation Degrees", (v) => ie.RotationDegrees = v);
                 spanel.Add(crot, ref tabno);
 
-                var crotaz = new GLCheckBox("rotaz", new Rectangle(crot.Right + hpad, vpos, iconsize, iconsize), "",ie.RotateToViewer );
+                var crotaz = new GLCheckBox("rotaz", new Rectangle(crot.Right + hpad, vpos, iconsize, iconsize), "", ie.RotateToViewer);
                 crotaz.ToolTipText = "Enables rotation to the viewer azimuth so it faces you";
                 crotaz.CheckChanged += (s) => ie.RotateToViewer = crotaz.Checked;
                 spanel.Add(crotaz, ref tabno);
 
-                var crotel = new GLCheckBox("rotel", new Rectangle(crotaz.Right + hpad, vpos, iconsize, iconsize), "", ie.RotateElevation );
+                var crotel = new GLCheckBox("rotel", new Rectangle(crotaz.Right + hpad, vpos, iconsize, iconsize), "", ie.RotateElevation);
                 crotel.ToolTipText = "Enables rotation to the viewer elevation so it faces you";
                 crotel.CheckChanged += (s) => ie.RotateElevation = crotel.Checked;
                 spanel.Add(crotel, ref tabno);
@@ -509,15 +514,16 @@ namespace TestOpenTk
                 spanel.Add(calpos, ref tabno);
 
                 GLButton delb = new GLButton("Del", new Rectangle(calpos.Right + hpad + hpad, vpos, iconsize, iconsize), Properties.Resources._3d, true);
-                delb.Click += (s, e) => {
+                delb.Click += (s, e) =>
+                {
                     int sp = spanel.VertScrollPos;
                     imagelist.Remove(ie);
-                    PopulateImagesScrollPanel(spanel,null,imagelist,width);
+                    PopulateImagesScrollPanel(spanel, null, imagelist, width);
                     spanel.VertScrollPos = sp;
                 };
                 spanel.Add(delb, ref tabno);
 
-                if ( toppanel != null)
+                if (toppanel != null)
                 {
                     toppanel.Add(new GLLabel("LEn", new Rectangle(cenable.Left, 4, iconsize + hpad, 20), "En"));
                     toppanel.Add(new GLLabel("Lurl", new Rectangle(urlpath.Left, 4, 200, 20), "URL/Resource/Image/File"));
@@ -526,10 +532,10 @@ namespace TestOpenTk
                     toppanel.Add(new GLLabel("LRot", new Rectangle(crot.Left, 4, iconsize + hpad, 20), "Rot"));
                     toppanel.Add(new GLLabel("LDel", new Rectangle(delb.Left, 4, iconsize + hpad, 20), "Del"));
                     toppanel.Add(new GLLabel("LMU", new Rectangle(delb.Right + hpad, 4, iconsize + hpad, 20), "Up"));
-                    toppanel.Add(new GLLabel("AZRot", new Rectangle(crotaz.Left , 4, iconsize + hpad, 20), "AZr"));
+                    toppanel.Add(new GLLabel("AZRot", new Rectangle(crotaz.Left, 4, iconsize + hpad, 20), "AZr"));
                     toppanel.Add(new GLLabel("AZEl", new Rectangle(crotel.Left, 4, iconsize + hpad, 20), "ELr"));
-                    toppanel.Add(new GLLabel("als", new Rectangle(calscalar.Left, 4, iconsize*3/2 + hpad, 20), "AlSc"));
-                    toppanel.Add(new GLLabel("ald", new Rectangle(calpos.Left, 4, iconsize*3/2 + hpad, 20), "AlP/F"));
+                    toppanel.Add(new GLLabel("als", new Rectangle(calscalar.Left, 4, iconsize * 3 / 2 + hpad, 20), "AlSc"));
+                    toppanel.Add(new GLLabel("ald", new Rectangle(calpos.Left, 4, iconsize * 3 / 2 + hpad, 20), "AlP/F"));
                 }
 
                 if (entry > 0)
@@ -557,24 +563,24 @@ namespace TestOpenTk
             GLButton add = new GLButton("Add", new Rectangle(leftmargin, vpos, iconsize, iconsize), Properties.Resources._3d, true);
             add.Click += (s, e) =>
             {
-                imagelist.Add(new ImageCache.ImageEntry("", "", true, new Point3D(0, 0, 0), new PointF(200, 200), new Point3D(0, 0, 0)));
+                imagelist.Add(new ImageCache.ImageEntry("", "", true, new Vector3(0, 0, 0), new Vector2(200, 200), new Vector3(0, 0, 0)));
                 PopulateImagesScrollPanel(spanel, null, imagelist, width);
                 spanel.VertScrollPos = int.MaxValue;        // goto bottom
             };
             spanel.Add(add, ref tabno);
 
-            GLButton save = new GLButton("Save", new Rectangle(add.Right + hpad, vpos, iconsize*2, iconsize), "Save");
+            GLButton save = new GLButton("Save", new Rectangle(add.Right + hpad, vpos, iconsize * 2, iconsize), "Save");
             save.Click += (s, e) =>
             {
                 SaveFileDialog sfd = new SaveFileDialog();
                 sfd.FileName = "ImageList";
                 sfd.DefaultExt = "eddil";
                 sfd.Filter = "EDD Image List (*.eddil)|*.eddil|All Files (*.*)|*.*";
-                if ( sfd.ShowDialog() == DialogResult.OK)
+                if (sfd.ShowDialog() == DialogResult.OK)
                 {
                     bool success = false;
                     JArray ret = JToken.FromObjectWithError(imagelist, true, membersearchflags: System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).Array();
-                    if ( ret != null )
+                    if (ret != null)
                     {
                         var str = ret.ToString(true);
                         success = BaseUtils.FileHelpers.TryWriteToFile(sfd.FileName, str);
@@ -589,7 +595,7 @@ namespace TestOpenTk
             };
             spanel.Add(save, ref tabno);
 
-            GLButton load = new GLButton("Load", new Rectangle(save.Right + hpad, vpos, iconsize*2, iconsize), "Load");
+            GLButton load = new GLButton("Load", new Rectangle(save.Right + hpad, vpos, iconsize * 2, iconsize), "Load");
             load.Click += (s, e) =>
             {
                 OpenFileDialog sfd = new OpenFileDialog();
@@ -600,7 +606,7 @@ namespace TestOpenTk
                 {
                     bool success = false;
                     string str = BaseUtils.FileHelpers.TryReadAllTextFromFile(sfd.FileName);
-                    if ( str != null)
+                    if (str != null)
                     {
                         JToken json = QuickJSON.JToken.Parse(str, QuickJSON.JToken.ParseOptions.CheckEOL);
                         if (json != null)
@@ -630,23 +636,26 @@ namespace TestOpenTk
             GLButton ok = new GLButton("OK", new Rectangle(width - leftmargin - 80, vpos, 80, iconsize), "OK");
             ok.Click += (s, e) =>
             {
-                images.SetImageList(imagelist);
                 spanel.FindForm().DialogResult = GLForm.DialogResultEnum.OK;
                 spanel.FindForm().Close();
             };
+
             spanel.Add(ok, ref tabno);
 
             spanel.ResumeLayout();
         }
 
-        public void ShowVector3Menu(Point3D value,bool vector3, Point pos, string name, Action<Point3D> onok)
+        public void ShowVector3Menu(Vector3 value, bool vector3, Point pos, string name, Action<Vector3> onok)
         {
-            GLFormVector3 iform = new GLFormVector3("Vectormenu", name, new Vector3(value.X, value.Y, value.Z), new Rectangle(pos, new Size(250, 150)), vector2: !vector3);
-            iform.DialogResultChanged += (s,e) => {
+            GLFormVector3 iform = new GLFormVector3("Vectormenu", name, value, new Rectangle(pos, new Size(250, 150)), vector2: !vector3);
+            iform.DialogResultChanged += (s, e) =>
+            {
                 System.Diagnostics.Debug.WriteLine($"ON OK {iform.Value.X} {iform.Value.Y} {iform.Value.Z}");
-                onok(new Point3D(iform.Value.X, iform.Value.Y, vector3 ? iform.Value.Z : 0)); 
+                onok(new Vector3(iform.Value.X, iform.Value.Y, vector3 ? iform.Value.Z : 0));
             };
             map.displaycontrol.AddModalForm(iform);
+            iform.BackColor = Color.FromArgb(255, 90, 90, 100);
+
         }
 
 
@@ -663,7 +672,7 @@ namespace TestOpenTk
 
         static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it
         {
-            //System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name}");
+           // System.Diagnostics.Debug.WriteLine($"Theme {ctrl.GetType().Name} {ctrl.Name}");
 
             Color formback = Color.FromArgb(220, 60, 60, 70);
             Color buttonface = Color.FromArgb(255, 128, 128, 128);
@@ -675,7 +684,7 @@ namespace TestOpenTk
                 but.ButtonFaceColor = buttonface;
                 but.ForeColor = texc;
                 but.BackColor = formback;
-                but.BorderColor = Color.FromArgb(255,90,90,90);
+                but.BorderColor = Color.FromArgb(255, 90, 90, 90);
             }
 
             var cb = ctrl as GLCheckBox;
@@ -785,6 +794,10 @@ namespace TestOpenTk
             //}
         }
 
+        static void NoTheme(GLBaseControl ctrl)      // run on each control during add, theme it
+        {
+            //System.Diagnostics.Debug.WriteLine($"No Theme {ctrl.GetType().Name} {ctrl.Name}");
 
+        }
     }
 }

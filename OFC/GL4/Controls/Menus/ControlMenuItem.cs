@@ -25,7 +25,7 @@ namespace GLOFC.GL4.Controls
     public class GLMenuItem : GLCheckBoxBase        // its a mash up of a button and a check box
     {
         /// <summary> Constructor with name and optional text </summary>
-        public GLMenuItem(string name, string text = "") : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
+        public GLMenuItem(string name, string text = "", bool enablethemer = true) : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
         {
             // don't need to set back colour etc, the menu strip does this on an OnControlAdd
             SetNI(borderwidth: 0);
@@ -35,6 +35,7 @@ namespace GLOFC.GL4.Controls
             ImageStretch = true;        // to make sure that menu items are normally sized by text not by image
             RejectFocus = true;         // MenuStrips always get focus, MI do not
             Focusable = false;
+            EnableThemer = enablethemer;
         }
 
         /// <summary> Default Constructor </summary>
