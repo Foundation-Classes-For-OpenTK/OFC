@@ -178,7 +178,7 @@ namespace TestOpenTk
             }
 
             int ctrlo = 2048 | 32 | 64;
-            ctrlo = 4096;
+            ctrlo = -1;
 
             if ((ctrlo & 4096) != 0)
             {
@@ -472,24 +472,30 @@ namespace TestOpenTk
             }
             // Matrix calc holding transform info
 
+            //string[] extensions = GLStatics.Extensions();
+            //string elist = string.Join(Environment.NewLine, extensions);
+
             matrixcalc = new GLMatrixCalc();
-            matrixcalc.PerspectiveNearZDistance = 0.1f;
+            matrixcalc.PerspectiveNearZDistance = 0.5f;
             matrixcalc.PerspectiveFarZDistance = 120000f / lyscale;
+            matrixcalc.DepthRange = new Vector2(0, 1);
             matrixcalc.InPerspectiveMode = true;
             matrixcalc.ResizeViewPort(this, glwfc.Size);          // must establish size before starting
 
             // menu system
 
             displaycontrol = new GLControlDisplay(items, glwfc, matrixcalc, true, 0.00001f, 0.00001f);       // hook form to the window - its the master
-            displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
             displaycontrol.Font = new Font("Arial", 10f);
+            displaycontrol.Focusable = true;          // we want to be able to focus and receive key presses.
+            displaycontrol.SetFocus();
+
             displaycontrol.Paint += (ts) => {
                 galaxymenu?.UpdateCoords(gl3dcontroller);
                 displaycontrol.Animate(glwfc.ElapsedTimems);
+            
                 GLStatics.ClearDepthBuffer();         // clear the depth buffer, so we are on top of all previous renders.
                 displaycontrol.Render(glwfc.RenderState, ts);
             };
-            displaycontrol.SetFocus();
 
             // 3d controller
 
@@ -510,7 +516,7 @@ namespace TestOpenTk
 
             // start hooks the glwfc paint function up, first, so it gets to go first
             // No ui events from glwfc.
-            gl3dcontroller.Start(glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
+            gl3dcontroller.Start(matrixcalc,glwfc, new Vector3(0, 0, 10000), new Vector3(140.75f, 0, 0), 0.5F, false, false);
             gl3dcontroller.Hook(displaycontrol, glwfc); // we get 3dcontroller events from displaycontrol, so it will get them when everything else is unselected
             displaycontrol.Hook();  // now we hook up display control to glwin, and paint
 
@@ -524,7 +530,7 @@ namespace TestOpenTk
             GLTextBoxAutoComplete tbac = ((GLTextBoxAutoComplete)displaycontrol[MapMenu.EntryTextName]);
 
             if (tbac != null)
-            {
+            { 
                 tbac.PerformAutoCompleteInUIThread = (s, a, set) =>
                 {
                     System.Diagnostics.Debug.Assert(Application.MessageLoop);       // must be in UI thread

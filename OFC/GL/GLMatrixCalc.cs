@@ -90,7 +90,8 @@ namespace GLOFC
         /// </summary>
         public Rectangle ViewPort { get; protected set; }
 
-        /// <summary> Depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)</summary>
+        /// <summary> Depth range (near,far) of Z to apply to viewport transformation to screen coords from normalised device coords (0..1)
+        /// ResizeViewPort/SetViewPort updates this into the driver</summary>
         public Vector2 DepthRange { get; set; } = new Vector2(0, 1);            
 
         /// <summary> Screen co-ords max. Does not have to match the ScreenSize. 
