@@ -109,7 +109,7 @@ namespace GLOFC.GL4.Controls
         private protected GLNumberBox<T> othernumberbox { get; set; } = null;             // attach to another box for validation
         private protected int othercomparision { get; set; } = 0;              // aka -2 (<=) -1(<) 0 (=) 1 (>) 2 (>=)
 
-        private protected override void OnTextChanged()
+        private protected override void TextChangedEvent()
         {
             if (ConvertFromString(Text, out T newvalue))
             {
@@ -130,7 +130,7 @@ namespace GLOFC.GL4.Controls
                 InErrorCondition = true;
             }
 
-            base.OnTextChanged();
+            base.TextChangedEvent();
         }
 
         private void OnValueChanged()

@@ -22,15 +22,14 @@ namespace GLOFC.GL4.Controls
     public class GLTextBox : GLMultiLineTextBox
     {
         /// <summary> Constructor with name, bounds and optional text</summary>
-        public GLTextBox(string name, Rectangle pos, string text = "") : base(name, pos, text)
+        public GLTextBox(string name, Rectangle pos, string text = "", bool enablethemer = true) : base(name, pos, text, enablethemer)
         {
             MultiLineMode = false;
         }
 
         /// <summary> Constructor with name, bounds, text, colors</summary>
-        public GLTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, text)
+        public GLTextBox(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, text, enablethemer)
         {
-            EnableThemer = enablethemer;
             BackColor = backcolor;
             ForeColor = forecolor;
         }

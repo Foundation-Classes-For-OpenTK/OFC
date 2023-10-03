@@ -400,44 +400,7 @@ namespace TestOpenTk
                     pform.Add(pn);
                 }
 
-                if (true)
-                {
-                    GLPanel pn = new GLPanel("PanelNumberBoxAutocomplete", new Rectangle(450, 210, 400, 100), Color.AliceBlue);
-
-                    GLNumberBoxFloat glf = new GLNumberBoxFloat("FLOAT", new Rectangle(4,4, 100, 25), 23.4f);
-                    glf.TabOrder = taborder++;
-                    glf.Font = new Font("Ms Sans Serif", 12);
-                    glf.Minimum = -1000;
-                    glf.Maximum = 1000;
-                    glf.ValueChanged += (a) => { System.Diagnostics.Debug.WriteLine("GLF value changed"); };
-                    glf.ValidityChanged += (a, b) => { System.Diagnostics.Debug.WriteLine($"GLF validity changed {b}"); };
-                    pn.Add(glf);
-
-                    GLButton glfbut = new GLButton("FLOATBUT", new Rectangle(120,4, 60, 24), "Value");
-                    glfbut.Click += (e1, b1) => { glf.Value = 20.22f; };
-                    pn.Add(glfbut);
-
-                    GLTextBoxAutoComplete gla = new GLTextBoxAutoComplete("ACTB", new Rectangle(4,40, 100, 25));
-                    gla.TabOrder = taborder++;
-                    gla.Font = new Font("Ms Sans Serif", 12);
-                    gla.PerformAutoCompleteInThread += (s, a, set) =>
-                    {
-                        var r = new List<string>() { "one", "onetwo", "onethree", "two", "three" };
-                        foreach (var x in r)
-                        {
-                            if (x.StartsWith(s) || s.IsEmpty())
-                                set.Add(x);
-                        }
-
-                        System.Threading.Thread.Sleep(200);
-                    };
-                    gla.SelectedEntry += (s) => { System.Diagnostics.Debug.WriteLine($"Autocomplete selected {s.Text}"); };
-                    pn.Add(gla);
-                    pform.Add(pn);
-                }
-
                 displaycontrol.Add(pform);
-
 
                 displaycontrol.GlobalMouseDown += (ctrl, ex) =>
                 {

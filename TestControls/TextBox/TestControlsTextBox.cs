@@ -183,7 +183,7 @@ namespace TestOpenTk
             }
 
 
-            if (false)
+            if (true)
             {
                 string l = "";
                 for (int i = 0; i < 5; i++)
@@ -220,7 +220,7 @@ namespace TestOpenTk
                 pform.Add(mtb2);
             }
 
-            if (false)
+            if (true)
             {
                 GLTextBox tb1 = new GLTextBox("TB1", new Rectangle(0, 300, 350, 40), "Text Box Which is a very long string of very many many characters");
                 tb1.Font = new Font("Arial", 12);
@@ -231,6 +231,38 @@ namespace TestOpenTk
                 pform.Add(tb1);
             }
 
+            if (true)
+            {
+                string l = "";
+                for (int i = 0; i < 25; i++)
+                {
+                    string s = string.Format("Line " + i);
+                    if (i == 0)
+                        s += "And a much much longer Line which should break the width";
+                    l += s + "\r\n";
+                }
+                l += "trail ";
+
+                GLPanel pn = new GLPanel("Textbox", new Rectangle(450, 10, 400, 400), Color.AliceBlue);
+
+                GLMultiLineTextBox mtb = new GLMultiLineTextBox("mltb", new Rectangle(4, 4, 300, 350), l);
+                mtb.TextAreaBackColor = Color.Yellow;
+                mtb.TextAreaBackColorAlt = Color.White;
+                mtb.TextAreaColorGradientDir = 90;
+                mtb.TextBoundary = new MarginType(20, 20, 50, 20);
+                mtb.ExtraPadding = new PaddingType(10, 10, 10, 10);
+                mtb.Font = new Font("Ms Sans Serif", 16);
+                mtb.LineColor = Color.Green;
+                mtb.EnableVerticalScrollBar = true;
+                mtb.EnableHorizontalScrollBar = true;
+                mtb.SetSelection(16 * 2 + 2, 16 * 3 + 4);
+                mtb.TabOrder = taborder++;
+                mtb.RightClickMenuFont = new Font("Euro Caps", 14f);
+                mtb.BackColor = Color.Blue;
+                pn.Add(mtb);
+
+                pform.Add(pn);
+            }
 
 
             displaycontrol.Add(pform);

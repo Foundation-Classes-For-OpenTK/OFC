@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -46,8 +46,18 @@ namespace GLOFC.GL4.Controls
         public bool AllowControlChars { get; set; } = false;
         /// <summary> Set to make read only. No user editing is allowed, and editing commands will not work </summary>
         public bool ReadOnly { get; set; } = false;
-        /// <summary> Controls where text is painted within control </summary>
-        public MarginType TextBoundary { get; set; } = new MarginType(0);
+        /// <summary>Colour of the text area only. Normally transparent </summary>
+        public Color TextAreaBackColor { get { return textAreabackcolor; } set { textAreabackcolor = value; Invalidate(); } }
+        /// <summary> Text area alternate colour when text gradient is on </summary>
+        public Color TextAreaBackColorAlt { get { return textAreagradientalt; } set { textAreagradientalt = value; Invalidate(); } }
+        /// <summary> Text area alternate colour direction. Must be set to turn it on. </summary>
+        public int TextAreaColorGradientDir { get { return textAreagradientdir; } set { if (textAreagradientdir != value) { textAreagradientdir = value; Invalidate(); } } }
+        /// <summary> Reserved space around scroll bars/text area. Different to padding as derived controls can draw into it </summary>
+        public PaddingType ExtraPadding { get { return extrapadding; } set { extrapadding = value; vertscroller.DockingMargin = new MarginType(0, value.Top, value.Right, value.Bottom);
+                horzscroller.DockingMargin = new MarginType(value.Left, 0, 0, value.Bottom); Finish(true, false, false); } }
+
+        /// <summary> Reserve space around the text area within the reserved boundary </summary>
+        public MarginType TextBoundary { get { return textboundary; } set { textboundary = value; Finish(true, false, false); } }
         /// <summary> Highlight back color for selection </summary>
         public Color HighlightColor { get { return highlightColor; } set { highlightColor = value; Invalidate(); } }
         /// <summary> Line separator color, default is line separator is off (Color.Transparent) </summary>
@@ -319,7 +329,7 @@ namespace GLOFC.GL4.Controls
                 }
 
                 Finish(invalidate: true, clearselection: true, restarttimer: true);
-                OnTextChanged();
+                TextChangedEvent();
             }
         }
 
@@ -333,7 +343,7 @@ namespace GLOFC.GL4.Controls
                 DeleteSelectionClearInt();
                 InsertTextIntoLineInt(text, insertinplace);
                 Finish(invalidate: true, clearselection: true, restarttimer: true);
-                OnTextChanged();
+                TextChangedEvent();
             }
         }
 
@@ -364,7 +374,7 @@ namespace GLOFC.GL4.Controls
                 }
 
                 Finish(invalidate: true, clearselection: true, restarttimer: true);
-                OnTextChanged();
+                TextChangedEvent();
             }
         }
 
@@ -378,7 +388,7 @@ namespace GLOFC.GL4.Controls
                 DeleteSelectionClearInt();
                 InsertCRLFInt();
                 Finish(invalidate: true, clearselection: true, restarttimer: true);
-                OnTextChanged();
+                TextChangedEvent();
             }
         }
 
@@ -400,7 +410,7 @@ namespace GLOFC.GL4.Controls
                         cursorpos--;
                         MaxLineLength = -1;     // we don't know if this is the maximum any more, need to recalc
                         Finish(invalidate: true, clearselection: true, restarttimer: true);
-                        OnTextChanged();
+                        TextChangedEvent();
                     }
                     else if (cursorlinecpos > 0)    // not at start of text
                     {
@@ -414,7 +424,7 @@ namespace GLOFC.GL4.Controls
                         lineendlengths.RemoveAt(cursorlineno + 1);
                         MaxLineLength = Math.Max(MaxLineLength, linelengths[cursorlineno] - lineendlengths[cursorlineno]);  // we made a bigger, line, see if its max
                         Finish(invalidate: true, clearselection: true, restarttimer: true);
-                        OnTextChanged();
+                        TextChangedEvent();
                     }
                 }
             }
@@ -431,7 +441,7 @@ namespace GLOFC.GL4.Controls
                     if ( DeleteInt() )      // if we deleted something
                     {
                         Finish(invalidate: true, clearselection: true, restarttimer: true);
-                        OnTextChanged();
+                        TextChangedEvent();
                     }
                 }
             }
@@ -477,7 +487,7 @@ namespace GLOFC.GL4.Controls
             if (!ReadOnly && DeleteSelectionClearInt())
             {
                 Finish(invalidate: true, clearselection: false, restarttimer: true);
-                OnTextChanged();
+                TextChangedEvent();
                 return true;
             }
             else
@@ -588,7 +598,7 @@ namespace GLOFC.GL4.Controls
             SizeF area = GLOFC.Utils.BitMapHelpers.MeasureStringInBitmap(Text, Font);
 
             int width = Math.Max(min.Width, (int)(area.Width + 0.99999 + LineHeight / 2));       // add a nerf based on font height
-            width += TextBoundary.TotalWidth;
+            width += TextBoundary.TotalWidth + ExtraPadding.TotalWidth;
 
             if (width > max.Width)
             {
@@ -597,7 +607,7 @@ namespace GLOFC.GL4.Controls
             }
 
             int height = LineHeight * NumberOfLines ;
-            height += TextBoundary.TotalHeight;
+            height += TextBoundary.TotalHeight + ExtraPadding.TotalHeight;
 
             if (height > max.Height)
             {
@@ -743,7 +753,7 @@ namespace GLOFC.GL4.Controls
             }
             else
             {
-                Rectangle usablearea = UsableAreaForText(ClientRectangle);
+                Rectangle usablearea = UsableAreaForText();
                 Rectangle measurearea = usablearea;
                 measurearea.Width = 7000;        // big rectangle so we get all the text in
 
@@ -1002,9 +1012,16 @@ namespace GLOFC.GL4.Controls
             base.DrawBack(bounds, gr, bc, bcgradientalt, bcgradient);
         }
 
-        private Rectangle UsableAreaForText(Rectangle clientarea)
+        private Rectangle UsableAreaForText()
         {
-            Rectangle usablearea = new Rectangle(clientarea.Left + TextBoundary.Left, clientarea.Top + TextBoundary.Top, clientarea.Width - TextBoundary.TotalWidth, clientarea.Height - TextBoundary.TotalHeight);
+            Rectangle clientarea = ClientRectangle;
+
+            Rectangle usablearea = new Rectangle(clientarea.Left + TextBoundary.Left + ExtraPadding.Left, 
+                                                clientarea.Top + TextBoundary.Top + ExtraPadding.Top, 
+                                                clientarea.Width - TextBoundary.TotalWidth - ExtraPadding.TotalWidth, 
+                                                clientarea.Height - TextBoundary.TotalHeight - ExtraPadding.TotalHeight);
+
+          //  System.Diagnostics.Debug.WriteLine($"Usable area {clientarea} -> {TextBoundary} + {reservedboundary} => {usablearea}");
 
             if (vertscroller?.Visible ?? false)         // take into account text boundary, scroll bars
                 usablearea.Width -= ScrollBarWidth;
@@ -1014,7 +1031,6 @@ namespace GLOFC.GL4.Controls
             if (!MultiLineMode)     // if we are in no LF mode (ie. Textbox) then use TextAlign to format area
             {
                 usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, LineHeight));
-                //usablearea = TextAlign.ImagePositionFromContentAlignment(usablearea, new Size(usablearea.Width, usablearea.Height));
             }
 
             return usablearea;
@@ -1027,7 +1043,22 @@ namespace GLOFC.GL4.Controls
                 return;
 
             //System.Diagnostics.Debug.WriteLine($"Paint MLTB {startpos} {cursorpos} {firstline} {CurrentDisplayableLines}");
-            Rectangle usablearea = UsableAreaForText(ClientRectangle);      // area inside out client rectangle where text is
+            Rectangle usablearea = UsableAreaForText();      // area inside out client rectangle where text is
+
+            if ( textAreabackcolor != Color.Transparent)
+            {
+                if (textAreagradientdir != int.MinValue)
+                {
+                    using (var b = new System.Drawing.Drawing2D.LinearGradientBrush(usablearea, textAreabackcolor, textAreagradientalt, textAreagradientdir))
+                        gr.FillRectangle(b, usablearea);       // linear grad brushes do not respect smoothing mode, btw
+                }
+                else
+                {
+                    //System.Diagnostics.Debug.WriteLine("Background " + Name + " " + bounds + " " + backcolor);
+                    using (Brush b = new SolidBrush(textAreabackcolor))     // always fill, so we get back to start
+                        gr.FillRectangle(b, usablearea);
+                }
+            }
 
             var clipregion = gr.Clip.GetBounds(gr);     // get the region which was set up by our caller, this is where we have permission to paint (0,0 = client origin)
             
@@ -1298,7 +1329,12 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private protected virtual void OnTextChanged()
+        private protected virtual void TextChangedEvent()           // in derived classes, override to see the event without going thru the TextChanged call back
+        {
+            OnTextChanged();
+        }
+
+        private protected virtual void OnTextChanged()              // standard OnTextChanged call
         {
             TextChanged?.Invoke(this);
         }
@@ -1313,7 +1349,7 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine($"Find MLTB Position {click}");
 
-            Rectangle usablearea = UsableAreaForText(ClientRectangle);
+            Rectangle usablearea = UsableAreaForText();
             usablearea.Width = 7000;        // set so chars don't clip and extend across
 
             lineno = cpos = -1;
@@ -1472,7 +1508,7 @@ namespace GLOFC.GL4.Controls
 
         #endregion
 
-        private int CurrentDisplayableLines { get { return Math.Max(1,((ClientRectangle.Height - ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / LineHeight)); } }
+        private int CurrentDisplayableLines { get { return Math.Max(1,((ClientRectangle.Height - extrapadding.TotalHeight - textboundary.TotalHeight- ((horzscroller?.Visible ?? false) ? ScrollBarWidth : 0)) / LineHeight)); } }
 
         // cursor and marker info
 
@@ -1512,6 +1548,12 @@ namespace GLOFC.GL4.Controls
 
         private bool insert = true;
 
+        private MarginType textboundary = new MarginType(0);
+        private PaddingType extrapadding = new PaddingType(0);
+
+        private Color textAreabackcolor = Color.Transparent;
+        private Color textAreagradientalt = Color.Red;
+        private int textAreagradientdir = int.MinValue;           // in degrees
 
         //bool pone = false;      // debugging only
 

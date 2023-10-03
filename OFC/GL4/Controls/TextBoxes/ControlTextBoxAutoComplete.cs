@@ -42,15 +42,23 @@ namespace GLOFC.GL4.Controls
         /// <summary> Delay in ms before autocomplete starts</summary>
         public int AutoCompleteInitialDelay { get; set; } = 500;
 
+        /// <summary> Show wait button </summary>
+        public bool ShowWaitButton { get { return waitbuttonon; } set { waitbuttonon = value; if (waitbuttonon == false) WaitButton.Visible = false; ExtraPadding = new PaddingType(0, 0, waitbuttonon ? WaitButton.Width : 0, 0); } }
+
         /// <summary> List box for autocomplete. For Themeing</summary>
-        public GLListBox ListBox { get; set; } = new GLListBox();
+        public GLListBox ListBox { get; set; }
+
+        /// <summary> Wait button. For Themeing. Back/Face is set to transparent normally so only icon shows</summary>
+        public GLButton WaitButton { get; set; }
 
         /// <summary> Constructor with name, bounds and optional text </summary>
-        public GLTextBoxAutoComplete(string name, Rectangle pos, string text = "") : base(name, pos, text)
+        public GLTextBoxAutoComplete(string name, Rectangle pos, string text = "", bool enablethemer = true) : base(name, pos, text, enablethemer)
         {
             waitforautotimer.Tick += InitialDelayOver;
             autocompleteinuitimer.Tick += AutoCompleteInUI;
             triggercomplete.Tick += AutoCompleteFinished;
+
+            ListBox = new GLListBox();
             ListBox.AutoSize = true;
             ListBox.SelectedIndexChanged += (c0, i) => {
                 //System.Diagnostics.Debug.WriteLine($"List box selected {ListBox.SelectedItem}");
@@ -63,12 +71,19 @@ namespace GLOFC.GL4.Controls
             ListBox.Name = name + "_LB";
             ListBox.TopMost = true;
             ListBox.ShowFocusHighlight = true;
+
+            WaitButton = new GLButton(name + "_WB", new Rectangle(0, 0, 24, 24), GLOFC.Properties.Resources.Wait, true);
+            WaitButton.Visible = false;
+            WaitButton.BackColor = WaitButton.ButtonFaceColor = Color.Transparent;
+            WaitButton.BorderWidth = 0;
+            WaitButton.Dock = DockingType.RightTop;
+
+            this.Add(WaitButton);
         }
 
         /// <summary> Constructor with name, bounds, text, colors</summary>
-        public GLTextBoxAutoComplete(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, text)
+        public GLTextBoxAutoComplete(string name, Rectangle pos, string text, Color backcolor, Color forecolor, bool enablethemer = true) : this(name, pos, text, enablethemer)
         {
-            EnableThemer = enablethemer;
             BackColor = backcolor;
             ForeColor = forecolor;
         }
@@ -110,10 +125,9 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        private protected override void OnTextChanged()
+        // override this instead of TextChanged event so we don't get double entry when list box changes
+        private protected override void TextChangedEvent()
         {
-            base.OnTextChanged();
-
             //System.Diagnostics.Debug.WriteLine("{0} AC text change event", Environment.TickCount % 10000);
 
             if (InErrorCondition)               // cancel any error condition on typing
@@ -134,6 +148,8 @@ namespace GLOFC.GL4.Controls
                     restartautocomplete = true;
                 }
             }
+
+            base.OnTextChanged();   // this calls the TextChanged event handler
         }
 
         /// <summary>
@@ -155,6 +171,7 @@ namespace GLOFC.GL4.Controls
 
         private void InitialDelayOver(PolledTimer t, long tick)
         {
+            WaitButton.Visible = waitbuttonon;
             executingautocomplete = true;
             ThreadAutoComplete = new System.Threading.Thread(new System.Threading.ThreadStart(AutoComplete));
             ThreadAutoComplete.Name = "AutoComplete";
@@ -199,6 +216,7 @@ namespace GLOFC.GL4.Controls
         private void AutoCompleteFinished(PolledTimer t, long tick)        // in UI thread
         {
             executingautocomplete = false;
+            WaitButton.Visible = false;
 
             //System.Diagnostics.Debug.WriteLine($"{tick} AC finished results {autocompletestrings?.Count} ignore {ignoreautocomplete}");
 
@@ -289,7 +307,7 @@ namespace GLOFC.GL4.Controls
         private bool restartautocomplete = false;
         private SortedSet<string> autocompletestrings = null;
         private System.Threading.Thread ThreadAutoComplete;
-
+        private bool waitbuttonon = false;
         #endregion
     }
 }
