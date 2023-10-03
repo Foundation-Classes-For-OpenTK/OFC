@@ -71,11 +71,13 @@ namespace GLOFC.GL4.Controls
             ListBox.Name = name + "_LB";
             ListBox.TopMost = true;
             ListBox.ShowFocusHighlight = true;
+            ListBox.EnableThemer = false;
 
             WaitButton = new GLButton(name + "_WB", new Rectangle(0, 0, 24, 24), GLOFC.Properties.Resources.Wait, true);
             WaitButton.Visible = false;
             WaitButton.BackColor = WaitButton.ButtonFaceColor = Color.Transparent;
             WaitButton.BorderWidth = 0;
+            WaitButton.EnableThemer = false;
             WaitButton.Dock = DockingType.RightTop;
 
             this.Add(WaitButton);
