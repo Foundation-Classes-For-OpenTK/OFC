@@ -33,9 +33,10 @@ namespace GLOFC.GL4.Shaders.Fragment
         ///      texture : 2D texture bound on binding point
         /// </summary>
         /// <param name="binding">Binding of texture</param>
-        public GLPLFragmentShaderTexture(int binding = 1)
+        /// <param name="discard">If true, discard if W less than 0.01</param>
+        public GLPLFragmentShaderTexture(int binding = 1, bool discard = false)
         {
-            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused);
+            CompileLink(ShaderType.FragmentShader, Code(binding), out string unused, constvalues: new object[] { "discardit", discard });
         }
 
         private string Code(int binding)
@@ -48,10 +49,20 @@ layout (binding=" + binding.ToStringInvariant() + @") uniform sampler2D textureO
 
 out vec4 color;
 
+const bool discardit = false;
+
 void main(void)
 {
-    color = texture(textureObject, vs_textureCoordinate);       // vs_texture coords normalised 0 to 1.0f
-//color = vec4(1,vs_textureCoordinate.x,vs_textureCoordinate.y,1); // test to show tex co-ords come thru
+    if ( discardit )
+    {
+        vec4 cs = texture(textureObject, vs_textureCoordinate);       // vs_texture coords normalised 0 to 1.0f
+        if ( cs.w < 0.01 )
+            discard;
+        else
+            color = cs;
+    }
+    else
+        color = texture(textureObject, vs_textureCoordinate);       // vs_texture coords normalised 0 to 1.0f
 }
 ";
         }

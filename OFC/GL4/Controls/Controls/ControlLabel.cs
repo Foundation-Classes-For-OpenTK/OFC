@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -69,13 +69,26 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint(Graphics)"/>
         protected override void Paint(Graphics gr)
         {
+            LabelPaint(gr, new MarginType(0));
+        }
+
+        /// <summary>
+        /// Helper for label and derived classes allowing a margin
+        /// </summary>
+        /// <param name="gr">Graphics</param>
+        /// <param name="ma">Margin</param>
+
+        protected virtual void LabelPaint(Graphics gr, MarginType ma)
+        { 
             if (Text.HasChars())
             {
                 using (var fmt = ControlHelpersStaticFunc.StringFormatFromContentAlignment(TextAlign))
                 {
                     using (Brush textb = new SolidBrush((Enabled) ? this.ForeColor : this.ForeColor.Multiply(ForeDisabledScaling)))
                     {
-                        gr.DrawString(this.Text, this.Font, textb, ClientRectangle, fmt);
+                        var rect = new Rectangle(ClientRectangle.Left + ma.Left, ClientRectangle.Top + ma.Top, ClientRectangle.Right - ma.Right, ClientRectangle.Bottom - ma.Bottom);
+
+                        gr.DrawString(this.Text, this.Font, textb, rect, fmt);
                     }
                 }
             }

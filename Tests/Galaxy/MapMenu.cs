@@ -166,7 +166,7 @@ namespace TestOpenTk
 
 
             {
-                GLGroupBox tpgb = new GLGroupBox("GalaxyStarsGB", "Galaxy Stars", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize * 2));
+                GLGroupBox tpgb = new GLGroupBox("GalaxyStarsGB", "Galaxy Stars", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, iconsize * 3));
                 pform.Add(tpgb);
 
                 int hpos = leftmargin;
@@ -184,6 +184,14 @@ namespace TestOpenTk
                 butgalstarstext.CheckChanged += (e1) => { map.GalaxyStars ^= 2; };
                 tpgb.Add(butgalstarstext);
                 hpos += butgalstarstext.Width + hpad;
+
+                GLTrackBar tb = new GLTrackBar("ScaleGS", new Rectangle(leftmargin, butgalstars.Bottom + ypad, iconsize * 8, iconsize));
+                tb.Minimum = 1;
+                tb.Maximum = 10;
+                tb.TickFrequency = 1;
+                tb.Value = map.AutoScaleGalaxyStars;
+                tb.ValueChanged += (s, v) => { map.AutoScaleGalaxyStars = v; };
+                tpgb.Add(tb);
 
                 vpos += tpgb.Height + ypad;
             }
@@ -223,11 +231,11 @@ namespace TestOpenTk
             }
 
             { // Galaxy objects
-                GLGroupBox galgb = new GLGroupBox("GalGB", "Galaxy Objects", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, 50));
-                galgb.ClientHeight = (iconsize + 4) * 2;
+                GLGroupBox galgb = new GLGroupBox("GalGB", "Galaxy Objects", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, 300));
                 pform.Add(galgb);
 
-                GLFlowLayoutPanel galfp = new GLFlowLayoutPanel("GALFP", DockingType.Fill, 0);
+                GLFlowLayoutPanel galfp = new GLFlowLayoutPanel("GALFP", DockingType.Top, 0);
+                galfp.AutoSize = true;
                 galfp.FlowPadding = new PaddingType(2, 2, 2, 2);
                 galgb.Add(galfp);
 
@@ -251,7 +259,28 @@ namespace TestOpenTk
                 butgonoff.CheckChanged += (e1) => { map.GalObjectDisplay = !map.GalObjectDisplay; };
                 galfp.Add(butgonoff);
 
+                GLTrackBar tb = new GLTrackBar("ScaleGMO", new Rectangle(leftmargin, galfp.Height + ypad, iconsize * 8, iconsize));
+                tb.Minimum = 1;
+                tb.Maximum = 250; 
+                tb.Value = map.AutoScaleGMOs;
+                tb.ValueChanged += (s, v) => { map.AutoScaleGMOs = v; };
+                galgb.Add(tb);
+
+                galgb.ClientHeight = galfp.Height + ypad + tb.Height;
                 vpos += galgb.Height + ypad;
+            }
+
+            {
+                GLGroupBox scalegb = new GLGroupBox("Scalar", "Scaling of Bookmarks", new Rectangle(leftmargin, vpos, pform.ClientWidth - leftmargin * 2, 50));
+                scalegb.ClientHeight = (iconsize + 4) * 1;
+                pform.Add(scalegb);
+                vpos += scalegb.Height + ypad;
+                GLTrackBar tb = new GLTrackBar("ScaleBK", new Rectangle(leftmargin, 0, iconsize * 8, iconsize));
+                tb.Minimum = 1;
+                tb.Maximum = 250;
+                tb.Value = map.AutoScaleBookmarks;
+                tb.ValueChanged += (s, v) => { map.AutoScaleBookmarks = v; };
+                scalegb.Add(tb);
             }
 
             { // EDSM regions
@@ -778,6 +807,17 @@ namespace TestOpenTk
             if (p != null)
             {
                 p.BackColor = formback;
+            }
+
+
+            var trb = ctrl as GLTrackBar;
+            if (trb != null)
+            {
+                trb.BackColor = formback;
+                trb.TickColor = texc;
+                trb.ForeColor = buttonface;     // of bar
+                trb.ButtonFaceColor = Color.FromArgb(255, 190, 190, 190);
+                trb.FaceColorScaling = 0.5f;
             }
 
 

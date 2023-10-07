@@ -350,7 +350,7 @@ void main(void)
     }
 
     /// <summary>
-    /// Shader, Common Model Translation, Tex co, Seperate World pos, W passed thru, with object transform, autoscale
+    /// Shader, Common Model Translation, Tex co, Seperate World pos, W passed thru, with object transform, autoscale fixed
     /// </summary>
     
     public class GLPLVertexShaderModelWorldTextureAutoScale : GLShaderPipelineComponentShadersBase
@@ -362,7 +362,7 @@ void main(void)
         /// Requires:
         ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
         ///      location 1 : texco-ords 
-        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, if w less than minus 1 its culled, else it is passed thru to fragment shader
+        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, if w less equal than minus 1 its culled, else it is passed thru to fragment shader
         ///      uniform buffer 0 : GL MatrixCalc
         ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
         /// Out:
@@ -471,5 +471,144 @@ void main(void)
         }
 
     }
+
+    /// <summary>
+    /// Shader, Common Model Translation, Tex co, Seperate World pos, W passed thru, with object transform, autoscale configurable
+    /// </summary>
+
+    public class GLPLVertexShaderModelWorldTextureAutoScaleConfigurable : GLShaderPipelineComponentShadersBase
+    {
+        /// <summary> Rotation to apply to all objects </summary>
+        public Matrix4 ModelTranslation { get; set; } = Matrix4.Identity;
+
+        /// <summary> Constructor 
+        /// Requires:
+        ///      location 0 : position: vec4 vertex array of positions model coords, w is ignored
+        ///      location 1 : texco-ords 
+        ///      location 2 : world-position: vec4 vertex array of world pos for model, instanced, if w less equal than minus 1 its culled, else it is passed thru to fragment shader
+        ///      uniform buffer 0 : GL MatrixCalc
+        ///      uniform 10 : autoscale
+        ///      uniform 11 : autoscalemin
+        ///      uniform 12 : autoscalemax
+        ///      uniform 22 : objecttransform: mat4 transform of model before world applied (for rotation/scaling)
+        /// Out:
+        ///      gl_Position
+        ///      location 0 : texco
+        ///      location 1 : modelpos
+        ///      location 2 : instance id
+        ///      location 3 : worldpos w flat
+        ///      location 4 : drawid
+        /// </summary>
+        public GLPLVertexShaderModelWorldTextureAutoScaleConfigurable(bool useeyedistance = true)
+        {
+            CompileLink(ShaderType.VertexShader, Code(), out string _, constvalues: new object[] { "useeyedistance", useeyedistance});
+        }
+
+        /// <summary>
+        /// Sets the autoscalars
+        /// </summary>
+        /// <param name="autoscale">To autoscale distance. Sets the 1.0 scale point.</param>
+        /// <param name="autoscalemin">Minimum to scale to</param>
+        /// <param name="autoscalemax">Maximum to scale to</param>
+        public void SetScalars(float autoscale, float autoscalemin, float autoscalemax)
+        {
+           // System.Diagnostics.Debug.WriteLine($"Shader model texture scaling {autoscale} {autoscalemin} {autoscalemax}");
+            GL.ProgramUniform1(Id, 10, autoscale);
+            GL.ProgramUniform1(Id, 11, autoscalemin);
+            GL.ProgramUniform1(Id, 12, autoscalemax);
+        }
+
+        /// <summary> Start shader </summary>
+        public override void Start(GLMatrixCalc c)
+        {
+            Matrix4 a = ModelTranslation;
+            GL.ProgramUniformMatrix4(Id, 22, false, ref a);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
+            //System.Diagnostics.Debug.WriteLine($"TextAutoScale pos {a.ToString()}");
+        }
+
+        private string Code()       // with transform, object needs to pass in uniform 22 the transform
+        {
+            return
+@"
+#version 460 core
+#include UniformStorageBlocks.matrixcalc.glsl
+#include Shaders.Functions.vec4.glsl
+
+layout (location = 0) in vec4 modelposition;
+layout (location = 1) in vec2 texco;
+layout (location = 2) in vec4 worldposition;            // instanced, w ignored
+layout (location = 10) uniform float autoscale;
+layout (location = 11) uniform float autoscalemin;
+layout (location = 12) uniform float autoscalemax;
+layout (location = 22) uniform  mat4 objecttransform;         // rotation/scaling of vertexes
+
+out gl_PerVertex {
+        vec4 gl_Position;
+        float gl_PointSize;
+        float gl_ClipDistance[];
+        float gl_CullDistance[];
+    };
+
+layout( location = 0) out vec2 vs_textureCoordinate;
+layout (location = 1) out vec3 vs_modelpos;
+layout (location = 2) out VS_OUT
+{
+    flat int vs_instanced;
+} vs_out;
+layout (location = 3) out VS_OUT2
+{
+    flat float vs_wvalue;
+} vs_out2;
+layout (location = 4) out flat int drawid;       // 4.6 item
+
+const bool useeyedistance = true;
+
+void main(void)
+{
+    if ( worldposition.w <= -1 )
+    {
+        gl_CullDistance[0] = -1;        // so, if we set it once, we need to set it always, for somereason the compiler if its sees it set and you
+    }                                   // don't do it everywhere it can get into an interderminate state per vertex
+    else
+    {
+        gl_CullDistance[0] = 1;     // must do this, as setting it only in discard causes artifacts
+
+        vs_modelpos = modelposition.xyz;
+        vs_out.vs_instanced = gl_InstanceID;
+        vs_out2.vs_wvalue = worldposition.w;
+        vs_textureCoordinate = texco;
+        drawid = gl_DrawID;
+
+        vec4 mpos= vec4(modelposition.xyz,1);
+        vec4 wpos = vec4(worldposition.xyz,0);
+
+        if ( autoscale>0)
+        {
+            float scale;
+            if ( useeyedistance )
+            {
+                scale = mc.EyeDistance/autoscale;
+            }
+            else
+            {
+                float d = distance(mc.EyePosition,wpos);            // find distance between eye and world pos
+                scale = d/autoscale;
+            }
+
+            scale = clamp(scale,autoscalemin,autoscalemax);
+            mpos = Scale(mpos,scale);
+        }
+
+        vec4 modelrot = objecttransform * mpos;
+        vec4 wp = modelrot + wpos;
+        gl_Position = mc.ProjectionModelMatrix * wp;        // order important
+    }   
+}
+";
+        }
+
+    }
+
 
 }

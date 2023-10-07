@@ -123,6 +123,8 @@
     <Compile Include="GL4\Controls\Forms\FormConfigurable.cs" />
     <Compile Include="GL4\Controls\Forms\FormVector3.cs" />
     <Compile Include="GL4\Controls\Forms\FormMessageBox.cs" />
+    <Compile Include="GL4\Controls\Menus\ControlMenuItemSeperator.cs" />
+    <Compile Include="GL4\Controls\Menus\ControlMenuItemLabel.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuItem.cs" />
     <Compile Include="GL4\Controls\Menus\ControlMenuStrip.cs" />
     <Compile Include="GL4\Controls\Panels\ControlFlowLayoutPanel.cs" />
@@ -133,6 +135,7 @@
     <Compile Include="GL4\Controls\Panels\ControlTableLayoutPanel.cs" />
     <Compile Include="GL4\Controls\Tabs\ControlTab.cs" />
     <Compile Include="GL4\Controls\Tabs\ControlTabStyleCustom.cs" />
+    <Compile Include="GL4\Controls\TextBoxes\ControlMultiLineTextBoxImpl.cs" />
     <Compile Include="GL4\Controls\TextBoxes\ControlMultiLineTextBox.cs" />
     <Compile Include="GL4\Controls\TextBoxes\ControlNumberBox.cs" />
     <Compile Include="GL4\Controls\TextBoxes\ControlTextBox.cs" />

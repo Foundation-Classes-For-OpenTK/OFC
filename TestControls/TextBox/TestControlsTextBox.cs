@@ -249,7 +249,7 @@ namespace TestOpenTk
                 mtb.TextAreaBackColor = Color.Yellow;
                 mtb.TextAreaBackColorAlt = Color.White;
                 mtb.TextAreaColorGradientDir = 90;
-                mtb.TextBoundary = new MarginType(20, 20, 50, 20);
+                mtb.TextMargin = new MarginType(20, 20, 50, 20);
                 mtb.ExtraPadding = new PaddingType(10, 10, 10, 10);
                 mtb.Font = new Font("Ms Sans Serif", 16);
                 mtb.LineColor = Color.Green;

@@ -82,6 +82,10 @@ namespace TestOpenTk
         private ImageCache userimages;
         private GLBindlessTextureBitmaps usertexturebitmaps;
 
+        private int autoscalegmo = 30;
+        private int autoscalebookmarks = 30;
+        private int autoscalegalstars = 50;
+
         private Action<Action> uiinvoker;
 
         private Bookmarks bookmarks;
@@ -468,7 +472,7 @@ namespace TestOpenTk
             {
                 bookmarks = new Bookmarks();
                 var syslist = new List<SystemClass> { new SystemClass("bk1", 1000, 0, 0), new SystemClass("bk1", 1000, 0, 2000), };
-                bookmarks.Create(items, rObjects, syslist, 1.0f, findresults, false);
+                bookmarks.Create(items, rObjects, syslist, 1.0f, findresults, true);
             }
             // Matrix calc holding transform info
 
@@ -631,12 +635,16 @@ namespace TestOpenTk
             EDSMRegionsShadingEnable = defaults.GetSetting("ERse", false);
             EDSMRegionsTextEnable = defaults.GetSetting("ERte", false);
 
+
             EliteRegionsEnable = defaults.GetSetting("ELe", true);
             EliteRegionsOutlineEnable = defaults.GetSetting("ELoe", true);
             EliteRegionsShadingEnable = defaults.GetSetting("ELse", false);
             EliteRegionsTextEnable = defaults.GetSetting("ELte", true);
             gl3dcontroller.SetPositionCamera(defaults.GetSetting("POSCAMERA", ""));     // go thru gl3dcontroller to set default position, so we reset the model matrix
 
+            AutoScaleBookmarks =(int)defaults.GetSetting("AUTOSCALEBookmarks", 30L);
+            AutoScaleGMOs = (int)defaults.GetSetting("AUTOSCALEGMO", 30L);
+            AutoScaleGalaxyStars = (int)defaults.GetSetting("AUTOSCALEGS", 4L);
         }
 
         public void SaveState(MapSaver defaults)
@@ -665,6 +673,11 @@ namespace TestOpenTk
             defaults.PutSetting("ImagesEnable", UserImagesEnable);
             if (userimages!=null)
                 defaults.PutSetting("ImagesList", userimages.ImageStringList());
+
+            defaults.PutSetting("AUTOSCALEBookmarks", AutoScaleBookmarks);
+            defaults.PutSetting("AUTOSCALEGMO", AutoScaleGMOs);
+            defaults.PutSetting("AUTOSCALEGS", AutoScaleGalaxyStars);
+
         }
 
         public void LoadBitmaps()
@@ -905,6 +918,36 @@ namespace TestOpenTk
 
         public bool UserImagesEnable { get { return usertexturebitmaps?.Enable ?? false; } set { if (usertexturebitmaps != null) { usertexturebitmaps.Enable = value; glwfc.Invalidate(); } } }
 
+        public int AutoScaleGMOs
+        {
+            get { return autoscalegmo; }
+            set
+            {
+                autoscalegmo = value;
+                if (galmapobjects != null)
+                    galmapobjects.SetAutoScale(autoscalegmo);
+            }
+        }
+        public int AutoScaleBookmarks
+        {
+            get { return autoscalebookmarks; }
+            set
+            {
+                autoscalebookmarks = value;
+                if (bookmarks != null)
+                    bookmarks.SetAutoScale(autoscalebookmarks);
+            }
+        }
+        public int AutoScaleGalaxyStars
+        {
+            get { return autoscalegalstars; }
+            set
+            {
+                autoscalegalstars = value;
+                if (galaxystars != null)
+                    galaxystars.SetAutoScale(autoscalegalstars);
+            }
+        }
         public void GoToTravelSystem(int dir)      //0 = home, 1 = next, -1 = prev
         {
             var he = dir == 0 ? travelpath.CurrentSystem : (dir < 0 ? travelpath.PrevSystem() : travelpath.NextSystem());

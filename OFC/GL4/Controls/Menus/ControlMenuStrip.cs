@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -26,7 +26,9 @@ namespace GLOFC.GL4.Controls
     {
         #region Init
 
-        /// <summary> Callback when a top level menu is opening. Passes this and the caller opentag given in the Show function
+        /// <summary> Callback when a top level menu is opening. 
+        /// Passes this and the caller opentag given in the Show function
+        /// Called before the menu is attached to the parent. You can set size of the menu etc.
         /// You can set menu items visibility and enable state in the callback.
         /// </summary>
         public Action<GLMenuStrip,Object> Opening = null;         // Menu opening due to Show
@@ -61,7 +63,7 @@ namespace GLOFC.GL4.Controls
         /// <param name="enablethemer">If to theme </param>
         /// <param name="items">List of menu items</param>
         public GLMenuStrip(string name, Rectangle location, GLFlowLayoutPanel.ControlFlowDirection direction = ControlFlowDirection.Right, 
-                                bool enablethemer = true, params GLMenuItem[] items) : base(name, location)
+                                bool enablethemer = true, params GLBaseControl[] items) : base(name, location)
         {
             BackColorGradientAltNI = BackColorNI = DefaultMenuBackColor;
             BorderColorNI = DefaultMenuBorderColor;
@@ -100,6 +102,8 @@ namespace GLOFC.GL4.Controls
         /// Show to pop up a new context menu. Parent is normally displaycontrol.
         /// You can double call and the previous one is closed.
         /// It always makes sure right/bottom is within parent.
+        /// Opening is call backed just before being added to the parent. You can adjust size/items at this point
+        /// Position may shift afterwards to place on screen.
         /// </summary>
         /// <param name="parent">Parent of menu to attach to. Normally its the control display top level control</param>
         /// <param name="location">Location to place the menu at</param>
@@ -115,6 +119,7 @@ namespace GLOFC.GL4.Controls
             AutoSize = true;
             TopMost = true;
             KeepWithinParent = changewidthifrequired;
+            Opening?.Invoke(this, opentag);
             parent.Add(this);
             int overflowy = this.Bottom - parent.Bottom;
             if (overflowy > 0)
@@ -123,7 +128,6 @@ namespace GLOFC.GL4.Controls
             if (overflowx > 0)
                 Left -= overflowx;
             SetFocus();
-            Opening?.Invoke(this,opentag);
         }
 
         #endregion  
@@ -219,7 +223,7 @@ namespace GLOFC.GL4.Controls
                 if (pos < 0 || pos >= ControlsIZ.Count)     // out of range, can't move
                     return false;
 
-                if (ControlsIZ[pos].Enabled && ControlsIZ[pos].Visible)     // if on
+                if (ControlsIZ[pos].Enabled && ControlsIZ[pos].Visible && ((GLMenuItemBase)ControlsIZ[pos]).Selectable)     // if on
                 {
                     Select(pos, FlowDirection == ControlFlowDirection.Right);   // set focus on if left-right menu
                     return true;
@@ -314,25 +318,15 @@ namespace GLOFC.GL4.Controls
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.OnControlAdd(GLBaseControl, GLBaseControl)"/>
         protected override void OnControlAdd(GLBaseControl parent, GLBaseControl child)
         {
-            //System.Diagnostics.Debug.WriteLine("On control add {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
+            //System.Diagnostics.Debug.WriteLine("Menu strip On control add {0}:{1} {2}:{3}", parent.GetType().Name, parent.Name, child.GetType().Name, child.Name);
 
-            if (parent is GLMenuStrip)      // note we get called when the GLMenuStrip is added to the display, we don't want that call
+            if (parent is GLMenuStrip )                             // note we get called when the GLMenuStrip is added to the display, we don't want that call
             {
                 child.SuspendLayout();
 
-                var mi = child as GLMenuItem;
-                if (mi != null)                     // MenuItems get coloured and hooked
-                {
-                    mi.Click += MenuItemClicked;
-                    mi.MouseEnter += MenuItemEnter;
-                    mi.MouseLeave += MenuItemLeave;
+                var item = child as GLMenuItemBase;                    
 
-                    if (FlowDirection == ControlFlowDirection.Down)
-                    {
-                        mi.IconAreaEnable = true;
-                    }
-                }
-                else
+                if (item == null)       // another type of control.. lets set its flow offset
                 {
                     if (FlowDirection == ControlFlowDirection.Down)
                     {
@@ -340,6 +334,19 @@ namespace GLOFC.GL4.Controls
                     }
 
                     child.KeyDown += NonMIKeyDown;
+                }
+                else
+                {
+                    // a menu item. all Menu items implement this to allow for icon areas
+                    item.IconAreaEnable = FlowDirection == ControlFlowDirection.Down;     
+
+                    var mi = child as GLMenuItem;
+                    if (mi != null)                     // these gets hooked to our handlers007
+                    {
+                        mi.Click += MenuItemClicked;
+                        mi.MouseEnter += MenuItemEnter;
+                        mi.MouseLeave += MenuItemLeave;
+                    }
                 }
 
                 child.ResumeLayout();
@@ -567,13 +574,24 @@ namespace GLOFC.GL4.Controls
     }
 
     /// <summary>
+    /// All standard menu items inherit from this
+    /// </summary>
+    public interface GLMenuItemBase
+    {
+        /// <summary> Is selectable? </summary>
+        bool Selectable { get; set; }
+        /// <summary> To enable the icon area on left. Used for sub menu items</summary>
+        bool IconAreaEnable { get; set; }
+    }
+
+    /// <summary>
     /// Context Menu instance of GLMenuStrip
     /// Use Show() to make it visible and attach to parent.
     /// </summary>
     public class GLContextMenu : GLMenuStrip
     {
         /// <summary> Constructor with name and menu items </summary>
-        public GLContextMenu(string name, bool enablethemer = true, params GLMenuItem[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, enablethemer, items)
+        public GLContextMenu(string name, bool enablethemer = true, params GLBaseControl[] items) : base(name, DefaultWindowRectangle, ControlFlowDirection.Down, enablethemer, items)
         {
         }
     }

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -19,10 +19,8 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 
-
 namespace GLOFC.GL4.Controls
 {
-
     /// <summary>
     /// A single line text box control with autocomplete
     /// Set InErrorCondition if required, next text entry will clear text box.
@@ -54,9 +52,9 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and optional text </summary>
         public GLTextBoxAutoComplete(string name, Rectangle pos, string text = "", bool enablethemer = true) : base(name, pos, text, enablethemer)
         {
-            waitforautotimer.Tick += InitialDelayOver;
-            autocompleteinuitimer.Tick += AutoCompleteInUI;
-            triggercomplete.Tick += AutoCompleteFinished;
+            initialdelaytimer.Tick += InitialDelayOver;
+            autocompleteinuitimer.Tick += AutoCompleteInUI;             // this timer is just used to trigger a UI call via a Polledtimer
+            autocompletefinishedtimer.Tick += AutoCompleteFinished;     // this timer is just used to trigger the finished call via a Polledtimer
 
             ListBox = new GLListBox();
             ListBox.AutoSize = true;
@@ -107,8 +105,8 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("{0} AC cancelled", Environment.TickCount % 10000);
             // Sometimes, the user is quicker than the timer, and has commited to a selection before the results even come back.
-            waitforautotimer.Stop();
-            triggercomplete.Stop();
+            initialdelaytimer.Stop();
+            autocompletefinishedtimer.Stop();
             Remove(ListBox);
             this.SetFocus();
             if ( executingautocomplete )
@@ -127,8 +125,9 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
-        // override this instead of TextChanged event so we don't get double entry when list box changes
-        private protected override void TextChangedEvent()
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLMultiLineTextBox.TextChangedEvent()"/>
+        // override this instead of OnTextChanged event so we don't get double entry when list box changes
+        protected override void TextChangedEvent()
         {
             //System.Diagnostics.Debug.WriteLine("{0} AC text change event", Environment.TickCount % 10000);
 
@@ -140,7 +139,7 @@ namespace GLOFC.GL4.Controls
                 if (!executingautocomplete)     // if not executing, start a timeout
                 {
                     //System.Diagnostics.Debug.WriteLine("{0} AC Start timer", Environment.TickCount % 10000);
-                    waitforautotimer.Start(AutoCompleteInitialDelay);
+                    initialdelaytimer.Start(AutoCompleteInitialDelay);
                     autocompletestring = String.Copy(this.Text);    // a copy in case the text box changes it after complete starts
                 }
                 else
@@ -170,16 +169,17 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-
+        // triggered by initialdelaytimer, do an autocomplete
         private void InitialDelayOver(PolledTimer t, long tick)
         {
             WaitButton.Visible = waitbuttonon;
             executingautocomplete = true;
-            ThreadAutoComplete = new System.Threading.Thread(new System.Threading.ThreadStart(AutoComplete));
+            ThreadAutoComplete = new System.Threading.Thread(new System.Threading.ThreadStart(AutoCompleteThread));
             ThreadAutoComplete.Name = "AutoComplete";
             ThreadAutoComplete.Start();
         }
-        private void AutoComplete()     // in a thread..
+
+        private void AutoCompleteThread()     // in a thread..
         {
             do
             {
@@ -194,10 +194,10 @@ namespace GLOFC.GL4.Controls
                     PerformAutoCompleteInThread(string.Copy(autocompletestring), this, autocompletestrings);
                 }
 
-                if ( PerformAutoCompleteInUIThread != null )        // then see if the UI wants action
+                if ( restartautocomplete == false &&  PerformAutoCompleteInUIThread != null )        // then see if the UI wants action, don't do this is restart auto complete is set
                 {
                     //System.Diagnostics.Debug.WriteLine("AC Fire in ui");
-                    autocompleteinuitimer.FireNow();                // fire a UI thread timer off
+                    autocompleteinuitimer.FireNow();                // fire a UI thread timer off, which in polled, will call AutoCompleteInUI function
                     AutocompleteUIDone.WaitOne();                   // and stop thread until AutoCompleteInUI done
                     //System.Diagnostics.Debug.WriteLine("AC Fire in ui done");
                 }
@@ -205,7 +205,7 @@ namespace GLOFC.GL4.Controls
                 //System.Diagnostics.Debug.WriteLine("{0} AC finish func ret {1} restart {2}", Environment.TickCount % 10000, autocompletestrings?.Count, restartautocomplete);
             } while (restartautocomplete == true);
 
-            triggercomplete.FireNow();  // fire it immediately.  Next timer call around will trigger in correct thread.  This is thread safe.
+            autocompletefinishedtimer.FireNow();                    // fire it immediately.  Next timer call around will trigger in correct thread.  This is thread safe.
         }
 
         private void AutoCompleteInUI(PolledTimer t, long tick)      // in UI thread, fired by autocompleteinui timer
@@ -299,10 +299,10 @@ namespace GLOFC.GL4.Controls
             }
         }
 
-        private PolledTimer waitforautotimer = new PolledTimer();
+        private PolledTimer initialdelaytimer = new PolledTimer();
         private PolledTimer autocompleteinuitimer = new PolledTimer();
         private AutoResetEvent AutocompleteUIDone = new AutoResetEvent(false);
-        private PolledTimer triggercomplete = new PolledTimer();
+        private PolledTimer autocompletefinishedtimer = new PolledTimer();
         private string autocompletestring;
         private bool executingautocomplete = false;
         private bool ignoreautocomplete = false;

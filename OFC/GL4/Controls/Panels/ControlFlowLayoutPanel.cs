@@ -101,8 +101,7 @@ namespace GLOFC.GL4.Controls
                     SetNI(clientsize: new Size(flowsize.Width , ClientHeight));
                 }
 
-               // System.Diagnostics.Debug.WriteLine($"Flow panel {Name} size now {Size}");
-                //foreach (var cc in ControlsIZ) System.Diagnostics.Debug.WriteLine($"  children size {cc.Size}");
+               // System.Diagnostics.Debug.WriteLine($"Flow panel {Name} size now {Size}"); foreach (var cc in ControlsIZ) System.Diagnostics.Debug.WriteLine($"  children size {cc.Name} {cc.Size}");
             }
         }
 
@@ -111,10 +110,13 @@ namespace GLOFC.GL4.Controls
         {
             //System.Diagnostics.Debug.WriteLine("Flow Laying out " + Name + " In client size " + ClientSize);
 
+            Rectangle area = ClientRectangle;
+
             Flow(ClientSize, true, (c, p) => 
             {
               //  System.Diagnostics.Debug.WriteLine(".. set pos Control " + c.Name + " to " + p + c.Size);
-                c.SetNI(location:p);
+                c.SetNI(location:p);        
+                c.Layout(ref area);         // replicate  PerformRecursiveLayout in control implementation - this call missing oct 23
                 c.CallPerformRecursiveLayout();
               //  System.Diagnostics.Debug.WriteLine(".... " + c.Size);
             });

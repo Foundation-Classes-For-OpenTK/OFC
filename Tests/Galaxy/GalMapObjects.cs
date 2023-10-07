@@ -61,6 +61,11 @@ namespace TestOpenTk
             return s;
         }
 
+        public void SetAutoScale(int max)
+        {
+            objectshader.GetShader<GLPLVertexScaleLookatConfigurable>().SetScalars(30, 1, max);
+        }
+
         public static Dictionary<GalMapType.VisibleObjectsType, Image> GalMapTypeIcons { get; } = new Dictionary<GalMapType.VisibleObjectsType, Image>
         {
             { GalMapType.VisibleObjectsType.historicalLocation, Properties.Resources.historicalLocation},
@@ -108,14 +113,14 @@ namespace TestOpenTk
 
             const int texbindingpoint = 1;
             var vert = new GLPLVertexScaleLookatConfigurable(rotatetoviewer: dorotate, rotateelevation: doelevation,        // a look at vertex shader
-                                                        useeyedistance:false); 
+                                                        useeyedistance:true); 
             var tcs = new GLPLTesselationControl(10f);
             tes = new GLPLTesselationEvaluateSinewave(wavesize, 1f);         // this uses the world position from the vertex scaler to position the image, w controls image + animation (b16)
             var frag = new GLPLFragmentShaderTexture2DDiscard(texbindingpoint);       // binding - takes image pos from tes. imagepos < 0 means discard
             objectshader = new GLShaderPipeline(vert, tcs, tes, null, frag);
             items.Add(objectshader);
 
-            vert.SetScalars(30, 1, 30);
+            SetAutoScale(300);
 
             objectshader.StartAction += (s, m) =>
             {

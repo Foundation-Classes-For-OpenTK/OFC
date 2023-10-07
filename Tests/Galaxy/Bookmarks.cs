@@ -30,21 +30,29 @@ namespace EliteDangerousCore.EDSM
 {
     public class Bookmarks
     {
+        public void SetAutoScale(int max)
+        {
+            objectshader.GetShader<GLPLVertexScaleLookatConfigurable>().SetScalars(30, 1, max);
+        }
+
+        List<SystemClass> bookmarks;
+
         public void Create(GLItemsList items, GLRenderProgramSortedList rObjects, List<SystemClass> incomingsys, float bookmarksize, GLStorageBlock findbufferresults, bool depthtest)
         {
             if (ridisplay == null)
             {
-                var vert = new GLPLVertexScaleLookat(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
-                                                                autoscale: 30, autoscalemin: 1f, autoscalemax: 30f); 
-
+                var vert = new GLPLVertexScaleLookatConfigurable(rotatetoviewer: dorotate, rotateelevation: doelevation, texcoords: true, generateworldpos:true,
+                                                                 useeyedistance:true);
 
                 const int texbindingpoint = 1;
-                var frag = new GLPLFragmentShaderTexture(texbindingpoint);       // binding - simple texturer based on vs model coords
+                var frag = new GLPLFragmentShaderTexture(texbindingpoint, true);       // binding - simple texturer based on vs model coords
 
                 objectshader = new GLShaderPipeline(vert, null, null, null, frag);
                 items.Add(objectshader);
 
-                var objtex = items.NewTexture2D("Bookmarktex", TestOpenTk.Properties.Resources.dotted2, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
+                SetAutoScale(300);
+
+                var objtex = items.NewTexture2D("Bookmarktex", TestOpenTk.Properties.Resources.Bookmark, OpenTK.Graphics.OpenGL4.SizedInternalFormat.Rgba8);
 
                 objectshader.StartAction += (s, m) =>
                 {
@@ -77,6 +85,7 @@ namespace EliteDangerousCore.EDSM
 
             }
 
+            bookmarks = incomingsys;
             bookmarkposbuf.AllocateFill(incomingsys.Select(x => new Vector4((float)x.X, (float)x.Y, (float)x.Z, 1)).ToArray());
             ridisplay.InstanceCount = rifind.InstanceCount = incomingsys.Count;
         }
@@ -98,7 +107,7 @@ namespace EliteDangerousCore.EDSM
             {
                 for (int i = 0; i < res.Length; i++) System.Diagnostics.Debug.WriteLine($"bk {i} {res[i]}");
                 z = res[0].Z;
-                return null;
+                return bookmarks[(int)res[0].Y];
             }
 
             return null;
@@ -116,3 +125,4 @@ namespace EliteDangerousCore.EDSM
     }
 }
 
+;

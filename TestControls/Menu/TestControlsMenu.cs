@@ -217,7 +217,6 @@ namespace TestOpenTk
                         System.Diagnostics.Debug.WriteLine("Click on menu-1");
                     };
 
-
                     GLMenuItem cm2 = new GLMenuItem("CM1B", "Menu-2");
                     cm2.CheckOnClick = true;
                     GLMenuItem cm3 = new GLMenuItem("CM1C", "Menu-3");
@@ -242,8 +241,10 @@ namespace TestOpenTk
                     ctx1.Add(cm3);
 
                     Color tc = Color.Orange;
-                    ctx2 = new GLContextMenu("CM1", true, new GLMenuItem[] {
-                        new GLMenuItem("CM1A","MenuR1") { CheckOnClick = true, ForeColor = tc},
+                    ctx2 = new GLContextMenu("CMTX2", true, new GLBaseControl[] {
+                        new GLMenuItemLabel("CMTX2L1","Menu Title CTX2"),
+                        new GLMenuItemSeparator("S1",10,5,ContentAlignment.MiddleCenter, forecolor:Color.Red),
+                        new GLMenuItem("CM1A","Menu Fred") { CheckOnClick = true, ForeColor = tc},
                         new GLMenuItem("CM1B","MenuR2") { CheckOnClick = true, Enabled = false, ForeColor = tc},
                         new GLMenuItem("CM1C","MenuR3") { CheckOnClick = true},
                         new GLMenuItem("CM1C","MenuR4") { CheckOnClick = true },
@@ -251,6 +252,19 @@ namespace TestOpenTk
                         });
 
                     ctx2.Font = new Font("Euro caps", 18f);
+
+                    string[] titles = new string[] { "xxxxx one", "xxxxx one and two", "three", "four" };
+                    int tno = 0;
+
+                    ctx2.Opening += (c,s) => {
+                        ctx2.Size = new Size(10, 10);
+                        var ctrl = ctx2["CMTX2L1"];
+                        var text = titles[tno++ % titles.Length];
+                        System.Diagnostics.Debug.WriteLine($"Text is {text}");
+                        ((GLMenuItemLabel)ctrl).Text = text;
+                   
+                    };
+
 
                     displaycontrol.MouseClick += (s, ev) =>
                     {

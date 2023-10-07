@@ -33,6 +33,11 @@ namespace TestOpenTk
         private const int SectorSize = 100;
         private const int MaxRequestedSectors = 10;
 
+        public void SetAutoScale(int max)
+        {
+            sunshader.GetShader<GLPLVertexShaderModelWorldTextureAutoScaleConfigurable>().SetScalars(30, 1F, max);
+        }
+
         public GalaxyStars(GLItemsList items, GLRenderProgramSortedList rObjects, Tuple<GLTexture2DArray, long[]> starimagearrayp, float sunsize, GLStorageBlock findbufferresults)
         {
             // globe shape
@@ -52,10 +57,12 @@ namespace TestOpenTk
             starimagearray = starimagearrayp;
 
             // the sun shader
-            sunvertexshader = new GLPLVertexShaderModelWorldTextureAutoScale(autoscale: 50, autoscalemin: 1f, autoscalemax: 50f, useeyedistance: false);
+            sunvertexshader = new GLPLVertexShaderModelWorldTextureAutoScaleConfigurable(useeyedistance: true);
             var sunfragmenttexture = new GLPLFragmentShaderTexture2DWSelectorSunspot();
             sunshader = new GLShaderPipeline(sunvertexshader, sunfragmenttexture);
             items.Add(sunshader);
+
+            SetAutoScale(300);
 
             GLRenderDataTexture rdt = new GLRenderDataTexture(starimagearray.Item1);  // RDI is used to attach the texture
 
@@ -284,7 +291,7 @@ namespace TestOpenTk
         private GLSetOfObjectsWithLabels slset; // main class holding drawing
 
         private GLShaderPipeline sunshader;     // sun drawer
-        private GLPLVertexShaderModelWorldTextureAutoScale sunvertexshader;
+        private GLPLVertexShaderModelWorldTextureAutoScaleConfigurable sunvertexshader;
         private GLBuffer starshapebuf;
         private GLBuffer startexcoordbuf;
         private Tuple<GLTexture2DArray, long[]> starimagearray;

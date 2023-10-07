@@ -67,6 +67,7 @@ namespace GLOFC.GL4.Shaders.Vertex
         /// <param name="autoscalemax">Maximum to scale to</param>
         public void SetScalars(float autoscale, float autoscalemin, float autoscalemax)
         {
+            //System.Diagnostics.Debug.WriteLine($"Shader vertex scale look at scaling {autoscale} {autoscalemin} {autoscalemax}");
             GL.ProgramUniform1(Id, 10, autoscale);
             GL.ProgramUniform1(Id, 11, autoscalemin);
             GL.ProgramUniform1(Id, 12, autoscalemax);

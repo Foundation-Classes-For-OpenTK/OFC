@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -109,7 +109,8 @@ namespace GLOFC.GL4.Controls
         private protected GLNumberBox<T> othernumberbox { get; set; } = null;             // attach to another box for validation
         private protected int othercomparision { get; set; } = 0;              // aka -2 (<=) -1(<) 0 (=) 1 (>) 2 (>=)
 
-        private protected override void TextChangedEvent()
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLMultiLineTextBox.TextChangedEvent()"/>
+        protected override void TextChangedEvent()
         {
             if (ConvertFromString(Text, out T newvalue))
             {
@@ -133,12 +134,20 @@ namespace GLOFC.GL4.Controls
             base.TextChangedEvent();
         }
 
-        private void OnValueChanged()
+        /// <summary>
+        /// Override this to see the value changed event. Default is to invoke ValueChanved
+        /// </summary>
+        protected virtual void OnValueChanged()
         {
             ValueChanged?.Invoke(this);
         }
 
-        private void OnValidityChanged(bool valid)
+        /// <summary>
+        /// Override this to see the validity changed event. Default is to invoke ValidityChanged
+        /// </summary>
+        /// <param name="valid"></param>
+
+        protected virtual void OnValidityChanged(bool valid)
         {
             ValidityChanged?.Invoke(this,valid);
         }

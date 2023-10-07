@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright 2019-2021 Robbyxp1 @ github.com
+ * Copyright 2019-2023 Robbyxp1 @ github.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
  * file except in compliance with the License. You may obtain a copy of the License at
@@ -20,9 +20,9 @@ using System.Linq;
 namespace GLOFC.GL4.Controls
 {
     /// <summary>
-    /// Menu item for Menu strip control
+    /// Check box menu item for Menu strip control
     /// </summary>
-    public class GLMenuItem : GLCheckBoxBase        // its a mash up of a button and a check box
+    public class GLMenuItem : GLCheckBoxBase, GLMenuItemBase        // its a mash up of a button and a check box
     {
         /// <summary> Constructor with name and optional text </summary>
         public GLMenuItem(string name, string text = "", bool enablethemer = true) : base(name, new Rectangle(0, 0, 0, 0))        // these are autosized
@@ -42,6 +42,9 @@ namespace GLOFC.GL4.Controls
         public GLMenuItem() : this("MI", "")
         {
         }
+
+        /// <summary> Can be selected </summary>
+        public bool Selectable { get; set; } = true;
 
         /// <summary> To enable the icon area on left. Used for sub menu items</summary>
         public bool IconAreaEnable { get; set; } = false;
