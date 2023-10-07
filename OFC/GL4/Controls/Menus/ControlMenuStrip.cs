@@ -124,9 +124,13 @@ namespace GLOFC.GL4.Controls
             int overflowy = this.Bottom - parent.Bottom;
             if (overflowy > 0)
                 Top -= overflowy;
+            if (Top < 0)
+                Top = 0;
             int overflowx = this.Right - parent.Right;
             if (overflowx > 0)
                 Left -= overflowx;
+            if (Left < 0)
+                Left = 0;
             SetFocus();
         }
 
