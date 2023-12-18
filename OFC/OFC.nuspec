@@ -9,10 +9,25 @@
     <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
-    <releaseNotes>Release 1.0.3 features:
+    <releaseNotes>
+    Release 1.1.0 features:
+    ControlNumberBox improvements to globalization
+    WinFormControl makes renderstate at start so its always non null - prevents errors if click is before first paint
+    Platform check better for x11 linux, does not use windows call for cursor position
+    New shaders for sunsurfaces with bitmaps with associated test harness updates
+    Crop images helpers
+    Fix position saving string by using invariant culture in positioncamera
+    New RenderableItem creater Vector4Vector2Vector4 with buffers
+    New GLBindlessTextureBitmaps
+    Added Modal Control Forms
+    MultiLine textbox supports passing area.
+    Menu labels/Seperators added
+
+    Release 1.0.3 features:
     Fixes for AMD cards for searching for objects
     Fixes for Calendar Control
     Fixes for NVidia drivers
+
     Release 1.0.0:
     Support for indicating GL version required.
     All examples reworked for 4.6 only - removal of QUADs etc.

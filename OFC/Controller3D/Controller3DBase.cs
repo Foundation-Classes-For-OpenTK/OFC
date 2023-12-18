@@ -110,7 +110,7 @@ namespace GLOFC.Controller
             {
                 var delta = MouseMovedSq(e);
 
-                System.Diagnostics.Debug.WriteLine($"Mouse Move delta {delta}");
+                //System.Diagnostics.Debug.WriteLine($"Mouse Move delta {delta}");
 
                 if (delta >= 4)
                 {

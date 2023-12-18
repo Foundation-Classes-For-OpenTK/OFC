@@ -116,10 +116,10 @@ namespace GLOFC.GL4.Controls
             {
                 number = newvalue;
 
-                OnValueChanged();
-
                 if (InErrorCondition)
                     OnValidityChanged(true);
+
+                OnValueChanged();
 
                 InErrorCondition = false;
             }
@@ -176,6 +176,36 @@ namespace GLOFC.GL4.Controls
             base.OnFocusChanged(evt, fromto);
         }
 
+        /// <summary>
+        /// Check character helper for overloaded classes, checks char against NumberFormat/MunberStyles
+        /// </summary>
+        /// <param name="character">character</param>
+        /// <param name="allowneg">Allow negative values</param>
+        /// <returns>True if okay to process</returns>
+        protected bool CheckChar(char character, bool allowneg)
+        {
+            char numgroup = FormatCulture.NumberFormat.CurrencyGroupSeparator[0];
+            if (numgroup == '\u00a0')       // fix non breaking space
+                numgroup = ' ';
+
+           // System.Diagnostics.Debug.WriteLine($"Char {c} allowneg {allowneg} {NumberStyles}");
+
+            return char.IsDigit(character) || character == 8 ||
+
+              (character == FormatCulture.NumberFormat.CurrencyDecimalSeparator[0] && Text.IndexOf(FormatCulture.NumberFormat.CurrencyDecimalSeparator, StringComparison.Ordinal) == -1 &&
+                                  (NumberStyles & System.Globalization.NumberStyles.AllowDecimalPoint) != 0) ||
+
+              (character == FormatCulture.NumberFormat.NegativeSign[0] && (SelectionStart == 0 || (SelectionStart == 1 && Text.Length > 0 && Text[0] == FormatCulture.NumberFormat.CurrencySymbol[0]))
+                          && allowneg && (NumberStyles & System.Globalization.NumberStyles.AllowLeadingSign) != 0) ||
+
+              (character == numgroup && (NumberStyles & System.Globalization.NumberStyles.AllowThousands) != 0) ||
+
+              (character == FormatCulture.NumberFormat.CurrencySymbol[0] && SelectionStart == 0 && (NumberStyles & System.Globalization.NumberStyles.AllowCurrencySymbol) != 0) ||
+
+              ((character == 'E' || character == 'e') && (NumberStyles & System.Globalization.NumberStyles.AllowExponent) != 0);
+        }
+
+
         #endregion
     }
 
@@ -187,7 +217,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxFloat(string name, Rectangle pos, float value) : base(name, pos)
         {
-            NumberStyles = System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands;
+            NumberStyles = System.Globalization.NumberStyles.AllowLeadingSign | System.Globalization.NumberStyles.AllowDecimalPoint | System.Globalization.NumberStyles.AllowThousands;
             Minimum = float.MinValue;
             Maximum = float.MaxValue;
             Value = value;
@@ -223,10 +253,7 @@ namespace GLOFC.GL4.Controls
 
         private protected override bool AllowedChar(char c)
         {
-          return (char.IsDigit(c) || c == 8 ||
-                    (c == FormatCulture.NumberFormat.CurrencyDecimalSeparator[0] && Text.IndexOf(FormatCulture.NumberFormat.CurrencyDecimalSeparator, StringComparison.Ordinal) == -1) ||
-                    (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0)) ||
-                    (c == FormatCulture.NumberFormat.NumberGroupSeparator[0] && (NumberStyles & System.Globalization.NumberStyles.AllowThousands) != 0);
+            return CheckChar(c, Minimum < 0);
         }
     }
 
@@ -238,7 +265,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxDouble(string name, Rectangle pos, double value) : base(name, pos)
         {
-            NumberStyles = System.Globalization.NumberStyles.Float | System.Globalization.NumberStyles.AllowThousands;
+            NumberStyles = System.Globalization.NumberStyles.AllowLeadingSign | System.Globalization.NumberStyles.AllowDecimalPoint | System.Globalization.NumberStyles.AllowThousands;
             Minimum = double.MinValue;
             Maximum = double.MaxValue;
             Value = value;
@@ -273,10 +300,7 @@ namespace GLOFC.GL4.Controls
 
         private protected override bool AllowedChar(char c)
         {
-            return (char.IsDigit(c) || c == 8 ||
-                (c == FormatCulture.NumberFormat.CurrencyDecimalSeparator[0] && Text.IndexOf(FormatCulture.NumberFormat.CurrencyDecimalSeparator) == -1) ||
-                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0)) ||
-                (c == FormatCulture.NumberFormat.NumberGroupSeparator[0] && (NumberStyles & System.Globalization.NumberStyles.AllowThousands) != 0);
+            return CheckChar(c, Minimum < 0);
         }
     }
 
@@ -288,7 +312,7 @@ namespace GLOFC.GL4.Controls
         /// <summary> Constructor with name, bounds and initial value </summary>
         public GLNumberBoxLong(string name, Rectangle pos, long value) : base(name, pos)
         {
-            NumberStyles = System.Globalization.NumberStyles.AllowThousands;
+            NumberStyles = System.Globalization.NumberStyles.AllowThousands | System.Globalization.NumberStyles.AllowLeadingSign;
             Minimum = long.MinValue;
             Maximum = long.MaxValue;
             Value = value;
@@ -321,12 +345,9 @@ namespace GLOFC.GL4.Controls
                 ok = number.CompareTo(othernumberbox.Value, othercomparision);
             return ok;
         }
-
         private protected override bool AllowedChar(char c)
         {
-            return (char.IsDigit(c) || c == 8 ||
-                (c == FormatCulture.NumberFormat.NegativeSign[0] && SelectionStart == 0 && Minimum < 0) ||
-                (c == FormatCulture.NumberFormat.NumberGroupSeparator[0]));
+            return CheckChar(c, Minimum < 0);
         }
     }
 

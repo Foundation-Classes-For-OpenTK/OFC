@@ -89,6 +89,12 @@
     <Compile Include="TextBox\TestControlsAutoComplete.designer.cs">
       <DependentUpon>TestControlsAutoComplete.cs</DependentUpon>
     </Compile>
+    <Compile Include="TextBox\TestControlsNumberBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TextBox\TestControlsNumberBox.designer.cs">
+      <DependentUpon>TestControlsNumberBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="TextBox\TestControlsTextBox2.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,6 +140,9 @@
     </Compile>
     <EmbeddedResource Include="TextBox\TestControlsAutoComplete.resx">
       <DependentUpon>TestControlsAutoComplete.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBox\TestControlsNumberBox.resx">
+      <DependentUpon>TestControlsNumberBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TextBox\TestControlsTextBox2.resx">
       <DependentUpon>TestControlsTextBox2.cs</DependentUpon>

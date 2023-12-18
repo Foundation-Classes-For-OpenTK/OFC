@@ -139,7 +139,6 @@ namespace GLOFC.WinForm
             if (mode == null)
                 mode = OpenTK.Graphics.GraphicsMode.Default;
 
-
             glControl = new GLControlKeyOverride(mode, major, minor,flags);
 
             glControl.MakeCurrent();        // make sure GLControl is current context selected, in case operating with multiples
@@ -185,6 +184,10 @@ namespace GLOFC.WinForm
             System.Diagnostics.Trace.WriteLine($"tex layers {GL4.GL4Statics.GetMaxTextureDepth()} ");
             System.Diagnostics.Trace.WriteLine($"Vertex attribs {GL4.GL4Statics.GetMaxVertexAttribs()} ");
             System.Diagnostics.Trace.WriteLine($"Shader storage buffer bindings {GL4.GL4Statics.GetShaderStorageMaxBindingNumber()} ");
+
+            // change to make renderstate here, so its ready immediately, not just until paint
+            RenderState = GL4.GLRenderState.Start(Profile);
+            System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr2), glasserterr2);
 
             gltime.Start();
         }
@@ -352,12 +355,6 @@ namespace GLOFC.WinForm
                 glControl.MakeCurrent();            // only needed if running multiple GLs windows in same thread
 
             System.Diagnostics.Debug.Assert(IsContextCurrent());
-
-            if (RenderState == null)
-            {
-                RenderState = GL4.GLRenderState.Start(Profile);
-                System.Diagnostics.Debug.Assert(GLOFC.GLStatics.CheckGL(out string glasserterr), glasserterr);
-            }
 
             // set up initial conditions
 
