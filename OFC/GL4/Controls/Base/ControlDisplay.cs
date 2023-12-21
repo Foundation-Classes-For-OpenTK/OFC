@@ -299,7 +299,7 @@ namespace GLOFC.GL4.Controls
         {
             Add(form, false);
             modalforms.Add(form);
-            System.Diagnostics.Debug.WriteLine($"Add modal form");
+            //System.Diagnostics.Debug.WriteLine($"Add modal form");
         }
 
         /// <summary>
@@ -316,17 +316,21 @@ namespace GLOFC.GL4.Controls
                     if (modalforms.Count > 1 && form.IsThisOrChildrenFocused())        // if it has the focus
                     {
                         var focusform = modalforms[modalforms.Count - 2];
-                        System.Diagnostics.Debug.WriteLine($"Modal form {form.Name} has a focus, pass back to {focusform.Name}");
+                        //System.Diagnostics.Debug.WriteLine($"Modal form {form.Name} has a focus, pass back to {focusform.Name}");
                         focusform.SetFocus();
                     }
 
                     modalforms.RemoveAt(modalforms.Count - 1);
                 }
                 else
+                {
                     System.Diagnostics.Debug.WriteLine($"Tried to remove modal form {form.Name} but not at end - coding error");
+                }
             }
             else
-                System.Diagnostics.Debug.WriteLine($"No modal forms active");
+            {
+                //System.Diagnostics.Debug.WriteLine($"No modal forms active");
+            }
         }
 
         /// <summary>

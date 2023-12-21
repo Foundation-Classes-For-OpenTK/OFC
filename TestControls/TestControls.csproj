@@ -57,6 +57,12 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Basic\TestControlsBasic.designer.cs" />
+    <Compile Include="ComboBox\TestControlsComboBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ComboBox\TestControlsComboBox.designer.cs">
+      <DependentUpon>TestControlsComboBox.cs</DependentUpon>
+    </Compile>
     <Compile Include="DGV\TestControlsDGV.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -115,6 +121,9 @@
     </Compile>
     <EmbeddedResource Include="Basic\TestControlsBasic.resx">
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ComboBox\TestControlsComboBox.resx">
+      <DependentUpon>TestControlsComboBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DGV\TestControlsDGV.resx">
       <DependentUpon>TestControlsDGV.cs</DependentUpon>
@@ -195,5 +204,6 @@
   <ItemGroup>
     <None Include="Resources\Logo8bpp.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

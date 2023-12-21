@@ -329,10 +329,13 @@ namespace GLOFC.GL4.Controls
 
         private void CalcLineHeight()
         {
-            // so MS sand serif at 8.25 or 12 if you just rely on Font.Height cuts the bottom off. So use a bit of text to find the mininum. Seems ok with Arial/MS Sans Serif
-            var area = BitMapHelpers.MeasureStringInBitmap("AAjjqqyyy", Font);
-            lineheight = Math.Max(Font.Height + 1, (int)(area.Height + 0.4999));
-            //System.Diagnostics.Debug.WriteLine($"Calc Line height {area} {Font.Height} {Font.ToString()} = {LineHeight}");
+            if (!forcedlineheight)
+            {
+                // so MS sand serif at 8.25 or 12 if you just rely on Font.Height cuts the bottom off. So use a bit of text to find the mininum. Seems ok with Arial/MS Sans Serif
+                var area = BitMapHelpers.MeasureStringInBitmap("AAjjqqyyy", Font);
+                lineheight = Math.Max(Font.Height + 1, (int)(area.Height + 0.4999));
+                //System.Diagnostics.Debug.WriteLine($"Calc Line height {area} {Font.Height} {Font.ToString()} = {LineHeight}");
+            }
         }
 
         private int CurrentDisplayableLines { get 
@@ -473,7 +476,7 @@ namespace GLOFC.GL4.Controls
                 }
                 else
                 {
-                    //System.Diagnostics.Debug.WriteLine("Background " + Name + " " + bounds + " " + backcolor);
+                    //System.Diagnostics.Debug.WriteLine($"Background {Name} {Bounds} {ClientRectangle} {usablearea} {TextMargin} {ExtraPadding}");
                     using (Brush b = new SolidBrush(textAreabackcolor))     // always fill, so we get back to start
                         gr.FillRectangle(b, usablearea);
                 }
@@ -883,6 +886,7 @@ namespace GLOFC.GL4.Controls
         private bool inerror = false;
 
         private int lineheight;
+        private bool forcedlineheight = false;
 
         private int scrollbarwidth = 20;
 

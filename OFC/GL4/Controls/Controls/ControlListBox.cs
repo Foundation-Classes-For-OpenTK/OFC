@@ -108,6 +108,7 @@ namespace GLOFC.GL4.Controls
             scrollbar.Visible = false;
             scrollbar.Scroll += (s, e) => { if (firstindex != e.NewValue) { firstindex = e.NewValue; Invalidate(); } };
             scrollbar.EnableThemer = false;
+            scrollbar.RejectFocus = true;       // we don't want clicks to move focus from list box
             Add(scrollbar);
         }
 
@@ -200,8 +201,6 @@ namespace GLOFC.GL4.Controls
             if (scrollbar != null)  
                 scrollbar.Width = ScrollBarWidth;       // set width 
 
-            base.PerformRecursiveLayout();              // layout, scroll bar autodocks right
-
             if (Font != null)
             {
                 int items = (Items != null) ? Items.Count() : 0;
@@ -226,6 +225,10 @@ namespace GLOFC.GL4.Controls
                 else
                     scrollbar.Visible = false;
             }
+
+            //System.Diagnostics.Debug.WriteLine($"ListBox PRL {Size} {scrollbar.Size} {scrollbar.Visible}");
+            base.PerformRecursiveLayout();              // layout, scroll bar autodocks right. Need to do this after visibility is established (19/12/23)
+            //System.Diagnostics.Debug.WriteLine($"..ListBox PRL {Size} {scrollbar.Size}");
         }
 
         /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.Paint"/>

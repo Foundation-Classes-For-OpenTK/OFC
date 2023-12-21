@@ -163,15 +163,19 @@ namespace GLOFC.GL4.Controls
         protected void Gc_MouseMove(GLWindowControl sender, GLMouseEventArgs e)
         {
             SetViewScreenCoord(ref e);
-            //System.Diagnostics.Debug.WriteLine("WLoc {0} VP {1} SLoc {2} MousePos {3}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, FindDisplay().MouseWindowPosition);
+            //System.Diagnostics.Debug.WriteLine("Move WLoc {0} VP {1} SLoc {2} MousePos {3}", e.WindowLocation, e.ViewportLocation, e.ScreenCoord, FindDisplay().MouseWindowPosition);
 
             GLBaseControl controlover = FindControlOver(e.ScreenCoord, out Point leftover); // overcontrol ,or over display, or maybe outside display (null)
 
             // if we have modal forms active, and its not a it or a child of the active form, its like mousing over nothing
-            if (controlover != null && modalforms.Count > 0 && !modalforms.Last().IsThisOrChildOf(controlover))
+            if (controlover != null && modalforms.Count > 0)
             {
-                //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} pname `{controlover.Parent?.Name}` oname `{controlover.Owner?.Name}` due to modal");
-                controlover = dummyblockingcontrol;
+                //System.Diagnostics.Debug.WriteLine($"Checking modal {modalforms.Last().Name}");
+                if (!modalforms.Last().IsThisOrChildOf(controlover))
+                {
+                    //System.Diagnostics.Debug.WriteLine($"Cancel control over {controlover.Name} pname `{controlover.Parent?.Name}` oname `{controlover.Owner?.Name}` due to modal");
+                    controlover = dummyblockingcontrol;
+                }
             }
 
             if (controlover != currentmouseover)      // if different, either going active or inactive

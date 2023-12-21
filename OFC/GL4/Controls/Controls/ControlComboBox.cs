@@ -112,7 +112,7 @@ namespace GLOFC.GL4.Controls
         protected override void OnControlRemove(GLBaseControl parent, GLBaseControl child)
         {
             if (child == this && InDropDown)        // if its dropped, it need removing
-                Remove(dropdownbox);
+                Detach(dropdownbox);
             base.OnControlRemove(parent, child);
         }
 
@@ -296,7 +296,7 @@ namespace GLOFC.GL4.Controls
         {
             if (InDropDown)
             {
-                Remove(dropdownbox);
+                Detach(dropdownbox);
                 dropdownbox.Visible = false;
                 SetFocus();
                 Invalidate();

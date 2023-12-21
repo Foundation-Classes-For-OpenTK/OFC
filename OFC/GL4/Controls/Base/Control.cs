@@ -333,23 +333,41 @@ namespace GLOFC.GL4.Controls
         /// <summary>For debug purposes, Hook to show which controls were not themed on add </summary>
         public static Action<GLBaseControl> NoThemer = null;
 
-        /// <summary> Return if this control is us or a child of us, or if the child is owned by us</summary>
+        /// <summary> Return if this control is us or a child of us.
+        /// or if the control is owned by us or one of its parents is owned by us</summary>
         public virtual bool IsThisOrChildOf(GLBaseControl ctrl)         
         {
             //System.Diagnostics.Debug.WriteLine($"Checking {this.Name} For ownership");
 
-            if (ctrl == this)
+            if (ctrl == this)       // if control is this node, its okay
             {
-                //System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is a child of tree");
-                return true;
-            }
-            else if ( ctrl.Owner == this)
-            {
-                //System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is directly owned by {this.Name}");
+              //  System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is child");
                 return true;
             }
 
-            foreach ( var c in childrenz)
+            if (ctrl.Owner == this) // owner is a child of the tree, its okay
+            {
+              //  System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is directly owned by {this.Name}");
+                return true;
+            }
+
+            // if we have parents, see if any of them are attached to us via Owner. We need to go up the tree (ie. scrollbar->listbox->owner->us)
+
+            if (ctrl.Parent != null)       
+            {
+                var node = ctrl.Parent;
+                while (node != null)
+                {
+                    if (node.Owner == this)
+                    {
+                       // System.Diagnostics.Debug.WriteLine($"Ctrl {ctrl.Name} is directly owned by {this.Name}");
+                        return true;
+                    }
+                    node = node.Parent;
+                }
+            }
+
+            foreach (var c in childrenz)        // down down tree and see if children have a relationship with ctrl
             {
                 if (c.IsThisOrChildOf(ctrl))
                 {

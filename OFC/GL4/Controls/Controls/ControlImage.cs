@@ -25,8 +25,10 @@ namespace GLOFC.GL4.Controls
     {
         /// <summary> Image to display.</summary>
         public Image Image { get { return image; } set { image = value; Invalidate(); } }
-        /// <summary> If to stretch the image to the control size </summary>
+        /// <summary> If to stretch the image to the control size or the ImageFixedSize, or keep at its native size </summary>
         public bool ImageStretch { get { return imagestretch; } set { imagestretch = value; Invalidate(); } }
+        /// <summary> Stretch image to this size, if set, or set to Empty (default) to use the control area size</summary>
+        public Size ImageFixedSize { get { return imagestretchsize; } set { imagestretchsize = value; Invalidate(); } }
         /// <summary> Image align within control </summary>
         public System.Drawing.ContentAlignment ImageAlign { get { return imagealign; } set { imagealign = value; Invalidate(); } }
 
@@ -60,6 +62,8 @@ namespace GLOFC.GL4.Controls
 
         private Image image;
         private bool imagestretch = false;
+        private Size imagestretchsize = Size.Empty;
+
         private System.Drawing.ContentAlignment imagealign = ContentAlignment.MiddleCenter;
         private float backDisabledScaling = 0.75F;
         private float foreDisabledScaling = 0.50F;
@@ -71,7 +75,7 @@ namespace GLOFC.GL4.Controls
         {
             if (image != null)
             {
-                Size isize = ImageStretch ? box.Size : image.Size;
+                Size isize = ImageStretch ? (ImageFixedSize != Size.Empty ? ImageFixedSize: box.Size) : image.Size;
                 Rectangle drawarea = ImageAlign.ImagePositionFromContentAlignment(box, isize, true, true);
 
                 if (imgattr != null)

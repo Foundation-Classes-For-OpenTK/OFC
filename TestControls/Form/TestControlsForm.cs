@@ -400,7 +400,7 @@ namespace TestOpenTk
                     pform.Add(pn);
                 }
 
-                displaycontrol.Add(pform);
+                displaycontrol.AddModalForm(pform);
 
                 displaycontrol.GlobalMouseDown += (ctrl, ex) =>
                 {
@@ -572,12 +572,12 @@ namespace TestOpenTk
         private void MsgDialog2()
         {
             string t = "";
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 50; i++)
                 t += "Line " + i + " is here" + " and lets make it very long for an example" +  Environment.NewLine;
 
             //            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn,"Small message\r\nShorter than\r\nThe other" , "Caption Long here to demonstrate", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
             //GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), MsgReturn, "Longer message message\r\nShorter than\r\nThe other", "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore);
-            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore, callback: MsgReturn);
+            GLMessageBox msg = new GLMessageBox("MB", displaycontrol, new Point(300, 500), t, "Caption Short", GLMessageBox.MessageBoxButtons.AbortRetryIgnore, callback: MsgReturn, modal:true);
         }
 
         static void Theme(GLBaseControl ctrl)      // run on each control during add, theme it

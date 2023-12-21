@@ -281,6 +281,12 @@
   <ItemGroup>
     <None Include="Resources\Wait.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ArrowDown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ArrowUp.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets" Condition="Exists('..\packages\DefaultDocumentation.0.7.9\build\DefaultDocumentation.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -38,7 +38,7 @@ namespace TestOpenTk
             {
                 ShowMenu(imagecache); 
                 //ShowVector3Menu(new Vector3(1, 2, 3), "fred", (v)=> { System.Diagnostics.Debug.WriteLine($"Vector {v}"); });
-                //ShowImagesMenu(imagecache.GetImageList());
+               // ShowImagesMenu(imagecache.GetImageList(), (list) => { imagecache.SetImageList(list); });
             };
 
             if (true)
@@ -107,7 +107,7 @@ namespace TestOpenTk
 
             orderedclosemainmenu = false;       // reset
 
-            GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 600), true);
+            GLForm pform = new GLForm("Galmenu", "Configure Map", new Rectangle(10, 10, 600, 800), true);
             pform.FormClosed = (frm) => { map.displaycontrol.ApplyToControlOfName("MS*", (c) => { c.Visible = true; }); };
 
             // provide opening animation
@@ -466,7 +466,12 @@ namespace TestOpenTk
             spanel.SuspendLayout();
             spanel.Remove();
 
-            List<string> resourcenames = new List<string> { "dotted", "dotted2", "dotted1", "_2d", "_3d", "Backwards", "EDSMUnknown" };
+            List<string> resourcenames = new List<string> { "dotted", "dotted2", "dotted1", "_2d", "_3d", "Backwards", "EDSMUnknown" ,
+            "dotted1", "dotted21", "dotted11", "_2d1", "_3d", "Backwards", "EDSMUnknown" ,
+            "dotted2", "dotted22", "dotted12", "_2d2", "_3d", "Backwards", "EDSMUnknown" ,
+            "dotted3", "dotted23", "dotted13", "_2d3", "_3d", "Backwards", "EDSMUnknown" ,
+            "dotted4", "dotted24", "dotted14", "_2d4", "_3d", "Backwards", "EDSMUnknown" ,
+            "dotted5", "dotted25", "dotted15", "_2d5", "_3d", "Backwards", "EDSMUnknown" };
 
             int tabno = 1;
 

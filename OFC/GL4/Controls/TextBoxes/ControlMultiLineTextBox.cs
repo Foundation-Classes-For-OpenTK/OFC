@@ -103,7 +103,7 @@ namespace GLOFC.GL4.Controls
         public new bool AutoSize { get { return false; } set { throw new NotImplementedException(); } }
 
         /// <summary> Height of lines. Note changing Font changes this</summary>
-        public int LineHeight { get { return lineheight; } set { lineheight = value; Invalidate(); } }     // Line height
+        public int LineHeight { get { return lineheight; } set { lineheight = value; forcedlineheight = true; Invalidate(); } }     // Line height
 
         /// <summary> Right click menu, for adding options or themeing </summary>
         public GLContextMenu RightClickMenu { get; }

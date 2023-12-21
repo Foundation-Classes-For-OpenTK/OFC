@@ -155,7 +155,7 @@ namespace TestOpenTk
                 if (true)
                 {
                     GLForm pform = new GLForm("Form1", "GL Menu demonstration", new Rectangle(10, 10, 600, 200));
-                    displaycontrol.Add(pform);
+                    displaycontrol.AddModalForm(pform);
 
                     if (true)
                     {
