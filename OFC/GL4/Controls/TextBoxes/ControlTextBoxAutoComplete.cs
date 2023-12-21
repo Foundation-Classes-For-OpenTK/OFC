@@ -144,6 +144,7 @@ namespace GLOFC.GL4.Controls
 
         #region Implementation
 
+        /// <inheritdoc cref="GLOFC.GL4.Controls.GLBaseControl.PerformRecursiveLayout()"/>
         protected override void PerformRecursiveLayout()
         {
             ExtraPadding = new PaddingType(0, 0, endbuttonon ? EndButton.Width : 0, 0);

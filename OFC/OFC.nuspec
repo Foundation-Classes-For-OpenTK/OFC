@@ -10,6 +10,11 @@
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
     <releaseNotes>
+    Release 1.1.1 features:
+    Fixes to detached controls under modal forms to make them respond properly
+    Text box autocomplete end button behaviour improved to have up/down/wait arrows
+    Other minor fixes
+
     Release 1.1.0 features:
     ControlNumberBox improvements to globalization
     WinFormControl makes renderstate at start so its always non null - prevents errors if click is before first paint
