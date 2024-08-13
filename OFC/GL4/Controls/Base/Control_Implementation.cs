@@ -223,7 +223,7 @@ namespace GLOFC.GL4.Controls
 
         private protected virtual void InvalidateLayout(GLBaseControl child)
         {
-            //System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
+           // System.Diagnostics.Debug.WriteLine($"{Name} Invalidate layout due to {child?.Name}");
             Invalidate();
             PerformLayout();
         }

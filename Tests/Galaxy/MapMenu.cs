@@ -70,7 +70,7 @@ namespace TestOpenTk
 
             if (true)
             {
-                status = new GLLabel("Status", new Rectangle(10, 500, 600, 24), "x");
+                status = new GLLabel("Status", new Rectangle(10, 00, 900, 24), "x");
                 status.Dock = DockingType.BottomLeft;
                 status.ForeColor = Color.Orange;
                 status.BackColor = Color.FromArgb(50, 50, 50, 50);
@@ -699,8 +699,8 @@ namespace TestOpenTk
             {
                 status.Text = pc.PosCamera.LookAt.X.ToStringInvariant("N1") + " ," + pc.PosCamera.LookAt.Y.ToStringInvariant("N1") + " ,"
                          + pc.PosCamera.LookAt.Z.ToStringInvariant("N1") + " Dist " + pc.PosCamera.EyeDistance.ToStringInvariant("N1") + " Eye " +
-                         pc.PosCamera.EyePosition.X.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Y.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Z.ToStringInvariant("N1");
-                //+ " ! " + pc.PosCamera.CameraDirection + " R " + pc.PosCamera.CameraRotation;
+                         pc.PosCamera.EyePosition.X.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Y.ToStringInvariant("N1") + " ," + pc.PosCamera.EyePosition.Z.ToStringInvariant("N1")
+                         + " CDir elv " + pc.PosCamera.CameraDirection.X + " az " + pc.PosCamera.CameraDirection.Y + " R " + pc.PosCamera.CameraRotation;
             }
         }
 

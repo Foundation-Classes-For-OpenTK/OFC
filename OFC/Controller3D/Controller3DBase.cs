@@ -154,9 +154,9 @@ namespace GLOFC.Controller
 
                 if (MatrixCalc.InPerspectiveMode)
                 {
-                    //System.Diagnostics.Trace.WriteLine("dx" + dx.ToString() + " dy " + dy.ToString() + " Button " + e.Button.ToString());
+                  //  System.Diagnostics.Trace.WriteLine($"right mouse {dx} {dy} cameradirection az {CameraDirection.Y} translation {translation}");
 
-                    Matrix3 transform = Matrix3.CreateRotationZ((float)(CameraDirection.Y * Math.PI / 180.0f));
+                    Matrix3 transform = Matrix3.CreateRotationZ(-(float)CameraDirection.Y.Radians());
                     translation = Vector3.Transform(translation, transform);
 
                     Translate(new Vector3(translation.X, 0, translation.Y));
