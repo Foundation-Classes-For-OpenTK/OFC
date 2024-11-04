@@ -10,6 +10,9 @@
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
     <releaseNotes>
+    Release 1.1.2 features:
+    Fixes translation after rotation on right mouse button
+
     Release 1.1.1 features:
     Fixes to detached controls under modal forms to make them respond properly
     Text box autocomplete end button behaviour improved to have up/down/wait arrows
