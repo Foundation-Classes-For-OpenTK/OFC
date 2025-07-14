@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
+    //SOLVED
+    //Response 23/3/22:Re Orbital inclinations - I have checked with our StellarForge guy -
+    //the Orbital inclinations are relative to the parent's orbital inclination, not the parent's axis tilt
+
     public class BodyInfo
     {
         public StarScan.ScanNode ScanNode { get; set; }
