@@ -45,7 +45,8 @@ namespace TestOpenTk
         {
             InitializeComponent();
 
-            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
+            GraphicsMode gr = new GraphicsMode(32, 24, 8, 0, 0, 2, false);
+            glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer, gr, 4, 6);
 
         }
 
