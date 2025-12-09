@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using GLOFC.Utils;
 
 namespace GLOFC.GL4
@@ -122,7 +123,7 @@ namespace GLOFC.GL4
         public static string Outfile(string passedoutpath, string rootname, string optname = "")
         {
             string shadersourcelog = ShaderSourceLog;
-            if (shadersourcelog == null)
+            if (shadersourcelog == null || !Directory.Exists(shadersourcelog))
                 return passedoutpath;
             else
             {
