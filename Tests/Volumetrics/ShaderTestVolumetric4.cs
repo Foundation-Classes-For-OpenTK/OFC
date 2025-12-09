@@ -59,7 +59,6 @@ namespace TestOpenTk
             string vcode =
 @"
 #version 450 core
-#include UniformStorageBlocks.matrixcalc.glsl
 
 //layout (location = 0) in vec4 position;
 
@@ -67,9 +66,6 @@ out int instance;
 
 void main(void)
 {
-	//gl_Position = position;       
-	//gl_Position = vec4(0,0,0,0);
-
     instance = gl_InstanceID;
 }
 ";

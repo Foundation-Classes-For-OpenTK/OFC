@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace TestOpenTk
 {
+    // Replicate JournalScan parts needed
+
     public class JournalScan
     {
         public bool IsStar { get { return StarType != null; } }
@@ -97,13 +99,15 @@ namespace TestOpenTk
     {
         public enum ScanNodeType
         {
-            star,            // used for top level stars - stars around stars are called a body.
-            barycentre,      // only used for top level barycentres (AB)
-            body,            // all levels >0 except for below are called a body
+            toplevelstar,       // used for top level stars - stars around stars are called a body.
+            barycentre,         // only used for top level barycentres (AB)
+            planetmoonsubstar,  // all levels >0 except for below are called a body
             belt,            // used on level 1 under the star : HIP 23759 A Belt Cluster 4 -> elements Main Star,A Belt,Cluster 4
             beltcluster,     // each cluster under it gets this name at level 2
             ring             // rings at the last level : Selkana 9 A Ring : MainStar,9,A Ring
         };
+
+        // replicate the ScanNode structure..
         public partial class ScanNode
         {
             public ScanNodeType NodeType { get; set;}
@@ -119,7 +123,7 @@ namespace TestOpenTk
         };
 
 
-        static public ScanNode ReadJSON(JObject jo)
+        static public ScanNode ReadNode(JObject jo)
         {
             string time = jo["Epoch"].Str();
             DateTime epoch = time.HasChars() ? DateTime.Parse(time, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal) : DateTime.UtcNow;
@@ -155,7 +159,7 @@ namespace TestOpenTk
                     JArray ja = jo["Bodies"] as JArray;
                     foreach (JObject o in ja)
                     {
-                        var cn = ReadJSON(o);
+                        var cn = ReadNode(o);
                         n.Children.Add(cn.OwnName, cn);
                     }
                 }

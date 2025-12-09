@@ -55,7 +55,6 @@ namespace TestOpenTk
             string vcode =
 @"
 #version 450 core
-#include UniformStorageBlocks.matrixcalc.glsl
 
 layout (location = 0) in vec4 position;
 
@@ -81,17 +80,8 @@ void main(void)
 
             public ShaderV2()
             {
-                //CompileLink(vertex: vcode, frag: fcode, geo: "#include TestOpenTk.Volumetrics.volumetricgeo2.glsl");
-                //                CompileLink(vertex: vcode, frag: fcode, geo: @"#include c:\code\ofc\tests\Volumetrics\volumetricgeo2.glsl");
-
-                //GLShader.includepaths.Add(@"c:\code\ofc\tests");
-                //GLShader.includepaths.Add(@"c:\code\ofc\tests\Volumetrics");
-                //CompileLink(vertex: vcode, frag: fcode, geo: @"#include volumetricgeo2.glsl");
-
                 GLShader.IncludeModules.Add("TestOpenTk.Volumetrics");
                 CompileLink(vertex: vcode, frag: fcode, geo: "#include volumetricgeo2.glsl");
-
-
             }
         }
 

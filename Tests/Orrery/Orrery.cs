@@ -55,22 +55,27 @@ namespace TestOpenTk
         private int track = -1;
 
         private const int findblock = 3;
-        private const int arbblock = 4;
-
+        private const int arbblocknumber = 4;
 
         private double currentjd;
         private double jdscaling;
 
-        private GLBuffer spherebuffer, spheretexcobuffer;
-        private GLShaderPipeline orbitlineshader, bodyshader, bodyplaneshader;
+        private GLContextMenu rightclickmenubody;
+        private GLContextMenu rightclickmenuscreen;
+
+        // shaders and spheres objects
+
+        private GLShaderPipeline orbitlineshader;       // orbit lines
+        private GLShaderPipeline bodyshader;            // body shaders
+        private GLBuffer spherebuffer, spheretexcobuffer;       // sphere descriptions
+
+        //private GLShaderPipeline bodyplaneshader;
 
         private GLShaderPipeline findshader;
         private GLRenderableItem rifind;
 
         private GLBuffer bodymatrixbuffer;
 
-        private GLContextMenu rightclickmenubody;
-        private GLContextMenu rightclickmenuscreen;
 
         public void Start(GLWinFormControl glwfc)
         {
@@ -231,6 +236,8 @@ namespace TestOpenTk
                 ms["RCMUntrack"].Enabled = track != -1;
             };
 
+            // optional grid
+
             if ( true )
             {
                 var shader = new GLColorShaderWorld();
@@ -286,39 +293,50 @@ namespace TestOpenTk
                 }
             }
 
+            // orbit shader is solid coloured lines
+            // uniform 22 is giving world position offset, with W = colour selector.  We pass a set of colours to use
             var orbitlinesvertshader = new GLPLVertexShaderModelWorldUniform(new Color[] { Color.FromArgb(128, 128, 0, 0), Color.FromArgb(128, 128, 128, 0) });
+            // orbit lines shader, fragment shader get loc 0 for colour
             orbitlineshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());
-            bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
+
+            //bodyplaneshader = new GLShaderPipeline(orbitlinesvertshader, new GLPLFragmentShaderVSColor());  // model pos in, with uniform world pos, vectors out, with vs_colour selected by worldpos.w
 
             // set up ARB IDs for all images we are going to use..
-            var tbs = items.NewBindlessTextureHandleBlock(arbblock);
+            var tbs = items.NewBindlessTextureHandleBlock(arbblocknumber);
             var texs = items.NewTexture2D(null, Properties.Resources.golden, SizedInternalFormat.Rgba8);
             var texp = items.NewTexture2D(null, Properties.Resources.moonmap1k, SizedInternalFormat.Rgba8);
             var texb = items.NewTexture2D(null, Properties.Resources.dotted, SizedInternalFormat.Rgba8);
             var texs2 = items.NewTexture2D(null, Properties.Resources.wooden, SizedInternalFormat.Rgba8);
             tbs.WriteHandles(new IGLTexture[] { texs, texp, texb, texs2 });
 
-            // using 0 tex coord, 4 image id and arb text binding 
-            var bodyfragshader = new GLPLFragmentShaderBindlessTexture(arbblock, discardiftransparent: true, useprimidover2: false);
-
-            // takes 0:Vector4 model, 1: vec2 text, 4:matrix, out is 0:tex, 1: modelpos, 2: instance, 4 = matrix[3][3]
+            // takes 0:Vector4 model, 1: vec2 texture coords, 4:matrix
+            // matrix can select autoscale min/max/scaling in [0-2][3]. Image number is given by matrix[3][3]
+            // out is 0:tex, 1: modelpos, 2: instance, 4 = image number. 
             var bodyvertshader = new GLPLVertexShaderModelMatrixTexture(1000000 * 1000 * mscaling, useeyedistance: false);
+
+            // fragment shader, using 0 tex coord, 4 image id and arb text binding by giving the arbblock to look images up in.
+            var bodyfragshader = new GLPLFragmentShaderBindlessTexture(arbblocknumber, discardiftransparent: true, useprimidover2: false);
+
+            // pipeline shader for bodies
             bodyshader = new GLShaderPipeline(bodyvertshader, bodyfragshader);
             items.Add(bodyshader);
 
-            // hold shape
+            // hold shere vec4's and tex co-ords
             var sphereshape = GLSphereObjectFactory.CreateTexturedSphereFromTriangles(3, 1.0f);
             spherebuffer = items.NewBuffer();      // fill buffer with model co-ords
             spherebuffer.AllocateFill(sphereshape.Item1);
             spheretexcobuffer = items.NewBuffer(); // fill buffer with tex coords
             spheretexcobuffer.AllocateFill(sphereshape.Item2);
 
-            bodymatrixbuffer = items.NewBuffer();    // this holds the matrix to set position and size
+            // holds matrix controlling all the bodies. See the bodyvertshader for content
+            bodymatrixbuffer = items.NewBuffer();  
 
+            // find for body matrix's
             GLStorageBlock findbufferresults = items.NewStorageBlock(findblock);
             var geofind = new GLPLGeoShaderFindTriangles(findbufferresults, 16);        // pass thru normal vert/tcs/tes then to geoshader for results
             findshader = items.NewShaderPipeline(null, bodyvertshader, null, null, geofind, null, null, null);
 
+            // scaling and time
             jdscaling = 0;
             currentjd = new DateTime(2021, 11, 18, 12, 0, 0).ToJulianDate();
         }
@@ -328,7 +346,7 @@ namespace TestOpenTk
             string para = File.ReadAllText(file);
             JObject jo = JObject.Parse(para);
 
-            starsystemnodes = StarScan.ReadJSON(jo);
+            starsystemnodes = StarScan.ReadNode(jo);
 
             displaysubnode = 0;
             CreateBodies(starsystemnodes, displaysubnode);
@@ -387,7 +405,7 @@ namespace TestOpenTk
 
             int bodies = bodyinfo.Count;
 
-            // hold planet and barycentre positions/sizes/imageno
+            // hold planet/barycentre positions/sizes/imageno
             bodymatrixbuffer.AllocateBytes(GLBuffer.Mat4size * bodies);
 
             GLRenderState rt = GLRenderState.Tri();
