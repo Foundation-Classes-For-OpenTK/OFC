@@ -44,6 +44,8 @@ namespace TestOpenTk
 
         public TestControlsForm()
         {
+            CultureInfo.CurrentCulture = System.Threading.Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("ru");
+
             InitializeComponent();
 
             glwfc = new GLOFC.WinForm.GLWinFormControl(glControlContainer,null,4,6);
@@ -346,9 +348,9 @@ namespace TestOpenTk
                     GLPanel pn = new GLPanel("Paneldtp", new Rectangle(0, 330, 400, 100), Color.AliceBlue);
 
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(4,4 ,390, 30), DateTime.Now);
-                    dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
-                    dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
-                    //dtp.CustomFormat = "'start' dddd 'hello there' MMMM' and here 'yyyy";
+                    //dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
+                   // dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
+                    dtp.CustomFormat = "'start' dddd 'hello' MMMM' an 'yyyy fffffff www";
                     dtp.Font = new Font("Ms Sans Serif", 11);
                     dtp.ShowCheckBox = true;
                     dtp.ShowCalendar = true;

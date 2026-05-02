@@ -485,35 +485,48 @@ namespace GLOFC.GL4.Controls
                         Parts p = FromString(ref fmt);      // is it a part?
                         if (p == null)
                         {
-                            if (fmt[0] == '\'')
+                            if (fmt[0] == '\'' || fmt[0] == '"')
                             {
-                                int index = fmt.IndexOf('\'', 1);
+                                int index = fmt.IndexOf(fmt[0], 1);
                                 if (index == -1)
                                     index = fmt.Length;
 
                                 p = new Parts() { text = fmt.Substring(1, index - 1), ptype = PartsTypes.Text };
                                 fmt = (index < fmt.Length) ? fmt.Substring(index + 1) : "";
+
+                                //System.Diagnostics.Debug.WriteLine($"Format string `{p.text}`");
                             }
                             else
                             {
+                                // collect all together until we find another format or quote esacpe or string ends (bug)
+
                                 string s = "";
-                                while (fmt[0] != '\'' && FromString(fmt) == null)       // collect all together until we find another format or quote esacpe
+                                while (fmt.Length > 0 && fmt[0] != '\'' && FromString(fmt) == null)     
                                 {
                                     s += fmt[0];
                                     fmt = fmt.Substring(1);
                                 }
 
+                                //System.Diagnostics.Debug.WriteLine($"Format text `{s}`");
+
                                 p = new Parts() { text = s, ptype = PartsTypes.Text };
                             }
                         }
+                        else
+                        {
+                            //System.Diagnostics.Debug.WriteLine($"Format part {p.ptype}");
+                        }
 
-                        p.xpos = xpos;
-                        SizeF sz = e.MeasureString(p.text, this.Font);
-                        int width = (int)(sz.Width + 1);
-                        p.endx = p.xpos + width;
-                        xpos = p.endx;// + (p.ptype != PartsTypes.Text ?  borderoffset :0);
-                        //System.Diagnostics.Debug.WriteLine($"Part {p.ptype} {p.xpos}..{p.endx} '{p.text}'");
-                        partlist.Add(p);
+                        if (p.ptype != PartsTypes.Ignore)       // may be a part we don't do
+                        {
+                            p.xpos = xpos;
+                            SizeF sz = e.MeasureString(p.text, this.Font);
+                            int width = (int)(sz.Width + 1);
+                            p.endx = p.xpos + width;
+                            xpos = p.endx;// + (p.ptype != PartsTypes.Text ?  borderoffset :0);
+                            //System.Diagnostics.Debug.WriteLine($"Part {p.ptype} {p.xpos}..{p.endx} '{p.text}'");
+                            partlist.Add(p);
+                        }
                     }
                 }
             }
@@ -569,8 +582,34 @@ namespace GLOFC.GL4.Controls
                 return Make(ref fmt, 2, PartsTypes.Year, "99");
             else if (fmt.StartsWith("y"))
                 return Make(ref fmt, 1, PartsTypes.Year, "99");
-            else
-                return null;
+            else if (fmt.StartsWith("fffffff") || fmt.StartsWith("FFFFFFF"))
+                return Make(ref fmt, 7, PartsTypes.Ignore, "");      // ignore ten millionths
+            else if (fmt.StartsWith("ffffff") || fmt.StartsWith("FFFFFF"))
+                return Make(ref fmt, 6, PartsTypes.Ignore, "");      // ignore millionths
+            else if (fmt.StartsWith("fffff") || fmt.StartsWith("FFFFF"))
+                return Make(ref fmt, 5, PartsTypes.Ignore, "");      // ignore hundred thousands
+            else if (fmt.StartsWith("ffff") || fmt.StartsWith("FFFF"))
+                return Make(ref fmt, 4, PartsTypes.Ignore, "");      // ignore ten thousands
+            else if (fmt.StartsWith("fff") || fmt.StartsWith("FFF"))
+                return Make(ref fmt, 3, PartsTypes.Ignore, "");      // ignore milliseconds
+            else if (fmt.StartsWith("ff") || fmt.StartsWith("FF"))
+                return Make(ref fmt, 2, PartsTypes.Ignore, "");      // ignore hundreds
+            else if (fmt.StartsWith("f") || fmt.StartsWith("F"))
+                return Make(ref fmt, 1, PartsTypes.Ignore, "");      // ignore tenths
+            else if (fmt.StartsWith("gg"))
+                return Make(ref fmt, 2, PartsTypes.Ignore, "");      // ignore era
+            else if (fmt.StartsWith("g"))
+                return Make(ref fmt, 1, PartsTypes.Ignore, "");      // ignore era
+            else if (fmt.StartsWith("K"))
+                return Make(ref fmt, 1, PartsTypes.Ignore, "");      // time zone
+            else if (fmt.StartsWith("zzz"))
+                return Make(ref fmt, 3, PartsTypes.Ignore, "");      // hours utc offset
+            else if (fmt.StartsWith("zz"))
+                return Make(ref fmt, 2, PartsTypes.Ignore, "");      // hours utc offset
+            else if (fmt.StartsWith("z"))
+                return Make(ref fmt, 1, PartsTypes.Ignore, "");      // hours utc offset
+
+            return null;
         }
 
         private Parts Make(ref string c, int len, PartsTypes t, string maxs)
@@ -659,7 +698,7 @@ namespace GLOFC.GL4.Controls
         private string customformat = CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern;
         private CultureInfo culture = CultureInfo.CurrentCulture;
 
-        enum PartsTypes { Text, DayName, Day, Month, Year, Hours, Mins, Seconds, AmPm }
+        enum PartsTypes { Text, DayName, Day, Month, Year, Hours, Mins, Seconds, AmPm , Ignore }
         class Parts
         {
             public PartsTypes ptype;
