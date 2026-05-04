@@ -10,6 +10,9 @@
     <projectUrl>https://github.com/Foundation-Classes-For-OpenTK/OFC</projectUrl>
     <description>$description$</description>
     <releaseNotes>
+    Release 1.2.0 features:
+    Fixes date time picker with more strange formatting
+
     Release 1.1.2 features:
     Fixes translation after rotation on right mouse button
 

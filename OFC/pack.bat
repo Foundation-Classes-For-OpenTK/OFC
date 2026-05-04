@@ -5,6 +5,9 @@ delete -confirm *.nupkg *.zip
 delete -confirm /rp bin
 delete -confirm /rp obj
 
+echo ENSURE NUGET.EXE is available and unblocked (c:\apps\progs)
+echo Run NUGET
+
 nuget pack OFC.csproj -Verbosity detailed -Build -Properties Configuration=Release
 
 copy *.nupkg *.zip
