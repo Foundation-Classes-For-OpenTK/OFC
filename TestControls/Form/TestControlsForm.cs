@@ -348,10 +348,10 @@ namespace TestOpenTk
                     GLPanel pn = new GLPanel("Paneldtp", new Rectangle(0, 330, 400, 100), Color.AliceBlue);
 
                     GLDateTimePicker dtp = new GLDateTimePicker("DTP", new Rectangle(4,4 ,390, 30), DateTime.Now);
-                    //dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
+                    dtp.Culture = System.Globalization.CultureInfo.GetCultureInfo("de-AT");
                    // dtp.Format = GLDateTimePicker.DateTimePickerFormat.Long;
                     dtp.CustomFormat = "'start' dddd 'hello' MMMM' an 'yyyy fffffff www";
-                    dtp.Font = new Font("Ms Sans Serif", 11);
+                    dtp.Font = new Font("Ms Sans Serif", 8);
                     dtp.ShowCheckBox = true;
                     dtp.ShowCalendar = true;
                     dtp.ShowUpDown = true;
